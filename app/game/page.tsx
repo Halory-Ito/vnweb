@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 
-export default function App() {
+export default function Game() {
   redirect('/game/home')
-  return <div>App</div>
+  return <div>Game</div>
 }
