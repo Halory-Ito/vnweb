@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server'
 import { execFile, spawn, type ChildProcess } from 'child_process'
+import { NextRequest, NextResponse } from 'next/server'
 import path from 'path'
 
-let runningProcess: ChildProcess | null = null
+let _runningProcess: ChildProcess | null = null
 let runningProcessPath: string | null = null
 let rootPid: number | null = null
 let trackedPids = new Set<number>()
@@ -93,7 +93,7 @@ const logAndClearTracking = (reason: string) => {
     timer = null
   }
 
-  runningProcess = null
+  _runningProcess = null
   runningProcessPath = null
   rootPid = null
   trackedPids = new Set<number>()
@@ -106,7 +106,7 @@ const clearTracking = () => {
     clearInterval(timer)
     timer = null
   }
-  runningProcess = null
+  _runningProcess = null
   runningProcessPath = null
   rootPid = null
   trackedPids = new Set<number>()
@@ -193,7 +193,7 @@ export const POST = async (request: NextRequest) => {
       cwd: path.dirname(executablePath),
     })
 
-    runningProcess = child
+    _runningProcess = child
     runningProcessPath = executablePath
     rootPid = child.pid ?? null
     trackedPids = rootPid ? new Set<number>([rootPid]) : new Set<number>()

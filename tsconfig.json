@@ -20,7 +20,9 @@
       }
     ],
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "@/fonts": ["./lib/font-utils"],
+      "@/components/*": ["./components/*"]
     }
   },
   "include": [
@@ -29,7 +31,8 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
-    "**/*.mts"
+    "**/*.mts",
+    "lib/path-utils.ts"
   ],
   "exclude": ["node_modules"]
 }

@@ -1,5 +1,6 @@
-import Scan from '@/app/scan/page'
 import { render } from 'vitest-browser-react'
+
+import Scan from '@/app/scan/page'
 
 it('Page', async () => {
   const { getByRole } = await render(<Scan />)

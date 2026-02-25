@@ -1,8 +1,10 @@
-import Layout from '@/components/layout/layout'
-import './globals.css'
-import { TooltipProvider } from '@/components/ui/tooltip'
 import { ThemeProvider } from 'next-themes'
+
+import '@/app/globals.css'
+import AppLayout from '@/components/layout/app-layout'
 import { SidebarProvider } from '@/components/ui/sidebar'
+import { TooltipProvider } from '@/components/ui/tooltip'
+import { LXGWWenKai } from '@/fonts'
 
 export default function RootLayout({
   children,
@@ -10,7 +12,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className={LXGWWenKai.className} suppressHydrationWarning>
       <body>
         <ThemeProvider
           attribute="class"
@@ -20,7 +22,7 @@ export default function RootLayout({
         >
           <SidebarProvider>
             <TooltipProvider>
-              <Layout>{children}</Layout>
+              <AppLayout>{children}</AppLayout>
             </TooltipProvider>
           </SidebarProvider>
         </ThemeProvider>

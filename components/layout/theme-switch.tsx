@@ -1,9 +1,10 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useTheme } from 'next-themes'
-import { Button } from '@/components/ui/button'
 import { MoonIcon, SunIcon } from 'lucide-react'
+import { useTheme } from 'next-themes'
+import { useState, useEffect } from 'react'
+
+import { Button } from '@/components/ui/button'
 
 const ThemeSwitch = () => {
   const [mounted, setMounted] = useState(false)
@@ -26,9 +27,9 @@ const ThemeSwitch = () => {
       aria-label="切换主题"
     >
       {resolvedTheme === 'dark' ? (
-        <MoonIcon className="w-4 h-4" />
+        <MoonIcon className="h-4 w-4" />
       ) : (
-        <SunIcon className="w-4 h-4" />
+        <SunIcon className="h-4 w-4" />
       )}
     </Button>
   )

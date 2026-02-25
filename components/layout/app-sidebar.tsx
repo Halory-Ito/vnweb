@@ -1,7 +1,5 @@
 'use client'
 
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
 import {
   BoxIcon,
   HomeIcon,
@@ -9,11 +7,9 @@ import {
   SettingsIcon,
   UserIcon,
 } from 'lucide-react'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@/components/ui/tooltip'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+
 import {
   Sidebar,
   SidebarContent,
@@ -23,6 +19,11 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 
 type SidebarItem = {
   title: string
@@ -85,9 +86,7 @@ export default function AppSideBar() {
   return (
     <Sidebar
       collapsible="none"
-      className="w-24 
-    border-r bg-background shadow-xs dark:bg-input/0 dark:border-input
-    "
+      className="bg-background dark:bg-input/0 dark:border-input w-24 border-r shadow-xs"
     >
       <SidebarHeader className="items-center pt-4">
         <Link
@@ -100,7 +99,7 @@ export default function AppSideBar() {
       </SidebarHeader>
 
       <SidebarContent className="items-center p-2">
-        <SidebarMenu className="p-4 gap-4">
+        <SidebarMenu className="gap-4 p-4">
           {contentItems.map((item) => (
             <SidebarIconButton
               key={item.title}
@@ -112,7 +111,7 @@ export default function AppSideBar() {
       </SidebarContent>
 
       <SidebarFooter className="items-center pb-4">
-        <SidebarMenu className="p-4 gap-4">
+        <SidebarMenu className="gap-4 p-4">
           {footerItems.map((item) => (
             <SidebarIconButton
               key={item.title}

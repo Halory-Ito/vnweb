@@ -125,7 +125,7 @@ export default function Test() {
   }
 
   return (
-    <div className="min-h-screen min-w-screen flex flex-col justify-center items-center gap-4 px-4">
+    <div className="flex min-h-screen min-w-screen flex-col items-center justify-center gap-4 px-4">
       <h1 className="text-xl font-semibold">本地程序启动测试</h1>
       <input
         type="text"
