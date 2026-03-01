@@ -1,8 +1,8 @@
-import { request } from '@/lib/result-utils'
+import { api } from '@/lib/request-utils'
 import { RecordOverviewStats } from '@/types/record-types'
 
 export const fetchOverviewStatsApi = async (): Promise<RecordOverviewStats> => {
-  const res = await request.request({
+  const res = await api.request({
     method: 'GET',
     url: '/record/overview/stats',
   })

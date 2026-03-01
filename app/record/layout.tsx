@@ -1,3 +1,9 @@
+import { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: '游戏记录',
+}
+
 export default function RecordLayout({
   children,
 }: {

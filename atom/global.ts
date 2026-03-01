@@ -1,5 +1,7 @@
 import { atom } from 'jotai'
 
-const fontAtom = atom('')
+const fontAtom = atom('/font/SourceHanSerifCN-Regular-1.otf')
 
-export { fontAtom }
+const bgAtom = atom('/bg.png')
+
+export { fontAtom, bgAtom }

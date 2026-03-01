@@ -1,3 +1,4 @@
+import MonthRecord from './month/page'
 import RecordOverview from './overview/page'
 import YearRecord from './year/page'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -8,7 +9,7 @@ export default function Record() {
       defaultValue="overview"
       className="max-h-[calc(100vh-144px)] w-full overflow-y-scroll"
     >
-      <TabsList>
+      <TabsList className="dark:bg-transparent">
         <TabsTrigger value="overview">总览</TabsTrigger>
         <TabsTrigger value="year">年报</TabsTrigger>
         <TabsTrigger value="month">月报</TabsTrigger>
@@ -22,7 +23,9 @@ export default function Record() {
       <TabsContent value="year">
         <YearRecord />
       </TabsContent>
-      <TabsContent value="month">month</TabsContent>
+      <TabsContent value="month">
+        <MonthRecord />
+      </TabsContent>
       <TabsContent value="week">week</TabsContent>
       <TabsContent value="rating">rating</TabsContent>
       <TabsContent value="export">export</TabsContent>

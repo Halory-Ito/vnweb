@@ -5,6 +5,11 @@ import { useTheme } from 'next-themes'
 import { useState, useEffect } from 'react'
 
 import { Button } from '@/components/ui/button'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 
 const ThemeSwitch = () => {
   const [mounted, setMounted] = useState(false)
@@ -20,18 +25,23 @@ const ThemeSwitch = () => {
   }
 
   return (
-    <Button
-      variant="outline"
-      size="icon"
-      onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
-      aria-label="切换主题"
-    >
-      {resolvedTheme === 'dark' ? (
-        <MoonIcon className="h-4 w-4" />
-      ) : (
-        <SunIcon className="h-4 w-4" />
-      )}
-    </Button>
+    <>
+      <Tooltip>
+        <TooltipTrigger>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() =>
+              setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')
+            }
+            aria-label="切换主题"
+          >
+            {resolvedTheme === 'dark' ? <MoonIcon /> : <SunIcon />}
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>切换主题</TooltipContent>
+      </Tooltip>
+    </>
   )
 }
 

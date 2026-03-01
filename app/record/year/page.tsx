@@ -75,7 +75,7 @@ export default function YearRecord() {
     <div className="h-full w-full space-y-4">
       {/* header */}
       <div className="flex w-full items-center justify-between">
-        <h1 className="mb-4 h-full text-2xl font-bold">年度游戏报告</h1>
+        <h1 className="h-full text-2xl font-bold">年度游戏报告</h1>
         <div className="flex items-center space-x-4">
           <Button variant="outline" size="icon">
             <ArrowLeftIcon className="h-4 w-4" />

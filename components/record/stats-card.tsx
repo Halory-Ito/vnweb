@@ -27,7 +27,7 @@ export type StatsCardProps = {
   title: string
   icon: React.ReactNode
   value: string | number
-  unit: string
+  unit?: string
 }
 
 export const SimpleStatsCard = ({
