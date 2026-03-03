@@ -1,0 +1,669 @@
+'use client'
+
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import {
+  ClipboardPasteIcon,
+  CircleCheckIcon,
+  EyeIcon,
+  FolderUpIcon,
+  Link2Icon,
+  SaveIcon,
+  ScissorsIcon,
+  SearchIcon,
+  Trash2Icon,
+} from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { toast } from 'sonner'
+
+import { Button } from '@/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/sheet'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
+import {
+  type GameSearchImageItem,
+  getGameById,
+  searchGameImages,
+  updateGameSettingsById,
+} from '@/lib/game-utils'
+
+type ImageField = 'cover' | 'bg' | 'icon' | 'logo'
+
+type GameSettingsPanelProps = {
+  gameId: number
+  gameTitle: string
+  open: boolean
+  onOpenChange: (open: boolean) => void
+}
+
+const imageFieldLabelMap: Record<ImageField, string> = {
+  cover: '封面',
+  bg: '背景',
+  icon: '图标',
+  logo: '徽标',
+}
+
+const parseCropRect = (
+  input: string,
+  width: number,
+  height: number,
+): { x: number; y: number; w: number; h: number } | null => {
+  const raw = input
+    .split(',')
+    .map((v) => Number(v.trim()))
+    .filter((v) => Number.isFinite(v))
+
+  if (raw.length !== 4) {
+    return null
+  }
+
+  const [rawX, rawY, rawW, rawH] = raw
+  const x = Math.max(0, Math.floor(rawX))
+  const y = Math.max(0, Math.floor(rawY))
+  const w = Math.max(1, Math.floor(rawW))
+  const h = Math.max(1, Math.floor(rawH))
+
+  const maxW = Math.max(1, width - x)
+  const maxH = Math.max(1, height - y)
+
+  return {
+    x,
+    y,
+    w: Math.min(w, maxW),
+    h: Math.min(h, maxH),
+  }
+}
+
+const readFileAsDataUrl = (file: File) =>
+  new Promise<string>((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(String(reader.result || ''))
+    reader.onerror = () => reject(new Error('读取文件失败'))
+    reader.readAsDataURL(file)
+  })
+
+const loadImageElement = (src: string) =>
+  new Promise<HTMLImageElement>((resolve, reject) => {
+    const image = new window.Image()
+    image.crossOrigin = 'anonymous'
+    image.onload = () => resolve(image)
+    image.onerror = () => reject(new Error('图片加载失败，可能不支持跨域裁剪'))
+    image.src = src
+  })
+
+const ToolbarIconButton = ({
+  tip,
+  onClick,
+  children,
+  disabled,
+}: {
+  tip: string
+  onClick: () => void
+  children: React.ReactNode
+  disabled?: boolean
+}) => (
+  <Tooltip>
+    <TooltipTrigger asChild>
+      <Button
+        type="button"
+        variant="outline"
+        size="icon"
+        onClick={onClick}
+        disabled={disabled}
+      >
+        {children}
+      </Button>
+    </TooltipTrigger>
+    <TooltipContent>{tip}</TooltipContent>
+  </Tooltip>
+)
+
+export default function GameSettingsPanel({
+  gameId,
+  gameTitle,
+  open,
+  onOpenChange,
+}: GameSettingsPanelProps) {
+  const router = useRouter()
+  const queryClient = useQueryClient()
+
+  const [exePath, setExePath] = useState('')
+  const [cover, setCover] = useState('')
+  const [bg, setBg] = useState('')
+  const [icon, setIcon] = useState('')
+  const [logo, setLogo] = useState('')
+  const [isSaving, setIsSaving] = useState(false)
+  const [searchDialogOpen, setSearchDialogOpen] = useState(false)
+  const [searchSource, setSearchSource] = useState('steamgriddb')
+  const [searchKeyword, setSearchKeyword] = useState('')
+  const [searchTargetField, setSearchTargetField] =
+    useState<ImageField>('cover')
+  const [isSearchingImage, setIsSearchingImage] = useState(false)
+  const [searchResultGameName, setSearchResultGameName] = useState('')
+  const [searchResultImages, setSearchResultImages] = useState<
+    GameSearchImageItem[]
+  >([])
+  const [selectedSearchImageUrl, setSelectedSearchImageUrl] = useState('')
+
+  const fileInputRefs = {
+    cover: useRef<HTMLInputElement | null>(null),
+    bg: useRef<HTMLInputElement | null>(null),
+    icon: useRef<HTMLInputElement | null>(null),
+    logo: useRef<HTMLInputElement | null>(null),
+  }
+
+  const { data, isFetching } = useQuery({
+    queryKey: ['game', String(gameId)],
+    queryFn: () => getGameById(String(gameId)),
+    enabled: open,
+  })
+
+  useEffect(() => {
+    if (!data) {
+      return
+    }
+
+    setExePath(data.exePath || '')
+    setCover(data.cover || '')
+    setBg(data.bg || '')
+    setIcon(data.icon || '')
+    setLogo(data.logo || '')
+  }, [data])
+
+  const fieldValueMap = useMemo(
+    () => ({
+      cover,
+      bg,
+      icon,
+      logo,
+    }),
+    [cover, bg, icon, logo],
+  )
+
+  const setImageFieldValue = (field: ImageField, value: string) => {
+    if (field === 'cover') {
+      setCover(value)
+      return
+    }
+    if (field === 'bg') {
+      setBg(value)
+      return
+    }
+    if (field === 'icon') {
+      setIcon(value)
+      return
+    }
+    setLogo(value)
+  }
+
+  const triggerImportFile = (field: ImageField) => {
+    fileInputRefs[field].current?.click()
+  }
+
+  const importFromFile = async (field: ImageField, file?: File) => {
+    if (!file) {
+      return
+    }
+
+    try {
+      const dataUrl = await readFileAsDataUrl(file)
+      setImageFieldValue(field, dataUrl)
+      toast.success(`已导入${imageFieldLabelMap[field]}`)
+    } catch (error) {
+      toast.error((error as Error).message || '从文件导入失败')
+    }
+  }
+
+  const importFromClipboard = async (field: ImageField) => {
+    try {
+      if (navigator.clipboard?.read) {
+        const items = await navigator.clipboard.read()
+        for (const item of items) {
+          const imageType = item.types.find((type) => type.startsWith('image/'))
+          if (imageType) {
+            const blob = await item.getType(imageType)
+            const file = new File([blob], `${field}.png`, { type: blob.type })
+            await importFromFile(field, file)
+            return
+          }
+        }
+      }
+
+      if (navigator.clipboard?.readText) {
+        const text = (await navigator.clipboard.readText()).trim()
+        if (text) {
+          setImageFieldValue(field, text)
+          toast.success(`已从剪贴板导入${imageFieldLabelMap[field]}链接`)
+          return
+        }
+      }
+
+      toast.error('剪贴板中未找到图片或链接')
+    } catch (error) {
+      toast.error((error as Error).message || '从剪贴板导入失败')
+    }
+  }
+
+  const importFromLink = (field: ImageField) => {
+    const value = window.prompt(
+      `请输入${imageFieldLabelMap[field]}链接`,
+      fieldValueMap[field],
+    )
+    const nextValue = value?.trim()
+    if (!nextValue) {
+      return
+    }
+
+    setImageFieldValue(field, nextValue)
+  }
+
+  const openSearchImageDialog = (field: ImageField) => {
+    setSearchTargetField(field)
+    setSearchSource('steamgriddb')
+    setSearchKeyword(gameTitle)
+    setSearchResultGameName('')
+    setSearchResultImages([])
+    setSelectedSearchImageUrl('')
+    setSearchDialogOpen(true)
+  }
+
+  const handleSearchImage = async () => {
+    const keyword = searchKeyword.trim()
+    if (!keyword) {
+      toast.error('请输入名称或 id')
+      return
+    }
+
+    setIsSearchingImage(true)
+    try {
+      const response = await searchGameImages({
+        source: searchSource,
+        keyword,
+        imageType: searchTargetField,
+      })
+
+      setSearchResultGameName(response.data.game?.name || '')
+      setSearchResultImages(response.data.items || [])
+      setSelectedSearchImageUrl('')
+
+      if ((response.data.items || []).length === 0) {
+        toast.error('未搜索到图片')
+      }
+    } catch (error) {
+      const err = error as {
+        response?: {
+          data?: {
+            error?: string
+          }
+        }
+        message?: string
+      }
+      toast.error(err.response?.data?.error || err.message || '搜索图片失败')
+    } finally {
+      setIsSearchingImage(false)
+    }
+  }
+
+  const applySelectedSearchImage = () => {
+    if (!selectedSearchImageUrl) {
+      toast.error('请先选择图片')
+      return
+    }
+
+    setImageFieldValue(searchTargetField, selectedSearchImageUrl)
+    setSearchDialogOpen(false)
+    toast.success(`已设置${imageFieldLabelMap[searchTargetField]}`)
+  }
+
+  const viewLargeImage = (field: ImageField) => {
+    const target = fieldValueMap[field]
+    if (!target) {
+      toast.error(`暂无${imageFieldLabelMap[field]}可查看`)
+      return
+    }
+
+    window.open(target, '_blank', 'noopener,noreferrer')
+  }
+
+  const cropImage = async (field: ImageField) => {
+    const target = fieldValueMap[field]
+    if (!target) {
+      toast.error(`暂无${imageFieldLabelMap[field]}可裁剪`)
+      return
+    }
+
+    try {
+      const image = await loadImageElement(target)
+      const defaultSize = Math.min(image.width, image.height)
+      const defaultX = Math.floor((image.width - defaultSize) / 2)
+      const defaultY = Math.floor((image.height - defaultSize) / 2)
+
+      const cropInput = window.prompt(
+        '请输入裁剪区域 x,y,w,h（留空则居中正方形裁剪）',
+        `${defaultX},${defaultY},${defaultSize},${defaultSize}`,
+      )
+
+      const rect = cropInput?.trim()
+        ? parseCropRect(cropInput, image.width, image.height)
+        : {
+            x: defaultX,
+            y: defaultY,
+            w: defaultSize,
+            h: defaultSize,
+          }
+
+      if (!rect) {
+        toast.error('裁剪参数格式不正确')
+        return
+      }
+
+      const canvas = document.createElement('canvas')
+      canvas.width = rect.w
+      canvas.height = rect.h
+      const ctx = canvas.getContext('2d')
+
+      if (!ctx) {
+        toast.error('裁剪失败：无法创建画布')
+        return
+      }
+
+      ctx.drawImage(image, rect.x, rect.y, rect.w, rect.h, 0, 0, rect.w, rect.h)
+
+      const dataUrl = canvas.toDataURL('image/png')
+      setImageFieldValue(field, dataUrl)
+      toast.success(`已裁剪${imageFieldLabelMap[field]}`)
+    } catch (error) {
+      toast.error((error as Error).message || '裁剪图片失败')
+    }
+  }
+
+  const removeImage = (field: ImageField) => {
+    setImageFieldValue(field, '')
+  }
+
+  const saveSettings = async () => {
+    setIsSaving(true)
+    try {
+      await updateGameSettingsById(gameId, {
+        exePath,
+        cover,
+        bg,
+        icon,
+        logo,
+      })
+
+      await queryClient.invalidateQueries({
+        queryKey: ['game', String(gameId)],
+      })
+      router.refresh()
+      toast.success('设置已保存')
+      onOpenChange(false)
+    } catch (error) {
+      const err = error as {
+        response?: {
+          data?: {
+            error?: string
+          }
+        }
+        message?: string
+      }
+      toast.error(err.response?.data?.error || err.message || '保存设置失败')
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  const imageFieldList: ImageField[] = ['cover', 'bg', 'icon', 'logo']
+
+  return (
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent
+        side="right"
+        className="w-full gap-0 overflow-y-auto sm:max-w-2xl"
+      >
+        <SheetHeader>
+          <SheetTitle>属性设置</SheetTitle>
+          <SheetDescription>{gameTitle}</SheetDescription>
+        </SheetHeader>
+
+        <div className="space-y-6 px-4 pb-4">
+          <section className="space-y-2">
+            <div className="text-sm font-medium">可执行路径</div>
+            <Input
+              value={exePath}
+              onChange={(event) => setExePath(event.target.value)}
+              placeholder="请输入可执行文件路径，例如 E:\\Games\\Sample\\game.exe"
+            />
+          </section>
+
+          {imageFieldList.map((field) => (
+            <section key={field} className="space-y-3 rounded-md border p-3">
+              <div className="text-sm font-medium">
+                {imageFieldLabelMap[field]}
+              </div>
+
+              <div className="bg-muted/30 flex h-36 w-full items-center justify-center overflow-hidden rounded-md border">
+                {fieldValueMap[field] ? (
+                  <img
+                    src={fieldValueMap[field]}
+                    alt={`${imageFieldLabelMap[field]}预览`}
+                    className="h-full w-full object-contain"
+                  />
+                ) : (
+                  <div className="text-muted-foreground text-sm">暂无图片</div>
+                )}
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                <ToolbarIconButton
+                  tip="从文件导入"
+                  onClick={() => triggerImportFile(field)}
+                >
+                  <FolderUpIcon className="size-4" />
+                </ToolbarIconButton>
+
+                <ToolbarIconButton
+                  tip="从剪贴板导入"
+                  onClick={() => void importFromClipboard(field)}
+                >
+                  <ClipboardPasteIcon className="size-4" />
+                </ToolbarIconButton>
+
+                <ToolbarIconButton
+                  tip="从链接导入"
+                  onClick={() => importFromLink(field)}
+                >
+                  <Link2Icon className="size-4" />
+                </ToolbarIconButton>
+
+                <ToolbarIconButton
+                  tip="搜索图片"
+                  onClick={() => openSearchImageDialog(field)}
+                >
+                  <SearchIcon className="size-4" />
+                </ToolbarIconButton>
+
+                <ToolbarIconButton
+                  tip="查看大图"
+                  onClick={() => viewLargeImage(field)}
+                >
+                  <EyeIcon className="size-4" />
+                </ToolbarIconButton>
+
+                <ToolbarIconButton
+                  tip="裁剪图片"
+                  onClick={() => void cropImage(field)}
+                  disabled={!fieldValueMap[field]}
+                >
+                  <ScissorsIcon className="size-4" />
+                </ToolbarIconButton>
+
+                <ToolbarIconButton
+                  tip="删除图片"
+                  onClick={() => removeImage(field)}
+                  disabled={!fieldValueMap[field]}
+                >
+                  <Trash2Icon className="size-4" />
+                </ToolbarIconButton>
+              </div>
+
+              <input
+                ref={fileInputRefs[field]}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(event) => {
+                  const file = event.target.files?.[0]
+                  void importFromFile(field, file)
+                  event.currentTarget.value = ''
+                }}
+              />
+            </section>
+          ))}
+
+          <div className="flex justify-end">
+            <Button
+              type="button"
+              onClick={() => void saveSettings()}
+              disabled={isSaving || isFetching}
+            >
+              <SaveIcon className="size-4" />
+              {isSaving ? '保存中...' : '保存设置'}
+            </Button>
+          </div>
+        </div>
+
+        <Dialog
+          open={searchDialogOpen}
+          onOpenChange={(nextOpen) => setSearchDialogOpen(nextOpen)}
+        >
+          <DialogContent className="max-h-[85vh] overflow-hidden sm:max-w-3xl">
+            <DialogHeader>
+              <DialogTitle>
+                搜索{imageFieldLabelMap[searchTargetField]}
+              </DialogTitle>
+              <DialogDescription>
+                默认数据源为 SteamGrid DB，可用名称或 id 搜索
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="bg-muted/20 grid max-h-[50vh] grid-cols-2 gap-2 overflow-y-auto rounded-md border p-2">
+              {searchResultImages.length === 0 ? (
+                <div className="text-muted-foreground col-span-2 flex min-h-32 items-center justify-center text-sm">
+                  暂无图片，请先执行搜索
+                </div>
+              ) : (
+                searchResultImages.map((item) => {
+                  const isSelected = selectedSearchImageUrl === item.url
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      className={[
+                        'relative rounded-md border text-left',
+                        'focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none',
+                        isSelected ? 'ring-primary ring-2' : '',
+                      ].join(' ')}
+                      onClick={() => setSelectedSearchImageUrl(item.url)}
+                    >
+                      <img
+                        src={item.thumb || item.url}
+                        alt={`图片 ${item.id}`}
+                        className="max-h-56 w-full object-contain"
+                      />
+                      <div className="bg-background/80 flex items-center justify-between px-2 py-1 text-xs">
+                        <span>
+                          {item.width}×{item.height}
+                        </span>
+                        {isSelected ? (
+                          <CircleCheckIcon className="text-primary size-4" />
+                        ) : null}
+                      </div>
+                    </button>
+                  )
+                })
+              )}
+            </div>
+
+            <div className="space-y-3 rounded-md border p-3">
+              <div className="grid gap-3 sm:grid-cols-[180px_1fr_auto_auto_auto]">
+                <Select value={searchSource} onValueChange={setSearchSource}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="选择数据源" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="steamgriddb">SteamGrid DB</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                <Input
+                  value={searchKeyword}
+                  onChange={(event) => setSearchKeyword(event.target.value)}
+                  placeholder="通过名称或 id 搜索"
+                />
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => void handleSearchImage()}
+                  disabled={isSearchingImage}
+                >
+                  {isSearchingImage ? '搜索中...' : '搜索'}
+                </Button>
+
+                <Button
+                  type="button"
+                  onClick={applySelectedSearchImage}
+                  disabled={!selectedSearchImageUrl}
+                >
+                  确定
+                </Button>
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setSearchDialogOpen(false)}
+                >
+                  取消
+                </Button>
+              </div>
+
+              <div className="text-muted-foreground text-xs">
+                {searchResultGameName
+                  ? `当前匹配游戏：${searchResultGameName}`
+                  : '尚未匹配到游戏'}
+              </div>
+            </div>
+
+            <DialogFooter />
+          </DialogContent>
+        </Dialog>
+      </SheetContent>
+    </Sheet>
+  )
+}

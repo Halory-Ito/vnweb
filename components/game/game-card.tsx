@@ -4,7 +4,7 @@ import Link from 'next/link'
 export default function GameCard(props: GameCardProps) {
   return (
     <Link
-      href={`/game/info/${props.id}`}
+      href={props.href || `/game/info/${props.id}`}
       className="flex flex-col items-center justify-center space-y-2 p-1"
     >
       <Image

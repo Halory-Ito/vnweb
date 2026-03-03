@@ -1,5 +1,6 @@
 'use client'
 
+import { useQuery } from '@tanstack/react-query'
 import {
   ArrowDownIcon,
   ArrowLeftIcon,
@@ -11,6 +12,7 @@ import { useRef, useState } from 'react'
 import GameCard from './game-card'
 import { SortSelect } from './sort-select'
 import { Button } from '@/components/ui/button'
+import { getCollections, getGameCardList } from '@/lib/game-utils'
 
 export default function GameHome() {
   return (
@@ -25,6 +27,11 @@ export default function GameHome() {
 const RecentGame = () => {
   const scrollRef = useRef<HTMLDivElement>(null)
 
+  const { data: gameCards = [] } = useQuery({
+    queryKey: ['game-cards'],
+    queryFn: getGameCardList,
+  })
+
   const scrollCards = (direction: 'left' | 'right') => {
     const offset = 320
     scrollRef.current?.scrollBy({
@@ -33,28 +40,13 @@ const RecentGame = () => {
     })
   }
 
-  const items: GameCardProps[] = [
-    {
-      id: '1',
-      title: '白色相簿1234567890',
-      cover: '/cover/wa2.jpg',
-      playTime: 120,
-      publishAt: '2023-01-01',
-      lastRunAt: '2023-02-01',
-      addedAt: '2023-01-15',
-      rating: 4.5,
-    },
-    {
-      id: '2',
-      title: '白色相簿1234567',
-      cover: '/cover/wa2.jpg',
-      playTime: 120,
-      publishAt: '2023-01-01',
-      lastRunAt: '2023-02-01',
-      addedAt: '2023-01-25',
-      rating: 4.5,
-    },
-  ]
+  const items: GameCardProps[] = gameCards
+    .filter((item) => item.lastRunAt)
+    .sort(
+      (a, b) =>
+        new Date(b.lastRunAt).getTime() - new Date(a.lastRunAt).getTime(),
+    )
+    .slice(0, 20)
   return (
     <div className="h-full w-full">
       <div className="mb-4 flex items-center justify-between">
@@ -93,6 +85,11 @@ const RecentGame = () => {
 const MyColletion = () => {
   const scrollRef = useRef<HTMLDivElement>(null)
 
+  const { data: collections = [] } = useQuery({
+    queryKey: ['collections'],
+    queryFn: getCollections,
+  })
+
   const scrollCards = (direction: 'left' | 'right') => {
     const offset = 320
     scrollRef.current?.scrollBy({
@@ -101,28 +98,22 @@ const MyColletion = () => {
     })
   }
 
-  const items: GameCardProps[] = [
-    {
-      id: '1',
-      title: '白色相簿2',
-      cover: '/cover/wa2.jpg',
-      playTime: 110,
-      publishAt: '2023-01-01',
-      lastRunAt: '2023-02-01',
-      addedAt: '2023-01-20',
-      rating: 4.0,
-    },
-    {
-      id: '2',
-      title: '白色相簿2',
-      cover: '/cover/wa2.jpg',
-      playTime: 110,
-      publishAt: '2023-01-01',
-      lastRunAt: '2023-02-01',
-      addedAt: '2023-01-20',
-      rating: 4.0,
-    },
-  ]
+  const items: GameCardProps[] = collections
+    .filter((collection) => collection.games.length > 0)
+    .map((collection) => {
+      const firstGame = collection.games[0]
+      return {
+        id: `collection-${collection.id}`,
+        href: `/game/collection/${collection.id}`,
+        title: collection.name,
+        cover: collection.firstGameCover || firstGame.cover || '/cover/wa2.jpg',
+        playTime: 0,
+        publishAt: '',
+        lastRunAt: '',
+        addedAt: '',
+        rating: 0,
+      }
+    })
   return (
     <div className="h-full w-full">
       <div className="mb-4 flex items-center justify-between">
@@ -160,59 +151,13 @@ const MyColletion = () => {
 
 const AllGame = () => {
   const [order, setOrder] = useState<string>('asc')
-  const [orderBy, setOrderBy] = useState<string>('addedAt')
-  const items: GameCardProps[] = [
-    {
-      id: '1',
-      title: '白色相簿2',
-      cover: '/cover/wa2.jpg',
-      playTime: 120,
-      publishAt: '2023-01-01',
-      lastRunAt: '2023-03-01',
-      addedAt: '2023-01-25',
-      rating: 4.5,
-    },
-    {
-      id: '2',
-      title: '白色相簿',
-      cover: '/cover/wa2.jpg',
-      playTime: 110,
-      publishAt: '2023-01-02',
-      lastRunAt: '2023-02-01',
-      addedAt: '2023-01-20',
-      rating: 4.0,
-    },
-    {
-      id: '3',
-      title: '白色相簿',
-      cover: '/cover/wa2.jpg',
-      playTime: 110,
-      publishAt: '2023-01-02',
-      lastRunAt: '2023-02-01',
-      addedAt: '2023-01-20',
-      rating: 4.0,
-    },
-    {
-      id: '4',
-      title: '白色相簿',
-      cover: '/cover/wa2.jpg',
-      playTime: 110,
-      publishAt: '2023-01-02',
-      lastRunAt: '2023-02-01',
-      addedAt: '2023-01-20',
-      rating: 4.0,
-    },
-    {
-      id: '5',
-      title: '白色相簿',
-      cover: '/cover/wa2.jpg',
-      playTime: 110,
-      publishAt: '2023-01-02',
-      lastRunAt: '2023-02-01',
-      addedAt: '2023-01-20',
-      rating: 4.0,
-    },
-  ]
+  const [orderBy, setOrderBy] = useState<string>('add_date')
+  const { data: gameCards = [] } = useQuery({
+    queryKey: ['game-cards'],
+    queryFn: getGameCardList,
+  })
+
+  const items: GameCardProps[] = [...gameCards]
 
   items.sort((a, b) => {
     let compare = 0

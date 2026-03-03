@@ -5,6 +5,16 @@ import { promisify } from 'node:util'
 
 const execFileAsync = promisify(execFile)
 
+const normalizeWindowsPathInput = (value: string) => {
+  const trimmed = value.trim()
+  if (!trimmed) {
+    return ''
+  }
+
+  const withBackslash = trimmed.replace(/\//g, '\\')
+  return path.win32.normalize(withBackslash)
+}
+
 function buildPowerShellScript(): string {
   return String.raw`
 $ErrorActionPreference = 'Stop'
@@ -215,7 +225,12 @@ export async function extractIconFromExe(
     throw new Error('timeoutMs 必须是大于 0 的数字（毫秒）')
   }
 
-  const resolvedExePath = path.resolve(exePath)
+  const normalizedExePath = normalizeWindowsPathInput(exePath)
+  if (!path.win32.isAbsolute(normalizedExePath)) {
+    throw new Error('EXE 路径必须是绝对路径（例如 E:\\Games\\xxx.exe）')
+  }
+
+  const resolvedExePath = normalizedExePath
   const resolvedIconPath = path.resolve(iconSavePath)
 
   await fs.promises.access(resolvedExePath, fs.constants.F_OK).catch(() => {

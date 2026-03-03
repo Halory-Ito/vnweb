@@ -16,14 +16,13 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 
-// TODO: 点击按钮显示 dropdown，包括手动添加（只有单个添加）和从 Steam 导入两种方式
 export default function VNDBTrigger() {
   return (
     <>
       <DropdownMenu>
         <Tooltip>
-          <TooltipTrigger>
-            <DropdownMenuTrigger>
+          <TooltipTrigger asChild>
+            <DropdownMenuTrigger asChild>
               <Button type="button" variant="outline" size="icon">
                 <PlusCircleIcon />
               </Button>

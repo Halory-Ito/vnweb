@@ -8,6 +8,7 @@ type BGMInfoboxItem = {
 }
 
 type BGMSubject = {
+  id?: number
   date?: string
   images?: {
     large?: string
@@ -20,6 +21,47 @@ type BGMSubject = {
   }>
   nsfw?: boolean
   infobox?: BGMInfoboxItem[]
+}
+
+type BGMSearchResponse = {
+  total?: number
+  limit?: number
+  offset?: number
+  data?: BGMSubject[]
+}
+
+type SGDBGame = {
+  id?: number
+  name?: string
+  release_date?: number
+}
+
+type SGDBImage = {
+  url?: string
+}
+
+type SGDBGameDetailResponse = {
+  data?: {
+    game?: SGDBGame
+    grids?: SGDBImage[]
+  }
+}
+
+type SGDBSearchResponse = {
+  data?: SGDBGame[]
+  total?: number
+}
+
+export type GameSearchItem = {
+  id: string
+  name: string
+  developer: string
+  date: string
+}
+
+export type GameSearchResult = {
+  total: number
+  items: GameSearchItem[]
 }
 
 const toInfoboxTextList = (
@@ -118,10 +160,11 @@ export const mapBGMSubjectToGameInfo = (subject: BGMSubject): GameInfo => {
 export const searchBGMSubjectsApi = async (
   keyword: string,
   offset: number = 0,
+  limit: number = 10,
 ) => {
   const res = await api.request({
     method: 'POST',
-    url: `/db/bgm?offset=${offset}`,
+    url: `/db/bgm?offset=${offset}&limit=${limit}`,
     data: {
       keyword,
       filter: {
@@ -130,7 +173,32 @@ export const searchBGMSubjectsApi = async (
       },
     },
   })
-  return mapBGMSubjectToGameInfo(res.data)
+
+  const payload = res.data as BGMSearchResponse
+  const subjects = payload.data ?? []
+
+  return {
+    total: payload.total ?? subjects.length,
+    items: subjects
+      .map((subject) => {
+        if (subject.id === undefined || subject.id === null) {
+          return null
+        }
+
+        const developer = getInfoboxValueText(subject.infobox, [
+          '开发',
+          '开发商',
+        ])
+
+        return {
+          id: String(subject.id),
+          name: subject.name_cn || subject.name || '',
+          developer,
+          date: subject.date ?? '',
+        }
+      })
+      .filter((item): item is GameSearchItem => item !== null),
+  } satisfies GameSearchResult
 }
 
 export const getBGMSubjectByIdApi = async (id: string) => {
@@ -144,6 +212,85 @@ export const getBGMSubjectByIdApi = async (id: string) => {
   return res.data
 }
 
+export const searchSGDBGamesApi = async (keyword: string) => {
+  const res = await api.request({
+    method: 'POST',
+    url: '/db/sgdb',
+    data: {
+      keyword,
+    },
+  })
+
+  const payload = res.data as SGDBSearchResponse
+  const games = payload.data ?? []
+
+  return {
+    total: payload.total ?? games.length,
+    items: games
+      .map((game) => {
+        if (game.id === undefined || game.id === null) {
+          return null
+        }
+
+        const date =
+          typeof game.release_date === 'number' && game.release_date > 0
+            ? new Date(game.release_date * 1000).toISOString().slice(0, 10)
+            : ''
+
+        return {
+          id: String(game.id),
+          name: game.name ?? '',
+          developer: 'SteamGrid DB',
+          date,
+        }
+      })
+      .filter((item): item is GameSearchItem => item !== null),
+  } satisfies GameSearchResult
+}
+
+export const getSGDBGameByIdApi = async (id: string) => {
+  const res = await api.request({
+    method: 'GET',
+    url: '/db/sgdb',
+    params: {
+      id,
+    },
+  })
+
+  const payload = res.data as SGDBGameDetailResponse
+  const game = payload.data?.game
+  const grids = payload.data?.grids ?? []
+  const cover = grids[0]?.url ?? ''
+  const releaseDate =
+    typeof game?.release_date === 'number' && game.release_date > 0
+      ? new Date(game.release_date * 1000).toISOString().slice(0, 10)
+      : ''
+
+  return {
+    date: releaseDate,
+    cover,
+    summary: '',
+    name: game?.name ?? '',
+    nameCn: game?.name ?? '',
+    tags: [],
+    nsfw: false,
+    ailases: [],
+    platforms: [],
+    gameType: '',
+    gameEngine: '',
+    websites: [],
+    links: [],
+    music: '',
+    script: '',
+    graphic: '',
+    originalPainter: '',
+    animationProduction: '',
+    developer: '',
+    publisher: '',
+    programmer: '',
+  } satisfies GameInfo
+}
+
 /**
  * Steam API Functions
  */
@@ -153,5 +300,41 @@ export const getGameInfoByIdApi = async (id: string, provider: string) => {
     const rawSubject = (await getBGMSubjectByIdApi(id)) as BGMSubject
     return mapBGMSubjectToGameInfo(rawSubject)
   }
+  if (provider === 'steamgriddb') {
+    return getSGDBGameByIdApi(id)
+  }
   return null
+}
+
+export const searchGameByNameApi = async (
+  keyword: string,
+  provider: string,
+  offset: number = 0,
+  limit: number = 10,
+) => {
+  if (provider === 'bangumi') {
+    return searchBGMSubjectsApi(keyword, offset, limit)
+  }
+
+  if (provider === 'steamgriddb') {
+    const result = await searchSGDBGamesApi(keyword)
+    return {
+      total: result.total,
+      items: result.items.slice(offset, offset + limit),
+    } satisfies GameSearchResult
+  }
+
+  return {
+    total: 0,
+    items: [],
+  } as GameSearchResult
+}
+
+export const createGameInfoApi = async (gameInfo: GameInfo) => {
+  const res = await api.request({
+    method: 'POST',
+    url: '/game',
+    data: gameInfo,
+  })
+  return res.data as { data: { id?: number } }
 }

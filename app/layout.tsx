@@ -1,11 +1,16 @@
-import { Metadata } from 'next'
+import dayjs from 'dayjs'
 
 import '@/app/globals.css'
+import { Metadata } from 'next'
 import { ThemeProvider } from 'next-themes'
+import 'dayjs/locale/zh-cn' // 导入本地化语言
+
+dayjs.locale('zh-cn') // 使用本地化语言
 
 import AppLayout from '@/components/layout/app-layout'
 import TanStackProvider from '@/components/providers/tanstack-provider'
 import { SidebarProvider } from '@/components/ui/sidebar'
+import { Toaster } from '@/components/ui/sonner'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { LXGWWenKai } from '@/fonts'
 
@@ -36,6 +41,7 @@ export default function RootLayout({
             <SidebarProvider>
               <TooltipProvider>
                 <AppLayout>{children}</AppLayout>
+                <Toaster />
               </TooltipProvider>
             </SidebarProvider>
           </ThemeProvider>

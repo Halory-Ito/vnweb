@@ -6,6 +6,7 @@ const searchSubjects = async (req: NextRequest) => {
   const formData = await req.json()
   const params = req.nextUrl.searchParams
   const offset = params.get('offset') || '0'
+  const limit = params.get('limit') || '10'
   console.log('formData', JSON.stringify(formData))
   const res = await BGMClient.request({
     method: 'POST',
@@ -13,6 +14,7 @@ const searchSubjects = async (req: NextRequest) => {
     data: formData,
     params: {
       offset,
+      limit,
     },
   })
   return NextResponse.json(res.data)

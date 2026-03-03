@@ -1,4 +1,4 @@
-import Image from 'next/image'
+import { desc, eq } from 'drizzle-orm'
 
 import { GameSidebarItem } from './game-sidebar-item'
 import {
@@ -7,10 +7,77 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion'
+import { CollectionGameTable, CollectionTable, GameInfoTable } from '@/db/schema'
+import { db } from '@/lib/drizzle'
 import { GameSidebarProps } from '@/types/game-types'
 
-export default function GameSidebar() {
-  const items = generateData(5, 10)
+const DEFAULT_GAME_ICON = '/file.svg'
+
+export default async function GameSidebar() {
+  const allGames = await db
+    .select({
+      id: GameInfoTable.id,
+      name: GameInfoTable.name,
+      icon: GameInfoTable.icon,
+    })
+    .from(GameInfoTable)
+    .orderBy(desc(GameInfoTable.id))
+
+  const collections = await db
+    .select({
+      id: CollectionTable.id,
+      name: CollectionTable.name,
+    })
+    .from(CollectionTable)
+    .orderBy(desc(CollectionTable.id))
+
+  const collectionGameRows = await db
+    .select({
+      collectionId: CollectionGameTable.collectionId,
+      gameId: GameInfoTable.id,
+      gameName: GameInfoTable.name,
+      gameIcon: GameInfoTable.icon,
+    })
+    .from(CollectionGameTable)
+    .innerJoin(GameInfoTable, eq(CollectionGameTable.gameId, GameInfoTable.id))
+    .orderBy(desc(CollectionGameTable.id))
+
+  const collectionGameMap = new Map<
+    number,
+    Array<{ id: string; title: string; icon: string }>
+  >()
+
+  for (const row of collectionGameRows) {
+    const current = collectionGameMap.get(row.collectionId) ?? []
+    current.push({
+      id: String(row.gameId),
+      title: row.gameName,
+      icon: row.gameIcon?.trim() ? row.gameIcon : DEFAULT_GAME_ICON,
+    })
+    collectionGameMap.set(row.collectionId, current)
+  }
+
+  const items: GameSidebarProps[] = [
+    {
+      id: 'recent',
+      title: '最近游戏',
+      items: [],
+    },
+    {
+      id: 'all',
+      title: '所有游戏',
+      items: allGames.map((game) => ({
+        id: String(game.id),
+        title: game.name,
+        icon: game.icon?.trim() ? game.icon : DEFAULT_GAME_ICON,
+      })),
+    },
+    ...collections.map((collection) => ({
+      id: `collection-${collection.id}`,
+      title: collection.name,
+      items: collectionGameMap.get(collection.id) ?? [],
+    })),
+  ]
 
   return (
     <Accordion type="multiple" className="w-full">
@@ -22,39 +89,10 @@ export default function GameSidebar() {
           <AccordionContent className="space-y-2 p-2">
             {item.items.map((subItem) => (
               <GameSidebarItem key={subItem.id} {...subItem} />
-              // <div key={subItem.id} className="flex items-center space-x-2">
-              //   <Image
-              //     alt={subItem.title}
-              //     src={subItem.icon}
-              //     width={16}
-              //     height={16}
-              //   />
-              //   <div className="truncate">{subItem.title}</div>
-              // </div>
             ))}
           </AccordionContent>
         </AccordionItem>
       ))}
     </Accordion>
   )
-}
-
-const generateData = (col: number, length: number): GameSidebarProps[] => {
-  const data: GameSidebarProps[] = []
-  for (let i = 0; i < length; i++) {
-    const items = []
-    for (let j = 0; j < col; j++) {
-      items.push({
-        id: `${i}-${j}`,
-        title: `游戏${i}-${j}`,
-        icon: '/file.svg',
-      })
-    }
-    data.push({
-      id: `${i}`,
-      title: `分类${i}`,
-      items,
-    })
-  }
-  return data
 }
