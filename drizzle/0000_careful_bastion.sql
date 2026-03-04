@@ -7,8 +7,8 @@ CREATE TABLE `collection_game` (
 CREATE TABLE `collection` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`name` text NOT NULL,
-	`createdAt` text DEFAULT 'Tue, 03 Mar 2026 02:57:54 GMT',
-	`updatedAt` text DEFAULT 'Tue, 03 Mar 2026 02:57:54 GMT'
+	`createdAt` text DEFAULT 'Tue, 03 Mar 2026 08:00:09 GMT',
+	`updatedAt` text DEFAULT 'Tue, 03 Mar 2026 08:00:09 GMT'
 );
 --> statement-breakpoint
 CREATE TABLE `game_info` (
@@ -35,8 +35,8 @@ CREATE TABLE `game_info` (
 	`developer` text NOT NULL,
 	`publisher` text NOT NULL,
 	`programmer` text NOT NULL,
-	`createdAt` text DEFAULT 'Tue, 03 Mar 2026 02:57:54 GMT',
-	`updatedAt` text DEFAULT 'Tue, 03 Mar 2026 02:57:54 GMT'
+	`createdAt` text DEFAULT 'Tue, 03 Mar 2026 08:00:09 GMT',
+	`updatedAt` text DEFAULT 'Tue, 03 Mar 2026 08:00:09 GMT'
 );
 --> statement-breakpoint
 CREATE TABLE `game_play` (
@@ -58,18 +58,31 @@ CREATE TABLE `game_record` (
 	`playDate` text DEFAULT ''
 );
 --> statement-breakpoint
+CREATE TABLE `scan_error` (
+	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+	`directory` text NOT NULL,
+	`error` text NOT NULL,
+	`status` integer DEFAULT 0,
+	`createdAt` text DEFAULT 'Tue, 03 Mar 2026 08:00:09 GMT',
+	`updatedAt` text DEFAULT 'Tue, 03 Mar 2026 08:00:09 GMT'
+);
+--> statement-breakpoint
+CREATE TABLE `scanner` (
+	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+	`directory` text NOT NULL,
+	`provider` text NOT NULL,
+	`progress` integer DEFAULT 0,
+	`gameCount` integer DEFAULT 0,
+	`scanMode` integer DEFAULT 0,
+	`scanLevel` integer DEFAULT 0,
+	`excludeDirs` text DEFAULT '',
+	`createdAt` text DEFAULT 'Tue, 03 Mar 2026 08:00:09 GMT',
+	`updatedAt` text DEFAULT 'Tue, 03 Mar 2026 08:00:09 GMT'
+);
+--> statement-breakpoint
 CREATE TABLE `relate_website` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`gameId` integer NOT NULL,
 	`name` text NOT NULL,
 	`url` text NOT NULL
 );
---> statement-breakpoint
-CREATE TABLE `users_table` (
-	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
-	`name` text NOT NULL,
-	`age` integer NOT NULL,
-	`email` text NOT NULL
-);
---> statement-breakpoint
-CREATE UNIQUE INDEX `users_table_email_unique` ON `users_table` (`email`);

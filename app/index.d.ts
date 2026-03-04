@@ -8,4 +8,8 @@ type GameCardProps = {
   addedAt: string
   playTime: number
   rating: number
+  isSelected?: boolean
+  showSelection?: boolean
+  selectionMode?: boolean
+  onToggleSelect?: (id: string) => void
 }

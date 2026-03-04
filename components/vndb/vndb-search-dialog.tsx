@@ -1,6 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query'
-import { useState, type ReactNode } from 'react'
 import { useRouter } from 'next/navigation'
+import { useState, type ReactNode } from 'react'
 import { toast } from 'sonner'
 
 import { Button } from '../ui/button'
@@ -23,6 +23,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import {
+  DEFAULT_GAME_PROVIDER,
+  GAME_PROVIDER_OPTIONS,
+} from '@/lib/provider-options'
 import {
   createGameInfoApi,
   getGameInfoByIdApi,
@@ -52,7 +56,7 @@ export const VNDBSearchDialog = ({ children }: VNDBSearchDialogProps) => {
   const pageSize = 10
   const [gameName, setGameName] = useState<string>('')
   const [gameId, setGameId] = useState<string>('')
-  const [provider, setProvider] = useState<string>('bangumi')
+  const [provider, setProvider] = useState<string>(DEFAULT_GAME_PROVIDER)
   const [searchDialogOpen, setSearchDialogOpen] = useState<boolean>(false)
   const [searchResultDialogOpen, setSearchResultDialogOpen] =
     useState<boolean>(false)
@@ -206,13 +210,11 @@ export const VNDBSearchDialog = ({ children }: VNDBSearchDialogProps) => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
-                    <SelectItem value="vndb">VNDB</SelectItem>
-                    <SelectItem value="ymgal">YMGal</SelectItem>
-                    <SelectItem value="steam">Steam</SelectItem>
-                    <SelectItem value="igdb">IGDB</SelectItem>
-                    <SelectItem value="dlsite">DLsite</SelectItem>
-                    <SelectItem value="bangumi">Bangumi</SelectItem>
-                    <SelectItem value="steamgriddb">SteamGrid DB</SelectItem>
+                    {GAME_PROVIDER_OPTIONS.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
                   </SelectGroup>
                 </SelectContent>
               </Select>

@@ -1,5 +1,7 @@
 import { api } from '@/lib/request-utils'
 
+import type { GameFilterState, GameSidebarProps } from '@/types/game-types'
+
 export type GameDetail = {
   id: number
   date: string
@@ -44,6 +46,34 @@ export type GameDetail = {
 export type GameRuntime = {
   isRunning: boolean
   currentSessionSeconds: number
+}
+
+export const getGameFilterOptions = async () => {
+  const response = await api.get('/game/filter-options')
+  return (
+    response.data as {
+      data: {
+        releaseDates: string[]
+        developers: string[]
+        publishers: string[]
+        categories: string[]
+        platforms: string[]
+        tags: string[]
+        originalPainters: string[]
+        scripts: string[]
+        musics: string[]
+        engines: string[]
+        plannings: string[]
+      }
+    }
+  ).data
+}
+
+export type GameTimerRecordItem = {
+  id: number
+  startAt: string
+  endAt: string
+  durationSeconds: number
 }
 
 export type CollectionGameItem = {
@@ -117,6 +147,49 @@ export const updateGamePlayStatusById = async (id: number, status: number) => {
   return response.data as {
     data: {
       status: number
+    }
+  }
+}
+
+export const getGameTimerRecordsById = async (id: number) => {
+  const response = await api.get(`/game/${id}/records`)
+  return (
+    response.data as {
+      data: {
+        records: GameTimerRecordItem[]
+        totalPlayTime: number
+      }
+    }
+  ).data
+}
+
+export const updateGameTimerRecordsById = async (
+  id: number,
+  payload: {
+    records: Array<{
+      startAt: string
+      endAt: string
+    }>
+  },
+) => {
+  const response = await api.put(`/game/${id}/records`, payload)
+  return (
+    response.data as {
+      data: {
+        updated: boolean
+        totalPlayTime: number
+      }
+    }
+  ).data
+}
+
+export const updateGameRatingById = async (id: number, rating: number) => {
+  const response = await api.patch(`/game/${id}`, {
+    rating,
+  })
+  return response.data as {
+    data: {
+      rating: number
     }
   }
 }
@@ -226,8 +299,13 @@ export const createCollection = async (name: string) => {
   return (response.data as { data: { id: number; name: string } }).data
 }
 
-export const addGameToCollection = async (collectionId: number, gameId: number) => {
-  const response = await api.post(`/collection/${collectionId}/game`, { gameId })
+export const addGameToCollection = async (
+  collectionId: number,
+  gameId: number,
+) => {
+  const response = await api.post(`/collection/${collectionId}/game`, {
+    gameId,
+  })
   return response.data as {
     data: {
       collectionId: number
@@ -275,4 +353,76 @@ export const moveGameToCollection = async (
 export const getGameCardList = async () => {
   const response = await api.get('/game/list')
   return (response.data as { data: GameCardListItem[] }).data
+}
+
+export const batchUpdateGameMetadata = async (payload: {
+  gameIds: number[]
+  provider: 'bangumi' | 'steamgriddb'
+  query?: string
+  fields: Array<
+    | 'date'
+    | 'cover'
+    | 'icon'
+    | 'logo'
+    | 'bg'
+    | 'summary'
+    | 'name'
+    | 'nameCn'
+    | 'tags'
+    | 'nsfw'
+    | 'ailases'
+    | 'platforms'
+    | 'gameType'
+    | 'gameEngine'
+    | 'music'
+    | 'script'
+    | 'graphic'
+    | 'originalPainter'
+    | 'animationProduction'
+    | 'developer'
+    | 'publisher'
+    | 'programmer'
+  >
+  strategy: 'replace' | 'merge' | 'append'
+}) => {
+  const response = await api.post('/game/metadata-batch', payload)
+  return response.data as {
+    data: {
+      updatedCount: number
+      skippedCount: number
+      failedCount: number
+    }
+  }
+}
+
+export const getGameSidebarData = async (payload: {
+  search: string
+  filter: GameFilterState
+}) => {
+  const params = new URLSearchParams()
+  params.set('search', payload.search)
+
+  params.set('releaseDateFrom', payload.filter.releaseDateFrom)
+  params.set('releaseDateTo', payload.filter.releaseDateTo)
+  params.set('playStatus', payload.filter.playStatus)
+  params.set('developer', payload.filter.developer)
+  params.set('publisher', payload.filter.publisher)
+  params.set('category', payload.filter.category)
+  params.set('platform', payload.filter.platform)
+  params.set('tags', payload.filter.tags)
+  params.set('originalPainter', payload.filter.originalPainter)
+  params.set('script', payload.filter.script)
+  params.set('music', payload.filter.music)
+  params.set('engine', payload.filter.engine)
+  params.set('planning', payload.filter.planning)
+
+  const response = await api.get(`/game/sidebar?${params.toString()}`)
+  return (
+    response.data as {
+      data: {
+        mode: 'search' | 'default'
+        items: GameSidebarProps[]
+      }
+    }
+  ).data
 }

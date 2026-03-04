@@ -1,4 +1,3 @@
-import dayjs from 'dayjs'
 import { eq, sql } from 'drizzle-orm'
 
 import { GamePlayTable, GameRecordTable } from '@/db/schema'
@@ -47,7 +46,7 @@ export const finalizeGameSession = async (gameId: number) => {
   await db.insert(GameRecordTable).values({
     gameId,
     playTime: elapsedSeconds,
-    playDate: dayjs(endedAt).format('YYYY-MM-DD'),
+    playDate: play.lastLaunchedAt || endedAtIso,
   })
 
   return {

@@ -33,3 +33,19 @@ export type GameInfo = {
   publisher: string
   programmer: string
 }
+
+export type GameFilterState = {
+  releaseDateFrom: string
+  releaseDateTo: string
+  playStatus: string
+  developer: string
+  publisher: string
+  category: string
+  platform: string
+  tags: string
+  originalPainter: string
+  script: string
+  music: string
+  engine: string
+  planning: string
+}

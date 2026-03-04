@@ -160,6 +160,7 @@ const updateGame = async (
 
     const payload = (await req.json().catch(() => ({}))) as {
       status?: number
+      rating?: number
       exePath?: string
       cover?: string
       bg?: string
@@ -221,6 +222,8 @@ const updateGame = async (
       payload.developer !== undefined ||
       payload.publisher !== undefined ||
       payload.programmer !== undefined
+
+    const hasRatingPayload = payload.rating !== undefined
 
     if (hasSettingsPayload || hasBasicInfoPayload) {
       const now = new Date().toISOString()
@@ -299,7 +302,9 @@ const updateGame = async (
         gamePatch.originalPainter = normalizeText(payload.originalPainter)
       }
       if (payload.animationProduction !== undefined) {
-        gamePatch.animationProduction = normalizeText(payload.animationProduction)
+        gamePatch.animationProduction = normalizeText(
+          payload.animationProduction,
+        )
       }
       if (payload.developer !== undefined) {
         gamePatch.developer = normalizeText(payload.developer)
@@ -350,6 +355,42 @@ const updateGame = async (
       return NextResponse.json({
         data: {
           updated: true,
+        },
+      })
+    }
+
+    if (hasRatingPayload) {
+      const nextRating = Number(payload.rating)
+      if (!Number.isInteger(nextRating) || nextRating < 0 || nextRating > 10) {
+        return NextResponse.json({ error: 'Invalid rating' }, { status: 400 })
+      }
+
+      const playRows = await db
+        .select({
+          id: GamePlayTable.id,
+        })
+        .from(GamePlayTable)
+        .where(eq(GamePlayTable.gameId, gameId))
+        .limit(1)
+
+      const play = playRows[0]
+      if (play) {
+        await db
+          .update(GamePlayTable)
+          .set({
+            rating: nextRating,
+          })
+          .where(eq(GamePlayTable.id, play.id))
+      } else {
+        await db.insert(GamePlayTable).values({
+          gameId,
+          rating: nextRating,
+        })
+      }
+
+      return NextResponse.json({
+        data: {
+          rating: nextRating,
         },
       })
     }
@@ -439,8 +480,4 @@ const deleteGameById = async (
   }
 }
 
-export {
-  getGameById as GET,
-  updateGame as PATCH,
-  deleteGameById as DELETE,
-}
+export { getGameById as GET, updateGame as PATCH, deleteGameById as DELETE }

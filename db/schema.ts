@@ -1,13 +1,6 @@
 import dayjs from 'dayjs'
 import { int, sqliteTable, text } from 'drizzle-orm/sqlite-core'
 
-export const usersTable = sqliteTable('users_table', {
-  id: int().primaryKey({ autoIncrement: true }),
-  name: text().notNull(),
-  age: int().notNull(),
-  email: text().notNull().unique(),
-})
-
 // 游戏信息表
 export const GameInfoTable = sqliteTable('game_info', {
   id: int().primaryKey({ autoIncrement: true }),
@@ -79,4 +72,28 @@ export const CollectionGameTable = sqliteTable('collection_game', {
   id: int().primaryKey({ autoIncrement: true }),
   collectionId: int().notNull(),
   gameId: int().notNull(),
+})
+
+// 扫描目录列表
+export const ScannerTable = sqliteTable('scanner', {
+  id: int().primaryKey({ autoIncrement: true }),
+  directory: text().notNull(), // 目录路径
+  provider: text().notNull(), // 数据源，与添加游戏的 provider 一致
+  progress: int().default(0), // 扫描进度，0-100
+  gameCount: int().default(0), // 扫描到的游戏数量
+  scanMode: int().default(0), // 分为按照层级和按照可执行文件两种扫描方式，0层级扫描、1可执行文件扫描
+  scanLevel: int().default(0), // 层级扫描深度，0 表示第一层子目录
+  excludeDirs: text().default(''), // 扫描时排除的目录，逗号分隔
+  createdAt: text().default(dayjs().toString()), // 创建时间
+  updatedAt: text().default(dayjs().toString()), // 更新时间
+})
+
+// 扫描失败表
+export const ScanErrorTable = sqliteTable('scan_error', {
+  id: int().primaryKey({ autoIncrement: true }),
+  directory: text().notNull(), // 目录路径
+  error: text().notNull(), // 错误信息
+  status: int().default(0), // 错误状态，0未处理、1已修复
+  createdAt: text().default(dayjs().toString()), // 创建时间
+  updatedAt: text().default(dayjs().toString()), // 更新时间
 })

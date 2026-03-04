@@ -1,6 +1,7 @@
 'use client'
 
 import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useAtomValue } from 'jotai'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
@@ -8,6 +9,7 @@ import { useState } from 'react'
 import { toast } from 'sonner'
 
 import GameSettingsPanel from './game-settings-panel'
+import { selectedGameIdsAtom } from '@/atom/global'
 import {
   ContextMenuGroup,
   ContextMenu,
@@ -34,6 +36,7 @@ export const GameSidebarItem = ({ title, icon, id }: GameSidebarItemProps) => {
   const pathname = usePathname()
   const router = useRouter()
   const queryClient = useQueryClient()
+  const selectedGameIds = useAtomValue(selectedGameIdsAtom)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const { data: collections = [] } = useQuery({
     queryKey: ['collections'],
@@ -41,6 +44,7 @@ export const GameSidebarItem = ({ title, icon, id }: GameSidebarItemProps) => {
   })
   const gameId = Number(id)
   const isActive = pathname === `/game/info/${id}`
+  const isSelected = selectedGameIds.includes(id)
 
   const navigateToInfoPage = () => {
     router.push(`/game/info/${id}`)
@@ -175,6 +179,8 @@ export const GameSidebarItem = ({ title, icon, id }: GameSidebarItemProps) => {
         <Link
           className={cn(
             'flex items-center space-x-2 bg-background px-1 py-0.5 transition-colors hover:bg-accent hover:text-accent-foreground dark:bg-transparent dark:hover:bg-accent/80',
+            isSelected &&
+              'bg-accent/70 text-accent-foreground dark:bg-accent/60 dark:text-accent-foreground',
             isActive &&
               'bg-accent text-accent-foreground dark:bg-transparent dark:text-accent-foreground',
           )}
