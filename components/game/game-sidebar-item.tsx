@@ -1,7 +1,8 @@
 'use client'
 
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { useAtomValue } from 'jotai'
+import { useAtom } from 'jotai'
+import { CheckIcon } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
@@ -32,11 +33,20 @@ import {
 import { cn } from '@/lib/utils'
 import { GameSidebarItemProps } from '@/types/game-types'
 
-export const GameSidebarItem = ({ title, icon, id }: GameSidebarItemProps) => {
+type SidebarItemProps = GameSidebarItemProps & {
+  ctrlPressed?: boolean
+}
+
+export const GameSidebarItem = ({
+  title,
+  icon,
+  id,
+  ctrlPressed = false,
+}: SidebarItemProps) => {
   const pathname = usePathname()
   const router = useRouter()
   const queryClient = useQueryClient()
-  const selectedGameIds = useAtomValue(selectedGameIdsAtom)
+  const [selectedGameIds, setSelectedGameIds] = useAtom(selectedGameIdsAtom)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const { data: collections = [] } = useQuery({
     queryKey: ['collections'],
@@ -45,6 +55,17 @@ export const GameSidebarItem = ({ title, icon, id }: GameSidebarItemProps) => {
   const gameId = Number(id)
   const isActive = pathname === `/game/info/${id}`
   const isSelected = selectedGameIds.includes(id)
+
+  const handleItemClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
+    if (!ctrlPressed && !event.ctrlKey && !event.metaKey) {
+      return
+    }
+
+    event.preventDefault()
+    setSelectedGameIds((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
+    )
+  }
 
   const navigateToInfoPage = () => {
     router.push(`/game/info/${id}`)
@@ -184,16 +205,29 @@ export const GameSidebarItem = ({ title, icon, id }: GameSidebarItemProps) => {
       <ContextMenuTrigger asChild>
         <Link
           className={cn(
-            'flex items-center space-x-2 bg-background px-1 py-0.5 transition-colors hover:bg-accent hover:text-accent-foreground dark:bg-transparent dark:hover:bg-accent/80',
+            'flex items-center gap-2 bg-background px-1 py-0.5 transition-colors hover:bg-accent hover:text-accent-foreground dark:bg-transparent dark:hover:bg-accent/80',
             isSelected &&
               'bg-accent/70 text-accent-foreground dark:bg-accent/60 dark:text-accent-foreground',
             isActive &&
               'bg-accent text-accent-foreground dark:bg-transparent dark:text-accent-foreground',
           )}
           href={`/game/info/${id}`}
+          onClick={handleItemClick}
         >
           <Image alt={title} src={icon} width={16} height={16} />
-          <div className="truncate">{title}</div>
+          <div className="min-w-0 flex-1 truncate">{title}</div>
+          {ctrlPressed || isSelected ? (
+            <span
+              className={cn(
+                'flex size-4 shrink-0 items-center justify-center rounded-full border',
+                isSelected
+                  ? 'border-primary bg-primary text-primary-foreground'
+                  : 'border-muted-foreground/60 bg-background/80',
+              )}
+            >
+              {isSelected ? <CheckIcon className="size-3" /> : null}
+            </span>
+          ) : null}
         </Link>
       </ContextMenuTrigger>
       <ContextMenuContent className="w-52">

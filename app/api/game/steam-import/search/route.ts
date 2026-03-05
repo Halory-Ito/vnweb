@@ -56,7 +56,7 @@ const searchSteamOwnedGames = async (req: NextRequest) => {
       .filter(
         (
           item,
-        ): {
+        ): item is {
           appid: number
           name: string
           playtimeMinutes: number
@@ -64,7 +64,7 @@ const searchSteamOwnedGames = async (req: NextRequest) => {
           iconUrl: string
           logoUrl: string
           alreadyImported: boolean
-        } | null => item !== null,
+        } => item !== null,
       )
 
     return NextResponse.json({
