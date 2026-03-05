@@ -96,6 +96,12 @@ export const GameSidebarItem = ({ title, icon, id }: GameSidebarItemProps) => {
       await queryClient.invalidateQueries({
         queryKey: ['game'],
       })
+      await queryClient.invalidateQueries({
+        queryKey: ['game-sidebar'],
+      })
+      await queryClient.invalidateQueries({
+        queryKey: ['game-cards'],
+      })
 
       if (pathname.startsWith(`/game/info/${id}`)) {
         router.push('/game/home')

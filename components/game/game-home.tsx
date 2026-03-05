@@ -174,6 +174,7 @@ export default function GameHome() {
 
       await queryClient.invalidateQueries({ queryKey: ['game-cards'] })
       await queryClient.invalidateQueries({ queryKey: ['game'] })
+      await queryClient.invalidateQueries({ queryKey: ['game-sidebar'] })
       await queryClient.invalidateQueries({ queryKey: ['collections'] })
       setSelectedGameIds([])
       router.refresh()

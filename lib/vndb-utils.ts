@@ -338,3 +338,57 @@ export const createGameInfoApi = async (gameInfo: GameInfo) => {
   })
   return res.data as { data: { id?: number } }
 }
+
+export type SteamOwnedGameItem = {
+  appid: number
+  name: string
+  playtimeMinutes: number
+  coverUrl: string
+  iconUrl: string
+  logoUrl: string
+  alreadyImported: boolean
+}
+
+export const searchSteamOwnedGamesApi = async (steamId: string) => {
+  const res = await api.request({
+    method: 'POST',
+    url: '/game/steam-import/search',
+    timeout: 10 * 60 * 1000,
+    data: {
+      steamId,
+    },
+  })
+
+  return res.data as {
+    data: {
+      total: number
+      items: SteamOwnedGameItem[]
+    }
+  }
+}
+
+export const importSteamGameApi = async (payload: {
+  steamId: string
+  appid: number
+  name: string
+  playtimeMinutes: number
+  coverUrl: string
+  iconUrl: string
+  logoUrl: string
+}) => {
+  const res = await api.request({
+    method: 'POST',
+    url: '/game/steam-import',
+    timeout: 10 * 60 * 1000,
+    data: payload,
+  })
+
+  return res.data as {
+    data: {
+      appid: number
+      status: 'imported' | 'skipped'
+      reason?: string
+      playtimeSeconds?: number
+    }
+  }
+}
