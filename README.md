@@ -13,18 +13,6 @@ npx drizzle-kit studio
 
 > 开发环境下，删除 local.db 后再执行 migrate
 
-- 修改基本信息
-- 更新资料数据
-
-```sh
-curl.exe -X POST "http://localhost:3000/api/game/steam-import/search" `
-  -H "Content-Type: application/json" `
-  -d "{\"steamId\":\"7656119xxxxxxxxxx\"}"
-
-curl.exe -G "https://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/" `
-  --data-urlencode "key=9598E3FF8771C84783E5DEADF22B1C81" `
-  --data-urlencode "steamid=76561199326443732" `
-  --data-urlencode "include_appinfo=1" `
-  --data-urlencode "include_played_free_games=1" `
-  --data-urlencode "format=json"
-```
+- 获取到的游戏封面、背景、图标和徽标需要存放在本地，文件名格式分别为：游戏名*发行日期\_cover.后缀、游戏名*发行日期*bg.后缀、游戏名*发行日期*icon.后缀、游戏名*发行日期\_logo.后缀
+- 游戏tags做成outlined风格
+- 游戏的基本信息和附加信息的值，也做成 tags

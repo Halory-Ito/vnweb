@@ -44,11 +44,30 @@ type GameInfoProps = {
   game: GameDetail
 }
 
-// FIXME: 无法实现进程同步
-const InfoRow = ({ label, value }: { label: string; value?: string }) => (
+const splitByDunhao = (value?: string) =>
+  (value || '')
+    .split('、')
+    .map((item) => item.trim())
+    .filter(Boolean)
+
+const OutlineTag = ({ value }: { value: string }) => (
+  <span className="bg-background text-foreground dark:bg-input/30 dark:border-input inline-flex rounded-md border px-2 py-0.5 text-xs shadow-xs">
+    {value}
+  </span>
+)
+
+const InfoRow = ({ label, values }: { label: string; values?: string[] }) => (
   <div className="flex gap-2 text-sm">
     <span className="w-24 shrink-0">{label}</span>
-    <span className="break-all">{value || '-'}</span>
+    <div className="flex flex-wrap gap-1.5">
+      {(values || []).length > 0 ? (
+        (values || []).map((item) => (
+          <OutlineTag key={`${label}-${item}`} value={item} />
+        ))
+      ) : (
+        <OutlineTag value="-" />
+      )}
+    </div>
   </div>
 )
 
@@ -427,6 +446,7 @@ export default function GameInfo({ game }: GameInfoProps) {
             <Tabs defaultValue="overview" className="mx-auto w-full">
               <TabsList className="mx-auto dark:bg-transparent">
                 <TabsTrigger value="overview">概览</TabsTrigger>
+                <TabsTrigger value="pv">PV</TabsTrigger>
                 <TabsTrigger value="record">记录</TabsTrigger>
                 <TabsTrigger value="memory">回忆</TabsTrigger>
               </TabsList>
@@ -450,15 +470,10 @@ export default function GameInfo({ game }: GameInfoProps) {
                       <div className="flex flex-wrap gap-2">
                         {game.tags.length > 0 ? (
                           game.tags.map((tag) => (
-                            <span
-                              key={tag}
-                              className="bg-secondary text-secondary-foreground rounded-md px-2 py-1 text-xs"
-                            >
-                              {tag}
-                            </span>
+                            <OutlineTag key={tag} value={tag} />
                           ))
                         ) : (
-                          <span className="text-sm">-</span>
+                          <OutlineTag value="-" />
                         )}
                       </div>
                     </div>
@@ -470,15 +485,24 @@ export default function GameInfo({ game }: GameInfoProps) {
                         基本信息
                       </div>
                       <div className="space-y-1">
-                        <InfoRow label="开发商" value={game.developer} />
-                        <InfoRow label="发行商" value={game.publisher} />
-                        <InfoRow label="发售日期" value={game.date} />
-                        <InfoRow label="游戏类型" value={game.gameType} />
-                        <InfoRow label="游戏引擎" value={game.gameEngine} />
                         <InfoRow
-                          label="平台"
-                          value={game.platforms.join(' / ')}
+                          label="开发商"
+                          values={splitByDunhao(game.developer)}
                         />
+                        <InfoRow
+                          label="发行商"
+                          values={splitByDunhao(game.publisher)}
+                        />
+                        <InfoRow label="发售日期" values={[game.date]} />
+                        <InfoRow
+                          label="游戏类型"
+                          values={splitByDunhao(game.gameType)}
+                        />
+                        <InfoRow
+                          label="游戏引擎"
+                          values={splitByDunhao(game.gameEngine)}
+                        />
+                        <InfoRow label="平台" values={game.platforms} />
                       </div>
                     </div>
 
@@ -487,15 +511,30 @@ export default function GameInfo({ game }: GameInfoProps) {
                         附加信息
                       </div>
                       <div className="space-y-1">
-                        <InfoRow label="音乐" value={game.music} />
-                        <InfoRow label="剧本" value={game.script} />
-                        <InfoRow label="美术" value={game.graphic} />
-                        <InfoRow label="原画" value={game.originalPainter} />
+                        <InfoRow
+                          label="音乐"
+                          values={splitByDunhao(game.music)}
+                        />
+                        <InfoRow
+                          label="剧本"
+                          values={splitByDunhao(game.script)}
+                        />
+                        <InfoRow
+                          label="美术"
+                          values={splitByDunhao(game.graphic)}
+                        />
+                        <InfoRow
+                          label="原画"
+                          values={splitByDunhao(game.originalPainter)}
+                        />
                         <InfoRow
                           label="动画制作"
-                          value={game.animationProduction}
+                          values={splitByDunhao(game.animationProduction)}
                         />
-                        <InfoRow label="程序" value={game.programmer} />
+                        <InfoRow
+                          label="程序"
+                          values={splitByDunhao(game.programmer)}
+                        />
                       </div>
                     </div>
 
@@ -523,6 +562,10 @@ export default function GameInfo({ game }: GameInfoProps) {
                     </div>
                   </div>
                 </div>
+              </TabsContent>
+
+              <TabsContent value="pv">
+                <div className="rounded-md border p-4 text-sm">暂无PV</div>
               </TabsContent>
 
               <TabsContent value="record">
@@ -560,6 +603,7 @@ export default function GameInfo({ game }: GameInfoProps) {
       />
       <GameUpdateDataDialog
         gameId={game.id}
+        initialKeyword={title}
         open={updateDataOpen}
         onOpenChange={setUpdateDataOpen}
       />

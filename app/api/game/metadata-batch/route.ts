@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 
 import { GameInfoTable } from '@/db/schema'
 import { db } from '@/lib/drizzle'
+import { localizeGameImageFields } from '@/lib/server/game-image-storage'
 import { BGMClient, SGDBClient } from '@/lib/vndb-client'
 import { mapBGMSubjectToGameInfo } from '@/lib/vndb-utils'
 
@@ -98,10 +99,10 @@ const uniqueList = (items: string[]) => {
 
 const toGameInfoSnapshot = (row: {
   date: string
-  cover: string
-  icon: string
-  logo: string
-  bg: string
+  cover: string | null
+  icon: string | null
+  logo: string | null
+  bg: string | null
   summary: string
   name: string
   nameCn: string
@@ -122,10 +123,10 @@ const toGameInfoSnapshot = (row: {
 }) => {
   return {
     date: row.date,
-    cover: row.cover,
-    icon: row.icon,
-    logo: row.logo,
-    bg: row.bg,
+    cover: row.cover || '',
+    icon: row.icon || '',
+    logo: row.logo || '',
+    bg: row.bg || '',
     summary: row.summary,
     name: row.name,
     nameCn: row.nameCn,
@@ -441,6 +442,31 @@ const updateBatchMetadata = async (req: NextRequest) => {
         const incoming = await fetchByProvider(provider, matchedId)
         const current = toGameInfoSnapshot(currentRow)
 
+        const namingGameName = (
+          incoming.nameCn ||
+          incoming.name ||
+          current.nameCn ||
+          current.name
+        ).trim()
+        const namingReleaseDate = (incoming.date || current.date || '').trim()
+
+        const localizedImages = await localizeGameImageFields({
+          gameName: namingGameName || `game_${gameId}`,
+          releaseDate: namingReleaseDate,
+          cover: fields.includes('cover') ? String(incoming.cover || '') : '',
+          bg: fields.includes('bg') ? String(incoming.bg || '') : '',
+          icon: fields.includes('icon') ? String(incoming.icon || '') : '',
+          logo: fields.includes('logo') ? String(incoming.logo || '') : '',
+        })
+
+        const resolvedIncoming = {
+          ...incoming,
+          cover: localizedImages.cover || incoming.cover || '',
+          bg: localizedImages.bg || incoming.bg || '',
+          icon: localizedImages.icon || incoming.icon || '',
+          logo: localizedImages.logo || incoming.logo || '',
+        }
+
         const patch: Partial<{
           date: string
           cover: string
@@ -492,7 +518,7 @@ const updateBatchMetadata = async (req: NextRequest) => {
               const nextValue = mergeTextField(
                 field,
                 String(current[field] || ''),
-                String(incoming[field] || ''),
+                String(resolvedIncoming[field] || ''),
                 strategy,
               )
 
@@ -521,7 +547,7 @@ const updateBatchMetadata = async (req: NextRequest) => {
             case 'tags': {
               patch.tags = mergeListField(
                 current.tags,
-                incoming.tags,
+                resolvedIncoming.tags,
                 strategy,
               ).join(',')
               break
@@ -529,7 +555,7 @@ const updateBatchMetadata = async (req: NextRequest) => {
             case 'ailases': {
               patch.ailases = mergeListField(
                 current.ailases,
-                incoming.ailases,
+                resolvedIncoming.ailases,
                 strategy,
               ).join(',')
               break
@@ -537,7 +563,7 @@ const updateBatchMetadata = async (req: NextRequest) => {
             case 'platforms': {
               patch.platforms = mergeListField(
                 current.platforms,
-                incoming.platforms,
+                resolvedIncoming.platforms,
                 strategy,
               ).join(',')
               break
@@ -545,7 +571,7 @@ const updateBatchMetadata = async (req: NextRequest) => {
             case 'nsfw': {
               const nextBool = mergeBoolField(
                 Boolean(current.nsfw),
-                Boolean(incoming.nsfw),
+                Boolean(resolvedIncoming.nsfw),
                 strategy,
               )
               patch.nsfw = nextBool ? 1 : 0

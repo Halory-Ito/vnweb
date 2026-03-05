@@ -9,6 +9,7 @@ import {
   relateWebsiteTable,
 } from '@/db/schema'
 import { db } from '@/lib/drizzle'
+import { localizeGameImageFieldsInBackground } from '@/lib/server/game-image-storage'
 
 const parseCsv = (value: string) =>
   value
@@ -187,7 +188,12 @@ const updateGame = async (
     }
 
     const gameRows = await db
-      .select({ id: GameInfoTable.id })
+      .select({
+        id: GameInfoTable.id,
+        name: GameInfoTable.name,
+        nameCn: GameInfoTable.nameCn,
+        date: GameInfoTable.date,
+      })
       .from(GameInfoTable)
       .where(eq(GameInfoTable.id, gameId))
       .limit(1)
@@ -227,6 +233,27 @@ const updateGame = async (
 
     if (hasSettingsPayload || hasBasicInfoPayload) {
       const now = new Date().toISOString()
+      const currentGame = gameRows[0]
+
+      const localizedImages = localizeGameImageFieldsInBackground({
+        gameName:
+          normalizeText(payload.nameCn ?? '') ||
+          normalizeText(payload.name ?? '') ||
+          currentGame.nameCn ||
+          currentGame.name ||
+          `game_${gameId}`,
+        releaseDate:
+          normalizeText(payload.date ?? '') || currentGame.date || undefined,
+        cover:
+          payload.cover !== undefined
+            ? normalizeText(payload.cover)
+            : undefined,
+        bg: payload.bg !== undefined ? normalizeText(payload.bg) : undefined,
+        icon:
+          payload.icon !== undefined ? normalizeText(payload.icon) : undefined,
+        logo:
+          payload.logo !== undefined ? normalizeText(payload.logo) : undefined,
+      })
 
       const gamePatch: Partial<{
         date: string
@@ -257,7 +284,7 @@ const updateGame = async (
       }
 
       if (payload.cover !== undefined) {
-        gamePatch.cover = normalizeText(payload.cover)
+        gamePatch.cover = localizedImages.cover || normalizeText(payload.cover)
       }
       if (payload.summary !== undefined) {
         gamePatch.summary = normalizeText(payload.summary)
@@ -316,13 +343,13 @@ const updateGame = async (
         gamePatch.programmer = normalizeText(payload.programmer)
       }
       if (payload.bg !== undefined) {
-        gamePatch.bg = normalizeText(payload.bg)
+        gamePatch.bg = localizedImages.bg || normalizeText(payload.bg)
       }
       if (payload.icon !== undefined) {
-        gamePatch.icon = normalizeText(payload.icon)
+        gamePatch.icon = localizedImages.icon || normalizeText(payload.icon)
       }
       if (payload.logo !== undefined) {
-        gamePatch.logo = normalizeText(payload.logo)
+        gamePatch.logo = localizedImages.logo || normalizeText(payload.logo)
       }
 
       await db

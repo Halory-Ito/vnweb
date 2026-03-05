@@ -11,6 +11,7 @@ import {
   relateWebsiteTable,
 } from '@/db/schema'
 import { db } from '@/lib/drizzle'
+import { localizeGameImageFields } from '@/lib/server/game-image-storage'
 import { BGMClient, SGDBClient } from '@/lib/vndb-client'
 import { mapBGMSubjectToGameInfo } from '@/lib/vndb-utils'
 
@@ -237,11 +238,17 @@ const saveGameInfo = async (gameInfo: GameInfo) => {
   }
 
   const now = dayjs().toISOString()
+  const localizedImages = await localizeGameImageFields({
+    gameName: gameInfo.nameCn || gameInfo.name || uniqueName,
+    releaseDate: gameInfo.date,
+    cover: gameInfo.cover || '',
+  })
+
   const inserted = await db
     .insert(GameInfoTable)
     .values({
       date: gameInfo.date || '',
-      cover: gameInfo.cover || '',
+      cover: localizedImages.cover || gameInfo.cover || '',
       icon: '',
       logo: '',
       bg: '',

@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "9bbe0a8e-b938-4cc1-bd0c-bc1eeda969e4",
+  "id": "c3938905-fba3-4f69-a8f1-1b7c0069ff6a",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "collection_game": {
@@ -58,7 +58,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "'Tue, 03 Mar 2026 08:00:09 GMT'"
+          "default": "'Thu, 05 Mar 2026 02:12:13 GMT'"
         },
         "updatedAt": {
           "name": "updatedAt",
@@ -66,7 +66,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "'Tue, 03 Mar 2026 08:00:09 GMT'"
+          "default": "'Thu, 05 Mar 2026 02:12:13 GMT'"
         }
       },
       "indexes": {},
@@ -96,29 +96,41 @@
           "name": "cover",
           "type": "text",
           "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
+          "notNull": false,
+          "autoincrement": false,
+          "default": "''"
         },
         "icon": {
           "name": "icon",
           "type": "text",
           "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
+          "notNull": false,
+          "autoincrement": false,
+          "default": "''"
         },
         "logo": {
           "name": "logo",
           "type": "text",
           "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
+          "notNull": false,
+          "autoincrement": false,
+          "default": "''"
         },
         "bg": {
           "name": "bg",
           "type": "text",
           "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
+          "notNull": false,
+          "autoincrement": false,
+          "default": "''"
+        },
+        "pv": {
+          "name": "pv",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "''"
         },
         "summary": {
           "name": "summary",
@@ -245,7 +257,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "'Tue, 03 Mar 2026 08:00:09 GMT'"
+          "default": "'Thu, 05 Mar 2026 02:12:13 GMT'"
         },
         "updatedAt": {
           "name": "updatedAt",
@@ -253,7 +265,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "'Tue, 03 Mar 2026 08:00:09 GMT'"
+          "default": "'Thu, 05 Mar 2026 02:12:13 GMT'"
         }
       },
       "indexes": {},
@@ -420,7 +432,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "'Tue, 03 Mar 2026 08:00:09 GMT'"
+          "default": "'Thu, 05 Mar 2026 02:12:13 GMT'"
         },
         "updatedAt": {
           "name": "updatedAt",
@@ -428,7 +440,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "'Tue, 03 Mar 2026 08:00:09 GMT'"
+          "default": "'Thu, 05 Mar 2026 02:12:13 GMT'"
         }
       },
       "indexes": {},
@@ -507,7 +519,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "'Tue, 03 Mar 2026 08:00:09 GMT'"
+          "default": "'Thu, 05 Mar 2026 02:12:13 GMT'"
         },
         "updatedAt": {
           "name": "updatedAt",
@@ -515,7 +527,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "'Tue, 03 Mar 2026 08:00:09 GMT'"
+          "default": "'Thu, 05 Mar 2026 02:12:13 GMT'"
         }
       },
       "indexes": {},

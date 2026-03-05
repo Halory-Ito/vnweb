@@ -232,6 +232,21 @@ export const updateGameSettingsById = async (
   }
 }
 
+export const enqueueGameImageLocalizationById = async (
+  id: number,
+  payload: {
+    imageType: 'cover' | 'bg' | 'icon' | 'logo'
+    sourceUrl: string
+  },
+) => {
+  const response = await api.post(`/game/${id}/image-localize`, payload)
+  return response.data as {
+    data: {
+      path: string
+    }
+  }
+}
+
 export const updateGameInfoById = async (
   id: number,
   payload: Partial<{

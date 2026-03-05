@@ -5,10 +5,11 @@ import { int, sqliteTable, text } from 'drizzle-orm/sqlite-core'
 export const GameInfoTable = sqliteTable('game_info', {
   id: int().primaryKey({ autoIncrement: true }),
   date: text().notNull(), // 发布日期
-  cover: text().notNull(), // 封面图片
-  icon: text().notNull(), // 图标
-  logo: text().notNull(), // logo
-  bg: text().notNull(), // 背景图片
+  cover: text().default(''), // 封面图片
+  icon: text().default(''), // 图标
+  logo: text().default(''), // logo
+  bg: text().default(''), // 背景图片
+  pv: text().default(''), // 宣传视频链接
   summary: text().notNull(), // 游戏简介
   name: text().notNull(), // 游戏名称
   nameCn: text().notNull(), // 游戏中文名称

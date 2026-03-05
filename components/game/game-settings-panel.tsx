@@ -6,6 +6,7 @@ import {
   CircleCheckIcon,
   EyeIcon,
   FolderUpIcon,
+  Loader2Icon,
   Link2Icon,
   SaveIcon,
   ScissorsIcon,
@@ -46,6 +47,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import {
+  enqueueGameImageLocalizationById,
   type GameSearchImageItem,
   getGameById,
   searchGameImages,
@@ -177,6 +179,13 @@ export default function GameSettingsPanel({
     logo: useRef<HTMLInputElement | null>(null),
   }
 
+  const latestImageSelectionRef = useRef<Record<ImageField, string>>({
+    cover: '',
+    bg: '',
+    icon: '',
+    logo: '',
+  })
+
   const { data, isFetching } = useQuery({
     queryKey: ['game', String(gameId)],
     queryFn: () => getGameById(String(gameId)),
@@ -221,6 +230,50 @@ export default function GameSettingsPanel({
     setLogo(value)
   }
 
+  const enqueueImageLocalization = (field: ImageField, sourceValue: string) => {
+    const value = sourceValue.trim()
+    if (!value) {
+      return
+    }
+
+    latestImageSelectionRef.current[field] = value
+
+    void enqueueGameImageLocalizationById(gameId, {
+      imageType: field,
+      sourceUrl: value,
+    })
+      .then((response) => {
+        const localizedPath = response.data.path || ''
+        if (!localizedPath) {
+          return
+        }
+
+        if (latestImageSelectionRef.current[field] !== value) {
+          return
+        }
+
+        setImageFieldValue(field, localizedPath)
+      })
+      .catch((error) => {
+        const err = error as {
+          response?: {
+            data?: {
+              error?: string
+            }
+          }
+          message?: string
+        }
+        toast.error(
+          err.response?.data?.error || err.message || '后台下载图片失败',
+        )
+      })
+  }
+
+  const applyImageSelection = (field: ImageField, value: string) => {
+    setImageFieldValue(field, value)
+    enqueueImageLocalization(field, value)
+  }
+
   const triggerImportFile = (field: ImageField) => {
     fileInputRefs[field].current?.click()
   }
@@ -232,7 +285,7 @@ export default function GameSettingsPanel({
 
     try {
       const dataUrl = await readFileAsDataUrl(file)
-      setImageFieldValue(field, dataUrl)
+      applyImageSelection(field, dataUrl)
       toast.success(`已导入${imageFieldLabelMap[field]}`)
     } catch (error) {
       toast.error((error as Error).message || '从文件导入失败')
@@ -257,7 +310,7 @@ export default function GameSettingsPanel({
       if (navigator.clipboard?.readText) {
         const text = (await navigator.clipboard.readText()).trim()
         if (text) {
-          setImageFieldValue(field, text)
+          applyImageSelection(field, text)
           toast.success(`已从剪贴板导入${imageFieldLabelMap[field]}链接`)
           return
         }
@@ -279,7 +332,7 @@ export default function GameSettingsPanel({
       return
     }
 
-    setImageFieldValue(field, nextValue)
+    applyImageSelection(field, nextValue)
   }
 
   const openSearchImageDialog = (field: ImageField) => {
@@ -335,7 +388,7 @@ export default function GameSettingsPanel({
       return
     }
 
-    setImageFieldValue(searchTargetField, selectedSearchImageUrl)
+    applyImageSelection(searchTargetField, selectedSearchImageUrl)
     setSearchDialogOpen(false)
     toast.success(`已设置${imageFieldLabelMap[searchTargetField]}`)
   }
@@ -395,7 +448,7 @@ export default function GameSettingsPanel({
       ctx.drawImage(image, rect.x, rect.y, rect.w, rect.h, 0, 0, rect.w, rect.h)
 
       const dataUrl = canvas.toDataURL('image/png')
-      setImageFieldValue(field, dataUrl)
+      applyImageSelection(field, dataUrl)
       toast.success(`已裁剪${imageFieldLabelMap[field]}`)
     } catch (error) {
       toast.error((error as Error).message || '裁剪图片失败')
@@ -552,8 +605,12 @@ export default function GameSettingsPanel({
               onClick={() => void saveSettings()}
               disabled={isSaving || isFetching}
             >
-              <SaveIcon className="size-4" />
-              {isSaving ? '保存中...' : '保存设置'}
+              {isSaving ? (
+                <Loader2Icon className="size-4 animate-spin" />
+              ) : (
+                <SaveIcon className="size-4" />
+              )}
+              {isSaving ? '确认中...' : '确认'}
             </Button>
           </div>
         </div>

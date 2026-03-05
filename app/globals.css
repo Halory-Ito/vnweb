@@ -47,6 +47,8 @@
 
 :root {
   --radius: 0.625rem;
+  --app-glass-blur: 24px;
+  --app-glass-opacity: 0.24;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -78,6 +80,23 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+}
+
+.app-bg-image-layer {
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  filter: blur(var(--app-glass-blur));
+  transform: scale(1.06);
+  transform-origin: center;
+}
+
+.app-glass-overlay {
+  background-color: oklch(1 0 0 / var(--app-glass-opacity));
+}
+
+.dark .app-glass-overlay {
+  background-color: oklch(0.145 0 0 / var(--app-glass-opacity));
 }
 
 .dark {

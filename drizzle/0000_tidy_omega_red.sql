@@ -7,17 +7,18 @@ CREATE TABLE `collection_game` (
 CREATE TABLE `collection` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`name` text NOT NULL,
-	`createdAt` text DEFAULT 'Tue, 03 Mar 2026 08:00:09 GMT',
-	`updatedAt` text DEFAULT 'Tue, 03 Mar 2026 08:00:09 GMT'
+	`createdAt` text DEFAULT 'Thu, 05 Mar 2026 02:12:13 GMT',
+	`updatedAt` text DEFAULT 'Thu, 05 Mar 2026 02:12:13 GMT'
 );
 --> statement-breakpoint
 CREATE TABLE `game_info` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`date` text NOT NULL,
-	`cover` text NOT NULL,
-	`icon` text NOT NULL,
-	`logo` text NOT NULL,
-	`bg` text NOT NULL,
+	`cover` text DEFAULT '',
+	`icon` text DEFAULT '',
+	`logo` text DEFAULT '',
+	`bg` text DEFAULT '',
+	`pv` text DEFAULT '',
 	`summary` text NOT NULL,
 	`name` text NOT NULL,
 	`nameCn` text NOT NULL,
@@ -35,8 +36,8 @@ CREATE TABLE `game_info` (
 	`developer` text NOT NULL,
 	`publisher` text NOT NULL,
 	`programmer` text NOT NULL,
-	`createdAt` text DEFAULT 'Tue, 03 Mar 2026 08:00:09 GMT',
-	`updatedAt` text DEFAULT 'Tue, 03 Mar 2026 08:00:09 GMT'
+	`createdAt` text DEFAULT 'Thu, 05 Mar 2026 02:12:13 GMT',
+	`updatedAt` text DEFAULT 'Thu, 05 Mar 2026 02:12:13 GMT'
 );
 --> statement-breakpoint
 CREATE TABLE `game_play` (
@@ -63,8 +64,8 @@ CREATE TABLE `scan_error` (
 	`directory` text NOT NULL,
 	`error` text NOT NULL,
 	`status` integer DEFAULT 0,
-	`createdAt` text DEFAULT 'Tue, 03 Mar 2026 08:00:09 GMT',
-	`updatedAt` text DEFAULT 'Tue, 03 Mar 2026 08:00:09 GMT'
+	`createdAt` text DEFAULT 'Thu, 05 Mar 2026 02:12:13 GMT',
+	`updatedAt` text DEFAULT 'Thu, 05 Mar 2026 02:12:13 GMT'
 );
 --> statement-breakpoint
 CREATE TABLE `scanner` (
@@ -76,8 +77,8 @@ CREATE TABLE `scanner` (
 	`scanMode` integer DEFAULT 0,
 	`scanLevel` integer DEFAULT 0,
 	`excludeDirs` text DEFAULT '',
-	`createdAt` text DEFAULT 'Tue, 03 Mar 2026 08:00:09 GMT',
-	`updatedAt` text DEFAULT 'Tue, 03 Mar 2026 08:00:09 GMT'
+	`createdAt` text DEFAULT 'Thu, 05 Mar 2026 02:12:13 GMT',
+	`updatedAt` text DEFAULT 'Thu, 05 Mar 2026 02:12:13 GMT'
 );
 --> statement-breakpoint
 CREATE TABLE `relate_website` (

@@ -2,7 +2,7 @@
 
 import { useQueryClient } from '@tanstack/react-query'
 import { useRouter } from 'next/navigation'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
@@ -23,12 +23,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { getGameInfoByIdApi, searchGameByNameApi } from '@/lib/vndb-utils'
 import { updateGameInfoById } from '@/lib/game-utils'
+import { getGameInfoByIdApi, searchGameByNameApi } from '@/lib/vndb-utils'
+
 import type { GameInfo } from '@/types/game-types'
 
 type GameUpdateDataDialogProps = {
   gameId: number
+  initialKeyword?: string
   open: boolean
   onOpenChange: (open: boolean) => void
 }
@@ -65,6 +67,7 @@ const fieldConfigs: Array<{ key: GameInfoFieldKey; label: string }> = [
 
 export default function GameUpdateDataDialog({
   gameId,
+  initialKeyword,
   open,
   onOpenChange,
 }: GameUpdateDataDialogProps) {
@@ -81,7 +84,20 @@ export default function GameUpdateDataDialog({
   const [isSearching, setIsSearching] = useState(false)
   const [isFetchingInfo, setIsFetchingInfo] = useState(false)
   const [isUpdating, setIsUpdating] = useState(false)
-  const [selectedFields, setSelectedFields] = useState<Record<string, boolean>>({})
+  const [selectedFields, setSelectedFields] = useState<Record<string, boolean>>(
+    {},
+  )
+
+  useEffect(() => {
+    if (!open) {
+      return
+    }
+
+    const nextKeyword = (initialKeyword || '').trim()
+    if (nextKeyword) {
+      setKeyword(nextKeyword)
+    }
+  }, [open, initialKeyword])
 
   const selectedCount = useMemo(
     () => Object.values(selectedFields).filter(Boolean).length,
@@ -174,7 +190,9 @@ export default function GameUpdateDataDialog({
     setIsUpdating(true)
     try {
       await updateGameInfoById(gameId, payload as never)
-      await queryClient.invalidateQueries({ queryKey: ['game', String(gameId)] })
+      await queryClient.invalidateQueries({
+        queryKey: ['game', String(gameId)],
+      })
       await queryClient.invalidateQueries({ queryKey: ['game'] })
       router.refresh()
       toast.success('资料已更新')
@@ -197,7 +215,9 @@ export default function GameUpdateDataDialog({
       <DialogContent className="sm:max-w-3xl">
         <DialogHeader>
           <DialogTitle>更新资料数据</DialogTitle>
-          <DialogDescription>选择数据源并搜索，勾选需要覆盖的属性后更新</DialogDescription>
+          <DialogDescription>
+            选择数据源并搜索，勾选需要覆盖的属性后更新
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
@@ -211,21 +231,37 @@ export default function GameUpdateDataDialog({
                 <SelectItem value="steamgriddb">SteamGrid DB</SelectItem>
               </SelectContent>
             </Select>
-            <Input value={keyword} onChange={(e) => setKeyword(e.target.value)} placeholder="输入名称搜索" />
-            <Button type="button" variant="outline" onClick={() => void handleSearch()} disabled={isSearching}>
+            <Input
+              value={keyword}
+              onChange={(e) => setKeyword(e.target.value)}
+              placeholder="输入名称搜索"
+            />
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => void handleSearch()}
+              disabled={isSearching}
+            >
               {isSearching ? '搜索中...' : '搜索'}
             </Button>
           </div>
 
           <div className="space-y-2 rounded-md border p-2">
             {results.length === 0 ? (
-              <div className="text-muted-foreground p-2 text-sm">暂无搜索结果</div>
+              <div className="text-muted-foreground p-2 text-sm">
+                暂无搜索结果
+              </div>
             ) : (
               results.map((item) => (
-                <div key={item.id} className="flex items-center justify-between gap-2 rounded-md border p-2">
+                <div
+                  key={item.id}
+                  className="flex items-center justify-between gap-2 rounded-md border p-2"
+                >
                   <div className="min-w-0">
                     <div className="truncate text-sm">{item.name || '-'}</div>
-                    <div className="text-muted-foreground truncate text-xs">ID: {item.id} / {item.date || '-'}</div>
+                    <div className="text-muted-foreground truncate text-xs">
+                      ID: {item.id} / {item.date || '-'}
+                    </div>
                   </div>
                   <Button
                     type="button"
@@ -264,13 +300,20 @@ export default function GameUpdateDataDialog({
           </div>
 
           <div className="space-y-2 rounded-md border p-3">
-            <div className="text-sm font-medium">选择要更新的属性（已选 {selectedCount} 项）</div>
+            <div className="text-sm font-medium">
+              选择要更新的属性（已选 {selectedCount} 项）
+            </div>
             <div className="grid grid-cols-2 gap-2 md:grid-cols-3">
               {fieldConfigs.map((field) => (
-                <label key={field.key} className="flex items-center gap-2 text-sm">
+                <label
+                  key={field.key}
+                  className="flex items-center gap-2 text-sm"
+                >
                   <Checkbox
                     checked={Boolean(selectedFields[field.key])}
-                    onCheckedChange={(checked) => toggleField(field.key, Boolean(checked))}
+                    onCheckedChange={(checked) =>
+                      toggleField(field.key, Boolean(checked))
+                    }
                     disabled={!fetchedInfo}
                   />
                   <span>{field.label}</span>
@@ -280,15 +323,25 @@ export default function GameUpdateDataDialog({
           </div>
 
           {selectedId ? (
-            <div className="text-muted-foreground text-xs">当前资料来源 ID: {selectedId}</div>
+            <div className="text-muted-foreground text-xs">
+              当前资料来源 ID: {selectedId}
+            </div>
           ) : null}
         </div>
 
         <DialogFooter>
-          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+          >
             取消
           </Button>
-          <Button type="button" onClick={() => void handleApply()} disabled={isUpdating || !fetchedInfo}>
+          <Button
+            type="button"
+            onClick={() => void handleApply()}
+            disabled={isUpdating || !fetchedInfo}
+          >
             {isUpdating ? '更新中...' : '确认更新'}
           </Button>
         </DialogFooter>
