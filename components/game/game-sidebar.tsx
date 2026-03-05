@@ -25,6 +25,9 @@ export default function GameSidebar() {
   })
 
   const items = data?.items ?? []
+  const hasActiveFilter = Object.values(filter).some(
+    (value) => typeof value === 'string' && value.trim() !== '',
+  )
 
   useEffect(() => {
     const syncModifierState = (event: KeyboardEvent) => {
@@ -51,7 +54,7 @@ export default function GameSidebar() {
       {items.map((item) => (
         <AccordionItem key={item.id} value={item.id} className="border-none">
           <AccordionTrigger className="cursor-pointer p-2 font-bold hover:no-underline">
-            {`${item.title} (${item.items.length})`}
+            {`${hasActiveFilter && item.id === 'all' ? '筛选结果' : item.title} (${item.items.length})`}
           </AccordionTrigger>
           <AccordionContent className="space-y-2 p-2">
             {item.items.map((subItem) => (

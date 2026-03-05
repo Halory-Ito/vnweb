@@ -1,4 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query'
+import { useAtom } from 'jotai'
 import {
   ClockIcon,
   Gamepad2Icon,
@@ -33,12 +34,15 @@ import GamePlayTimeDialog from './game-play-time-dialog'
 import GameRatingDialog from './game-rating-dialog'
 import GameSettingsPanel from './game-settings-panel'
 import GameUpdateDataDialog from './game-update-data-dialog'
+import { gameFilterAtom } from '@/atom/global'
 import {
   GameDetail,
   launchGameById,
   stopGameById,
   updateGamePlayStatusById,
 } from '@/lib/game-utils'
+
+import type { GameFilterState } from '@/types/game-types'
 
 type GameInfoProps = {
   game: GameDetail
@@ -50,19 +54,42 @@ const splitByDunhao = (value?: string) =>
     .map((item) => item.trim())
     .filter(Boolean)
 
-const OutlineTag = ({ value }: { value: string }) => (
-  <span className="bg-background text-foreground dark:bg-input/30 dark:border-input inline-flex rounded-md border px-2 py-0.5 text-xs shadow-xs">
+const OutlineTag = ({
+  value,
+  onClick,
+}: {
+  value: string
+  onClick?: () => void
+}) => (
+  <button
+    type="button"
+    onClick={onClick}
+    disabled={!onClick}
+    className="bg-background text-foreground dark:bg-input/30 dark:border-input hover:bg-accent hover:text-accent-foreground inline-flex rounded-md border px-2 py-0.5 text-xs shadow-xs transition-colors disabled:pointer-events-none"
+  >
     {value}
-  </span>
+  </button>
 )
 
-const InfoRow = ({ label, values }: { label: string; values?: string[] }) => (
+const InfoRow = ({
+  label,
+  values,
+  onTagClick,
+}: {
+  label: string
+  values?: string[]
+  onTagClick?: (value: string) => void
+}) => (
   <div className="flex gap-2 text-sm">
     <span className="w-24 shrink-0">{label}</span>
     <div className="flex flex-wrap gap-1.5">
       {(values || []).length > 0 ? (
         (values || []).map((item) => (
-          <OutlineTag key={`${label}-${item}`} value={item} />
+          <OutlineTag
+            key={`${label}-${item}`}
+            value={item}
+            onClick={onTagClick ? () => onTagClick(item) : undefined}
+          />
         ))
       ) : (
         <OutlineTag value="-" />
@@ -163,6 +190,24 @@ export default function GameInfo({ game }: GameInfoProps) {
   )
   const queryClient = useQueryClient()
   const router = useRouter()
+  const [, setGameFilter] = useAtom(gameFilterAtom)
+
+  const applyTagFilter = (
+    field: keyof GameFilterState,
+    value: string,
+    fieldLabel: string,
+  ) => {
+    if (!value || value === '-') {
+      return
+    }
+
+    setGameFilter((prev) => ({
+      ...prev,
+      [field]: value,
+    }))
+    router.push('/game/home')
+    toast.success(`已按${fieldLabel}筛选：${value}`)
+  }
 
   useEffect(() => {
     setIsRunning(game.isRunning)
@@ -470,7 +515,13 @@ export default function GameInfo({ game }: GameInfoProps) {
                       <div className="flex flex-wrap gap-2">
                         {game.tags.length > 0 ? (
                           game.tags.map((tag) => (
-                            <OutlineTag key={tag} value={tag} />
+                            <OutlineTag
+                              key={tag}
+                              value={tag}
+                              onClick={() =>
+                                applyTagFilter('tags', tag, '标签')
+                              }
+                            />
                           ))
                         ) : (
                           <OutlineTag value="-" />
@@ -488,21 +539,39 @@ export default function GameInfo({ game }: GameInfoProps) {
                         <InfoRow
                           label="开发商"
                           values={splitByDunhao(game.developer)}
+                          onTagClick={(value) =>
+                            applyTagFilter('developer', value, '开发商')
+                          }
                         />
                         <InfoRow
                           label="发行商"
                           values={splitByDunhao(game.publisher)}
+                          onTagClick={(value) =>
+                            applyTagFilter('publisher', value, '发行商')
+                          }
                         />
                         <InfoRow label="发售日期" values={[game.date]} />
                         <InfoRow
                           label="游戏类型"
                           values={splitByDunhao(game.gameType)}
+                          onTagClick={(value) =>
+                            applyTagFilter('category', value, '游戏类型')
+                          }
                         />
                         <InfoRow
                           label="游戏引擎"
                           values={splitByDunhao(game.gameEngine)}
+                          onTagClick={(value) =>
+                            applyTagFilter('engine', value, '游戏引擎')
+                          }
                         />
-                        <InfoRow label="平台" values={game.platforms} />
+                        <InfoRow
+                          label="平台"
+                          values={game.platforms}
+                          onTagClick={(value) =>
+                            applyTagFilter('platform', value, '平台')
+                          }
+                        />
                       </div>
                     </div>
 
@@ -514,10 +583,16 @@ export default function GameInfo({ game }: GameInfoProps) {
                         <InfoRow
                           label="音乐"
                           values={splitByDunhao(game.music)}
+                          onTagClick={(value) =>
+                            applyTagFilter('music', value, '音乐')
+                          }
                         />
                         <InfoRow
                           label="剧本"
                           values={splitByDunhao(game.script)}
+                          onTagClick={(value) =>
+                            applyTagFilter('script', value, '剧本')
+                          }
                         />
                         <InfoRow
                           label="美术"
@@ -526,6 +601,9 @@ export default function GameInfo({ game }: GameInfoProps) {
                         <InfoRow
                           label="原画"
                           values={splitByDunhao(game.originalPainter)}
+                          onTagClick={(value) =>
+                            applyTagFilter('originalPainter', value, '原画')
+                          }
                         />
                         <InfoRow
                           label="动画制作"
