@@ -4,7 +4,7 @@ import type { GameFilterState } from '@/types/game-types'
 
 const fontAtom = atom('/font/SourceHanSerifCN-Regular-1.otf')
 
-const bgAtom = atom('/bg.png')
+const bgAtom = atom('')
 
 const selectedGameIdsAtom = atom<string[]>([])
 

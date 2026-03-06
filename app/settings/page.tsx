@@ -1,9 +1,19 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { toast } from 'sonner'
 
+import { Button } from '@/components/ui/button'
 import { Slider } from '@/components/ui/slider'
+import { Switch } from '@/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import {
+  DEFAULT_BACKGROUND_SETTINGS,
+  normalizeBackgroundSettings,
+  notifyBackgroundSettingsChanged,
+  readBackgroundSettings,
+  writeBackgroundSettings,
+} from '@/lib/background-settings'
 import {
   applyGlassSettingsToDocument,
   DEFAULT_GLASS_SETTINGS,
@@ -15,10 +25,17 @@ import {
 
 export default function Settings() {
   const [glassSettings, setGlassSettings] = useState(DEFAULT_GLASS_SETTINGS)
+  const [backgroundSettings, setBackgroundSettings] = useState(
+    DEFAULT_BACKGROUND_SETTINGS,
+  )
+  const [isUploadingBackground, setIsUploadingBackground] = useState(false)
+  const backgroundFileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     const savedSettings = readGlassSettings()
+    const savedBackgroundSettings = readBackgroundSettings()
     setGlassSettings(savedSettings)
+    setBackgroundSettings(savedBackgroundSettings)
     applyGlassSettingsToDocument(savedSettings)
   }, [])
 
@@ -28,6 +45,66 @@ export default function Settings() {
     writeGlassSettings(normalized)
     applyGlassSettingsToDocument(normalized)
     notifyGlassSettingsChanged()
+  }
+
+  const updateBackgroundSettings = (
+    next: Partial<typeof backgroundSettings>,
+  ) => {
+    const normalized = normalizeBackgroundSettings({
+      ...backgroundSettings,
+      ...next,
+    })
+    setBackgroundSettings(normalized)
+    writeBackgroundSettings(normalized)
+    notifyBackgroundSettingsChanged()
+  }
+
+  const handlePickBackgroundFile = () => {
+    backgroundFileInputRef.current?.click()
+  }
+
+  const handleBackgroundFileChange = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = event.target.files?.[0]
+    if (!file) {
+      return
+    }
+
+    const formData = new FormData()
+    formData.append('file', file)
+
+    setIsUploadingBackground(true)
+    try {
+      const response = await fetch('/api/settings/background/upload', {
+        method: 'POST',
+        body: formData,
+      })
+
+      const payload = (await response.json().catch(() => ({}))) as {
+        error?: string
+        data?: {
+          path?: string
+        }
+      }
+
+      if (!response.ok) {
+        throw new Error(payload.error || '上传背景图片失败')
+      }
+
+      const uploadedPath = payload.data?.path?.trim()
+      if (!uploadedPath) {
+        throw new Error('未获取到上传后的背景路径')
+      }
+
+      updateBackgroundSettings({ customBackgroundImage: uploadedPath })
+      toast.success('背景图片已复制到 public 目录')
+    } catch (error) {
+      toast.error((error as Error).message || '上传背景图片失败')
+    } finally {
+      setIsUploadingBackground(false)
+      event.currentTarget.value = ''
+    }
   }
 
   return (
@@ -51,48 +128,97 @@ export default function Settings() {
         通用
       </TabsContent>
       <TabsContent value="appearance">
-        <div className="dark:border-input dark:bg-input/20 space-y-6 rounded-xl border p-6">
-          <div>
-            <p className="text-base font-semibold">毛玻璃</p>
-            <p className="text-muted-foreground mt-1 text-sm">
-              调整全局毛玻璃模糊与透明度，设置将实时应用到所有页面。
-            </p>
+        <div className="space-y-6">
+          <div className="dark:border-input dark:bg-input/20 space-y-6 rounded-xl border p-6">
+            <div>
+              <p className="text-base font-semibold">背景</p>
+              <p className="text-muted-foreground mt-1 text-sm">
+                关闭时自动使用最近一次游戏背景；开启后优先使用你选择的自定义背景。
+              </p>
+            </div>
+
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <p className="text-sm font-medium">启用自定义背景</p>
+                <p className="text-muted-foreground text-xs">
+                  默认关闭。进入游戏详情页时会显示该游戏自己的背景。
+                </p>
+              </div>
+              <Switch
+                checked={backgroundSettings.customBackgroundEnabled}
+                onCheckedChange={(checked) =>
+                  updateBackgroundSettings({
+                    customBackgroundEnabled: checked,
+                  })
+                }
+              />
+            </div>
+
+            <div className="flex items-center justify-between space-y-2">
+              <span className="text-sm font-medium">自定义背景图片</span>
+              <input
+                ref={backgroundFileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(event) => {
+                  void handleBackgroundFileChange(event)
+                }}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                disabled={isUploadingBackground}
+                onClick={handlePickBackgroundFile}
+              >
+                {isUploadingBackground ? '上传中...' : '选择图片'}
+              </Button>
+            </div>
           </div>
 
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium">模糊度</span>
-              <span className="text-muted-foreground text-sm">
-                {glassSettings.blur}px
-              </span>
+          <div className="dark:border-input dark:bg-input/20 space-y-6 rounded-xl border p-6">
+            <div>
+              <p className="text-base font-semibold">毛玻璃</p>
+              <p className="text-muted-foreground mt-1 text-sm">
+                调整全局毛玻璃模糊与透明度，设置将实时应用到所有页面。
+              </p>
             </div>
-            <Slider
-              min={0}
-              max={150}
-              step={1}
-              value={[glassSettings.blur]}
-              onValueChange={(value) =>
-                updateGlassSettings({ blur: value[0] ?? 0 })
-              }
-            />
-          </div>
 
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium">透明度</span>
-              <span className="text-muted-foreground text-sm">
-                {glassSettings.opacity}%
-              </span>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">模糊度</span>
+                <span className="text-muted-foreground text-sm">
+                  {glassSettings.blur}px
+                </span>
+              </div>
+              <Slider
+                min={0}
+                max={150}
+                step={1}
+                value={[glassSettings.blur]}
+                onValueChange={(value) =>
+                  updateGlassSettings({ blur: value[0] ?? 0 })
+                }
+              />
             </div>
-            <Slider
-              min={0}
-              max={100}
-              step={1}
-              value={[glassSettings.opacity]}
-              onValueChange={(value) =>
-                updateGlassSettings({ opacity: value[0] ?? 0 })
-              }
-            />
+
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">透明度</span>
+                <span className="text-muted-foreground text-sm">
+                  {glassSettings.opacity}%
+                </span>
+              </div>
+              <Slider
+                min={0}
+                max={100}
+                step={1}
+                value={[glassSettings.opacity]}
+                onValueChange={(value) =>
+                  updateGlassSettings({ opacity: value[0] ?? 0 })
+                }
+              />
+            </div>
           </div>
         </div>
       </TabsContent>

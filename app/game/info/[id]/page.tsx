@@ -7,9 +7,8 @@ import { useEffect } from 'react'
 
 import { bgAtom } from '@/atom/global'
 import GameInfo from '@/components/game/game-info'
+import { updateLastGameBackground } from '@/lib/background-settings'
 import { getGameById } from '@/lib/game-utils'
-
-const DEFAULT_BG = '/bg.png'
 
 export default function Page() {
   const params = useParams<{ id: string }>()
@@ -23,15 +22,9 @@ export default function Page() {
   })
 
   useEffect(() => {
-    setBg(DEFAULT_BG)
-    return () => {
-      setBg(DEFAULT_BG)
-    }
-  }, [gameId, setBg])
-
-  useEffect(() => {
     if (data?.bg) {
       setBg(data.bg)
+      updateLastGameBackground(data.bg)
     }
   }, [data?.bg, setBg])
 

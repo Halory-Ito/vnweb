@@ -2,11 +2,18 @@
 
 import { useAtom } from 'jotai'
 import { useTheme } from 'next-themes'
+import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
 import AppHeader from './app-header'
 import AppSideBar from './app-sidebar'
 import { bgAtom } from '@/atom/global'
+import {
+  BACKGROUND_SETTINGS_EVENT,
+  BACKGROUND_SETTINGS_STORAGE_KEY,
+  DEFAULT_BACKGROUND_SETTINGS,
+  readBackgroundSettings,
+} from '@/lib/background-settings'
 import {
   applyGlassSettingsToDocument,
   GLASS_SETTINGS_EVENT,
@@ -15,13 +22,47 @@ import {
 } from '@/lib/glass-settings'
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
-  const [bg, _setBg] = useAtom(bgAtom)
+  const [bg, setBg] = useAtom(bgAtom)
   const { resolvedTheme } = useTheme()
+  const pathname = usePathname()
   const [mounted, setMounted] = useState(false)
+  const [backgroundSettings, setBackgroundSettings] = useState(
+    DEFAULT_BACKGROUND_SETTINGS,
+  )
 
   useEffect(() => {
     setMounted(true)
-  }, [])
+
+    const initialBackgroundSettings = readBackgroundSettings()
+    setBackgroundSettings(initialBackgroundSettings)
+    setBg(initialBackgroundSettings.lastGameBackgroundImage)
+  }, [setBg])
+
+  useEffect(() => {
+    const syncBackgroundSettings = () => {
+      const nextSettings = readBackgroundSettings()
+      setBackgroundSettings(nextSettings)
+      setBg(nextSettings.lastGameBackgroundImage)
+    }
+
+    const handleStorage = (event: StorageEvent) => {
+      if (event.key === BACKGROUND_SETTINGS_STORAGE_KEY) {
+        syncBackgroundSettings()
+      }
+    }
+
+    syncBackgroundSettings()
+    window.addEventListener(BACKGROUND_SETTINGS_EVENT, syncBackgroundSettings)
+    window.addEventListener('storage', handleStorage)
+
+    return () => {
+      window.removeEventListener(
+        BACKGROUND_SETTINGS_EVENT,
+        syncBackgroundSettings,
+      )
+      window.removeEventListener('storage', handleStorage)
+    }
+  }, [setBg])
 
   useEffect(() => {
     const syncGlassSettings = () => {
@@ -44,6 +85,35 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     }
   }, [])
 
+  const isGameInfoPage = pathname.startsWith('/game/info/')
+
+  useEffect(() => {
+    if (isGameInfoPage) {
+      return
+    }
+
+    if (
+      backgroundSettings.customBackgroundEnabled &&
+      backgroundSettings.customBackgroundImage
+    ) {
+      setBg(backgroundSettings.customBackgroundImage)
+      return
+    }
+
+    setBg(backgroundSettings.lastGameBackgroundImage)
+  }, [
+    backgroundSettings.customBackgroundEnabled,
+    backgroundSettings.customBackgroundImage,
+    backgroundSettings.lastGameBackgroundImage,
+    isGameInfoPage,
+    setBg,
+  ])
+
+  const nonGameInfoBackground = backgroundSettings.customBackgroundEnabled
+    ? backgroundSettings.customBackgroundImage || bg
+    : bg
+  const activeBackground = isGameInfoPage ? bg : nonGameInfoBackground
+
   return (
     <div className="relative flex h-screen w-screen overflow-hidden">
       <div
@@ -51,7 +121,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         style={
           mounted && resolvedTheme === 'dark'
             ? {
-                backgroundImage: `url(${bg})`,
+                backgroundImage: `url(${activeBackground})`,
               }
             : {
                 backgroundImage: 'none',
