@@ -1,17 +1,8 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { useAtom } from 'jotai'
-import {
-  ClockIcon,
-  Gamepad2Icon,
-  Play,
-  Settings,
-  Square,
-  StarIcon,
-  TimerResetIcon,
-} from 'lucide-react'
-import Link from 'next/link'
+import { Play, Settings, Square } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { ReactNode, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
 import { Button } from '../ui/button'
@@ -29,12 +20,18 @@ import {
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs'
-import GameBasicInfoDialog from './game-basic-info-dialog'
-import GamePlayTimeDialog from './game-play-time-dialog'
-import GameRatingDialog from './game-rating-dialog'
+import GameBasicInfoDialog from './dialog/game-basic-info-dialog'
+import GamePlayTimeDialog from './dialog/game-play-time-dialog'
+import GameRatingDialog from './dialog/game-rating-dialog'
+import GameUpdateDataDialog from './dialog/game-update-data-dialog'
 import GameSettingsPanel from './game-settings-panel'
-import GameUpdateDataDialog from './game-update-data-dialog'
+import GameOverview from './info/game-overview'
+import GameStats from './info/game-stats'
 import { gameFilterAtom } from '@/atom/global'
+import GameOSTDialog from '@/components/game/dialog/game-ost-dialog'
+import GamePVDialog from '@/components/game/dialog/game-pv-dialog'
+import GameOST from '@/components/game/info/game-ost'
+import GamePV from '@/components/game/info/game-pv'
 import {
   GameDetail,
   launchGameById,
@@ -48,129 +45,11 @@ type GameInfoProps = {
   game: GameDetail
 }
 
-const splitByDunhao = (value?: string) =>
-  (value || '')
-    .split('、')
-    .map((item) => item.trim())
-    .filter(Boolean)
-
-const OutlineTag = ({
-  value,
-  onClick,
-}: {
-  value: string
-  onClick?: () => void
-}) => (
-  <button
-    type="button"
-    onClick={onClick}
-    disabled={!onClick}
-    className="bg-background text-foreground dark:bg-input/30 dark:border-input hover:bg-accent hover:text-accent-foreground inline-flex rounded-md border px-2 py-0.5 text-xs shadow-xs transition-colors disabled:pointer-events-none"
-  >
-    {value}
-  </button>
-)
-
-const InfoRow = ({
-  label,
-  values,
-  onTagClick,
-}: {
-  label: string
-  values?: string[]
-  onTagClick?: (value: string) => void
-}) => (
-  <div className="flex gap-2 text-sm">
-    <span className="w-24 shrink-0">{label}</span>
-    <div className="flex flex-wrap gap-1.5">
-      {(values || []).length > 0 ? (
-        (values || []).map((item) => (
-          <OutlineTag
-            key={`${label}-${item}`}
-            value={item}
-            onClick={onTagClick ? () => onTagClick(item) : undefined}
-          />
-        ))
-      ) : (
-        <OutlineTag value="-" />
-      )}
-    </div>
-  </div>
-)
-
-const formatDuration = (seconds: number) => {
-  const safe = Math.max(0, Math.floor(seconds))
-  const hour = Math.floor(safe / 3600)
-  const minute = Math.floor((safe % 3600) / 60)
-  const second = safe % 60
-  return `${hour.toString().padStart(2, '0')}:${minute
-    .toString()
-    .padStart(2, '0')}:${second.toString().padStart(2, '0')}`
-}
-
 const formatHours = (seconds: number) => {
   const safe = Math.max(0, Number(seconds) || 0)
   const hours = safe / 3600
   return `${hours.toFixed(1)} 小时`
 }
-
-const formatDateOnly = (value: string) => {
-  if (!value) {
-    return '-'
-  }
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) {
-    return value
-  }
-  return date.toLocaleDateString('zh-CN')
-}
-
-const statusLabelMap: Record<number, string> = {
-  0: '未开始',
-  1: '游玩中',
-  2: '部分完成',
-  3: '已完成',
-  4: '多周目',
-  5: '搁置中',
-}
-
-const statusOptions = [0, 1, 2, 3, 4, 5] as const
-
-const StatCard = ({
-  title,
-  icon,
-  value,
-  interactiveIcon = false,
-}: {
-  title: string
-  icon: ReactNode
-  value: ReactNode
-  interactiveIcon?: boolean
-}) => (
-  <div className="rounded-md p-3">
-    <div className="flex items-center justify-center gap-3">
-      {interactiveIcon ? (
-        icon
-      ) : (
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon-lg"
-          className="pointer-events-none"
-          tabIndex={-1}
-        >
-          {icon}
-        </Button>
-      )}
-      <div className="text-base font-medium">
-        <div>
-          <span>{title}</span>
-        </div>
-        <div>{value}</div>
-      </div>
-    </div>
-  </div>
-)
 
 export default function GameInfo({ game }: GameInfoProps) {
   const title = game.nameCn || game.name
@@ -179,6 +58,8 @@ export default function GameInfo({ game }: GameInfoProps) {
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [playTimeOpen, setPlayTimeOpen] = useState(false)
   const [ratingOpen, setRatingOpen] = useState(false)
+  const [pvDialogOpen, setPvDialogOpen] = useState(false)
+  const [ostDialogOpen, setOstDialogOpen] = useState(false)
   const [isLaunching, setIsLaunching] = useState(false)
   const [isStopping, setIsStopping] = useState(false)
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false)
@@ -338,6 +219,14 @@ export default function GameInfo({ game }: GameInfoProps) {
     }
   }
 
+  const handleEditGamePV = () => {
+    setPvDialogOpen(true)
+  }
+
+  const handleEditGameOST = () => {
+    setOstDialogOpen(true)
+  }
+
   return (
     <ContextMenu>
       <ContextMenuTrigger asChild>
@@ -402,248 +291,45 @@ export default function GameInfo({ game }: GameInfoProps) {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-            <StatCard
-              title="游玩时间"
-              interactiveIcon
-              icon={
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon-lg"
-                  aria-label="编辑游玩时间"
-                  className="text-muted-foreground hover:text-primary transition-colors"
-                  onClick={() => setPlayTimeOpen(true)}
-                >
-                  <ClockIcon className="size-8" />
-                </Button>
-              }
-              value={totalPlayTimeText}
-            />
-            <StatCard
-              title="最后运行日期"
-              icon={<TimerResetIcon className="size-8" />}
-              value={formatDateOnly(game.lastLaunchedAt)}
-            />
-            <StatCard
-              title="游玩状态"
-              interactiveIcon
-              icon={
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon-lg"
-                      disabled={isUpdatingStatus}
-                      aria-label="修改游玩状态"
-                      className="text-muted-foreground hover:text-primary transition-colors"
-                    >
-                      <Gamepad2Icon className="size-8" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start" className="w-40">
-                    {statusOptions.map((status) => (
-                      <DropdownMenuItem
-                        key={status}
-                        onClick={() => void updatePlayStatus(status)}
-                      >
-                        {statusLabelMap[status]}
-                        {playStatus === status ? (
-                          <DropdownMenuShortcut>✔</DropdownMenuShortcut>
-                        ) : null}
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              }
-              value={
-                <div className="space-y-1">
-                  <div>{statusLabelMap[playStatus] ?? '未开始'}</div>
-                  {isRunning ? (
-                    <div className="text-muted-foreground text-xs">
-                      本次 {formatDuration(sessionSeconds)}
-                    </div>
-                  ) : null}
-                </div>
-              }
-            />
-            <StatCard
-              title="我的评分"
-              interactiveIcon
-              icon={
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon-lg"
-                  aria-label="修改评分"
-                  className="text-muted-foreground hover:text-primary transition-colors"
-                  onClick={() => setRatingOpen(true)}
-                >
-                  <StarIcon className="size-8" />
-                </Button>
-              }
-              value={String(rating ?? 0)}
-            />
-          </div>
+          <GameStats
+            totalPlayTimeText={totalPlayTimeText}
+            lastLaunchedAt={game.lastLaunchedAt}
+            playStatus={playStatus}
+            isRunning={isRunning}
+            sessionSeconds={sessionSeconds}
+            rating={rating}
+            isUpdatingStatus={isUpdatingStatus}
+            onOpenPlayTime={() => setPlayTimeOpen(true)}
+            onOpenRating={() => setRatingOpen(true)}
+            onUpdatePlayStatus={(status) => {
+              void updatePlayStatus(status)
+            }}
+          />
 
           <div>
             <Tabs defaultValue="overview" className="mx-auto w-full">
               <TabsList className="mx-auto dark:bg-transparent">
                 <TabsTrigger value="overview">概览</TabsTrigger>
                 <TabsTrigger value="pv">PV</TabsTrigger>
+                <TabsTrigger value="ost">OST</TabsTrigger>
                 <TabsTrigger value="record">记录</TabsTrigger>
                 <TabsTrigger value="memory">回忆</TabsTrigger>
               </TabsList>
 
               <TabsContent value="overview">
-                <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-                  <div className="space-y-4 rounded-md border p-4">
-                    <div>
-                      <div className="mb-2 text-base font-semibold">
-                        游戏简介
-                      </div>
-                      <div className="text-foreground/90 text-sm leading-6 whitespace-pre-wrap">
-                        {game.summary || '-'}
-                      </div>
-                    </div>
-
-                    <div>
-                      <div className="mb-2 text-base font-semibold">
-                        游戏标签
-                      </div>
-                      <div className="flex flex-wrap gap-2">
-                        {game.tags.length > 0 ? (
-                          game.tags.map((tag) => (
-                            <OutlineTag
-                              key={tag}
-                              value={tag}
-                              onClick={() =>
-                                applyTagFilter('tags', tag, '标签')
-                              }
-                            />
-                          ))
-                        ) : (
-                          <OutlineTag value="-" />
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-4 rounded-md border p-4">
-                    <div>
-                      <div className="mb-2 text-base font-semibold">
-                        基本信息
-                      </div>
-                      <div className="space-y-1">
-                        <InfoRow
-                          label="开发商"
-                          values={splitByDunhao(game.developer)}
-                          onTagClick={(value) =>
-                            applyTagFilter('developer', value, '开发商')
-                          }
-                        />
-                        <InfoRow
-                          label="发行商"
-                          values={splitByDunhao(game.publisher)}
-                          onTagClick={(value) =>
-                            applyTagFilter('publisher', value, '发行商')
-                          }
-                        />
-                        <InfoRow label="发售日期" values={[game.date]} />
-                        <InfoRow
-                          label="游戏类型"
-                          values={splitByDunhao(game.gameType)}
-                          onTagClick={(value) =>
-                            applyTagFilter('category', value, '游戏类型')
-                          }
-                        />
-                        <InfoRow
-                          label="游戏引擎"
-                          values={splitByDunhao(game.gameEngine)}
-                          onTagClick={(value) =>
-                            applyTagFilter('engine', value, '游戏引擎')
-                          }
-                        />
-                        <InfoRow
-                          label="平台"
-                          values={game.platforms}
-                          onTagClick={(value) =>
-                            applyTagFilter('platform', value, '平台')
-                          }
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <div className="mb-2 text-base font-semibold">
-                        附加信息
-                      </div>
-                      <div className="space-y-1">
-                        <InfoRow
-                          label="音乐"
-                          values={splitByDunhao(game.music)}
-                          onTagClick={(value) =>
-                            applyTagFilter('music', value, '音乐')
-                          }
-                        />
-                        <InfoRow
-                          label="剧本"
-                          values={splitByDunhao(game.script)}
-                          onTagClick={(value) =>
-                            applyTagFilter('script', value, '剧本')
-                          }
-                        />
-                        <InfoRow
-                          label="美术"
-                          values={splitByDunhao(game.graphic)}
-                        />
-                        <InfoRow
-                          label="原画"
-                          values={splitByDunhao(game.originalPainter)}
-                          onTagClick={(value) =>
-                            applyTagFilter('originalPainter', value, '原画')
-                          }
-                        />
-                        <InfoRow
-                          label="动画制作"
-                          values={splitByDunhao(game.animationProduction)}
-                        />
-                        <InfoRow
-                          label="程序"
-                          values={splitByDunhao(game.programmer)}
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <div className="mb-2 text-base font-semibold">
-                        相关网站
-                      </div>
-                      <div className="space-y-1 text-sm">
-                        {game.websites.length > 0 ? (
-                          game.websites.map((website) => (
-                            <Link
-                              key={website.id}
-                              href={website.url}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="text-primary block break-all hover:underline"
-                            >
-                              {website.name}
-                            </Link>
-                          ))
-                        ) : (
-                          <span className=" ">-</span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                <GameOverview game={game} onApplyTagFilter={applyTagFilter} />
               </TabsContent>
 
               <TabsContent value="pv">
-                <div className="rounded-md border p-4 text-sm">暂无PV</div>
+                <div className="rounded-md border p-4 text-sm">
+                  <GamePV gameId={game.id} />
+                </div>
+              </TabsContent>
+
+              <TabsContent value="ost">
+                <div className="rounded-md border p-4 text-sm">
+                  <GameOST gameId={game.id} cover={game.cover} title={title} />
+                </div>
               </TabsContent>
 
               <TabsContent value="record">
@@ -672,6 +358,10 @@ export default function GameInfo({ game }: GameInfoProps) {
         <ContextMenuItem onClick={() => setUpdateDataOpen(true)}>
           更新资料数据
         </ContextMenuItem>
+        <ContextMenuItem onClick={handleEditGamePV}>修改游戏PV</ContextMenuItem>
+        <ContextMenuItem onClick={handleEditGameOST}>
+          修改游戏OST
+        </ContextMenuItem>
       </ContextMenuContent>
 
       <GameBasicInfoDialog
@@ -695,6 +385,16 @@ export default function GameInfo({ game }: GameInfoProps) {
         rating={rating}
         open={ratingOpen}
         onOpenChange={setRatingOpen}
+      />
+      <GamePVDialog
+        gameId={game.id}
+        open={pvDialogOpen}
+        onOpenChange={setPvDialogOpen}
+      />
+      <GameOSTDialog
+        gameId={game.id}
+        open={ostDialogOpen}
+        onOpenChange={setOstDialogOpen}
       />
     </ContextMenu>
   )

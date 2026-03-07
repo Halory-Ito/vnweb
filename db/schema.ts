@@ -9,7 +9,6 @@ export const GameInfoTable = sqliteTable('game_info', {
   icon: text().default(''), // 图标
   logo: text().default(''), // logo
   bg: text().default(''), // 背景图片
-  pv: text().default(''), // 宣传视频链接
   summary: text().notNull(), // 游戏简介
   name: text().notNull(), // 游戏名称
   nameCn: text().notNull(), // 游戏中文名称
@@ -27,6 +26,26 @@ export const GameInfoTable = sqliteTable('game_info', {
   developer: text().notNull(), // 开发商
   publisher: text().notNull(), // 发行商
   programmer: text().notNull(), // 程序制作
+  createdAt: text().default(dayjs().toString()), // 创建时间
+  updatedAt: text().default(dayjs().toString()), // 更新时间
+})
+
+// 游戏 PV 表
+export const GamePvTable = sqliteTable('game_pv', {
+  id: int().primaryKey({ autoIncrement: true }),
+  gameId: int().notNull(),
+  name: text().notNull(), // pv名称
+  url: text().notNull(), // pv链接地址
+  createdAt: text().default(dayjs().toString()), // 创建时间
+  updatedAt: text().default(dayjs().toString()), // 更新时间
+})
+
+// 游戏 OST 表
+export const GameOstTable = sqliteTable('game_ost', {
+  id: int().primaryKey({ autoIncrement: true }),
+  gameId: int().notNull(),
+  name: text().notNull(), // ost名称
+  url: text().notNull(), // ost链接地址
   createdAt: text().default(dayjs().toString()), // 创建时间
   updatedAt: text().default(dayjs().toString()), // 更新时间
 })

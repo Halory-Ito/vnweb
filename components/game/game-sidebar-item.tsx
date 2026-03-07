@@ -53,7 +53,10 @@ export const GameSidebarItem = ({
     queryFn: getCollections,
   })
   const gameId = Number(id)
-  const isActive = pathname === `/game/info/${id}`
+  const normalizedPathname = pathname.replace(/\/+$/, '')
+  const isActive =
+    normalizedPathname === `/game/info/${id}` ||
+    normalizedPathname.startsWith(`/game/info/${id}/`)
   const isSelected = selectedGameIds.includes(id)
 
   const handleItemClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
@@ -209,7 +212,7 @@ export const GameSidebarItem = ({
             isSelected &&
               'bg-accent/70 text-accent-foreground dark:bg-accent/60 dark:text-accent-foreground',
             isActive &&
-              'bg-accent text-accent-foreground dark:bg-transparent dark:text-accent-foreground',
+              'bg-accent text-accent-foreground dark:bg-accent/70 dark:text-accent-foreground',
           )}
           href={`/game/info/${id}`}
           onClick={handleItemClick}

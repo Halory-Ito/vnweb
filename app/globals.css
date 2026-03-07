@@ -49,6 +49,9 @@
   --radius: 0.625rem;
   --app-glass-blur: 24px;
   --app-glass-opacity: 0.24;
+  --app-font-family: 'Microsoft YaHei', sans-serif;
+  --app-font-size: 16px;
+  --app-font-weight: 400;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -139,5 +142,8 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: var(--app-font-family);
+    font-size: var(--app-font-size);
+    font-weight: var(--app-font-weight);
   }
 }

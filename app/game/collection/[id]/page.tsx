@@ -16,7 +16,7 @@ import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
 
 import { selectedGameIdsAtom } from '@/atom/global'
-import GameBulkUpdateMetadataDialog from '@/components/game/game-bulk-update-metadata-dialog'
+import GameBulkUpdateMetadataDialog from '@/components/game/dialog/game-bulk-update-metadata-dialog'
 import GameCard from '@/components/game/game-card'
 import { SortSelect } from '@/components/game/sort-select'
 import { Button } from '@/components/ui/button'

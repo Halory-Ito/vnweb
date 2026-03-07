@@ -15,6 +15,12 @@ import {
   readBackgroundSettings,
 } from '@/lib/background-settings'
 import {
+  applyFontSettingsToDocument,
+  FONT_SETTINGS_EVENT,
+  FONT_SETTINGS_STORAGE_KEY,
+  readFontSettings,
+} from '@/lib/font-settings'
+import {
   applyGlassSettingsToDocument,
   GLASS_SETTINGS_EVENT,
   GLASS_SETTINGS_STORAGE_KEY,
@@ -81,6 +87,27 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
     return () => {
       window.removeEventListener(GLASS_SETTINGS_EVENT, syncGlassSettings)
+      window.removeEventListener('storage', handleStorage)
+    }
+  }, [])
+
+  useEffect(() => {
+    const syncFontSettings = () => {
+      void applyFontSettingsToDocument(readFontSettings())
+    }
+
+    const handleStorage = (event: StorageEvent) => {
+      if (event.key === FONT_SETTINGS_STORAGE_KEY) {
+        syncFontSettings()
+      }
+    }
+
+    syncFontSettings()
+    window.addEventListener(FONT_SETTINGS_EVENT, syncFontSettings)
+    window.addEventListener('storage', handleStorage)
+
+    return () => {
+      window.removeEventListener(FONT_SETTINGS_EVENT, syncFontSettings)
       window.removeEventListener('storage', handleStorage)
     }
   }, [])

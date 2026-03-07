@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "c3938905-fba3-4f69-a8f1-1b7c0069ff6a",
+  "id": "7f12b76d-a3b7-4410-8a5a-8d537e8eb1ab",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "collection_game": {
@@ -58,7 +58,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "'Thu, 05 Mar 2026 02:12:13 GMT'"
+          "default": "'Sat, 07 Mar 2026 00:01:26 GMT'"
         },
         "updatedAt": {
           "name": "updatedAt",
@@ -66,7 +66,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "'Thu, 05 Mar 2026 02:12:13 GMT'"
+          "default": "'Sat, 07 Mar 2026 00:01:26 GMT'"
         }
       },
       "indexes": {},
@@ -118,14 +118,6 @@
         },
         "bg": {
           "name": "bg",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false,
-          "default": "''"
-        },
-        "pv": {
-          "name": "pv",
           "type": "text",
           "primaryKey": false,
           "notNull": false,
@@ -257,7 +249,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "'Thu, 05 Mar 2026 02:12:13 GMT'"
+          "default": "'Sat, 07 Mar 2026 00:01:26 GMT'"
         },
         "updatedAt": {
           "name": "updatedAt",
@@ -265,7 +257,61 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "'Thu, 05 Mar 2026 02:12:13 GMT'"
+          "default": "'Sat, 07 Mar 2026 00:01:26 GMT'"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "game_ost": {
+      "name": "game_ost",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "gameId": {
+          "name": "gameId",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "url": {
+          "name": "url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "'Sat, 07 Mar 2026 00:01:26 GMT'"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "'Sat, 07 Mar 2026 00:01:26 GMT'"
         }
       },
       "indexes": {},
@@ -354,6 +400,60 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
+    "game_pv": {
+      "name": "game_pv",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "gameId": {
+          "name": "gameId",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "url": {
+          "name": "url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "'Sat, 07 Mar 2026 00:01:26 GMT'"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "'Sat, 07 Mar 2026 00:01:26 GMT'"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
     "game_record": {
       "name": "game_record",
       "columns": {
@@ -432,7 +532,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "'Thu, 05 Mar 2026 02:12:13 GMT'"
+          "default": "'Sat, 07 Mar 2026 00:01:26 GMT'"
         },
         "updatedAt": {
           "name": "updatedAt",
@@ -440,7 +540,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "'Thu, 05 Mar 2026 02:12:13 GMT'"
+          "default": "'Sat, 07 Mar 2026 00:01:26 GMT'"
         }
       },
       "indexes": {},
@@ -519,7 +619,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "'Thu, 05 Mar 2026 02:12:13 GMT'"
+          "default": "'Sat, 07 Mar 2026 00:01:26 GMT'"
         },
         "updatedAt": {
           "name": "updatedAt",
@@ -527,7 +627,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "'Thu, 05 Mar 2026 02:12:13 GMT'"
+          "default": "'Sat, 07 Mar 2026 00:01:26 GMT'"
         }
       },
       "indexes": {},

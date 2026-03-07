@@ -18,7 +18,7 @@ import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 
-import GameBulkUpdateMetadataDialog from './game-bulk-update-metadata-dialog'
+import GameBulkUpdateMetadataDialog from './dialog/game-bulk-update-metadata-dialog'
 import GameCard from './game-card'
 import { SortSelect } from './sort-select'
 import { selectedGameIdsAtom } from '@/atom/global'
