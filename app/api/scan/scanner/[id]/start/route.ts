@@ -5,6 +5,7 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 
 import {
+  GameIdMapTable,
   GameInfoTable,
   ScanErrorTable,
   ScannerTable,
@@ -211,7 +212,11 @@ const fetchGameInfoByProvider = async (provider: string, id: string) => {
   return null
 }
 
-const saveGameInfo = async (gameInfo: GameInfo) => {
+const saveGameInfo = async (
+  gameInfo: GameInfo,
+  provider?: string,
+  externalId?: string,
+) => {
   const uniqueName = (gameInfo.nameCn || gameInfo.name || '').trim()
   if (!uniqueName) {
     return false
@@ -277,6 +282,25 @@ const saveGameInfo = async (gameInfo: GameInfo) => {
   const gameId = inserted[0]?.id
   if (!gameId) {
     return false
+  }
+
+  const normalizedProvider = (provider || '').trim()
+  const normalizedExternalId = (externalId || '').trim()
+  if (normalizedProvider && normalizedExternalId) {
+    await db
+      .insert(GameIdMapTable)
+      .values({
+        gameId,
+        provider: normalizedProvider,
+        externalId: normalizedExternalId,
+      })
+      .onConflictDoNothing({
+        target: [
+          GameIdMapTable.gameId,
+          GameIdMapTable.provider,
+          GameIdMapTable.externalId,
+        ],
+      })
   }
 
   const websites = [...(gameInfo.websites || []), ...(gameInfo.links || [])]
@@ -386,7 +410,11 @@ const startScan = async (
             matchedId,
           )
           if (gameInfo) {
-            const inserted = await saveGameInfo(gameInfo)
+            const inserted = await saveGameInfo(
+              gameInfo,
+              scanner.provider,
+              matchedId,
+            )
             if (inserted) {
               addedCount += 1
             }

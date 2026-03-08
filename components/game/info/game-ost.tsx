@@ -531,7 +531,7 @@ export default function GameOST({ gameId, cover, title }: GameOSTProps) {
         >
           <div className="flex items-center justify-between gap-3">
             <div className="text-sm font-medium">音乐播放器</div>
-            <TabsList>
+            <TabsList className="dark:bg-transparent">
               <TabsTrigger value="lyric" className="px-3 text-xs">
                 歌词模式
               </TabsTrigger>

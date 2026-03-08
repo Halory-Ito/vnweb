@@ -330,11 +330,20 @@ export const searchGameByNameApi = async (
   } as GameSearchResult
 }
 
-export const createGameInfoApi = async (gameInfo: GameInfo) => {
+export const createGameInfoApi = async (
+  gameInfo: GameInfo,
+  sourceMap?: {
+    provider: string
+    externalId: string
+  },
+) => {
   const res = await api.request({
     method: 'POST',
     url: '/game',
-    data: gameInfo,
+    data: {
+      ...gameInfo,
+      sourceMap,
+    },
   })
   return res.data as { data: { id?: number } }
 }

@@ -1,6 +1,7 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
@@ -11,39 +12,57 @@ type GamePVProps = {
 }
 
 export default function GamePV({ gameId }: GamePVProps) {
-  const [isLoading, setIsLoading] = useState(false)
   const [items, setItems] = useState<GameMediaLinkItem[]>([])
   const [selectedId, setSelectedId] = useState<number | null>(null)
+
+  const videoRef = useRef<HTMLVideoElement | null>(null)
+
+  const { data, isLoading, error, refetch, isRefetching } = useQuery({
+    queryKey: ['game-pvs', gameId],
+    queryFn: () => getGamePvsById(gameId),
+    enabled: Boolean(gameId),
+  })
 
   const selectedItem = useMemo(
     () => items.find((item) => item.id === selectedId) ?? null,
     [items, selectedId],
   )
 
-  const loadData = async () => {
-    setIsLoading(true)
-    try {
-      const data = await getGamePvsById(gameId)
-      setItems(data.items)
-      if (data.items.length > 0) {
-        setSelectedId((prev) => prev ?? data.items[0].id)
-      } else {
-        setSelectedId(null)
-      }
-    } catch (error) {
-      const err = error as {
-        response?: { data?: { error?: string } }
-        message?: string
-      }
-      toast.error(err.response?.data?.error || err.message || '加载PV失败')
-    } finally {
-      setIsLoading(false)
-    }
-  }
+  useEffect(() => {
+    setItems(data?.items ?? [])
+  }, [data])
 
   useEffect(() => {
-    void loadData()
-  }, [gameId])
+    if (!error) {
+      return
+    }
+
+    const err = error as {
+      response?: { data?: { error?: string } }
+      message?: string
+    }
+    toast.error(err.response?.data?.error || err.message || '加载PV失败')
+  }, [error])
+
+  useEffect(() => {
+    if (items.length === 0) {
+      setSelectedId(null)
+      return
+    }
+
+    setSelectedId((prev) => {
+      if (prev !== null && items.some((item) => item.id === prev)) {
+        return prev
+      }
+      return items[0].id
+    })
+  }, [items])
+
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.volume = 0.5 // 设置默认音量为 50%
+    }
+  }, [])
 
   return (
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-[320px_minmax(0,1fr)]">
@@ -53,8 +72,10 @@ export default function GamePV({ gameId }: GamePVProps) {
             type="button"
             variant="outline"
             size="sm"
-            disabled={isLoading}
-            onClick={() => void loadData()}
+            disabled={isLoading || isRefetching}
+            onClick={() => {
+              void refetch()
+            }}
           >
             刷新
           </Button>
@@ -87,6 +108,7 @@ export default function GamePV({ gameId }: GamePVProps) {
       <div className="space-y-3 rounded-md border p-3">
         {selectedItem ? (
           <video
+            ref={videoRef}
             key={selectedItem.id}
             controls
             preload="metadata"

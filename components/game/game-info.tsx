@@ -26,10 +26,12 @@ import GameRatingDialog from './dialog/game-rating-dialog'
 import GameUpdateDataDialog from './dialog/game-update-data-dialog'
 import GameSettingsPanel from './game-settings-panel'
 import GameOverview from './info/game-overview'
+import GameRecord from './info/game-record'
 import GameStats from './info/game-stats'
 import { gameFilterAtom } from '@/atom/global'
 import GameOSTDialog from '@/components/game/dialog/game-ost-dialog'
 import GamePVDialog from '@/components/game/dialog/game-pv-dialog'
+import GameMemory from '@/components/game/info/game-memory'
 import GameOST from '@/components/game/info/game-ost'
 import GamePV from '@/components/game/info/game-pv'
 import {
@@ -310,6 +312,7 @@ export default function GameInfo({ game }: GameInfoProps) {
             <Tabs defaultValue="overview" className="mx-auto w-full">
               <TabsList className="mx-auto dark:bg-transparent">
                 <TabsTrigger value="overview">概览</TabsTrigger>
+                <TabsTrigger value="characters">相关人物</TabsTrigger>
                 <TabsTrigger value="pv">PV</TabsTrigger>
                 <TabsTrigger value="ost">OST</TabsTrigger>
                 <TabsTrigger value="record">记录</TabsTrigger>
@@ -318,6 +321,11 @@ export default function GameInfo({ game }: GameInfoProps) {
 
               <TabsContent value="overview">
                 <GameOverview game={game} onApplyTagFilter={applyTagFilter} />
+              </TabsContent>
+              <TabsContent value="characters">
+                <div className="rounded-md border p-4 text-center text-sm">
+                  待开发
+                </div>
               </TabsContent>
 
               <TabsContent value="pv">
@@ -333,11 +341,15 @@ export default function GameInfo({ game }: GameInfoProps) {
               </TabsContent>
 
               <TabsContent value="record">
-                <div className="rounded-md border p-4 text-sm">暂无记录</div>
+                <div className="rounded-md border p-4 text-sm">
+                  <GameRecord gameId={game.id} />
+                </div>
               </TabsContent>
 
               <TabsContent value="memory">
-                <div className="rounded-md border p-4 text-sm">暂无回忆</div>
+                <div className="rounded-md border p-4 text-sm">
+                  <GameMemory gameId={game.id} />
+                </div>
               </TabsContent>
             </Tabs>
           </div>

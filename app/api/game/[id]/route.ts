@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import path from 'node:path'
 
 import {
+  GameIdMapTable,
   GameInfoTable,
   GamePlayTable,
   GameRecordTable,
@@ -39,6 +40,50 @@ const normalizeStringList = (value: unknown): string[] => {
   }
 
   return []
+}
+
+const parseExternalSourceIds = (
+  value: unknown,
+): Array<{ provider: string; externalId: string }> | null => {
+  if (typeof value !== 'string') {
+    return null
+  }
+
+  const raw = value.trim()
+  if (!raw) {
+    return []
+  }
+
+  const dedup = new Set<string>()
+  const result: Array<{ provider: string; externalId: string }> = []
+
+  for (const segment of raw.split(';')) {
+    const item = segment.trim()
+    if (!item) {
+      continue
+    }
+
+    const divider = item.indexOf(':')
+    if (divider <= 0 || divider >= item.length - 1) {
+      return null
+    }
+
+    const provider = item.slice(0, divider).trim()
+    const externalId = item.slice(divider + 1).trim()
+    if (!provider || !externalId) {
+      return null
+    }
+
+    const key = `${provider}:${externalId}`
+    if (dedup.has(key)) {
+      continue
+    }
+
+    dedup.add(key)
+    result.push({ provider, externalId })
+  }
+
+  return result
 }
 
 const normalizeWindowsPathInput = (value: string) => {
@@ -98,6 +143,15 @@ const getGameById = async (
       .where(eq(GamePlayTable.gameId, gameId))
       .limit(1)
 
+    const idMapRows = await db
+      .select({
+        provider: GameIdMapTable.provider,
+        externalId: GameIdMapTable.externalId,
+      })
+      .from(GameIdMapTable)
+      .where(eq(GameIdMapTable.gameId, gameId))
+      .orderBy(GameIdMapTable.provider, GameIdMapTable.externalId)
+
     const playData = playRows[0]
 
     return NextResponse.json({
@@ -136,6 +190,9 @@ const getGameById = async (
         playStatus: playData?.status ?? 0,
         isRunning: (playData?.isRunning ?? 0) === 1,
         currentSessionSeconds: 0,
+        externalSourceIds: idMapRows
+          .map((item) => `${item.provider}:${item.externalId}`)
+          .join(';'),
       },
     })
   } catch (error) {
@@ -185,6 +242,7 @@ const updateGame = async (
       developer?: string
       publisher?: string
       programmer?: string
+      externalSourceIds?: string
     }
 
     const gameRows = await db
@@ -227,9 +285,27 @@ const updateGame = async (
       payload.animationProduction !== undefined ||
       payload.developer !== undefined ||
       payload.publisher !== undefined ||
-      payload.programmer !== undefined
+      payload.programmer !== undefined ||
+      payload.externalSourceIds !== undefined
 
     const hasRatingPayload = payload.rating !== undefined
+
+    const parsedExternalSourceIds =
+      payload.externalSourceIds !== undefined
+        ? parseExternalSourceIds(payload.externalSourceIds)
+        : undefined
+
+    if (
+      payload.externalSourceIds !== undefined &&
+      parsedExternalSourceIds === null
+    ) {
+      return NextResponse.json(
+        {
+          error: '外部数据源id格式错误，应为 provider1:id1;provider2:id2',
+        },
+        { status: 400 },
+      )
+    }
 
     if (hasSettingsPayload || hasBasicInfoPayload) {
       const now = new Date().toISOString()
@@ -356,6 +432,33 @@ const updateGame = async (
         .update(GameInfoTable)
         .set(gamePatch)
         .where(eq(GameInfoTable.id, gameId))
+
+      if (parsedExternalSourceIds !== undefined) {
+        await db.transaction(async (tx) => {
+          await tx
+            .delete(GameIdMapTable)
+            .where(eq(GameIdMapTable.gameId, gameId))
+
+          if (parsedExternalSourceIds.length > 0) {
+            await tx
+              .insert(GameIdMapTable)
+              .values(
+                parsedExternalSourceIds.map((item) => ({
+                  gameId,
+                  provider: item.provider,
+                  externalId: item.externalId,
+                })),
+              )
+              .onConflictDoNothing({
+                target: [
+                  GameIdMapTable.gameId,
+                  GameIdMapTable.provider,
+                  GameIdMapTable.externalId,
+                ],
+              })
+          }
+        })
+      }
 
       if (payload.exePath !== undefined) {
         const nextExePath = normalizeWindowsPathInput(payload.exePath)

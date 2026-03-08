@@ -8,6 +8,27 @@
       "when": 1772841686374,
       "tag": "0000_regular_santa_claus",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1772933211112,
+      "tag": "0001_clammy_rick_jones",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1772933623974,
+      "tag": "0002_late_lethal_legion",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1772936410258,
+      "tag": "0003_serious_obadiah_stane",
+      "breakpoints": true
     }
   ]
 }

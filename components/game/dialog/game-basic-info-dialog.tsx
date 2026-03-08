@@ -28,6 +28,7 @@ type FormValues = {
   nameCn: string
   date: string
   cover: string
+  externalSourceIds: string
   summary: string
   tags: string
   developer: string
@@ -47,6 +48,7 @@ export default function GameBasicInfoDialog({
     nameCn: game.nameCn || '',
     date: game.date || '',
     cover: game.cover || '',
+    externalSourceIds: game.externalSourceIds || '',
     summary: game.summary || '',
     tags: (game.tags || []).join(', '),
     developer: game.developer || '',
@@ -62,6 +64,7 @@ export default function GameBasicInfoDialog({
       nameCn: game.nameCn || '',
       date: game.date || '',
       cover: game.cover || '',
+      externalSourceIds: game.externalSourceIds || '',
       summary: game.summary || '',
       tags: (game.tags || []).join(', '),
       developer: game.developer || '',
@@ -73,6 +76,7 @@ export default function GameBasicInfoDialog({
     game.nameCn,
     game.date,
     game.cover,
+    game.externalSourceIds,
     game.summary,
     game.tags,
     game.developer,
@@ -91,6 +95,7 @@ export default function GameBasicInfoDialog({
         nameCn: formValues.nameCn,
         date: formValues.date,
         cover: formValues.cover,
+        externalSourceIds: formValues.externalSourceIds,
         summary: formValues.summary,
         tags: formValues.tags
           .split(',')
@@ -100,7 +105,9 @@ export default function GameBasicInfoDialog({
         publisher: formValues.publisher,
       })
 
-      await queryClient.invalidateQueries({ queryKey: ['game', String(game.id)] })
+      await queryClient.invalidateQueries({
+        queryKey: ['game', String(game.id)],
+      })
       await queryClient.invalidateQueries({ queryKey: ['game'] })
       router.refresh()
       toast.success('基本信息已更新')
@@ -126,43 +133,86 @@ export default function GameBasicInfoDialog({
         <div className="space-y-4">
           <div className="space-y-2">
             <div className="text-sm">游戏名称</div>
-            <Input value={formValues.name} onChange={(e) => setField('name', e.target.value)} />
+            <Input
+              value={formValues.name}
+              onChange={(e) => setField('name', e.target.value)}
+            />
           </div>
           <div className="space-y-2">
             <div className="text-sm">中文名称</div>
-            <Input value={formValues.nameCn} onChange={(e) => setField('nameCn', e.target.value)} />
+            <Input
+              value={formValues.nameCn}
+              onChange={(e) => setField('nameCn', e.target.value)}
+            />
           </div>
           <div className="space-y-2">
             <div className="text-sm">发布日期</div>
-            <Input value={formValues.date} onChange={(e) => setField('date', e.target.value)} />
+            <Input
+              value={formValues.date}
+              onChange={(e) => setField('date', e.target.value)}
+            />
           </div>
           <div className="space-y-2">
             <div className="text-sm">封面链接</div>
-            <Input value={formValues.cover} onChange={(e) => setField('cover', e.target.value)} />
+            <Input
+              value={formValues.cover}
+              onChange={(e) => setField('cover', e.target.value)}
+            />
+          </div>
+          <div className="space-y-2">
+            <div className="text-sm">外部数据源id</div>
+            <Input
+              value={formValues.externalSourceIds}
+              onChange={(e) => setField('externalSourceIds', e.target.value)}
+              placeholder="bangumi:935;steam:205790"
+            />
+            <div className="text-muted-foreground text-xs">
+              格式：provider1:id1;provider2:id2
+            </div>
           </div>
           <div className="space-y-2">
             <div className="text-sm">标签（逗号分隔）</div>
-            <Input value={formValues.tags} onChange={(e) => setField('tags', e.target.value)} />
+            <Input
+              value={formValues.tags}
+              onChange={(e) => setField('tags', e.target.value)}
+            />
           </div>
           <div className="space-y-2">
             <div className="text-sm">开发商</div>
-            <Input value={formValues.developer} onChange={(e) => setField('developer', e.target.value)} />
+            <Input
+              value={formValues.developer}
+              onChange={(e) => setField('developer', e.target.value)}
+            />
           </div>
           <div className="space-y-2">
             <div className="text-sm">发行商</div>
-            <Input value={formValues.publisher} onChange={(e) => setField('publisher', e.target.value)} />
+            <Input
+              value={formValues.publisher}
+              onChange={(e) => setField('publisher', e.target.value)}
+            />
           </div>
           <div className="space-y-2">
             <div className="text-sm">简介</div>
-            <Textarea value={formValues.summary} onChange={(e) => setField('summary', e.target.value)} />
+            <Textarea
+              value={formValues.summary}
+              onChange={(e) => setField('summary', e.target.value)}
+            />
           </div>
         </div>
 
         <DialogFooter>
-          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+          >
             取消
           </Button>
-          <Button type="button" disabled={isSaving} onClick={() => void handleSave()}>
+          <Button
+            type="button"
+            disabled={isSaving}
+            onClick={() => void handleSave()}
+          >
             {isSaving ? '保存中...' : '保存'}
           </Button>
         </DialogFooter>

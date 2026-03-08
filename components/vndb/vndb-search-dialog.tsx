@@ -178,7 +178,10 @@ export const VNDBSearchDialog = ({ children }: VNDBSearchDialogProps) => {
 
     setIsSaving(true)
     try {
-      const result = await createGameInfoApi(nextGameInfo)
+      const result = await createGameInfoApi(nextGameInfo, {
+        provider,
+        externalId: gameId.trim(),
+      })
       setGameInfo(nextGameInfo)
       setEditDialogOpen(false)
       await queryClient.invalidateQueries({ queryKey: ['game'] })

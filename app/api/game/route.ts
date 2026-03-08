@@ -1,7 +1,7 @@
 import dayjs from 'dayjs'
 import { NextRequest, NextResponse } from 'next/server'
 
-import { GameInfoTable, relateWebsiteTable } from '@/db/schema'
+import { GameIdMapTable, GameInfoTable, relateWebsiteTable } from '@/db/schema'
 import { db } from '@/lib/drizzle'
 import { GameInfo } from '@/types/game-types'
 
@@ -82,10 +82,37 @@ const parseGameInfoPayload = (payload: unknown): GameInfo | null => {
   }
 }
 
+const parseSourceMapPayload = (payload: unknown) => {
+  if (!payload || typeof payload !== 'object') {
+    return null
+  }
+
+  const source = payload as Record<string, unknown>
+  const sourceMap = source.sourceMap
+
+  if (!sourceMap || typeof sourceMap !== 'object') {
+    return null
+  }
+
+  const mapRecord = sourceMap as Record<string, unknown>
+  const provider = normalizeText(mapRecord.provider)
+  const externalId = normalizeText(mapRecord.externalId)
+
+  if (!provider || !externalId) {
+    return null
+  }
+
+  return {
+    provider,
+    externalId,
+  }
+}
+
 const createGame = async (req: NextRequest) => {
   try {
     const body = await req.json()
     const gameInfo = parseGameInfoPayload(body)
+    const sourceMap = parseSourceMapPayload(body)
 
     if (!gameInfo || !gameInfo.name) {
       return NextResponse.json(
@@ -129,6 +156,23 @@ const createGame = async (req: NextRequest) => {
     const gameId = inserted[0]?.id
 
     if (gameId) {
+      if (sourceMap) {
+        await db
+          .insert(GameIdMapTable)
+          .values({
+            gameId,
+            provider: sourceMap.provider,
+            externalId: sourceMap.externalId,
+          })
+          .onConflictDoNothing({
+            target: [
+              GameIdMapTable.gameId,
+              GameIdMapTable.provider,
+              GameIdMapTable.externalId,
+            ],
+          })
+      }
+
       const websites = [...gameInfo.websites, ...gameInfo.links]
         .map((item) => {
           const entries = Object.entries(item)

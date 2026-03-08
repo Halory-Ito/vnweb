@@ -11,7 +11,7 @@ export default function SettingsLayout({
 }) {
   return (
     <div className="max-h-[calc(100vh-70px)] w-full p-4">
-      <h1 className="mb-4 h-full text-2xl font-bold">vnweb 设置</h1>
+      <h1 className="mb-4 h-full text-2xl font-bold">设置</h1>
       {children}
     </div>
   )

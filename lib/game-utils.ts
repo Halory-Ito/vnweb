@@ -36,6 +36,7 @@ export type GameDetail = {
   playStatus: number
   isRunning: boolean
   currentSessionSeconds: number
+  externalSourceIds: string
   websites: Array<{
     id: number
     name: string
@@ -80,6 +81,16 @@ export type GameMediaLinkItem = {
   id: number
   name: string
   url: string
+  createdAt: string | null
+  updatedAt: string | null
+}
+
+export type GameMemoryItem = {
+  id: number
+  gameId: number
+  title: string
+  description: string
+  imageUrl: string
   createdAt: string | null
   updatedAt: string | null
 }
@@ -341,6 +352,86 @@ export const deleteGameOstById = async (id: number, itemId: number) => {
   ).data
 }
 
+export const getGameMemoriesById = async (id: number, title?: string) => {
+  const response = await api.get(`/game/${id}/memory`, {
+    params: {
+      title: title ?? '',
+    },
+  })
+  return (
+    response.data as {
+      data: {
+        items: GameMemoryItem[]
+      }
+    }
+  ).data
+}
+
+export const createGameMemoryById = async (
+  id: number,
+  payload: {
+    image: File
+    title: string
+    description: string
+  },
+) => {
+  const formData = new FormData()
+  formData.append('image', payload.image)
+  formData.append('title', payload.title)
+  formData.append('description', payload.description)
+
+  const response = await api.post(`/game/${id}/memory`, formData)
+  return (
+    response.data as {
+      data: {
+        item: GameMemoryItem
+      }
+    }
+  ).data
+}
+
+export const updateGameMemoryById = async (
+  gameId: number,
+  memoryId: number,
+  payload: {
+    title: string
+    description: string
+    image?: File
+  },
+) => {
+  const formData = new FormData()
+  formData.append('title', payload.title)
+  formData.append('description', payload.description)
+  if (payload.image) {
+    formData.append('image', payload.image)
+  }
+
+  const response = await api.patch(
+    `/game/${gameId}/memory/${memoryId}`,
+    formData,
+  )
+  return (
+    response.data as {
+      data: {
+        item: GameMemoryItem
+      }
+    }
+  ).data
+}
+
+export const deleteGameMemoryById = async (
+  gameId: number,
+  memoryId: number,
+) => {
+  const response = await api.delete(`/game/${gameId}/memory/${memoryId}`)
+  return response.data as {
+    data: {
+      deleted: boolean
+      id: number
+    }
+  }
+}
+
 export const importLocalGameOstById = async (id: number, file: File) => {
   const formData = new FormData()
   formData.append('file', file)
@@ -453,6 +544,7 @@ export const updateGameInfoById = async (
     developer: string
     publisher: string
     programmer: string
+    externalSourceIds: string
   }>,
 ) => {
   const response = await api.patch(`/game/${id}`, payload)

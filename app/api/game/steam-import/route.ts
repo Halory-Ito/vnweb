@@ -14,7 +14,12 @@ import {
   toSteamLogoUrl,
   toSteamStoreUrl,
 } from './_shared'
-import { GameInfoTable, GamePlayTable, relateWebsiteTable } from '@/db/schema'
+import {
+  GameIdMapTable,
+  GameInfoTable,
+  GamePlayTable,
+  relateWebsiteTable,
+} from '@/db/schema'
 import { db } from '@/lib/drizzle'
 
 export const maxDuration = 300
@@ -149,6 +154,21 @@ const importSteamGames = async (req: NextRequest) => {
       if (!gameId) {
         throw new Error('写入 game_info 失败')
       }
+
+      await tx
+        .insert(GameIdMapTable)
+        .values({
+          gameId,
+          provider: 'steam',
+          externalId: String(appId),
+        })
+        .onConflictDoNothing({
+          target: [
+            GameIdMapTable.gameId,
+            GameIdMapTable.provider,
+            GameIdMapTable.externalId,
+          ],
+        })
 
       const websites: Array<{ gameId: number; name: string; url: string }> = [
         {

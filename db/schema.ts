@@ -1,5 +1,5 @@
 import dayjs from 'dayjs'
-import { int, sqliteTable, text } from 'drizzle-orm/sqlite-core'
+import { int, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core'
 
 // 游戏信息表
 export const GameInfoTable = sqliteTable('game_info', {
@@ -69,6 +69,61 @@ export const GameRecordTable = sqliteTable('game_record', {
   gameId: int().notNull(),
   playTime: int().default(0), // 游戏游玩时间，单位为秒
   playDate: text().default(''), // 游戏游玩日期
+})
+
+// 游戏 id 与外部数据源 id 的映射表
+export const GameIdMapTable = sqliteTable(
+  'game_id_map',
+  {
+    id: int().primaryKey({ autoIncrement: true }),
+    gameId: int().notNull(),
+    provider: text().notNull(), // 数据源名称，如 vndb、steam、bgm 等
+    externalId: text().notNull(), // 外部数据源的游戏 id
+  },
+  (table) => [
+    uniqueIndex('game_id_map_game_provider_external_unique').on(
+      table.gameId,
+      table.provider,
+      table.externalId,
+    ),
+  ],
+)
+
+// TODO: 游戏相关人物表
+export const CharacterTable = sqliteTable('character', {
+  id: int().primaryKey({ autoIncrement: true }),
+  gameId: int().notNull(),
+  name: text().notNull(), // 角色名称
+  nameCn: text().notNull(), // 角色中文名称
+  gender: int().default(-1), // 角色性别 -1未知0男1女2其他
+  age: int().default(0), // 角色年龄
+  description: text().default(''), // 角色简介
+  birthday: text().default(''), // 角色生日
+  createdAt: text().default(dayjs().toString()), // 创建时间
+  updatedAt: text().default(dayjs().toString()), // 更新时间
+})
+
+// 游戏回忆表
+export const GameMemoryTable = sqliteTable('game_memory', {
+  id: int().primaryKey({ autoIncrement: true }),
+  gameId: int().notNull(),
+  title: text().default(''), // 回忆标题
+  description: text().default(''), // 回忆描述
+  imageUrl: text().default(''), // 回忆图片链接
+  createdAt: text().default(dayjs().toString()), // 创建时间
+  updatedAt: text().default(dayjs().toString()), // 更新时间
+})
+
+// 第三方账号表
+export const ThirdPartyAccountTable = sqliteTable('third_party_account', {
+  id: int().primaryKey({ autoIncrement: true }),
+  provider: text().notNull(), // 第三方账号提供商，如 vndb、steam、bgm 等
+  accountId: text().notNull(), // 第三方账号的唯一标识
+  accessToken: text().notNull(), // 第三方账号的访问令牌
+  refreshToken: text().default(''), // 第三方账号的刷新令牌
+  expiresAt: text().notNull(), // 访问令牌过期时间
+  createdAt: text().default(dayjs().toString()), // 创建时间
+  updatedAt: text().default(dayjs().toString()), // 更新时间
 })
 
 // 游戏相关网站表

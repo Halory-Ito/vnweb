@@ -2,106 +2,91 @@
 
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { AwardIcon, CalendarIcon, PlusIcon, TimerIcon } from 'lucide-react'
-import { Bar, BarChart } from 'recharts'
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts'
 
 import { fetchOverviewStatsApi } from './query-options'
 import {
   ChartStatsCard,
   ChartStatsCardProps,
-  RankItem,
   RankStatsCard,
-  RankStatsCardProps,
   SimpleStatsCard,
 } from '@/components/record/stats-card'
-import { ChartContainer, type ChartConfig } from '@/components/ui/chart'
-
-const chartData = [
-  { month: 'January', desktop: 186, mobile: 80 },
-  { month: 'February', desktop: 305, mobile: 200 },
-  { month: 'March', desktop: 237, mobile: 120 },
-  { month: 'April', desktop: 73, mobile: 190 },
-  { month: 'May', desktop: 209, mobile: 130 },
-  { month: 'June', desktop: 214, mobile: 140 },
-]
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+  type ChartConfig,
+} from '@/components/ui/chart'
 
 const chartConfig = {
-  desktop: {
-    label: 'Desktop',
+  hours: {
+    label: '小时',
     color: '#2563eb',
   },
-  mobile: {
-    label: 'Mobile',
-    color: '#60a5fa',
-  },
 } satisfies ChartConfig
-
-const chartCardData: ChartStatsCardProps[] = [
-  {
-    title: '游戏时长分布',
-    description: '38 分钟',
-    children: (
-      <ChartContainer
-        config={chartConfig}
-        className="max-h-64 w-full sm:min-h-32"
-      >
-        <BarChart accessibilityLayer data={chartData}>
-          <Bar dataKey="desktop" fill="var(--color-desktop)" radius={4} />
-          <Bar dataKey="mobile" fill="var(--color-mobile)" radius={4} />
-        </BarChart>
-      </ChartContainer>
-    ),
-  },
-  {
-    title: '游戏时间分布',
-    description: '游戏高峰时段: 20:00 - 21:00',
-    children: (
-      <ChartContainer
-        config={chartConfig}
-        className="max-h-64 w-full sm:min-h-32"
-      >
-        <BarChart accessibilityLayer data={chartData}>
-          <Bar dataKey="desktop" fill="var(--color-desktop)" radius={4} />
-          <Bar dataKey="mobile" fill="var(--color-mobile)" radius={4} />
-        </BarChart>
-      </ChartContainer>
-    ),
-  },
-]
-
-const timeRankItems: RankItem[] = [
-  {
-    id: '1',
-    cover: '/cover/wa2.jpg',
-    title: '游戏 A',
-    stat: 50.0,
-  },
-]
-const rateRankItems: RankItem[] = [
-  {
-    id: '1',
-    cover: '/cover/wa2.jpg',
-    title: '游戏 A',
-    stat: 8.0,
-  },
-]
-
-const timeRankCardData: RankStatsCardProps = {
-  title: '游戏时间排行',
-  rankItems: timeRankItems,
-  unit: '小时',
-}
-
-const rateRankCardData: RankStatsCardProps = {
-  title: '游戏评分排行',
-  rankItems: rateRankItems,
-  unit: '分',
-}
 
 export default function RecordOverview() {
   const { data } = useSuspenseQuery({
     queryKey: ['overview-stats'],
     queryFn: () => fetchOverviewStatsApi(),
   })
+
+  const chartCardData: ChartStatsCardProps[] = [
+    {
+      title: '游戏时长分布',
+      description: `${new Date().getFullYear()} 年每月总时长`,
+      children: (
+        <ChartContainer
+          config={chartConfig}
+          className="max-h-64 w-full sm:min-h-32"
+        >
+          <BarChart accessibilityLayer data={data.monthlyDurationDistribution}>
+            <CartesianGrid vertical={false} />
+            <XAxis dataKey="label" tickLine={false} axisLine={false} />
+            <YAxis tickLine={false} axisLine={false} width={52} />
+            <ChartTooltip
+              content={
+                <ChartTooltipContent
+                  formatter={(value) => `${Number(value).toFixed(2)} 小时`}
+                />
+              }
+            />
+            <Bar dataKey="hours" fill="var(--color-hours)" radius={4} />
+          </BarChart>
+        </ChartContainer>
+      ),
+    },
+    {
+      title: '游戏时间分布',
+      description: `游戏高峰时段: ${data.peakHourLabel}`,
+      children: (
+        <ChartContainer
+          config={chartConfig}
+          className="max-h-64 w-full sm:min-h-32"
+        >
+          <BarChart accessibilityLayer data={data.hourlyTimeDistribution}>
+            <CartesianGrid vertical={false} />
+            <XAxis
+              dataKey="label"
+              tickLine={false}
+              axisLine={false}
+              minTickGap={20}
+            />
+            <YAxis tickLine={false} axisLine={false} width={52} />
+            <ChartTooltip
+              content={
+                <ChartTooltipContent
+                  formatter={(value) => `${Number(value).toFixed(2)} 小时`}
+                />
+              }
+            />
+            <Bar dataKey="hours" fill="var(--color-hours)" radius={4} />
+          </BarChart>
+        </ChartContainer>
+      ),
+    },
+  ]
+
   return (
     <div className="w-full space-y-4">
       <div className="grid w-full grid-cols-2 gap-4 sm:grid-cols-4">
@@ -136,8 +121,16 @@ export default function RecordOverview() {
         ))}
       </div>
       <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2">
-        <RankStatsCard {...timeRankCardData} />
-        <RankStatsCard {...rateRankCardData} />
+        <RankStatsCard
+          title="游戏时间排行"
+          rankItems={data.playTimeRank}
+          unit="小时"
+        />
+        <RankStatsCard
+          title="游戏评分排行"
+          rankItems={data.ratingRank}
+          unit="分"
+        />
       </div>
     </div>
   )

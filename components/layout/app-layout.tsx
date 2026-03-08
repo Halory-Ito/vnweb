@@ -144,7 +144,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="relative flex h-screen w-screen overflow-hidden">
       <div
-        className="app-bg-image-layer pointer-events-none absolute inset-0 z-0"
+        className="app-bg-image-layer pointer-events-none absolute inset-0 z-0 transition-all duration-300"
         style={
           mounted && resolvedTheme === 'dark'
             ? {
