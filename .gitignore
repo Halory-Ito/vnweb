@@ -44,4 +44,6 @@ next-env.d.ts
 
 
 # assets
-/public/assets/*
+/public/assets
+
+/assets
