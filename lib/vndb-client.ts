@@ -51,3 +51,15 @@ export const SteamClient = axios.create({
       'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:144.0) Gecko/20100101 Firefox/144.0',
   },
 })
+
+// vndb client
+export const VNDBClient = axios.create({
+  baseURL:
+    getPublicEnv('NEXT_PUBLIC_VNDB_BASE_URL') || 'https://api.vndb.org/kana',
+  timeout: undefined,
+  headers: {
+    'Content-Type': 'application/json',
+    'User-Agent':
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:144.0) Gecko/20100101 Firefox/144.0',
+  },
+})

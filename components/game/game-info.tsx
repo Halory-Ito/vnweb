@@ -31,6 +31,7 @@ import GameStats from './info/game-stats'
 import { gameFilterAtom } from '@/atom/global'
 import GameOSTDialog from '@/components/game/dialog/game-ost-dialog'
 import GamePVDialog from '@/components/game/dialog/game-pv-dialog'
+import GameCharacters from '@/components/game/info/game-characters'
 import GameMemory from '@/components/game/info/game-memory'
 import GameOST from '@/components/game/info/game-ost'
 import GamePV from '@/components/game/info/game-pv'
@@ -323,8 +324,8 @@ export default function GameInfo({ game }: GameInfoProps) {
                 <GameOverview game={game} onApplyTagFilter={applyTagFilter} />
               </TabsContent>
               <TabsContent value="characters">
-                <div className="rounded-md border p-4 text-center text-sm">
-                  待开发
+                <div className="rounded-md border p-4 text-sm">
+                  <GameCharacters gameId={game.id} />
                 </div>
               </TabsContent>
 

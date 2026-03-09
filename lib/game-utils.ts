@@ -49,6 +49,33 @@ export type GameRuntime = {
   currentSessionSeconds: number
 }
 
+export type VndbCharacterListItem = {
+  id: string
+  name: string
+  original: string
+  imageUrl: string
+  role: 'main' | 'primary' | 'side' | 'appears' | ''
+}
+
+export type VndbCharacterDetail = {
+  id: string
+  name: string
+  original: string
+  description: string
+  imageUrl: string
+  bloodType: string
+  height: number | null
+  weight: number | null
+  bust: number | null
+  waist: number | null
+  hips: number | null
+  cup: string
+  age: number | null
+  birthday: [number, number] | null
+  sex: [string | null, string | null] | null
+  gender: [string | null, string | null] | null
+}
+
 export const getGameFilterOptions = async () => {
   const response = await api.get('/game/filter-options')
   return (
@@ -136,6 +163,27 @@ export const getGameById = async (id: string) => {
 export const getGameRuntimeById = async (id: number) => {
   const response = await api.get(`/game/${id}/runtime`)
   return (response.data as { data: GameRuntime }).data
+}
+
+export const getVndbCharactersByGameId = async (gameId: number) => {
+  const response = await api.get('/db/vndb/characters', {
+    params: {
+      gameId,
+    },
+  })
+  return (
+    response.data as {
+      data: {
+        vnId: string
+        items: VndbCharacterListItem[]
+      }
+    }
+  ).data
+}
+
+export const getVndbCharacterById = async (characterId: string) => {
+  const response = await api.get(`/db/vndb/character/${characterId}`)
+  return (response.data as { data: VndbCharacterDetail }).data
 }
 
 export const launchGameById = async (id: number, exePath?: string) => {
