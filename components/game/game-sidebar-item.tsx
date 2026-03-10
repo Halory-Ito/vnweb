@@ -12,6 +12,16 @@ import { toast } from 'sonner'
 import GameSettingsPanel from './game-settings-panel'
 import { selectedGameIdsAtom } from '@/atom/global'
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
+import {
   ContextMenuGroup,
   ContextMenu,
   ContextMenuContent,
@@ -48,6 +58,8 @@ export const GameSidebarItem = ({
   const queryClient = useQueryClient()
   const [selectedGameIds, setSelectedGameIds] = useAtom(selectedGameIdsAtom)
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const [deleteOpen, setDeleteOpen] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
   const { data: collections = [] } = useQuery({
     queryKey: ['collections'],
     queryFn: getCollections,
@@ -109,13 +121,15 @@ export const GameSidebarItem = ({
   }
 
   const handleDeleteGame = async () => {
-    const ok = window.confirm(`确定删除游戏「${title}」吗？`)
-    if (!ok) {
+    if (isDeleting) {
       return
     }
 
+    setIsDeleting(true)
     try {
       await deleteGameById(gameId)
+      setSelectedGameIds((prev) => prev.filter((item) => item !== id))
+      setDeleteOpen(false)
       queryClient.removeQueries({ queryKey: ['game', String(gameId)] })
       await queryClient.invalidateQueries({
         queryKey: ['game'],
@@ -125,6 +139,9 @@ export const GameSidebarItem = ({
       })
       await queryClient.invalidateQueries({
         queryKey: ['game-cards'],
+      })
+      await queryClient.invalidateQueries({
+        queryKey: ['collections'],
       })
 
       if (pathname.startsWith(`/game/info/${id}`)) {
@@ -143,6 +160,8 @@ export const GameSidebarItem = ({
         message?: string
       }
       toast.error(err.response?.data?.error || err.message || '删除失败')
+    } finally {
+      setIsDeleting(false)
     }
   }
 
@@ -267,7 +286,7 @@ export const GameSidebarItem = ({
             </ContextMenuItem>
             <ContextMenuItem
               variant="destructive"
-              onClick={() => void handleDeleteGame()}
+              onClick={() => setDeleteOpen(true)}
             >
               删除
             </ContextMenuItem>
@@ -287,6 +306,31 @@ export const GameSidebarItem = ({
         open={settingsOpen}
         onOpenChange={setSettingsOpen}
       />
+
+      <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>删除游戏</AlertDialogTitle>
+            <AlertDialogDescription>
+              确定要删除“{title}
+              ”吗？此操作会同时移除该游戏的基础信息、外部映射、角色、回忆、媒体、游玩记录和收藏关联，且无法撤销。
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>取消</AlertDialogCancel>
+            <AlertDialogAction
+              variant="destructive"
+              disabled={isDeleting}
+              onClick={(event) => {
+                event.preventDefault()
+                void handleDeleteGame()
+              }}
+            >
+              {isDeleting ? '删除中...' : '确认删除'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </ContextMenu>
   )
 }

@@ -89,7 +89,7 @@ export const GameIdMapTable = sqliteTable(
   ],
 )
 
-// TODO: 游戏相关人物表
+// 游戏相关人物表
 export const CharacterTable = sqliteTable(
   'character',
   {

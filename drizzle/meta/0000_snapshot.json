@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "6a0b3a10-cf19-4885-ba4d-d5c80a4c7ff0",
+  "id": "80b97d63-6cc1-475e-8e05-311a6e705e55",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "character": {
@@ -102,14 +102,6 @@
           "notNull": false,
           "autoincrement": false
         },
-        "cup": {
-          "name": "cup",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false,
-          "default": "''"
-        },
         "age": {
           "name": "age",
           "type": "integer",
@@ -153,7 +145,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "'Tue, 10 Mar 2026 01:22:57 GMT'"
+          "default": "'Tue, 10 Mar 2026 05:17:47 GMT'"
         },
         "updatedAt": {
           "name": "updatedAt",
@@ -161,10 +153,19 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "'Tue, 10 Mar 2026 01:22:57 GMT'"
+          "default": "'Tue, 10 Mar 2026 05:17:47 GMT'"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "character_game_vndb_unique": {
+          "name": "character_game_vndb_unique",
+          "columns": [
+            "gameId",
+            "vndbId"
+          ],
+          "isUnique": true
+        }
+      },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
@@ -224,7 +225,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "'Tue, 10 Mar 2026 01:22:57 GMT'"
+          "default": "'Tue, 10 Mar 2026 05:17:47 GMT'"
         },
         "updatedAt": {
           "name": "updatedAt",
@@ -232,7 +233,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "'Tue, 10 Mar 2026 01:22:57 GMT'"
+          "default": "'Tue, 10 Mar 2026 05:17:47 GMT'"
         }
       },
       "indexes": {},
@@ -463,7 +464,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "'Tue, 10 Mar 2026 01:22:57 GMT'"
+          "default": "'Tue, 10 Mar 2026 05:17:47 GMT'"
         },
         "updatedAt": {
           "name": "updatedAt",
@@ -471,7 +472,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "'Tue, 10 Mar 2026 01:22:57 GMT'"
+          "default": "'Tue, 10 Mar 2026 05:17:47 GMT'"
         }
       },
       "indexes": {},
@@ -527,7 +528,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "'Tue, 10 Mar 2026 01:22:57 GMT'"
+          "default": "'Tue, 10 Mar 2026 05:17:47 GMT'"
         },
         "updatedAt": {
           "name": "updatedAt",
@@ -535,7 +536,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "'Tue, 10 Mar 2026 01:22:57 GMT'"
+          "default": "'Tue, 10 Mar 2026 05:17:47 GMT'"
         }
       },
       "indexes": {},
@@ -581,7 +582,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "'Tue, 10 Mar 2026 01:22:57 GMT'"
+          "default": "'Tue, 10 Mar 2026 05:17:47 GMT'"
         },
         "updatedAt": {
           "name": "updatedAt",
@@ -589,7 +590,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "'Tue, 10 Mar 2026 01:22:57 GMT'"
+          "default": "'Tue, 10 Mar 2026 05:17:47 GMT'"
         }
       },
       "indexes": {},
@@ -715,7 +716,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "'Tue, 10 Mar 2026 01:22:57 GMT'"
+          "default": "'Tue, 10 Mar 2026 05:17:47 GMT'"
         },
         "updatedAt": {
           "name": "updatedAt",
@@ -723,7 +724,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "'Tue, 10 Mar 2026 01:22:57 GMT'"
+          "default": "'Tue, 10 Mar 2026 05:17:47 GMT'"
         }
       },
       "indexes": {},
@@ -810,7 +811,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "'Tue, 10 Mar 2026 01:22:57 GMT'"
+          "default": "'Tue, 10 Mar 2026 05:17:47 GMT'"
         },
         "updatedAt": {
           "name": "updatedAt",
@@ -818,7 +819,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "'Tue, 10 Mar 2026 01:22:57 GMT'"
+          "default": "'Tue, 10 Mar 2026 05:17:47 GMT'"
         }
       },
       "indexes": {},
@@ -897,7 +898,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "'Tue, 10 Mar 2026 01:22:57 GMT'"
+          "default": "'Tue, 10 Mar 2026 05:17:47 GMT'"
         },
         "updatedAt": {
           "name": "updatedAt",
@@ -905,7 +906,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "'Tue, 10 Mar 2026 01:22:57 GMT'"
+          "default": "'Tue, 10 Mar 2026 05:17:47 GMT'"
         }
       },
       "indexes": {},
@@ -966,7 +967,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "'Tue, 10 Mar 2026 01:22:57 GMT'"
+          "default": "'Tue, 10 Mar 2026 05:17:47 GMT'"
         },
         "updatedAt": {
           "name": "updatedAt",
@@ -974,7 +975,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "'Tue, 10 Mar 2026 01:22:57 GMT'"
+          "default": "'Tue, 10 Mar 2026 05:17:47 GMT'"
         }
       },
       "indexes": {},

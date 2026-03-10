@@ -12,16 +12,16 @@ CREATE TABLE `character` (
 	`bust` integer,
 	`waist` integer,
 	`hips` integer,
-	`cup` text DEFAULT '',
 	`age` integer,
 	`birthdayMonth` integer,
 	`birthdayDay` integer,
 	`sex` text DEFAULT '',
 	`gender` text DEFAULT '',
-	`createdAt` text DEFAULT 'Tue, 10 Mar 2026 01:22:57 GMT',
-	`updatedAt` text DEFAULT 'Tue, 10 Mar 2026 01:22:57 GMT'
+	`createdAt` text DEFAULT 'Tue, 10 Mar 2026 05:17:47 GMT',
+	`updatedAt` text DEFAULT 'Tue, 10 Mar 2026 05:17:47 GMT'
 );
 --> statement-breakpoint
+CREATE UNIQUE INDEX `character_game_vndb_unique` ON `character` (`gameId`,`vndbId`);--> statement-breakpoint
 CREATE TABLE `collection_game` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`collectionId` integer NOT NULL,
@@ -31,8 +31,8 @@ CREATE TABLE `collection_game` (
 CREATE TABLE `collection` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`name` text NOT NULL,
-	`createdAt` text DEFAULT 'Tue, 10 Mar 2026 01:22:57 GMT',
-	`updatedAt` text DEFAULT 'Tue, 10 Mar 2026 01:22:57 GMT'
+	`createdAt` text DEFAULT 'Tue, 10 Mar 2026 05:17:47 GMT',
+	`updatedAt` text DEFAULT 'Tue, 10 Mar 2026 05:17:47 GMT'
 );
 --> statement-breakpoint
 CREATE TABLE `game_id_map` (
@@ -67,8 +67,8 @@ CREATE TABLE `game_info` (
 	`developer` text NOT NULL,
 	`publisher` text NOT NULL,
 	`programmer` text NOT NULL,
-	`createdAt` text DEFAULT 'Tue, 10 Mar 2026 01:22:57 GMT',
-	`updatedAt` text DEFAULT 'Tue, 10 Mar 2026 01:22:57 GMT'
+	`createdAt` text DEFAULT 'Tue, 10 Mar 2026 05:17:47 GMT',
+	`updatedAt` text DEFAULT 'Tue, 10 Mar 2026 05:17:47 GMT'
 );
 --> statement-breakpoint
 CREATE TABLE `game_memory` (
@@ -77,8 +77,8 @@ CREATE TABLE `game_memory` (
 	`title` text DEFAULT '',
 	`description` text DEFAULT '',
 	`imageUrl` text DEFAULT '',
-	`createdAt` text DEFAULT 'Tue, 10 Mar 2026 01:22:57 GMT',
-	`updatedAt` text DEFAULT 'Tue, 10 Mar 2026 01:22:57 GMT'
+	`createdAt` text DEFAULT 'Tue, 10 Mar 2026 05:17:47 GMT',
+	`updatedAt` text DEFAULT 'Tue, 10 Mar 2026 05:17:47 GMT'
 );
 --> statement-breakpoint
 CREATE TABLE `game_ost` (
@@ -86,8 +86,8 @@ CREATE TABLE `game_ost` (
 	`gameId` integer NOT NULL,
 	`name` text NOT NULL,
 	`url` text NOT NULL,
-	`createdAt` text DEFAULT 'Tue, 10 Mar 2026 01:22:57 GMT',
-	`updatedAt` text DEFAULT 'Tue, 10 Mar 2026 01:22:57 GMT'
+	`createdAt` text DEFAULT 'Tue, 10 Mar 2026 05:17:47 GMT',
+	`updatedAt` text DEFAULT 'Tue, 10 Mar 2026 05:17:47 GMT'
 );
 --> statement-breakpoint
 CREATE TABLE `game_play` (
@@ -107,8 +107,8 @@ CREATE TABLE `game_pv` (
 	`gameId` integer NOT NULL,
 	`name` text NOT NULL,
 	`url` text NOT NULL,
-	`createdAt` text DEFAULT 'Tue, 10 Mar 2026 01:22:57 GMT',
-	`updatedAt` text DEFAULT 'Tue, 10 Mar 2026 01:22:57 GMT'
+	`createdAt` text DEFAULT 'Tue, 10 Mar 2026 05:17:47 GMT',
+	`updatedAt` text DEFAULT 'Tue, 10 Mar 2026 05:17:47 GMT'
 );
 --> statement-breakpoint
 CREATE TABLE `game_record` (
@@ -123,8 +123,8 @@ CREATE TABLE `scan_error` (
 	`directory` text NOT NULL,
 	`error` text NOT NULL,
 	`status` integer DEFAULT 0,
-	`createdAt` text DEFAULT 'Tue, 10 Mar 2026 01:22:57 GMT',
-	`updatedAt` text DEFAULT 'Tue, 10 Mar 2026 01:22:57 GMT'
+	`createdAt` text DEFAULT 'Tue, 10 Mar 2026 05:17:47 GMT',
+	`updatedAt` text DEFAULT 'Tue, 10 Mar 2026 05:17:47 GMT'
 );
 --> statement-breakpoint
 CREATE TABLE `scanner` (
@@ -136,8 +136,8 @@ CREATE TABLE `scanner` (
 	`scanMode` integer DEFAULT 0,
 	`scanLevel` integer DEFAULT 0,
 	`excludeDirs` text DEFAULT '',
-	`createdAt` text DEFAULT 'Tue, 10 Mar 2026 01:22:57 GMT',
-	`updatedAt` text DEFAULT 'Tue, 10 Mar 2026 01:22:57 GMT'
+	`createdAt` text DEFAULT 'Tue, 10 Mar 2026 05:17:47 GMT',
+	`updatedAt` text DEFAULT 'Tue, 10 Mar 2026 05:17:47 GMT'
 );
 --> statement-breakpoint
 CREATE TABLE `third_party_account` (
@@ -147,8 +147,8 @@ CREATE TABLE `third_party_account` (
 	`accessToken` text NOT NULL,
 	`refreshToken` text DEFAULT '',
 	`expiresAt` text NOT NULL,
-	`createdAt` text DEFAULT 'Tue, 10 Mar 2026 01:22:57 GMT',
-	`updatedAt` text DEFAULT 'Tue, 10 Mar 2026 01:22:57 GMT'
+	`createdAt` text DEFAULT 'Tue, 10 Mar 2026 05:17:47 GMT',
+	`updatedAt` text DEFAULT 'Tue, 10 Mar 2026 05:17:47 GMT'
 );
 --> statement-breakpoint
 CREATE TABLE `relate_website` (

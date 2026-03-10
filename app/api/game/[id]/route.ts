@@ -3,9 +3,14 @@ import { NextRequest, NextResponse } from 'next/server'
 import path from 'node:path'
 
 import {
+  CharacterTable,
+  CollectionGameTable,
   GameIdMapTable,
   GameInfoTable,
+  GameMemoryTable,
+  GameOstTable,
   GamePlayTable,
+  GamePvTable,
   GameRecordTable,
   relateWebsiteTable,
 } from '@/db/schema'
@@ -625,12 +630,22 @@ const deleteGameById = async (
       return NextResponse.json({ error: 'Game not found' }, { status: 404 })
     }
 
-    await db.delete(GamePlayTable).where(eq(GamePlayTable.gameId, gameId))
-    await db.delete(GameRecordTable).where(eq(GameRecordTable.gameId, gameId))
-    await db
-      .delete(relateWebsiteTable)
-      .where(eq(relateWebsiteTable.gameId, gameId))
-    await db.delete(GameInfoTable).where(eq(GameInfoTable.id, gameId))
+    await db.transaction(async (tx) => {
+      await tx.delete(GamePlayTable).where(eq(GamePlayTable.gameId, gameId))
+      await tx.delete(GameRecordTable).where(eq(GameRecordTable.gameId, gameId))
+      await tx.delete(GamePvTable).where(eq(GamePvTable.gameId, gameId))
+      await tx.delete(GameOstTable).where(eq(GameOstTable.gameId, gameId))
+      await tx.delete(GameMemoryTable).where(eq(GameMemoryTable.gameId, gameId))
+      await tx.delete(CharacterTable).where(eq(CharacterTable.gameId, gameId))
+      await tx
+        .delete(CollectionGameTable)
+        .where(eq(CollectionGameTable.gameId, gameId))
+      await tx.delete(GameIdMapTable).where(eq(GameIdMapTable.gameId, gameId))
+      await tx
+        .delete(relateWebsiteTable)
+        .where(eq(relateWebsiteTable.gameId, gameId))
+      await tx.delete(GameInfoTable).where(eq(GameInfoTable.id, gameId))
+    })
 
     return NextResponse.json({
       data: {

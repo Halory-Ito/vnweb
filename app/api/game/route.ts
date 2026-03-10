@@ -9,6 +9,7 @@ import {
   relateWebsiteTable,
 } from '@/db/schema'
 import { db } from '@/lib/drizzle'
+import { syncVndbCharactersByGameId } from '@/lib/server/vndb-character-sync'
 import { GameInfo } from '@/types/game-types'
 
 const normalizeText = (value: unknown): string => {
@@ -177,6 +178,12 @@ const createGame = async (req: NextRequest) => {
               GameIdMapTable.externalId,
             ],
           })
+
+        if (sourceMap.provider.trim().toLowerCase() === 'vndb') {
+          void syncVndbCharactersByGameId(gameId).catch((error) => {
+            console.error('Auto sync VNDB characters failed:', error)
+          })
+        }
       }
 
       if (sourceMap?.provider.toLowerCase() === 'steam') {

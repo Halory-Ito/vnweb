@@ -1,13 +1,20 @@
 import { PlusCircleIcon } from 'lucide-react'
 
-import { SteamImportDialog, VNDBSearchDialog } from './vndb-search-dialog'
+import {
+  BangumiImportDialog,
+  SteamImportDialog,
+  VndbImportDialog,
+  VNDBSearchDialog,
+} from './vndb-search-dialog'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
-  DropdownMenuShortcut,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import {
@@ -37,11 +44,26 @@ export default function VNDBTrigger() {
                 手动添加
               </DropdownMenuItem>
             </VNDBSearchDialog>
-            <SteamImportDialog>
-              <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                从 Steam 导入
-              </DropdownMenuItem>
-            </SteamImportDialog>
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger>从第三方导入</DropdownMenuSubTrigger>
+              <DropdownMenuSubContent>
+                <SteamImportDialog>
+                  <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                    从 Steam 导入
+                  </DropdownMenuItem>
+                </SteamImportDialog>
+                <BangumiImportDialog>
+                  <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                    从 bangumi 导入
+                  </DropdownMenuItem>
+                </BangumiImportDialog>
+                <VndbImportDialog>
+                  <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                    从 VNDB 导入
+                  </DropdownMenuItem>
+                </VndbImportDialog>
+              </DropdownMenuSubContent>
+            </DropdownMenuSub>
           </DropdownMenuGroup>
         </DropdownMenuContent>
       </DropdownMenu>
