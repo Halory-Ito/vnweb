@@ -50,6 +50,22 @@ export type SteamAppDetail = {
   developers?: string[]
   publishers?: string[]
   website?: string
+  movies?: Array<{
+    id?: number
+    name?: string
+    thumbnail?: string
+    dash_h264?: string
+    hls_h264?: string
+    mp4?: {
+      max?: string
+      480?: string
+    }
+    webm?: {
+      max?: string
+      480?: string
+    }
+    highlight?: boolean
+  }>
   platforms?: {
     windows?: boolean
     mac?: boolean

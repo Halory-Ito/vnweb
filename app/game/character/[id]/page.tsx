@@ -1,12 +1,16 @@
 'use client'
 
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import { useParams, useSearchParams } from 'next/navigation'
+import { useEffect, useState } from 'react'
+import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
-import { getVndbCharacterById } from '@/lib/game-utils'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import { getVndbCharacterById, updateVndbCharacterById } from '@/lib/game-utils'
 
 const formatBirthday = (birthday: [number, number] | null) => {
   if (!birthday) {
@@ -73,10 +77,10 @@ const infoRows = (
         ? '-'
         : `${data.bust}/${data.waist}/${data.hips} cm`,
   },
-  {
-    label: '罩杯',
-    value: data.cup || '-',
-  },
+  // {
+  //   label: '罩杯',
+  //   value: data.cup || '-',
+  // },
   {
     label: '性别(外观/剧透)',
     value: formatSexOrGender(data.sex, {
@@ -86,29 +90,146 @@ const infoRows = (
       n: '无性',
     }),
   },
-  {
-    label: '性认同(外观/剧透)',
-    value: formatSexOrGender(data.gender, {
-      m: '男',
-      f: '女',
-      o: '非二元',
-      a: '未明确',
-    }),
-  },
+  // {
+  //   label: '性认同(外观/剧透)',
+  //   value: formatSexOrGender(data.gender, {
+  //     m: '男',
+  //     f: '女',
+  //     o: '非二元',
+  //     a: '未明确',
+  //   }),
+  // },
 ]
 
 export default function CharacterDetailPage() {
   const params = useParams<{ id: string }>()
   const searchParams = useSearchParams()
+  const queryClient = useQueryClient()
   const gameId = searchParams.get('gameId')
+  const numericGameId = Number(gameId)
+  const canEdit = Number.isInteger(numericGameId) && numericGameId > 0
+  const [editing, setEditing] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [form, setForm] = useState({
+    name: '',
+    original: '',
+    imageUrl: '',
+    bloodType: '',
+    age: '',
+    height: '',
+    weight: '',
+    bust: '',
+    waist: '',
+    hips: '',
+    birthdayMonth: '',
+    birthdayDay: '',
+    sexPublic: '',
+    sexSpoiler: '',
+    genderPublic: '',
+    genderSpoiler: '',
+    description: '',
+  })
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ['vndb-character', params.id],
-    queryFn: () => getVndbCharacterById(params.id),
+    queryKey: ['vndb-character', params.id, numericGameId || 0],
+    queryFn: () =>
+      getVndbCharacterById(params.id, canEdit ? numericGameId : undefined),
     enabled: Boolean(params.id),
   })
 
+  useEffect(() => {
+    if (!data) {
+      return
+    }
+
+    setForm({
+      name: data.name || '',
+      original: data.original || '',
+      imageUrl: data.imageUrl || '',
+      bloodType: data.bloodType || '',
+      age: data.age === null ? '' : String(data.age),
+      height: data.height === null ? '' : String(data.height),
+      weight: data.weight === null ? '' : String(data.weight),
+      bust: data.bust === null ? '' : String(data.bust),
+      waist: data.waist === null ? '' : String(data.waist),
+      hips: data.hips === null ? '' : String(data.hips),
+      birthdayMonth: data.birthday?.[0] ? String(data.birthday[0]) : '',
+      birthdayDay: data.birthday?.[1] ? String(data.birthday[1]) : '',
+      sexPublic: data.sex?.[0] || '',
+      sexSpoiler: data.sex?.[1] || '',
+      genderPublic: data.gender?.[0] || '',
+      genderSpoiler: data.gender?.[1] || '',
+      description: data.description || '',
+    })
+  }, [data])
+
   const backHref = gameId ? `/game/info/${gameId}` : '/game/home'
+
+  const saveEdit = async () => {
+    if (!canEdit) {
+      toast.error('缺少 gameId，无法保存编辑')
+      return
+    }
+
+    const toNullableNumber = (value: string) => {
+      const trimmed = value.trim()
+      if (!trimmed) {
+        return null
+      }
+      const num = Number(trimmed)
+      return Number.isFinite(num) ? Math.trunc(num) : null
+    }
+
+    setSaving(true)
+    try {
+      await updateVndbCharacterById(params.id, {
+        gameId: numericGameId,
+        name: form.name.trim(),
+        original: form.original.trim(),
+        imageUrl: form.imageUrl.trim(),
+        bloodType: form.bloodType.trim(),
+        age: toNullableNumber(form.age),
+        height: toNullableNumber(form.height),
+        weight: toNullableNumber(form.weight),
+        bust: toNullableNumber(form.bust),
+        waist: toNullableNumber(form.waist),
+        hips: toNullableNumber(form.hips),
+        birthday:
+          form.birthdayMonth.trim() && form.birthdayDay.trim()
+            ? [
+                Number(form.birthdayMonth.trim()),
+                Number(form.birthdayDay.trim()),
+              ]
+            : null,
+        sex:
+          form.sexPublic.trim() || form.sexSpoiler.trim()
+            ? [form.sexPublic.trim() || null, form.sexSpoiler.trim() || null]
+            : null,
+        gender:
+          form.genderPublic.trim() || form.genderSpoiler.trim()
+            ? [
+                form.genderPublic.trim() || null,
+                form.genderSpoiler.trim() || null,
+              ]
+            : null,
+        description: form.description,
+      })
+
+      await queryClient.invalidateQueries({
+        queryKey: ['vndb-character', params.id, numericGameId || 0],
+      })
+      setEditing(false)
+      toast.success('角色信息已保存')
+    } catch (saveError) {
+      const err = saveError as {
+        response?: { data?: { error?: string } }
+        message?: string
+      }
+      toast.error(err.response?.data?.error || err.message || '保存失败')
+    } finally {
+      setSaving(false)
+    }
+  }
 
   if (isLoading) {
     return <div className="text-muted-foreground p-6 text-sm">加载中...</div>
@@ -156,13 +277,191 @@ export default function CharacterDetailPage() {
 
         <div className="space-y-4">
           <div className="rounded-md border p-4">
-            <div className="text-xl font-semibold">{data.name || data.id}</div>
-            {data.original && data.original !== data.name ? (
-              <div className="text-muted-foreground mt-1 text-sm">
-                {data.original}
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <div className="text-xl font-semibold">
+                  {data.name || data.id}
+                </div>
+                {data.original && data.original !== data.name ? (
+                  <div className="text-muted-foreground mt-1 text-sm">
+                    {data.original}
+                  </div>
+                ) : null}
               </div>
-            ) : null}
+              {canEdit ? (
+                <div className="flex gap-2">
+                  {editing ? (
+                    <>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setEditing(false)}
+                        disabled={saving}
+                      >
+                        取消
+                      </Button>
+                      <Button
+                        type="button"
+                        onClick={() => void saveEdit()}
+                        disabled={saving}
+                      >
+                        {saving ? '保存中...' : '保存'}
+                      </Button>
+                    </>
+                  ) : (
+                    <Button type="button" onClick={() => setEditing(true)}>
+                      编辑
+                    </Button>
+                  )}
+                </div>
+              ) : null}
+            </div>
           </div>
+
+          {editing ? (
+            <div className="rounded-md border p-4">
+              <div className="mb-3 text-base font-medium">编辑角色信息</div>
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                <Input
+                  placeholder="姓名"
+                  value={form.name}
+                  onChange={(e) =>
+                    setForm((prev) => ({ ...prev, name: e.target.value }))
+                  }
+                />
+                <Input
+                  placeholder="本名"
+                  value={form.original}
+                  onChange={(e) =>
+                    setForm((prev) => ({ ...prev, original: e.target.value }))
+                  }
+                />
+                <Input
+                  placeholder="图片链接"
+                  value={form.imageUrl}
+                  onChange={(e) =>
+                    setForm((prev) => ({ ...prev, imageUrl: e.target.value }))
+                  }
+                />
+                <Input
+                  placeholder="血型"
+                  value={form.bloodType}
+                  onChange={(e) =>
+                    setForm((prev) => ({ ...prev, bloodType: e.target.value }))
+                  }
+                />
+                <Input
+                  placeholder="年龄"
+                  value={form.age}
+                  onChange={(e) =>
+                    setForm((prev) => ({ ...prev, age: e.target.value }))
+                  }
+                />
+                <Input
+                  placeholder="身高"
+                  value={form.height}
+                  onChange={(e) =>
+                    setForm((prev) => ({ ...prev, height: e.target.value }))
+                  }
+                />
+                <Input
+                  placeholder="体重"
+                  value={form.weight}
+                  onChange={(e) =>
+                    setForm((prev) => ({ ...prev, weight: e.target.value }))
+                  }
+                />
+                <Input
+                  placeholder="胸围"
+                  value={form.bust}
+                  onChange={(e) =>
+                    setForm((prev) => ({ ...prev, bust: e.target.value }))
+                  }
+                />
+                <Input
+                  placeholder="腰围"
+                  value={form.waist}
+                  onChange={(e) =>
+                    setForm((prev) => ({ ...prev, waist: e.target.value }))
+                  }
+                />
+                <Input
+                  placeholder="臀围"
+                  value={form.hips}
+                  onChange={(e) =>
+                    setForm((prev) => ({ ...prev, hips: e.target.value }))
+                  }
+                />
+                <Input
+                  placeholder="生日月"
+                  value={form.birthdayMonth}
+                  onChange={(e) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      birthdayMonth: e.target.value,
+                    }))
+                  }
+                />
+                <Input
+                  placeholder="生日日"
+                  value={form.birthdayDay}
+                  onChange={(e) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      birthdayDay: e.target.value,
+                    }))
+                  }
+                />
+                <Input
+                  placeholder="性别(公开) 例:m/f/b/n"
+                  value={form.sexPublic}
+                  onChange={(e) =>
+                    setForm((prev) => ({ ...prev, sexPublic: e.target.value }))
+                  }
+                />
+                <Input
+                  placeholder="性别(剧透) 例:m/f/b/n"
+                  value={form.sexSpoiler}
+                  onChange={(e) =>
+                    setForm((prev) => ({ ...prev, sexSpoiler: e.target.value }))
+                  }
+                />
+                <Input
+                  placeholder="性认同(公开) 例:m/f/o/a"
+                  value={form.genderPublic}
+                  onChange={(e) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      genderPublic: e.target.value,
+                    }))
+                  }
+                />
+                <Input
+                  placeholder="性认同(剧透) 例:m/f/o/a"
+                  value={form.genderSpoiler}
+                  onChange={(e) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      genderSpoiler: e.target.value,
+                    }))
+                  }
+                />
+              </div>
+              <div className="mt-3">
+                <Textarea
+                  placeholder="角色概述"
+                  value={form.description}
+                  onChange={(e) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      description: e.target.value,
+                    }))
+                  }
+                  rows={6}
+                />
+              </div>
+            </div>
+          ) : null}
 
           <div className="rounded-md border p-4">
             <div className="mb-3 text-base font-medium">基本信息</div>

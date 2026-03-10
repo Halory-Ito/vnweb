@@ -2,7 +2,7 @@ import { atom } from 'jotai'
 
 import type { GameFilterState } from '@/types/game-types'
 
-const fontAtom = atom('/font/SourceHanSerifCN-Regular-1.otf')
+const fontAtom = atom('')
 
 const bgAtom = atom('')
 

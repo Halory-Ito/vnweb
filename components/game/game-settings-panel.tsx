@@ -159,6 +159,18 @@ export default function GameSettingsPanel({
   const [bg, setBg] = useState('')
   const [icon, setIcon] = useState('')
   const [logo, setLogo] = useState('')
+  const [coverLocalized, setCoverLocalized] = useState('')
+  const [bgLocalized, setBgLocalized] = useState('')
+  const [iconLocalized, setIconLocalized] = useState('')
+  const [logoLocalized, setLogoLocalized] = useState('')
+  const [localizingMap, setLocalizingMap] = useState<
+    Record<ImageField, boolean>
+  >({
+    cover: false,
+    bg: false,
+    icon: false,
+    logo: false,
+  })
   const [isSaving, setIsSaving] = useState(false)
   const [searchDialogOpen, setSearchDialogOpen] = useState(false)
   const [searchSource, setSearchSource] = useState('steamgriddb')
@@ -202,6 +214,10 @@ export default function GameSettingsPanel({
     setBg(data.bg || '')
     setIcon(data.icon || '')
     setLogo(data.logo || '')
+    setCoverLocalized(data.cover || '')
+    setBgLocalized(data.bg || '')
+    setIconLocalized(data.icon || '')
+    setLogoLocalized(data.logo || '')
   }, [data])
 
   const fieldValueMap = useMemo(
@@ -230,6 +246,27 @@ export default function GameSettingsPanel({
     setLogo(value)
   }
 
+  const setLocalizedFieldValue = (field: ImageField, value: string) => {
+    if (field === 'cover') {
+      setCoverLocalized(value)
+      return
+    }
+    if (field === 'bg') {
+      setBgLocalized(value)
+      return
+    }
+    if (field === 'icon') {
+      setIconLocalized(value)
+      return
+    }
+    setLogoLocalized(value)
+  }
+
+  const isRemoteOrDataImage = (value: string) => {
+    const trimmed = value.trim()
+    return /^https?:\/\//i.test(trimmed) || /^data:/i.test(trimmed)
+  }
+
   const enqueueImageLocalization = (field: ImageField, sourceValue: string) => {
     const value = sourceValue.trim()
     if (!value) {
@@ -237,6 +274,7 @@ export default function GameSettingsPanel({
     }
 
     latestImageSelectionRef.current[field] = value
+    setLocalizingMap((prev) => ({ ...prev, [field]: true }))
 
     void enqueueGameImageLocalizationById(gameId, {
       imageType: field,
@@ -252,7 +290,7 @@ export default function GameSettingsPanel({
           return
         }
 
-        setImageFieldValue(field, localizedPath)
+        setLocalizedFieldValue(field, localizedPath)
       })
       .catch((error) => {
         const err = error as {
@@ -267,11 +305,29 @@ export default function GameSettingsPanel({
           err.response?.data?.error || err.message || '后台下载图片失败',
         )
       })
+      .finally(() => {
+        setLocalizingMap((prev) => ({ ...prev, [field]: false }))
+      })
   }
 
   const applyImageSelection = (field: ImageField, value: string) => {
     setImageFieldValue(field, value)
-    enqueueImageLocalization(field, value)
+    const normalized = value.trim()
+
+    if (!normalized) {
+      setLocalizedFieldValue(field, '')
+      setLocalizingMap((prev) => ({ ...prev, [field]: false }))
+      return
+    }
+
+    if (!isRemoteOrDataImage(normalized)) {
+      setLocalizedFieldValue(field, normalized)
+      setLocalizingMap((prev) => ({ ...prev, [field]: false }))
+      return
+    }
+
+    setLocalizedFieldValue(field, '')
+    enqueueImageLocalization(field, normalized)
   }
 
   const triggerImportFile = (field: ImageField) => {
@@ -457,17 +513,51 @@ export default function GameSettingsPanel({
 
   const removeImage = (field: ImageField) => {
     setImageFieldValue(field, '')
+    setLocalizedFieldValue(field, '')
+    setLocalizingMap((prev) => ({ ...prev, [field]: false }))
   }
 
   const saveSettings = async () => {
+    const hasPendingLocalization = Object.values(localizingMap).some(Boolean)
+    if (hasPendingLocalization) {
+      toast.error('图片本地化处理中，请稍后再保存')
+      return
+    }
+
+    const displayAndPersist: Array<{
+      field: ImageField
+      displayValue: string
+      persistedValue: string
+    }> = [
+      { field: 'cover', displayValue: cover, persistedValue: coverLocalized },
+      { field: 'bg', displayValue: bg, persistedValue: bgLocalized },
+      { field: 'icon', displayValue: icon, persistedValue: iconLocalized },
+      { field: 'logo', displayValue: logo, persistedValue: logoLocalized },
+    ]
+
+    for (const item of displayAndPersist) {
+      const displayValue = item.displayValue.trim()
+      const persistedValue = item.persistedValue.trim()
+      if (
+        displayValue &&
+        isRemoteOrDataImage(displayValue) &&
+        !persistedValue
+      ) {
+        toast.error(
+          `${imageFieldLabelMap[item.field]}尚未完成本地化，请稍后重试`,
+        )
+        return
+      }
+    }
+
     setIsSaving(true)
     try {
       await updateGameSettingsById(gameId, {
         exePath,
-        cover,
-        bg,
-        icon,
-        logo,
+        cover: coverLocalized || cover,
+        bg: bgLocalized || bg,
+        icon: iconLocalized || icon,
+        logo: logoLocalized || logo,
       })
 
       await queryClient.invalidateQueries({
@@ -603,7 +693,11 @@ export default function GameSettingsPanel({
             <Button
               type="button"
               onClick={() => void saveSettings()}
-              disabled={isSaving || isFetching}
+              disabled={
+                isSaving ||
+                isFetching ||
+                Object.values(localizingMap).some(Boolean)
+              }
             >
               {isSaving ? (
                 <Loader2Icon className="size-4 animate-spin" />

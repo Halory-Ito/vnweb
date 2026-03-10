@@ -90,18 +90,34 @@ export const GameIdMapTable = sqliteTable(
 )
 
 // TODO: 游戏相关人物表
-export const CharacterTable = sqliteTable('character', {
-  id: int().primaryKey({ autoIncrement: true }),
-  gameId: int().notNull(),
-  name: text().notNull(), // 角色名称
-  nameCn: text().notNull(), // 角色中文名称
-  gender: int().default(-1), // 角色性别 -1未知0男1女2其他
-  age: int().default(0), // 角色年龄
-  description: text().default(''), // 角色简介
-  birthday: text().default(''), // 角色生日
-  createdAt: text().default(dayjs().toString()), // 创建时间
-  updatedAt: text().default(dayjs().toString()), // 更新时间
-})
+export const CharacterTable = sqliteTable(
+  'character',
+  {
+    id: int().primaryKey({ autoIncrement: true }),
+    gameId: int().notNull(),
+    vndbId: text().notNull(), // VNDB 角色 id，例如 c123
+    name: text().notNull(), // 角色名称
+    original: text().default(''), // 角色原文名
+    description: text().default(''), // 角色简介
+    imageUrl: text().default(''), // 角色图片链接
+    bloodType: text().default(''), // 血型
+    height: int(), // 身高(cm)
+    weight: int(), // 体重(kg)
+    bust: int(), // 胸围(cm)
+    waist: int(), // 腰围(cm)
+    hips: int(), // 臀围(cm)
+    age: int(), // 年龄
+    birthdayMonth: int(), // 生日(月)
+    birthdayDay: int(), // 生日(日)
+    sex: text().default(''), // 生理性别信息(JSON)
+    gender: text().default(''), // 社会性别信息(JSON)
+    createdAt: text().default(dayjs().toString()), // 创建时间
+    updatedAt: text().default(dayjs().toString()), // 更新时间
+  },
+  (table) => [
+    uniqueIndex('character_game_vndb_unique').on(table.gameId, table.vndbId),
+  ],
+)
 
 // 游戏回忆表
 export const GameMemoryTable = sqliteTable('game_memory', {

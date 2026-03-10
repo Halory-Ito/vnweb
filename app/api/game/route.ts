@@ -1,7 +1,13 @@
 import dayjs from 'dayjs'
 import { NextRequest, NextResponse } from 'next/server'
 
-import { GameIdMapTable, GameInfoTable, relateWebsiteTable } from '@/db/schema'
+import { fetchSteamAppDetails } from './steam-import/_shared'
+import {
+  GameIdMapTable,
+  GameInfoTable,
+  GamePvTable,
+  relateWebsiteTable,
+} from '@/db/schema'
 import { db } from '@/lib/drizzle'
 import { GameInfo } from '@/types/game-types'
 
@@ -171,6 +177,54 @@ const createGame = async (req: NextRequest) => {
               GameIdMapTable.externalId,
             ],
           })
+      }
+
+      if (sourceMap?.provider.toLowerCase() === 'steam') {
+        const appId = Number(sourceMap.externalId)
+        if (Number.isInteger(appId) && appId > 0) {
+          const details = await fetchSteamAppDetails(appId)
+          const pvRows = (details?.movies ?? [])
+            .map((movie, index) => {
+              const url =
+                movie.hls_h264?.trim() ||
+                movie.dash_h264?.trim() ||
+                movie.mp4?.max?.trim() ||
+                movie.mp4?.['480']?.trim() ||
+                movie.webm?.max?.trim() ||
+                movie.webm?.['480']?.trim() ||
+                ''
+
+              if (!url) {
+                return null
+              }
+
+              const rawName = (movie.name || '').trim()
+              const name = rawName || `PV ${index + 1}`
+
+              return {
+                gameId,
+                name,
+                url,
+                createdAt: now,
+                updatedAt: now,
+              }
+            })
+            .filter(
+              (
+                item,
+              ): item is {
+                gameId: number
+                name: string
+                url: string
+                createdAt: string
+                updatedAt: string
+              } => item !== null,
+            )
+
+          if (pvRows.length > 0) {
+            await db.insert(GamePvTable).values(pvRows)
+          }
+        }
       }
 
       const websites = [...gameInfo.websites, ...gameInfo.links]

@@ -300,6 +300,16 @@ export const getGameInfoByIdApi = async (id: string, provider: string) => {
     const rawSubject = (await getBGMSubjectByIdApi(id)) as BGMSubject
     return mapBGMSubjectToGameInfo(rawSubject)
   }
+  if (provider === 'steam') {
+    const res = await api.request({
+      method: 'GET',
+      url: '/game/steam-import/name-search',
+      params: {
+        id,
+      },
+    })
+    return (res.data as { data: GameInfo }).data
+  }
   if (provider === 'steamgriddb') {
     return getSGDBGameByIdApi(id)
   }
@@ -322,6 +332,20 @@ export const searchGameByNameApi = async (
       total: result.total,
       items: result.items.slice(offset, offset + limit),
     } satisfies GameSearchResult
+  }
+
+  if (provider === 'steam') {
+    const res = await api.request({
+      method: 'POST',
+      url: '/game/steam-import/name-search',
+      data: {
+        keyword,
+        offset,
+        limit,
+      },
+    })
+
+    return (res.data as { data: GameSearchResult }).data
   }
 
   return {

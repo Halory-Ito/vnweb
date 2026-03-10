@@ -1,25 +1,53 @@
 'use client'
 
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import Hls from 'hls.js'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
-import { getGamePvsById, type GameMediaLinkItem } from '@/lib/game-utils'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import {
+  getGameById,
+  getGamePvsById,
+  syncSteamPvsByGameId,
+  type GameMediaLinkItem,
+} from '@/lib/game-utils'
 
 type GamePVProps = {
   gameId: number
 }
 
 export default function GamePV({ gameId }: GamePVProps) {
+  const queryClient = useQueryClient()
   const [items, setItems] = useState<GameMediaLinkItem[]>([])
   const [selectedId, setSelectedId] = useState<number | null>(null)
+  const [bindDialogOpen, setBindDialogOpen] = useState(false)
+  const [bindPromptDismissed, setBindPromptDismissed] = useState(false)
+  const [steamIdInput, setSteamIdInput] = useState('')
+  const [isBinding, setIsBinding] = useState(false)
 
   const videoRef = useRef<HTMLVideoElement | null>(null)
+
+  const isHlsUrl = (url: string) => /\.m3u8(?:$|[?#])/i.test(url)
 
   const { data, isLoading, error, refetch, isRefetching } = useQuery({
     queryKey: ['game-pvs', gameId],
     queryFn: () => getGamePvsById(gameId),
+    enabled: Boolean(gameId),
+  })
+
+  const { data: gameDetail } = useQuery({
+    queryKey: ['game', String(gameId)],
+    queryFn: () => getGameById(String(gameId)),
     enabled: Boolean(gameId),
   })
 
@@ -31,6 +59,28 @@ export default function GamePV({ gameId }: GamePVProps) {
   useEffect(() => {
     setItems(data?.items ?? [])
   }, [data])
+
+  const hasSteamBinding = useMemo(() => {
+    const sourceIds = gameDetail?.externalSourceIds || ''
+    if (!sourceIds) {
+      return false
+    }
+
+    return sourceIds
+      .split(';')
+      .map((segment) => segment.trim())
+      .filter(Boolean)
+      .some((item) => {
+        const divider = item.indexOf(':')
+        if (divider <= 0 || divider >= item.length - 1) {
+          return false
+        }
+
+        const provider = item.slice(0, divider).trim().toLowerCase()
+        const externalId = item.slice(divider + 1).trim()
+        return provider === 'steam' && /^\d+$/.test(externalId)
+      })
+  }, [gameDetail?.externalSourceIds])
 
   useEffect(() => {
     if (!error) {
@@ -64,6 +114,105 @@ export default function GamePV({ gameId }: GamePVProps) {
     }
   }, [])
 
+  useEffect(() => {
+    if (items.length > 0 || hasSteamBinding) {
+      setBindPromptDismissed(false)
+      setBindDialogOpen(false)
+      return
+    }
+
+    if (!isLoading && !isRefetching && !bindPromptDismissed) {
+      setBindDialogOpen(true)
+    }
+  }, [
+    bindPromptDismissed,
+    hasSteamBinding,
+    isLoading,
+    isRefetching,
+    items.length,
+  ])
+
+  useEffect(() => {
+    const video = videoRef.current
+    const url = selectedItem?.url?.trim()
+
+    if (!video || !url) {
+      return
+    }
+
+    if (!isHlsUrl(url)) {
+      video.src = url
+      video.load()
+      return
+    }
+
+    if (video.canPlayType('application/vnd.apple.mpegurl')) {
+      video.src = url
+      video.load()
+      return
+    }
+
+    if (Hls.isSupported()) {
+      const hls = new Hls()
+      hls.loadSource(url)
+      hls.attachMedia(video)
+
+      hls.on(Hls.Events.ERROR, (_event, data) => {
+        if (data.fatal) {
+          toast.error('HLS 视频播放失败，请稍后重试')
+        }
+      })
+
+      return () => {
+        hls.destroy()
+      }
+    }
+
+    toast.error('当前浏览器不支持 HLS 播放')
+  }, [selectedItem])
+
+  const handleConfirmBindSteamId = async () => {
+    const raw = steamIdInput.trim()
+    const appId = /^\d+$/.test(raw) ? Number(raw) : NaN
+
+    if (!Number.isInteger(appId) || appId <= 0) {
+      toast.error('Steam AppID 格式错误，应为纯数字')
+      return
+    }
+
+    setIsBinding(true)
+    try {
+      const result = await syncSteamPvsByGameId(gameId, {
+        steamAppId: appId,
+      })
+
+      await queryClient.invalidateQueries({
+        queryKey: ['game', String(gameId)],
+      })
+      await refetch()
+      setBindDialogOpen(false)
+      setBindPromptDismissed(false)
+
+      if (result.inserted > 0) {
+        toast.success(`已同步 ${result.inserted} 条 Steam PV`)
+      } else if (result.total > 0) {
+        toast.info('Steam PV 已存在，无需重复入库')
+      } else {
+        toast.info('Steam 未返回可用 PV')
+      }
+    } catch (bindError) {
+      const err = bindError as {
+        response?: { data?: { error?: string } }
+        message?: string
+      }
+      toast.error(
+        err.response?.data?.error || err.message || '绑定 Steam 并同步 PV 失败',
+      )
+    } finally {
+      setIsBinding(false)
+    }
+  }
+
   return (
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-[320px_minmax(0,1fr)]">
       <div className="space-y-3 rounded-md border p-3">
@@ -85,7 +234,22 @@ export default function GamePV({ gameId }: GamePVProps) {
           {isLoading ? (
             <div className="text-muted-foreground text-sm">加载中...</div>
           ) : items.length === 0 ? (
-            <div className="text-muted-foreground text-sm">暂无PV</div>
+            <div className="space-y-2">
+              <div className="text-muted-foreground text-sm">暂无PV</div>
+              {!hasSteamBinding ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setBindPromptDismissed(false)
+                    setBindDialogOpen(true)
+                  }}
+                >
+                  绑定 Steam AppID 并获取 PV
+                </Button>
+              ) : null}
+            </div>
           ) : (
             items.map((item) => (
               <button
@@ -113,7 +277,6 @@ export default function GamePV({ gameId }: GamePVProps) {
             controls
             preload="metadata"
             className="h-auto w-full rounded-md border bg-black"
-            src={selectedItem.url}
           />
         ) : (
           <div className="text-muted-foreground flex min-h-60 items-center justify-center rounded-md border text-sm">
@@ -121,6 +284,53 @@ export default function GamePV({ gameId }: GamePVProps) {
           </div>
         )}
       </div>
+
+      <Dialog
+        open={bindDialogOpen}
+        onOpenChange={(open) => {
+          setBindDialogOpen(open)
+          if (!open && !isBinding) {
+            setBindPromptDismissed(true)
+          }
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>绑定 Steam AppID</DialogTitle>
+            <DialogDescription>
+              当前游戏暂无 PV 且未绑定 Steam，是否现在绑定并自动同步 PV？
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            <div className="text-sm">Steam AppID</div>
+            <Input
+              value={steamIdInput}
+              onChange={(event) => setSteamIdInput(event.target.value)}
+              placeholder="例如：412830"
+            />
+          </div>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              disabled={isBinding}
+              onClick={() => {
+                setBindDialogOpen(false)
+                setBindPromptDismissed(true)
+              }}
+            >
+              取消
+            </Button>
+            <Button
+              type="button"
+              disabled={isBinding}
+              onClick={() => void handleConfirmBindSteamId()}
+            >
+              {isBinding ? '同步中...' : '确定'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

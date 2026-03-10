@@ -55,6 +55,12 @@ type GameInfoFormValues = {
   publisher: string
 }
 
+const MANUAL_ADD_ENABLED_PROVIDER_SET = new Set([
+  'bangumi',
+  'steamgriddb',
+  'steam',
+])
+
 export const VNDBSearchDialog = ({ children }: VNDBSearchDialogProps) => {
   const router = useRouter()
   const queryClient = useQueryClient()
@@ -74,6 +80,15 @@ export const VNDBSearchDialog = ({ children }: VNDBSearchDialogProps) => {
   const [gameInfo, setGameInfo] = useState<GameInfo | null>(null)
   const [editableGameInfo, setEditableGameInfo] =
     useState<GameInfoFormValues | null>(null)
+
+  const selectableProviderOptions = GAME_PROVIDER_OPTIONS.map((option) => {
+    const disabled = !MANUAL_ADD_ENABLED_PROVIDER_SET.has(option.value)
+    return {
+      ...option,
+      disabled,
+      label: disabled ? `${option.label}（暂未实现）` : option.label,
+    }
+  })
 
   const toFormValues = (info: GameInfo): GameInfoFormValues => {
     return {
@@ -186,6 +201,7 @@ export const VNDBSearchDialog = ({ children }: VNDBSearchDialogProps) => {
       setEditDialogOpen(false)
       await queryClient.invalidateQueries({ queryKey: ['game'] })
       await queryClient.invalidateQueries({ queryKey: ['game-cards'] })
+      await queryClient.invalidateQueries({ queryKey: ['game-sidebar'] })
       router.refresh()
       toast.success('添加成功')
       console.log('Saved Game ID:', result?.data?.id)
@@ -218,8 +234,12 @@ export const VNDBSearchDialog = ({ children }: VNDBSearchDialogProps) => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
-                    {GAME_PROVIDER_OPTIONS.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
+                    {selectableProviderOptions.map((option) => (
+                      <SelectItem
+                        key={option.value}
+                        value={option.value}
+                        disabled={option.disabled}
+                      >
                         {option.label}
                       </SelectItem>
                     ))}

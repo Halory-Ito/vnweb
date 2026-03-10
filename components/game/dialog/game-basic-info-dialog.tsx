@@ -109,6 +109,8 @@ export default function GameBasicInfoDialog({
         queryKey: ['game', String(game.id)],
       })
       await queryClient.invalidateQueries({ queryKey: ['game'] })
+      await queryClient.invalidateQueries({ queryKey: ['game-cards'] })
+      await queryClient.invalidateQueries({ queryKey: ['game-sidebar'] })
       router.refresh()
       toast.success('基本信息已更新')
       onOpenChange(false)

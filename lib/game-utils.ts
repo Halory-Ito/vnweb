@@ -181,9 +181,53 @@ export const getVndbCharactersByGameId = async (gameId: number) => {
   ).data
 }
 
-export const getVndbCharacterById = async (characterId: string) => {
-  const response = await api.get(`/db/vndb/character/${characterId}`)
+export const syncVndbCharactersByGameId = async (gameId: number) => {
+  const response = await api.post('/db/vndb/characters', { gameId })
+  return (
+    response.data as {
+      data: {
+        gameId: number
+        vnId: string
+        total: number
+        inserted: number
+        updated: number
+      }
+    }
+  ).data
+}
+
+export const getVndbCharacterById = async (
+  characterId: string,
+  gameId?: number,
+) => {
+  const response = await api.get(`/db/vndb/character/${characterId}`, {
+    params: gameId ? { gameId } : undefined,
+  })
   return (response.data as { data: VndbCharacterDetail }).data
+}
+
+export const updateVndbCharacterById = async (
+  characterId: string,
+  payload: {
+    gameId: number
+    name: string
+    original: string
+    description: string
+    imageUrl: string
+    bloodType: string
+    height: number | null
+    weight: number | null
+    bust: number | null
+    waist: number | null
+    hips: number | null
+    age: number | null
+    birthday: [number, number] | null
+    sex: [string | null, string | null] | null
+    gender: [string | null, string | null] | null
+  },
+) => {
+  const response = await api.patch(`/db/vndb/character/${characterId}`, payload)
+  return (response.data as { data: { updated: boolean } }).data
 }
 
 export const launchGameById = async (id: number, exePath?: string) => {
@@ -267,6 +311,26 @@ export const getGamePvsById = async (id: number) => {
     response.data as {
       data: {
         items: GameMediaLinkItem[]
+      }
+    }
+  ).data
+}
+
+export const syncSteamPvsByGameId = async (
+  id: number,
+  payload?: {
+    steamAppId?: string | number
+  },
+) => {
+  const response = await api.post(`/game/${id}/pv/steam-sync`, payload)
+  return (
+    response.data as {
+      data: {
+        gameId: number
+        steamAppId: number
+        total: number
+        inserted: number
+        skipped: number
       }
     }
   ).data

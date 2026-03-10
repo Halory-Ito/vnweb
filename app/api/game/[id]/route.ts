@@ -11,6 +11,7 @@ import {
 } from '@/db/schema'
 import { db } from '@/lib/drizzle'
 import { localizeGameImageFieldsInBackground } from '@/lib/server/game-image-storage'
+import { syncVndbCharactersByGameId } from '@/lib/server/vndb-character-sync'
 
 const parseCsv = (value: string) =>
   value
@@ -251,6 +252,10 @@ const updateGame = async (
         name: GameInfoTable.name,
         nameCn: GameInfoTable.nameCn,
         date: GameInfoTable.date,
+        cover: GameInfoTable.cover,
+        bg: GameInfoTable.bg,
+        icon: GameInfoTable.icon,
+        logo: GameInfoTable.logo,
       })
       .from(GameInfoTable)
       .where(eq(GameInfoTable.id, gameId))
@@ -311,6 +316,24 @@ const updateGame = async (
       const now = new Date().toISOString()
       const currentGame = gameRows[0]
 
+      const nextCover =
+        payload.cover !== undefined ? normalizeText(payload.cover) : undefined
+      const nextBg =
+        payload.bg !== undefined ? normalizeText(payload.bg) : undefined
+      const nextIcon =
+        payload.icon !== undefined ? normalizeText(payload.icon) : undefined
+      const nextLogo =
+        payload.logo !== undefined ? normalizeText(payload.logo) : undefined
+
+      const coverChanged =
+        nextCover !== undefined && nextCover !== (currentGame.cover || '')
+      const bgChanged =
+        nextBg !== undefined && nextBg !== (currentGame.bg || '')
+      const iconChanged =
+        nextIcon !== undefined && nextIcon !== (currentGame.icon || '')
+      const logoChanged =
+        nextLogo !== undefined && nextLogo !== (currentGame.logo || '')
+
       const localizedImages = localizeGameImageFieldsInBackground({
         gameName:
           normalizeText(payload.nameCn ?? '') ||
@@ -320,15 +343,10 @@ const updateGame = async (
           `game_${gameId}`,
         releaseDate:
           normalizeText(payload.date ?? '') || currentGame.date || undefined,
-        cover:
-          payload.cover !== undefined
-            ? normalizeText(payload.cover)
-            : undefined,
-        bg: payload.bg !== undefined ? normalizeText(payload.bg) : undefined,
-        icon:
-          payload.icon !== undefined ? normalizeText(payload.icon) : undefined,
-        logo:
-          payload.logo !== undefined ? normalizeText(payload.logo) : undefined,
+        cover: coverChanged ? nextCover : undefined,
+        bg: bgChanged ? nextBg : undefined,
+        icon: iconChanged ? nextIcon : undefined,
+        logo: logoChanged ? nextLogo : undefined,
       })
 
       const gamePatch: Partial<{
@@ -359,8 +377,8 @@ const updateGame = async (
         updatedAt: now,
       }
 
-      if (payload.cover !== undefined) {
-        gamePatch.cover = localizedImages.cover || normalizeText(payload.cover)
+      if (coverChanged) {
+        gamePatch.cover = localizedImages.cover || nextCover || ''
       }
       if (payload.summary !== undefined) {
         gamePatch.summary = normalizeText(payload.summary)
@@ -418,14 +436,14 @@ const updateGame = async (
       if (payload.programmer !== undefined) {
         gamePatch.programmer = normalizeText(payload.programmer)
       }
-      if (payload.bg !== undefined) {
-        gamePatch.bg = localizedImages.bg || normalizeText(payload.bg)
+      if (bgChanged) {
+        gamePatch.bg = localizedImages.bg || nextBg || ''
       }
-      if (payload.icon !== undefined) {
-        gamePatch.icon = localizedImages.icon || normalizeText(payload.icon)
+      if (iconChanged) {
+        gamePatch.icon = localizedImages.icon || nextIcon || ''
       }
-      if (payload.logo !== undefined) {
-        gamePatch.logo = localizedImages.logo || normalizeText(payload.logo)
+      if (logoChanged) {
+        gamePatch.logo = localizedImages.logo || nextLogo || ''
       }
 
       await db
@@ -434,6 +452,19 @@ const updateGame = async (
         .where(eq(GameInfoTable.id, gameId))
 
       if (parsedExternalSourceIds !== undefined) {
+        const hadVndbBindingBefore = await db
+          .select({ provider: GameIdMapTable.provider })
+          .from(GameIdMapTable)
+          .where(eq(GameIdMapTable.gameId, gameId))
+
+        const wasBoundVndb = hadVndbBindingBefore.some(
+          (item) => item.provider.trim().toLowerCase() === 'vndb',
+        )
+
+        const hasVndbBindingNow = parsedExternalSourceIds.some(
+          (item) => item.provider.trim().toLowerCase() === 'vndb',
+        )
+
         await db.transaction(async (tx) => {
           await tx
             .delete(GameIdMapTable)
@@ -458,6 +489,12 @@ const updateGame = async (
               })
           }
         })
+
+        if (!wasBoundVndb && hasVndbBindingNow) {
+          void syncVndbCharactersByGameId(gameId).catch((error) => {
+            console.error('Auto sync VNDB characters failed:', error)
+          })
+        }
       }
 
       if (payload.exePath !== undefined) {

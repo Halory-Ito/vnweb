@@ -1,8 +1,9 @@
 import { eq } from 'drizzle-orm'
 import { NextRequest, NextResponse } from 'next/server'
 
-import { GameIdMapTable } from '@/db/schema'
+import { CharacterTable, GameIdMapTable } from '@/db/schema'
 import { db } from '@/lib/drizzle'
+import { syncVndbCharactersByGameId } from '@/lib/server/vndb-character-sync'
 import { VNDBClient } from '@/lib/vndb-client'
 
 type VndbCharacterResult = {
@@ -54,6 +55,26 @@ const normalizeVnId = (rawId: string) => {
   return ''
 }
 
+const resolveVnIdByGameId = async (gameId: number) => {
+  const idMaps = await db
+    .select({
+      provider: GameIdMapTable.provider,
+      externalId: GameIdMapTable.externalId,
+    })
+    .from(GameIdMapTable)
+    .where(eq(GameIdMapTable.gameId, gameId))
+
+  const vndbBinding = idMaps.find(
+    (item) => item.provider.trim().toLowerCase() === 'vndb',
+  )
+
+  if (!vndbBinding) {
+    return ''
+  }
+
+  return normalizeVnId(vndbBinding.externalId)
+}
+
 const getCharactersByGameId = async (req: NextRequest) => {
   try {
     const gameIdParam = req.nextUrl.searchParams.get('gameId')
@@ -63,19 +84,8 @@ const getCharactersByGameId = async (req: NextRequest) => {
       return NextResponse.json({ error: 'Invalid game id' }, { status: 400 })
     }
 
-    const idMaps = await db
-      .select({
-        provider: GameIdMapTable.provider,
-        externalId: GameIdMapTable.externalId,
-      })
-      .from(GameIdMapTable)
-      .where(eq(GameIdMapTable.gameId, gameId))
-
-    const vndbBinding = idMaps.find(
-      (item) => item.provider.trim().toLowerCase() === 'vndb',
-    )
-
-    if (!vndbBinding) {
+    const vnId = await resolveVnIdByGameId(gameId)
+    if (!vnId) {
       return NextResponse.json({
         data: {
           vnId: '',
@@ -84,12 +94,31 @@ const getCharactersByGameId = async (req: NextRequest) => {
       })
     }
 
-    const vnId = normalizeVnId(vndbBinding.externalId)
-    if (!vnId) {
+    const cachedRows = await db
+      .select({
+        id: CharacterTable.vndbId,
+        name: CharacterTable.name,
+        original: CharacterTable.original,
+        imageUrl: CharacterTable.imageUrl,
+      })
+      .from(CharacterTable)
+      .where(eq(CharacterTable.gameId, gameId))
+      .orderBy(CharacterTable.vndbId)
+
+    if (cachedRows.length > 0) {
+      const items = cachedRows.map((item) => ({
+        id: item.id,
+        name: item.name,
+        original: item.original || '',
+        imageUrl: item.imageUrl || '',
+        role: '',
+      }))
+
       return NextResponse.json({
         data: {
-          vnId: '',
-          items: [],
+          vnId,
+          items,
+          source: 'database',
         },
       })
     }
@@ -155,6 +184,7 @@ const getCharactersByGameId = async (req: NextRequest) => {
       data: {
         vnId,
         items,
+        source: 'vndb',
       },
     })
   } catch (error) {
@@ -166,4 +196,27 @@ const getCharactersByGameId = async (req: NextRequest) => {
   }
 }
 
+const syncCharactersToDb = async (req: NextRequest) => {
+  try {
+    const payload = (await req.json().catch(() => ({}))) as {
+      gameId?: number
+    }
+    const gameId = Number(payload.gameId)
+
+    if (!Number.isInteger(gameId) || gameId <= 0) {
+      return NextResponse.json({ error: 'Invalid game id' }, { status: 400 })
+    }
+
+    const result = await syncVndbCharactersByGameId(gameId)
+    return NextResponse.json({ data: result })
+  } catch (error) {
+    console.error('VNDB characters sync failed:', error)
+    return NextResponse.json(
+      { error: (error as Error).message || 'VNDB characters sync failed' },
+      { status: 500 },
+    )
+  }
+}
+
 export const GET = getCharactersByGameId
+export const POST = syncCharactersToDb

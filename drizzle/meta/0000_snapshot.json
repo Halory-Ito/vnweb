@@ -1,9 +1,175 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "7f12b76d-a3b7-4410-8a5a-8d537e8eb1ab",
+  "id": "6a0b3a10-cf19-4885-ba4d-d5c80a4c7ff0",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
+    "character": {
+      "name": "character",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "gameId": {
+          "name": "gameId",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "vndbId": {
+          "name": "vndbId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "original": {
+          "name": "original",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "''"
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "''"
+        },
+        "imageUrl": {
+          "name": "imageUrl",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "''"
+        },
+        "bloodType": {
+          "name": "bloodType",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "''"
+        },
+        "height": {
+          "name": "height",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "weight": {
+          "name": "weight",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "bust": {
+          "name": "bust",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "waist": {
+          "name": "waist",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "hips": {
+          "name": "hips",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "cup": {
+          "name": "cup",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "''"
+        },
+        "age": {
+          "name": "age",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "birthdayMonth": {
+          "name": "birthdayMonth",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "birthdayDay": {
+          "name": "birthdayDay",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "sex": {
+          "name": "sex",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "''"
+        },
+        "gender": {
+          "name": "gender",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "''"
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "'Tue, 10 Mar 2026 01:22:57 GMT'"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "'Tue, 10 Mar 2026 01:22:57 GMT'"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
     "collection_game": {
       "name": "collection_game",
       "columns": {
@@ -58,7 +224,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "'Sat, 07 Mar 2026 00:01:26 GMT'"
+          "default": "'Tue, 10 Mar 2026 01:22:57 GMT'"
         },
         "updatedAt": {
           "name": "updatedAt",
@@ -66,10 +232,58 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "'Sat, 07 Mar 2026 00:01:26 GMT'"
+          "default": "'Tue, 10 Mar 2026 01:22:57 GMT'"
         }
       },
       "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "game_id_map": {
+      "name": "game_id_map",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "gameId": {
+          "name": "gameId",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "provider": {
+          "name": "provider",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "externalId": {
+          "name": "externalId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "game_id_map_game_provider_external_unique": {
+          "name": "game_id_map_game_provider_external_unique",
+          "columns": [
+            "gameId",
+            "provider",
+            "externalId"
+          ],
+          "isUnique": true
+        }
+      },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
@@ -249,7 +463,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "'Sat, 07 Mar 2026 00:01:26 GMT'"
+          "default": "'Tue, 10 Mar 2026 01:22:57 GMT'"
         },
         "updatedAt": {
           "name": "updatedAt",
@@ -257,7 +471,71 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "'Sat, 07 Mar 2026 00:01:26 GMT'"
+          "default": "'Tue, 10 Mar 2026 01:22:57 GMT'"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "game_memory": {
+      "name": "game_memory",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "gameId": {
+          "name": "gameId",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "''"
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "''"
+        },
+        "imageUrl": {
+          "name": "imageUrl",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "''"
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "'Tue, 10 Mar 2026 01:22:57 GMT'"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "'Tue, 10 Mar 2026 01:22:57 GMT'"
         }
       },
       "indexes": {},
@@ -303,7 +581,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "'Sat, 07 Mar 2026 00:01:26 GMT'"
+          "default": "'Tue, 10 Mar 2026 01:22:57 GMT'"
         },
         "updatedAt": {
           "name": "updatedAt",
@@ -311,7 +589,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "'Sat, 07 Mar 2026 00:01:26 GMT'"
+          "default": "'Tue, 10 Mar 2026 01:22:57 GMT'"
         }
       },
       "indexes": {},
@@ -437,7 +715,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "'Sat, 07 Mar 2026 00:01:26 GMT'"
+          "default": "'Tue, 10 Mar 2026 01:22:57 GMT'"
         },
         "updatedAt": {
           "name": "updatedAt",
@@ -445,7 +723,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "'Sat, 07 Mar 2026 00:01:26 GMT'"
+          "default": "'Tue, 10 Mar 2026 01:22:57 GMT'"
         }
       },
       "indexes": {},
@@ -532,7 +810,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "'Sat, 07 Mar 2026 00:01:26 GMT'"
+          "default": "'Tue, 10 Mar 2026 01:22:57 GMT'"
         },
         "updatedAt": {
           "name": "updatedAt",
@@ -540,7 +818,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "'Sat, 07 Mar 2026 00:01:26 GMT'"
+          "default": "'Tue, 10 Mar 2026 01:22:57 GMT'"
         }
       },
       "indexes": {},
@@ -619,7 +897,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "'Sat, 07 Mar 2026 00:01:26 GMT'"
+          "default": "'Tue, 10 Mar 2026 01:22:57 GMT'"
         },
         "updatedAt": {
           "name": "updatedAt",
@@ -627,7 +905,76 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "'Sat, 07 Mar 2026 00:01:26 GMT'"
+          "default": "'Tue, 10 Mar 2026 01:22:57 GMT'"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "third_party_account": {
+      "name": "third_party_account",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "provider": {
+          "name": "provider",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "accountId": {
+          "name": "accountId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "accessToken": {
+          "name": "accessToken",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "refreshToken": {
+          "name": "refreshToken",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "''"
+        },
+        "expiresAt": {
+          "name": "expiresAt",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "'Tue, 10 Mar 2026 01:22:57 GMT'"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "'Tue, 10 Mar 2026 01:22:57 GMT'"
         }
       },
       "indexes": {},

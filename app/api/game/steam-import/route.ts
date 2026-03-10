@@ -15,6 +15,7 @@ import {
   toSteamStoreUrl,
 } from './_shared'
 import {
+  GamePvTable,
   GameIdMapTable,
   GameInfoTable,
   GamePlayTable,
@@ -192,6 +193,55 @@ const importSteamGames = async (req: NextRequest) => {
       }
 
       await tx.insert(relateWebsiteTable).values(websites)
+
+      const pvRows = (details?.movies ?? [])
+        .map((movie, index) => {
+          const url =
+            movie.hls_h264?.trim() ||
+            movie.dash_h264?.trim() ||
+            movie.mp4?.max?.trim() ||
+            movie.mp4?.['480']?.trim() ||
+            movie.webm?.max?.trim() ||
+            movie.webm?.['480']?.trim() ||
+            ''
+
+          if (!url) {
+            return null
+          }
+
+          const rawName = (movie.name || '').trim()
+          const name = rawName || `PV ${index + 1}`
+
+          return {
+            gameId,
+            name,
+            url,
+            createdAt: now,
+            updatedAt: now,
+          }
+        })
+        .filter(
+          (
+            item,
+          ): item is {
+            gameId: number
+            name: string
+            url: string
+            createdAt: string
+            updatedAt: string
+          } => item !== null,
+        )
+
+      if (pvRows.length > 0) {
+        await tx.insert(GamePvTable).values(pvRows)
+      }
+
+      console.info('Steam PV import summary:', {
+        appId,
+        gameId,
+        moviesCount: details?.movies?.length || 0,
+        insertedPvCount: pvRows.length,
+      })
 
       await tx.insert(GamePlayTable).values({
         gameId,
