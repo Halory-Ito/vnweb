@@ -15,6 +15,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
+import { Skeleton } from '@/components/ui/skeleton'
 import {
   getGameById,
   getGamePvsById,
@@ -232,7 +233,12 @@ export default function GamePV({ gameId }: GamePVProps) {
 
         <div className="max-h-105 space-y-2 overflow-y-auto">
           {isLoading ? (
-            <div className="text-muted-foreground text-sm">加载中...</div>
+            <div className="space-y-2">
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
+            </div>
           ) : items.length === 0 ? (
             <div className="space-y-2">
               <div className="text-muted-foreground text-sm">暂无PV</div>

@@ -21,6 +21,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
+import { Button } from '@/components/ui/button'
 import {
   ContextMenuGroup,
   ContextMenu,
@@ -32,6 +33,15 @@ import {
   ContextMenuSubTrigger,
   ContextMenuTrigger,
 } from '@/components/ui/context-menu'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
 import {
   addGameToCollection,
   browseLocalFileByGameId,
@@ -60,6 +70,11 @@ export const GameSidebarItem = ({
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [isLaunching, setIsLaunching] = useState(false)
+  const [exePathDialogOpen, setExePathDialogOpen] = useState(false)
+  const [exePathInput, setExePathInput] = useState('')
+  const [collectionDialogOpen, setCollectionDialogOpen] = useState(false)
+  const [newCollectionName, setNewCollectionName] = useState('')
   const { data: collections = [] } = useQuery({
     queryKey: ['collections'],
     queryFn: getCollections,
@@ -87,6 +102,11 @@ export const GameSidebarItem = ({
   }
 
   const handleLaunchGame = async (exePath?: string) => {
+    if (isLaunching) {
+      return
+    }
+
+    setIsLaunching(true)
     try {
       await launchGameById(gameId, exePath)
       await queryClient.invalidateQueries({
@@ -108,16 +128,26 @@ export const GameSidebarItem = ({
 
       const requireExePath = err.response?.data?.requireExePath
       if (requireExePath) {
-        const input = window.prompt('请填写游戏可执行文件路径', '')
-        const nextExePath = input?.trim()
-        if (nextExePath) {
-          await handleLaunchGame(nextExePath)
-          return
-        }
+        setExePathInput('')
+        setExePathDialogOpen(true)
+        return
       }
 
       toast.error(err.response?.data?.error || err.message || '启动失败')
+    } finally {
+      setIsLaunching(false)
     }
+  }
+
+  const confirmLaunchWithExePath = async () => {
+    const nextExePath = exePathInput.trim()
+    if (!nextExePath) {
+      toast.error('请填写游戏可执行文件路径')
+      return
+    }
+
+    setExePathDialogOpen(false)
+    await handleLaunchGame(nextExePath)
   }
 
   const handleDeleteGame = async () => {
@@ -213,13 +243,15 @@ export const GameSidebarItem = ({
   }
 
   const handleCreateCollectionAndAddGame = async () => {
-    const input = window.prompt('请输入新收藏夹名称', '')
-    const collectionName = input?.trim()
+    const collectionName = newCollectionName.trim()
     if (!collectionName) {
+      toast.error('请输入新收藏夹名称')
       return
     }
 
     await handleAddToCollection(collectionName)
+    setCollectionDialogOpen(false)
+    setNewCollectionName('')
   }
 
   return (
@@ -272,7 +304,10 @@ export const GameSidebarItem = ({
               ))
             )}
             <ContextMenuItem
-              onClick={() => void handleCreateCollectionAndAddGame()}
+              onClick={() => {
+                setNewCollectionName('')
+                setCollectionDialogOpen(true)
+              }}
             >
               +新收藏
             </ContextMenuItem>
@@ -331,6 +366,93 @@ export const GameSidebarItem = ({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Dialog open={exePathDialogOpen} onOpenChange={setExePathDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>填写游戏可执行文件路径</DialogTitle>
+            <DialogDescription>
+              当前游戏缺少可执行文件路径，请补充后再启动。
+            </DialogDescription>
+          </DialogHeader>
+
+          <Input
+            value={exePathInput}
+            onChange={(event) => setExePathInput(event.target.value)}
+            placeholder="例如: C:\\Games\\MyGame\\game.exe"
+            disabled={isLaunching}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter') {
+                event.preventDefault()
+                void confirmLaunchWithExePath()
+              }
+            }}
+          />
+
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setExePathDialogOpen(false)}
+              disabled={isLaunching}
+            >
+              取消
+            </Button>
+            <Button
+              type="button"
+              onClick={() => void confirmLaunchWithExePath()}
+              disabled={isLaunching}
+            >
+              {isLaunching ? '启动中...' : '确认并启动'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={collectionDialogOpen}
+        onOpenChange={(nextOpen) => {
+          setCollectionDialogOpen(nextOpen)
+          if (!nextOpen) {
+            setNewCollectionName('')
+          }
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>新建收藏夹</DialogTitle>
+            <DialogDescription>请输入新的收藏夹名称。</DialogDescription>
+          </DialogHeader>
+
+          <Input
+            value={newCollectionName}
+            onChange={(event) => setNewCollectionName(event.target.value)}
+            placeholder="请输入新收藏夹名称"
+            onKeyDown={(event) => {
+              if (event.key === 'Enter') {
+                event.preventDefault()
+                void handleCreateCollectionAndAddGame()
+              }
+            }}
+          />
+
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setCollectionDialogOpen(false)}
+            >
+              取消
+            </Button>
+            <Button
+              type="button"
+              onClick={() => void handleCreateCollectionAndAddGame()}
+            >
+              确定
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </ContextMenu>
   )
 }

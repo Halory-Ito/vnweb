@@ -1,7 +1,7 @@
 'use client'
 
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeft } from 'lucide-react'
+import { AlertCircle, ArrowLeft, SearchX } from 'lucide-react'
 import Link from 'next/link'
 import { useParams, useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
@@ -9,6 +9,7 @@ import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Skeleton } from '@/components/ui/skeleton'
 import { Textarea } from '@/components/ui/textarea'
 import { getVndbCharacterById, updateVndbCharacterById } from '@/lib/game-utils'
 
@@ -101,6 +102,87 @@ const infoRows = (
   // },
 ]
 
+type CharacterDetailEmptyStateProps = {
+  icon: typeof AlertCircle
+  title: string
+  description: string
+  children?: React.ReactNode
+}
+
+function CharacterDetailEmptyState({
+  icon: Icon,
+  title,
+  description,
+  children,
+}: CharacterDetailEmptyStateProps) {
+  return (
+    <div className="mx-auto max-h-[calc(100vh-70px)] w-full overflow-y-auto">
+      <div className="flex min-h-[calc(100vh-70px)] items-center justify-center p-4 md:p-6">
+        <div className="bg-background/80 w-full max-w-xl rounded-2xl border px-6 py-10 text-center shadow-sm backdrop-blur-sm md:px-8">
+          <div className="bg-muted text-muted-foreground mx-auto mb-4 flex size-14 items-center justify-center rounded-full border">
+            <Icon className="size-7" />
+          </div>
+          <div className="space-y-2">
+            <h2 className="text-xl font-semibold">{title}</h2>
+            <p className="text-muted-foreground text-sm leading-6">
+              {description}
+            </p>
+          </div>
+          {children ? (
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+              {children}
+            </div>
+          ) : null}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function CharacterDetailSkeleton() {
+  return (
+    <div className="mx-auto max-h-[calc(100vh-70px)] w-full overflow-y-auto p-4 md:p-6">
+      <div className="mb-4">
+        <Skeleton className="h-8 w-20" />
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[280px_minmax(0,1fr)]">
+        <div className="rounded-md border p-3">
+          <Skeleton className="min-h-96 w-full rounded-md" />
+        </div>
+
+        <div className="space-y-4">
+          <div className="rounded-md border p-4">
+            <div className="flex items-start justify-between gap-3">
+              <div className="space-y-2">
+                <Skeleton className="h-8 w-56" />
+                <Skeleton className="h-4 w-36" />
+              </div>
+              <Skeleton className="h-9 w-20" />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+            <Skeleton className="h-16 w-full" />
+            <Skeleton className="h-16 w-full" />
+            <Skeleton className="h-16 w-full" />
+            <Skeleton className="h-16 w-full" />
+          </div>
+
+          <div className="rounded-md border p-4">
+            <div className="space-y-3">
+              <Skeleton className="h-5 w-24" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-5/6" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function CharacterDetailPage() {
   const params = useParams<{ id: string }>()
   const searchParams = useSearchParams()
@@ -130,7 +212,7 @@ export default function CharacterDetailPage() {
     description: '',
   })
 
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, error, refetch, isRefetching } = useQuery({
     queryKey: ['vndb-character', params.id, numericGameId || 0],
     queryFn: () =>
       getVndbCharacterById(params.id, canEdit ? numericGameId : undefined),
@@ -232,20 +314,48 @@ export default function CharacterDetailPage() {
   }
 
   if (isLoading) {
-    return <div className="text-muted-foreground p-6 text-sm">加载中...</div>
+    return <CharacterDetailSkeleton />
   }
 
-  if (error || !data) {
+  if (error) {
     return (
-      <div className="space-y-4 p-6">
-        <Button asChild variant="outline" size="sm">
+      <CharacterDetailEmptyState
+        icon={AlertCircle}
+        title="人物信息加载失败"
+        description="当前无法读取人物资料，请稍后重试。"
+      >
+        <Button
+          type="button"
+          variant="outline"
+          disabled={isRefetching}
+          onClick={() => void refetch()}
+        >
+          {isRefetching ? '重试中...' : '重新加载'}
+        </Button>
+        <Button asChild>
           <Link href={backHref}>
             <ArrowLeft className="size-4" />
             返回
           </Link>
         </Button>
-        <div className="text-destructive text-sm">人物信息加载失败</div>
-      </div>
+      </CharacterDetailEmptyState>
+    )
+  }
+
+  if (!data) {
+    return (
+      <CharacterDetailEmptyState
+        icon={SearchX}
+        title="未找到人物信息"
+        description="这条角色记录可能不存在，或当前链接参数已失效。"
+      >
+        <Button asChild>
+          <Link href={backHref}>
+            <ArrowLeft className="size-4" />
+            返回
+          </Link>
+        </Button>
+      </CharacterDetailEmptyState>
     )
   }
 

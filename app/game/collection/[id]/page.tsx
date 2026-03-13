@@ -3,14 +3,17 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAtom } from 'jotai'
 import {
+  AlertCircle,
   ArrowDownIcon,
   ArrowUpIcon,
   CheckIcon,
   FolderPlusIcon,
   RefreshCcwIcon,
+  SearchX,
   Trash2Icon,
   XIcon,
 } from 'lucide-react'
+import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
@@ -19,6 +22,16 @@ import { selectedGameIdsAtom } from '@/atom/global'
 import GameBulkUpdateMetadataDialog from '@/components/game/dialog/game-bulk-update-metadata-dialog'
 import GameCard from '@/components/game/game-card'
 import { SortSelect } from '@/components/game/sort-select'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 import {
   ContextMenu,
@@ -43,6 +56,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
+import { Skeleton } from '@/components/ui/skeleton'
 import {
   addGameToCollection,
   createCollection,
@@ -51,6 +65,67 @@ import {
   moveGameToCollection,
   removeGameFromCollection,
 } from '@/lib/game-utils'
+
+type CollectionEmptyStateProps = {
+  icon: typeof AlertCircle
+  title: string
+  description: string
+  children?: React.ReactNode
+}
+
+function CollectionEmptyState({
+  icon: Icon,
+  title,
+  description,
+  children,
+}: CollectionEmptyStateProps) {
+  return (
+    <div className="h-[calc(100vh-70px)] w-full overflow-y-auto p-4">
+      <div className="flex min-h-full items-center justify-center">
+        <div className="bg-background/80 w-full max-w-xl rounded-2xl border px-6 py-10 text-center shadow-sm backdrop-blur-sm md:px-8">
+          <div className="bg-muted text-muted-foreground mx-auto mb-4 flex size-14 items-center justify-center rounded-full border">
+            <Icon className="size-7" />
+          </div>
+          <div className="space-y-2">
+            <h2 className="text-xl font-semibold">{title}</h2>
+            <p className="text-muted-foreground text-sm leading-6">
+              {description}
+            </p>
+          </div>
+          {children ? (
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+              {children}
+            </div>
+          ) : null}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function CollectionDetailSkeleton() {
+  return (
+    <div className="h-[calc(100vh-70px)] w-full overflow-y-auto p-4">
+      <div className="mb-4 flex items-center gap-4">
+        <Skeleton className="h-8 w-56" />
+        <Skeleton className="h-8 w-24" />
+        <Skeleton className="h-9 w-44" />
+        <Skeleton className="size-9" />
+      </div>
+
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-8">
+        <Skeleton className="aspect-3/4 w-full" />
+        <Skeleton className="aspect-3/4 w-full" />
+        <Skeleton className="aspect-3/4 w-full" />
+        <Skeleton className="aspect-3/4 w-full" />
+        <Skeleton className="aspect-3/4 w-full" />
+        <Skeleton className="aspect-3/4 w-full" />
+        <Skeleton className="aspect-3/4 w-full" />
+        <Skeleton className="aspect-3/4 w-full" />
+      </div>
+    </div>
+  )
+}
 
 export default function CollectionDetailPage() {
   const params = useParams<{ id: string }>()
@@ -61,13 +136,25 @@ export default function CollectionDetailPage() {
   const [selectedGameIds, setSelectedGameIds] = useAtom(selectedGameIdsAtom)
   const [isAddingToCollection, setIsAddingToCollection] = useState(false)
   const [isDeletingGames, setIsDeletingGames] = useState(false)
+  const [isDeletingSingleGame, setIsDeletingSingleGame] = useState(false)
   const [metadataDialogOpen, setMetadataDialogOpen] = useState(false)
   const [createCollectionOpen, setCreateCollectionOpen] = useState(false)
+  const [deleteSelectedOpen, setDeleteSelectedOpen] = useState(false)
+  const [pendingDeleteGame, setPendingDeleteGame] = useState<{
+    id: number
+    name: string
+  } | null>(null)
   const [newCollectionName, setNewCollectionName] = useState('')
 
   const collectionId = Number(params.id)
 
-  const { data: collections = [], isLoading } = useQuery({
+  const {
+    data: collections = [],
+    isLoading,
+    isError,
+    refetch,
+    isRefetching,
+  } = useQuery({
     queryKey: ['collections'],
     queryFn: getCollections,
   })
@@ -208,13 +295,6 @@ export default function CollectionDetailPage() {
       return
     }
 
-    const ok = window.confirm(
-      `确定删除已选择的 ${selectedInCollection.length} 项吗？`,
-    )
-    if (!ok) {
-      return
-    }
-
     setIsDeletingGames(true)
     try {
       const results = await Promise.allSettled(
@@ -225,6 +305,7 @@ export default function CollectionDetailPage() {
       ).length
 
       clearSelection()
+      setDeleteSelectedOpen(false)
       await refreshAll()
       toast.success(`已删除 ${successCount}/${selectedInCollection.length} 项`)
     } catch (error) {
@@ -266,14 +347,15 @@ export default function CollectionDetailPage() {
     }
   }
 
-  const handleDeleteGame = async (gameId: number, gameName: string) => {
-    const ok = window.confirm(`确定删除游戏「${gameName}」吗？`)
-    if (!ok) {
+  const handleDeleteGame = async (gameId: number) => {
+    if (isDeletingSingleGame) {
       return
     }
 
+    setIsDeletingSingleGame(true)
     try {
       await deleteGameById(gameId)
+      setPendingDeleteGame(null)
       await refreshAll()
       toast.success('游戏已删除')
     } catch (error) {
@@ -282,15 +364,49 @@ export default function CollectionDetailPage() {
         message?: string
       }
       toast.error(err.response?.data?.error || err.message || '删除失败')
+    } finally {
+      setIsDeletingSingleGame(false)
     }
   }
 
   if (isLoading) {
-    return <div className="text-muted-foreground p-4 text-sm">加载中...</div>
+    return <CollectionDetailSkeleton />
+  }
+
+  if (isError) {
+    return (
+      <CollectionEmptyState
+        icon={AlertCircle}
+        title="收藏夹信息加载失败"
+        description="当前无法读取收藏夹内容，请稍后重试。"
+      >
+        <Button
+          type="button"
+          variant="outline"
+          disabled={isRefetching}
+          onClick={() => void refetch()}
+        >
+          {isRefetching ? '重试中...' : '重新加载'}
+        </Button>
+        <Button asChild>
+          <Link href="/game/home">返回游戏主页</Link>
+        </Button>
+      </CollectionEmptyState>
+    )
   }
 
   if (!collection) {
-    return <div className="text-muted-foreground p-4 text-sm">收藏夹不存在</div>
+    return (
+      <CollectionEmptyState
+        icon={SearchX}
+        title="收藏夹不存在"
+        description="该收藏夹可能已被删除，或链接中的收藏夹 ID 无效。"
+      >
+        <Button asChild>
+          <Link href="/game/home">返回游戏主页</Link>
+        </Button>
+      </CollectionEmptyState>
+    )
   }
 
   return (
@@ -361,7 +477,9 @@ export default function CollectionDetailPage() {
                 </ContextMenuSub>
                 <ContextMenuItem
                   variant="destructive"
-                  onClick={() => void handleDeleteGame(game.id, game.name)}
+                  onClick={() =>
+                    setPendingDeleteGame({ id: game.id, name: game.name })
+                  }
                 >
                   删除游戏
                 </ContextMenuItem>
@@ -423,7 +541,7 @@ export default function CollectionDetailPage() {
               variant="destructive"
               size="sm"
               disabled={isDeletingGames}
-              onClick={() => void handleDeleteSelected()}
+              onClick={() => setDeleteSelectedOpen(true)}
             >
               <Trash2Icon className="size-4" />
               删除
@@ -494,6 +612,73 @@ export default function CollectionDetailPage() {
         onOpenChange={setMetadataDialogOpen}
         gameIds={selectedInCollection}
       />
+
+      <AlertDialog
+        open={deleteSelectedOpen}
+        onOpenChange={setDeleteSelectedOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>删除已选游戏</AlertDialogTitle>
+            <AlertDialogDescription>
+              确定删除已选择的 {selectedInCollection.length}{' '}
+              项吗？此操作无法撤销。
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeletingGames}>
+              取消
+            </AlertDialogCancel>
+            <AlertDialogAction
+              variant="destructive"
+              disabled={isDeletingGames}
+              onClick={(event) => {
+                event.preventDefault()
+                void handleDeleteSelected()
+              }}
+            >
+              {isDeletingGames ? '删除中...' : '确认删除'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog
+        open={Boolean(pendingDeleteGame)}
+        onOpenChange={(nextOpen) => {
+          if (!nextOpen && !isDeletingSingleGame) {
+            setPendingDeleteGame(null)
+          }
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>删除游戏</AlertDialogTitle>
+            <AlertDialogDescription>
+              确定删除游戏「{pendingDeleteGame?.name || '-'}
+              」吗？此操作无法撤销。
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeletingSingleGame}>
+              取消
+            </AlertDialogCancel>
+            <AlertDialogAction
+              variant="destructive"
+              disabled={isDeletingSingleGame || !pendingDeleteGame}
+              onClick={(event) => {
+                event.preventDefault()
+                if (!pendingDeleteGame) {
+                  return
+                }
+                void handleDeleteGame(pendingDeleteGame.id)
+              }}
+            >
+              {isDeletingSingleGame ? '删除中...' : '确认删除'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

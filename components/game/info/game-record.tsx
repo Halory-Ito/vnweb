@@ -28,6 +28,7 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from '@/components/ui/chart'
+import { Skeleton } from '@/components/ui/skeleton'
 import { getGameTimerRecordsById } from '@/lib/game-utils'
 
 type GameRecordProps = {
@@ -284,8 +285,9 @@ export default function GameRecord({ gameId }: GameRecordProps) {
       </div>
 
       {isLoading || isRefetching ? (
-        <div className="text-muted-foreground rounded-md border p-4 text-sm">
-          加载中...
+        <div className="space-y-3 rounded-md border p-4">
+          <Skeleton className="h-4 w-40" />
+          <Skeleton className="h-72 w-full" />
         </div>
       ) : (
         <ChartContainer config={chartConfig} className="h-72 w-full">

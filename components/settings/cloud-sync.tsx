@@ -10,6 +10,7 @@ import { toast } from 'sonner'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Skeleton } from '@/components/ui/skeleton'
 import {
   bindThirdPartyAccount,
   getThirdPartyAccounts,
@@ -196,19 +197,30 @@ export default function CloudSync() {
     )
   }
 
+  const renderLoadingSkeleton = () => {
+    return (
+      <div className="bg-muted/30 flex items-center gap-3 rounded-md p-3 text-sm">
+        <Skeleton className="size-10 shrink-0 rounded-full" />
+        <div className="flex-1 space-y-2">
+          <Skeleton className="h-4 w-32" />
+          <Skeleton className="h-3 w-24" />
+          <Skeleton className="h-3 w-40" />
+          <Skeleton className="h-3 w-36" />
+          <Skeleton className="h-3 w-16" />
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-4">
-      <div className="text-muted-foreground text-sm">
-        绑定第三方账号后，可扩展同步与导入能力。
-      </div>
-
       <div className="space-y-3 rounded-md border p-4">
         <div className="flex items-center justify-between">
           <div>
             <div className="font-medium">Steam</div>
-            <div className="text-muted-foreground text-xs">
+            {/* <div className="text-muted-foreground text-xs">
               输入 Steam UID 绑定账号
-            </div>
+            </div> */}
           </div>
           <div className="flex items-center gap-2">
             <Button
@@ -224,7 +236,7 @@ export default function CloudSync() {
           </div>
         </div>
         {isLoading ? (
-          <div className="text-muted-foreground text-sm">加载中...</div>
+          renderLoadingSkeleton()
         ) : (
           <div className="space-y-3">
             {accountMap.has('steam') ? renderStatus('steam') : null}
@@ -260,9 +272,9 @@ export default function CloudSync() {
         <div className="flex items-center justify-between">
           <div>
             <div className="font-medium">Bangumi</div>
-            <div className="text-muted-foreground text-xs">
+            {/* <div className="text-muted-foreground text-xs">
               使用 OAuth 授权码登录并展示账号资料
-            </div>
+            </div> */}
           </div>
           <div className="flex items-center gap-2">
             {!accountMap.has('bangumi') && (
@@ -289,20 +301,16 @@ export default function CloudSync() {
             </Button>
           </div>
         </div>
-        {isLoading ? (
-          <div className="text-muted-foreground text-sm">加载中...</div>
-        ) : (
-          renderStatus('bangumi')
-        )}
+        {isLoading ? renderLoadingSkeleton() : renderStatus('bangumi')}
       </div>
 
       <div className="space-y-3 rounded-md border p-4">
         <div className="flex items-center justify-between">
           <div>
             <div className="font-medium">VNDB</div>
-            <div className="text-muted-foreground text-xs">
+            {/* <div className="text-muted-foreground text-xs">
               输入 API Token 绑定账号
-            </div>
+            </div> */}
           </div>
           <div className="flex items-center gap-2">
             <Button
@@ -318,7 +326,7 @@ export default function CloudSync() {
           </div>
         </div>
         {isLoading ? (
-          <div className="text-muted-foreground text-sm">加载中...</div>
+          renderLoadingSkeleton()
         ) : (
           <div className="space-y-3">
             {accountMap.has('vndb') ? renderStatus('vndb') : null}

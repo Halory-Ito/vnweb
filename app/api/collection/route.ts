@@ -10,6 +10,8 @@ import {
 } from '@/db/schema'
 import { db } from '@/lib/drizzle'
 
+export const dynamic = 'force-dynamic'
+
 type CreateCollectionPayload = {
   name?: string
 }
@@ -45,8 +47,14 @@ const getCollections = async () => {
         gameRating: GamePlayTable.rating,
       })
       .from(CollectionGameTable)
-      .innerJoin(GameInfoTable, eq(CollectionGameTable.gameId, GameInfoTable.id))
-      .leftJoin(GamePlayTable, eq(CollectionGameTable.gameId, GamePlayTable.gameId))
+      .innerJoin(
+        GameInfoTable,
+        eq(CollectionGameTable.gameId, GameInfoTable.id),
+      )
+      .leftJoin(
+        GamePlayTable,
+        eq(CollectionGameTable.gameId, GamePlayTable.gameId),
+      )
       .orderBy(desc(CollectionGameTable.id))
 
     const grouped = new Map<
@@ -71,8 +79,8 @@ const getCollections = async () => {
         linkId: link.linkId,
         id: link.gameId,
         name: link.gameName,
-        cover: link.gameCover,
-        icon: link.gameIcon,
+        cover: link.gameCover || '',
+        icon: link.gameIcon || '',
         date: link.gameDate || '',
         addedAt: link.gameAddedAt || '',
         lastRunAt: link.gameLastRunAt || '',
@@ -98,13 +106,18 @@ const getCollections = async () => {
     return NextResponse.json({ data })
   } catch (error) {
     console.error('Get collections failed:', error)
-    return NextResponse.json({ error: 'Failed to get collections' }, { status: 500 })
+    return NextResponse.json(
+      { error: 'Failed to get collections' },
+      { status: 500 },
+    )
   }
 }
 
 const createCollection = async (req: NextRequest) => {
   try {
-    const payload = (await req.json().catch(() => ({}))) as CreateCollectionPayload
+    const payload = (await req
+      .json()
+      .catch(() => ({}))) as CreateCollectionPayload
     const name = (payload.name || '').trim()
 
     if (!name) {
@@ -134,7 +147,10 @@ const createCollection = async (req: NextRequest) => {
     return NextResponse.json({ data: inserted[0] })
   } catch (error) {
     console.error('Create collection failed:', error)
-    return NextResponse.json({ error: 'Failed to create collection' }, { status: 500 })
+    return NextResponse.json(
+      { error: 'Failed to create collection' },
+      { status: 500 },
+    )
   }
 }
 

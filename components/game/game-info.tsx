@@ -2,7 +2,12 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useAtom } from 'jotai'
 import { Play, Settings, Square } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import {
+  type ChangeEvent,
+  type KeyboardEvent,
+  useEffect,
+  useState,
+} from 'react'
 import { toast } from 'sonner'
 
 import { Button } from '../ui/button'
@@ -13,12 +18,21 @@ import {
   ContextMenuTrigger,
 } from '../ui/context-menu'
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '../ui/dialog'
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu'
+import { Input } from '../ui/input'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs'
 import GameBasicInfoDialog from './dialog/game-basic-info-dialog'
 import GamePlayTimeDialog from './dialog/game-play-time-dialog'
@@ -66,6 +80,8 @@ export default function GameInfo({ game }: GameInfoProps) {
   const [isLaunching, setIsLaunching] = useState(false)
   const [isStopping, setIsStopping] = useState(false)
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false)
+  const [exePathDialogOpen, setExePathDialogOpen] = useState(false)
+  const [exePathInput, setExePathInput] = useState('')
   const [isRunning, setIsRunning] = useState(game.isRunning)
   const [playStatus, setPlayStatus] = useState(game.playStatus)
   const [rating, setRating] = useState(game.rating ?? 0)
@@ -124,6 +140,17 @@ export default function GameInfo({ game }: GameInfoProps) {
     game.totalPlayTime + (isRunning ? sessionSeconds : 0),
   )
 
+  const handleLaunchWithExePath = async () => {
+    const nextExePath = exePathInput.trim()
+    if (!nextExePath) {
+      toast.error('请填写游戏可执行文件路径')
+      return
+    }
+
+    setExePathDialogOpen(false)
+    await launchGame(nextExePath)
+  }
+
   const launchGame = async (exePath?: string) => {
     setIsLaunching(true)
     try {
@@ -149,16 +176,9 @@ export default function GameInfo({ game }: GameInfoProps) {
 
       const requireExePath = err.response?.data?.requireExePath
       if (requireExePath) {
-        const input = window.prompt(
-          '请填写游戏可执行文件路径',
-          game.exePath || '',
-        )
-        const nextExePath = input?.trim()
-        if (nextExePath) {
-          setIsLaunching(false)
-          await launchGame(nextExePath)
-          return
-        }
+        setExePathInput(game.exePath || '')
+        setExePathDialogOpen(true)
+        return
       }
 
       toast.error(err.response?.data?.error || err.message || '启动失败')
@@ -409,6 +429,50 @@ export default function GameInfo({ game }: GameInfoProps) {
         open={ostDialogOpen}
         onOpenChange={setOstDialogOpen}
       />
+
+      <Dialog open={exePathDialogOpen} onOpenChange={setExePathDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>填写游戏可执行文件路径</DialogTitle>
+            <DialogDescription>
+              当前游戏缺少可执行文件路径，请补充后再启动。
+            </DialogDescription>
+          </DialogHeader>
+
+          <Input
+            value={exePathInput}
+            onChange={(event: ChangeEvent<HTMLInputElement>) =>
+              setExePathInput(event.target.value)
+            }
+            placeholder="例如: C:\\Games\\MyGame\\game.exe"
+            disabled={isLaunching}
+            onKeyDown={(event: KeyboardEvent<HTMLInputElement>) => {
+              if (event.key === 'Enter') {
+                event.preventDefault()
+                void handleLaunchWithExePath()
+              }
+            }}
+          />
+
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setExePathDialogOpen(false)}
+              disabled={isLaunching}
+            >
+              取消
+            </Button>
+            <Button
+              type="button"
+              onClick={() => void handleLaunchWithExePath()}
+              disabled={isLaunching}
+            >
+              {isLaunching ? '启动中...' : '确认并启动'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </ContextMenu>
   )
 }

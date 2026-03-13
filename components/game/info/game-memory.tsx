@@ -9,6 +9,16 @@ import { useEffect, useMemo, useState } from 'react'
 import * as runtime from 'react/jsx-runtime'
 import { toast } from 'sonner'
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -47,6 +57,7 @@ export default function GameMemory({ gameId }: GameMemoryProps) {
   const [isDeleting, setIsDeleting] = useState(false)
   const [activeItem, setActiveItem] = useState<GameMemoryItem | null>(null)
   const [detailOpen, setDetailOpen] = useState(false)
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [imagePreviewUrl, setImagePreviewUrl] = useState('')
   const [title, setTitle] = useState('')
@@ -193,12 +204,7 @@ export default function GameMemory({ gameId }: GameMemoryProps) {
   }
 
   const handleDelete = async () => {
-    if (!activeItem) {
-      return
-    }
-
-    const confirmDelete = window.confirm('确认删除该回忆吗？')
-    if (!confirmDelete) {
+    if (!activeItem || isDeleting) {
       return
     }
 
@@ -206,6 +212,7 @@ export default function GameMemory({ gameId }: GameMemoryProps) {
     try {
       await deleteGameMemoryById(gameId, activeItem.id)
       toast.success('回忆已删除')
+      setDeleteConfirmOpen(false)
       setDetailOpen(false)
       setActiveItem(null)
       await refetch()
@@ -368,7 +375,7 @@ export default function GameMemory({ gameId }: GameMemoryProps) {
               type="button"
               variant="destructive"
               disabled={isDeleting}
-              onClick={handleDelete}
+              onClick={() => setDeleteConfirmOpen(true)}
             >
               <Trash2Icon className="size-4" />
               {isDeleting ? '删除中...' : '删除'}
@@ -376,6 +383,31 @@ export default function GameMemory({ gameId }: GameMemoryProps) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>删除回忆</AlertDialogTitle>
+            <AlertDialogDescription>
+              确认删除回忆「{activeItem?.title || '未命名回忆'}
+              」吗？此操作无法撤销。
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>取消</AlertDialogCancel>
+            <AlertDialogAction
+              variant="destructive"
+              disabled={isDeleting || !activeItem}
+              onClick={(event) => {
+                event.preventDefault()
+                void handleDelete()
+              }}
+            >
+              {isDeleting ? '删除中...' : '确认删除'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

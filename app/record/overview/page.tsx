@@ -1,6 +1,6 @@
 'use client'
 
-import { useSuspenseQuery } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { AwardIcon, CalendarIcon, PlusIcon, TimerIcon } from 'lucide-react'
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts'
 
@@ -26,10 +26,36 @@ const chartConfig = {
 } satisfies ChartConfig
 
 export default function RecordOverview() {
-  const { data } = useSuspenseQuery({
+  const isClient = typeof window !== 'undefined'
+  const { data, isLoading, isError, isRefetching, refetch } = useQuery({
     queryKey: ['overview-stats'],
     queryFn: () => fetchOverviewStatsApi(),
+    enabled: isClient,
   })
+
+  if (isError) {
+    return (
+      <div className="space-y-3 rounded-md border p-4 text-sm">
+        <div className="text-destructive">加载统计数据失败</div>
+        <button
+          type="button"
+          className="rounded-md border px-3 py-1.5 text-xs"
+          disabled={isRefetching}
+          onClick={() => void refetch()}
+        >
+          {isRefetching ? '重试中...' : '重试'}
+        </button>
+      </div>
+    )
+  }
+
+  if (isLoading || !data) {
+    return (
+      <div className="text-muted-foreground rounded-md border p-4 text-sm">
+        加载中...
+      </div>
+    )
+  }
 
   const chartCardData: ChartStatsCardProps[] = [
     {

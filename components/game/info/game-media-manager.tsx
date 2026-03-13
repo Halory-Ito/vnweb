@@ -4,6 +4,16 @@ import { Pencil, Search, Trash2, Upload } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState, type ChangeEvent } from 'react'
 import { toast } from 'sonner'
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -62,6 +72,8 @@ export default function GameMediaManager({
   const [editingId, setEditingId] = useState<number | null>(null)
   const [editName, setEditName] = useState('')
   const [editUrl, setEditUrl] = useState('')
+  const [pendingDeleteItem, setPendingDeleteItem] =
+    useState<GameMediaLinkItem | null>(null)
 
   const [currentPage, setCurrentPage] = useState(1)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
@@ -212,7 +224,7 @@ export default function GameMediaManager({
   }
 
   const handleDelete = async (item: GameMediaLinkItem) => {
-    if (!window.confirm(`确认删除${typeText}「${item.name}」吗？`)) {
+    if (isSubmitting) {
       return
     }
 
@@ -228,6 +240,7 @@ export default function GameMediaManager({
         setEditingId(null)
       }
 
+      setPendingDeleteItem(null)
       await loadData()
       toast.success(`${typeText}已删除`)
     } catch (error) {
@@ -462,7 +475,7 @@ export default function GameMediaManager({
                   variant="destructive"
                   size="sm"
                   disabled={isSubmitting}
-                  onClick={() => void handleDelete(item)}
+                  onClick={() => setPendingDeleteItem(item)}
                 >
                   <Trash2 className="size-4" />
                   删除
@@ -500,6 +513,41 @@ export default function GameMediaManager({
           </Button>
         </div>
       </div>
+
+      <AlertDialog
+        open={Boolean(pendingDeleteItem)}
+        onOpenChange={(nextOpen) => {
+          if (!nextOpen && !isSubmitting) {
+            setPendingDeleteItem(null)
+          }
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>删除{typeText}</AlertDialogTitle>
+            <AlertDialogDescription>
+              确认删除{typeText}「{pendingDeleteItem?.name || '-'}
+              」吗？此操作无法撤销。
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isSubmitting}>取消</AlertDialogCancel>
+            <AlertDialogAction
+              variant="destructive"
+              disabled={isSubmitting || !pendingDeleteItem}
+              onClick={(event) => {
+                event.preventDefault()
+                if (!pendingDeleteItem) {
+                  return
+                }
+                void handleDelete(pendingDeleteItem)
+              }}
+            >
+              {isSubmitting ? '删除中...' : '确认删除'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

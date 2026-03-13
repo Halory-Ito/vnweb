@@ -16,6 +16,7 @@ import { useEffect, useMemo, useRef, useState, type WheelEvent } from 'react'
 import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
+import { Skeleton } from '@/components/ui/skeleton'
 import { Slider } from '@/components/ui/slider'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { getGameOstsById, type GameMediaLinkItem } from '@/lib/game-utils'
@@ -481,7 +482,12 @@ export default function GameOST({ gameId, cover, title }: GameOSTProps) {
 
         <div className="max-h-105 space-y-2 overflow-y-auto">
           {isLoading ? (
-            <div className="text-muted-foreground text-sm">加载中...</div>
+            <div className="space-y-2">
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
+            </div>
           ) : items.length === 0 ? (
             <div className="text-muted-foreground text-sm">暂无OST</div>
           ) : (

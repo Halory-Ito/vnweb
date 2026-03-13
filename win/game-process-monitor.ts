@@ -93,7 +93,7 @@ export const startGameSessionPolling = ({
   if (
     pollingTimer &&
     currentPollingIntervalMs === intervalMs &&
-    processExitHandler
+    processExitHandler !== undefined
   ) {
     return
   }

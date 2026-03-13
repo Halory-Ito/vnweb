@@ -456,7 +456,10 @@ const updateGame = async (
         .set(gamePatch)
         .where(eq(GameInfoTable.id, gameId))
 
-      if (parsedExternalSourceIds !== undefined) {
+      if (
+        parsedExternalSourceIds !== undefined &&
+        parsedExternalSourceIds !== null
+      ) {
         const hadVndbBindingBefore = await db
           .select({ provider: GameIdMapTable.provider })
           .from(GameIdMapTable)

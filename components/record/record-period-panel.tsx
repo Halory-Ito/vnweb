@@ -98,6 +98,7 @@ export default function RecordPeriodPanel({
   range,
   title,
 }: RecordPeriodPanelProps) {
+  const isClient = typeof window !== 'undefined'
   const [offset, setOffset] = useState(0)
   const [chartType, setChartType] = useState<RecordChartType>('line')
   const [yearlyChartType, setYearlyChartType] = useState<RecordChartType>('bar')
@@ -109,6 +110,7 @@ export default function RecordPeriodPanel({
   const { data, isLoading, isRefetching } = useQuery({
     queryKey: ['record-timeline', range, offset],
     queryFn: () => fetchRecordTimelineApi({ range, offset }),
+    enabled: isClient,
   })
 
   const {
@@ -118,7 +120,7 @@ export default function RecordPeriodPanel({
   } = useQuery({
     queryKey: ['record-month-report', offset],
     queryFn: () => fetchRecordMonthReportApi({ offset }),
-    enabled: range === 'month',
+    enabled: isClient && range === 'month',
   })
 
   const {
@@ -128,7 +130,7 @@ export default function RecordPeriodPanel({
   } = useQuery({
     queryKey: ['record-year-report', offset],
     queryFn: () => fetchRecordYearReportApi({ offset }),
-    enabled: range === 'year',
+    enabled: isClient && range === 'year',
   })
 
   const points = data?.points ?? []

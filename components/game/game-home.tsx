@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useQueryClient } from '@tanstack/react-query'
 import { useAtom } from 'jotai'
 import {
+  AlertCircle,
   ArrowDownIcon,
   ArrowLeftIcon,
   ArrowRightIcon,
@@ -11,9 +12,11 @@ import {
   CheckIcon,
   FolderPlusIcon,
   RefreshCcwIcon,
+  SearchX,
   Trash2Icon,
   XIcon,
 } from 'lucide-react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
@@ -22,6 +25,16 @@ import GameBulkUpdateMetadataDialog from './dialog/game-bulk-update-metadata-dia
 import GameCard from './game-card'
 import { SortSelect } from './sort-select'
 import { selectedGameIdsAtom } from '@/atom/global'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -37,6 +50,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
+import { Skeleton } from '@/components/ui/skeleton'
 import {
   addGameToCollection,
   createCollection,
@@ -51,25 +65,138 @@ type SelectableGameProps = {
   onToggleSelect: (id: string) => void
 }
 
+type GameCardsData = Awaited<ReturnType<typeof getGameCardList>>
+type CollectionsData = Awaited<ReturnType<typeof getCollections>>
+
+type RecentGameProps = SelectableGameProps & {
+  gameCards: GameCardsData
+}
+
+type MyCollectionProps = {
+  collections: CollectionsData
+}
+
+type AllGameProps = SelectableGameProps & {
+  gameCards: GameCardsData
+}
+
+type GameHomeEmptyStateProps = {
+  icon: typeof AlertCircle
+  title: string
+  description: string
+  children?: React.ReactNode
+}
+
+function GameHomeEmptyState({
+  icon: Icon,
+  title,
+  description,
+  children,
+}: GameHomeEmptyStateProps) {
+  return (
+    <div className="max-h-[calc(100vh-70px)] w-full overflow-x-hidden overflow-y-scroll p-4">
+      <div className="flex min-h-[calc(100vh-102px)] items-center justify-center">
+        <div className="bg-background/80 w-full max-w-xl rounded-2xl border px-6 py-10 text-center shadow-sm backdrop-blur-sm md:px-8">
+          <div className="bg-muted text-muted-foreground mx-auto mb-4 flex size-14 items-center justify-center rounded-full border">
+            <Icon className="size-7" />
+          </div>
+          <div className="space-y-2">
+            <h2 className="text-xl font-semibold">{title}</h2>
+            <p className="text-muted-foreground text-sm leading-6">
+              {description}
+            </p>
+          </div>
+          {children ? (
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+              {children}
+            </div>
+          ) : null}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function GameHomeSkeleton() {
+  return (
+    <div className="max-h-[calc(100vh-70px)] w-full space-y-12 overflow-x-hidden overflow-y-scroll p-4">
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <Skeleton className="h-8 w-24" />
+          <div className="flex gap-2">
+            <Skeleton className="size-9" />
+            <Skeleton className="size-9" />
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-8">
+          <Skeleton className="aspect-3/4 w-full" />
+          <Skeleton className="aspect-3/4 w-full" />
+          <Skeleton className="aspect-3/4 w-full" />
+          <Skeleton className="aspect-3/4 w-full" />
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <Skeleton className="h-8 w-24" />
+          <div className="flex gap-2">
+            <Skeleton className="size-9" />
+            <Skeleton className="size-9" />
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-8">
+          <Skeleton className="aspect-3/4 w-full" />
+          <Skeleton className="aspect-3/4 w-full" />
+          <Skeleton className="aspect-3/4 w-full" />
+          <Skeleton className="aspect-3/4 w-full" />
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        <div className="mb-4 flex items-center space-x-4">
+          <Skeleton className="h-8 w-24" />
+          <Skeleton className="h-8 w-24" />
+          <Skeleton className="h-9 w-44" />
+          <Skeleton className="size-9" />
+        </div>
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-8">
+          <Skeleton className="aspect-3/4 w-full" />
+          <Skeleton className="aspect-3/4 w-full" />
+          <Skeleton className="aspect-3/4 w-full" />
+          <Skeleton className="aspect-3/4 w-full" />
+          <Skeleton className="aspect-3/4 w-full" />
+          <Skeleton className="aspect-3/4 w-full" />
+          <Skeleton className="aspect-3/4 w-full" />
+          <Skeleton className="aspect-3/4 w-full" />
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function GameHome() {
   const router = useRouter()
   const queryClient = useQueryClient()
   const [selectedGameIds, setSelectedGameIds] = useAtom(selectedGameIdsAtom)
   const [isAddingToCollection, setIsAddingToCollection] = useState(false)
   const [isDeletingGames, setIsDeletingGames] = useState(false)
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
   const [metadataDialogOpen, setMetadataDialogOpen] = useState(false)
   const [createCollectionOpen, setCreateCollectionOpen] = useState(false)
   const [newCollectionName, setNewCollectionName] = useState('')
 
-  const { data: gameCards = [] } = useQuery({
+  const gameCardsQuery = useQuery({
     queryKey: ['game-cards'],
     queryFn: getGameCardList,
   })
 
-  const { data: collections = [] } = useQuery({
+  const collectionsQuery = useQuery({
     queryKey: ['collections'],
     queryFn: getCollections,
   })
+
+  const gameCards = gameCardsQuery.data ?? []
+  const collections = collectionsQuery.data ?? []
 
   const allGameIds = gameCards.map((item) => item.id)
   const selectionMode = selectedGameIds.length > 0
@@ -85,6 +212,53 @@ export default function GameHome() {
       return next
     })
   }, [allGameIds, setSelectedGameIds])
+
+  if (gameCardsQuery.isLoading || collectionsQuery.isLoading) {
+    return <GameHomeSkeleton />
+  }
+
+  if (gameCardsQuery.isError || collectionsQuery.isError) {
+    return (
+      <GameHomeEmptyState
+        icon={AlertCircle}
+        title="加载游戏主页失败"
+        description="当前无法获取游戏或收藏数据，请稍后重试。"
+      >
+        <Button
+          type="button"
+          variant="outline"
+          disabled={
+            gameCardsQuery.isRefetching || collectionsQuery.isRefetching
+          }
+          onClick={() => {
+            void gameCardsQuery.refetch()
+            void collectionsQuery.refetch()
+          }}
+        >
+          {gameCardsQuery.isRefetching || collectionsQuery.isRefetching
+            ? '重试中...'
+            : '重新加载'}
+        </Button>
+        <Button asChild>
+          <Link href="/scan">前往扫描游戏</Link>
+        </Button>
+      </GameHomeEmptyState>
+    )
+  }
+
+  if (gameCards.length === 0) {
+    return (
+      <GameHomeEmptyState
+        icon={SearchX}
+        title="暂无游戏"
+        description="当前游戏库还没有数据。可以先扫描目录或手动导入。"
+      >
+        <Button asChild>
+          <Link href="/scan">前往扫描游戏</Link>
+        </Button>
+      </GameHomeEmptyState>
+    )
+  }
 
   const handleToggleSelect = (id: string) => {
     setSelectedGameIds((prev) =>
@@ -156,13 +330,6 @@ export default function GameHome() {
       return
     }
 
-    const ok = window.confirm(
-      `确定删除已选择的 ${selectedGameIds.length} 项吗？`,
-    )
-    if (!ok) {
-      return
-    }
-
     setIsDeletingGames(true)
     try {
       const results = await Promise.allSettled(
@@ -177,6 +344,7 @@ export default function GameHome() {
       await queryClient.invalidateQueries({ queryKey: ['game-sidebar'] })
       await queryClient.invalidateQueries({ queryKey: ['collections'] })
       setSelectedGameIds([])
+      setDeleteConfirmOpen(false)
       router.refresh()
       toast.success(`已删除 ${successCount}/${selectedGameIds.length} 项`)
     } catch (error) {
@@ -197,12 +365,14 @@ export default function GameHome() {
   return (
     <div className="max-h-[calc(100vh-70px)] w-full space-y-12 overflow-x-hidden overflow-y-scroll p-4">
       <RecentGame
+        gameCards={gameCards}
         selectedGameIds={selectedGameIds}
         selectionMode={selectionMode}
         onToggleSelect={handleToggleSelect}
       />
-      <MyColletion />
+      <MyColletion collections={collections} />
       <AllGame
+        gameCards={gameCards}
         selectedGameIds={selectedGameIds}
         selectionMode={selectionMode}
         onToggleSelect={handleToggleSelect}
@@ -258,7 +428,7 @@ export default function GameHome() {
               variant="destructive"
               size="sm"
               disabled={isDeletingGames}
-              onClick={() => void handleDeleteGames()}
+              onClick={() => setDeleteConfirmOpen(true)}
             >
               <Trash2Icon className="size-4" />
               删除
@@ -322,21 +492,43 @@ export default function GameHome() {
         onOpenChange={setMetadataDialogOpen}
         gameIds={selectedGameIds}
       />
+
+      <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>删除已选游戏</AlertDialogTitle>
+            <AlertDialogDescription>
+              确定删除已选择的 {selectedGameIds.length} 项吗？此操作无法撤销。
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeletingGames}>
+              取消
+            </AlertDialogCancel>
+            <AlertDialogAction
+              variant="destructive"
+              disabled={isDeletingGames}
+              onClick={(event) => {
+                event.preventDefault()
+                void handleDeleteGames()
+              }}
+            >
+              {isDeletingGames ? '删除中...' : '确认删除'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
 
 const RecentGame = ({
+  gameCards,
   selectedGameIds,
   selectionMode,
   onToggleSelect,
-}: SelectableGameProps) => {
+}: RecentGameProps) => {
   const scrollRef = useRef<HTMLDivElement>(null)
-
-  const { data: gameCards = [] } = useQuery({
-    queryKey: ['game-cards'],
-    queryFn: getGameCardList,
-  })
 
   const scrollCards = (direction: 'left' | 'right') => {
     const offset = 320
@@ -394,13 +586,8 @@ const RecentGame = ({
   )
 }
 
-const MyColletion = () => {
+const MyColletion = ({ collections }: MyCollectionProps) => {
   const scrollRef = useRef<HTMLDivElement>(null)
-
-  const { data: collections = [] } = useQuery({
-    queryKey: ['collections'],
-    queryFn: getCollections,
-  })
 
   const scrollCards = (direction: 'left' | 'right') => {
     const offset = 320
@@ -462,16 +649,13 @@ const MyColletion = () => {
 }
 
 const AllGame = ({
+  gameCards,
   selectedGameIds,
   selectionMode,
   onToggleSelect,
-}: SelectableGameProps) => {
+}: AllGameProps) => {
   const [order, setOrder] = useState<string>('asc')
   const [orderBy, setOrderBy] = useState<string>('add_date')
-  const { data: gameCards = [] } = useQuery({
-    queryKey: ['game-cards'],
-    queryFn: getGameCardList,
-  })
 
   const items: GameCardProps[] = [...gameCards]
 

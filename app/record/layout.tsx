@@ -4,6 +4,8 @@ export const metadata: Metadata = {
   title: '游戏记录',
 }
 
+export const dynamic = 'force-dynamic'
+
 export default function RecordLayout({
   children,
 }: {

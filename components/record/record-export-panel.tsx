@@ -60,11 +60,13 @@ const drawRoundedRect = (
 }
 
 export default function RecordExportPanel() {
+  const isClient = typeof window !== 'undefined'
   const [isExporting, setIsExporting] = useState(false)
 
   const { data, isLoading } = useQuery({
     queryKey: ['record-export'],
     queryFn: () => fetchRecordExportApi(),
+    enabled: isClient,
   })
 
   const entries = useMemo(() => data?.entries ?? [], [data])

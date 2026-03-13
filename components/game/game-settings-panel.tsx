@@ -183,6 +183,12 @@ export default function GameSettingsPanel({
     GameSearchImageItem[]
   >([])
   const [selectedSearchImageUrl, setSelectedSearchImageUrl] = useState('')
+  const [linkDialogOpen, setLinkDialogOpen] = useState(false)
+  const [linkDialogField, setLinkDialogField] = useState<ImageField>('cover')
+  const [linkInputValue, setLinkInputValue] = useState('')
+  const [cropDialogOpen, setCropDialogOpen] = useState(false)
+  const [cropDialogField, setCropDialogField] = useState<ImageField>('cover')
+  const [cropRectInput, setCropRectInput] = useState('')
 
   const fileInputRefs = {
     cover: useRef<HTMLInputElement | null>(null),
@@ -190,6 +196,7 @@ export default function GameSettingsPanel({
     icon: useRef<HTMLInputElement | null>(null),
     logo: useRef<HTMLInputElement | null>(null),
   }
+  const cropImageRef = useRef<HTMLImageElement | null>(null)
 
   const latestImageSelectionRef = useRef<Record<ImageField, string>>({
     cover: '',
@@ -379,16 +386,20 @@ export default function GameSettingsPanel({
   }
 
   const importFromLink = (field: ImageField) => {
-    const value = window.prompt(
-      `请输入${imageFieldLabelMap[field]}链接`,
-      fieldValueMap[field],
-    )
-    const nextValue = value?.trim()
+    setLinkDialogField(field)
+    setLinkInputValue(fieldValueMap[field])
+    setLinkDialogOpen(true)
+  }
+
+  const applyLinkImport = () => {
+    const nextValue = linkInputValue.trim()
     if (!nextValue) {
+      toast.error('请输入图片链接')
       return
     }
 
-    applyImageSelection(field, nextValue)
+    applyImageSelection(linkDialogField, nextValue)
+    setLinkDialogOpen(false)
   }
 
   const openSearchImageDialog = (field: ImageField) => {
@@ -472,43 +483,47 @@ export default function GameSettingsPanel({
       const defaultX = Math.floor((image.width - defaultSize) / 2)
       const defaultY = Math.floor((image.height - defaultSize) / 2)
 
-      const cropInput = window.prompt(
-        '请输入裁剪区域 x,y,w,h（留空则居中正方形裁剪）',
-        `${defaultX},${defaultY},${defaultSize},${defaultSize}`,
-      )
-
-      const rect = cropInput?.trim()
-        ? parseCropRect(cropInput, image.width, image.height)
-        : {
-            x: defaultX,
-            y: defaultY,
-            w: defaultSize,
-            h: defaultSize,
-          }
-
-      if (!rect) {
-        toast.error('裁剪参数格式不正确')
-        return
-      }
-
-      const canvas = document.createElement('canvas')
-      canvas.width = rect.w
-      canvas.height = rect.h
-      const ctx = canvas.getContext('2d')
-
-      if (!ctx) {
-        toast.error('裁剪失败：无法创建画布')
-        return
-      }
-
-      ctx.drawImage(image, rect.x, rect.y, rect.w, rect.h, 0, 0, rect.w, rect.h)
-
-      const dataUrl = canvas.toDataURL('image/png')
-      applyImageSelection(field, dataUrl)
-      toast.success(`已裁剪${imageFieldLabelMap[field]}`)
+      cropImageRef.current = image
+      setCropDialogField(field)
+      setCropRectInput(`${defaultX},${defaultY},${defaultSize},${defaultSize}`)
+      setCropDialogOpen(true)
     } catch (error) {
       toast.error((error as Error).message || '裁剪图片失败')
     }
+  }
+
+  const applyCropImage = () => {
+    const image = cropImageRef.current
+    if (!image) {
+      toast.error('裁剪失败：图片未准备好')
+      return
+    }
+
+    const rect = cropRectInput.trim()
+      ? parseCropRect(cropRectInput, image.width, image.height)
+      : null
+
+    if (!rect) {
+      toast.error('裁剪参数格式不正确，请填写 x,y,w,h')
+      return
+    }
+
+    const canvas = document.createElement('canvas')
+    canvas.width = rect.w
+    canvas.height = rect.h
+    const ctx = canvas.getContext('2d')
+
+    if (!ctx) {
+      toast.error('裁剪失败：无法创建画布')
+      return
+    }
+
+    ctx.drawImage(image, rect.x, rect.y, rect.w, rect.h, 0, 0, rect.w, rect.h)
+
+    const dataUrl = canvas.toDataURL('image/png')
+    applyImageSelection(cropDialogField, dataUrl)
+    setCropDialogOpen(false)
+    toast.success(`已裁剪${imageFieldLabelMap[cropDialogField]}`)
   }
 
   const removeImage = (field: ImageField) => {
@@ -689,7 +704,7 @@ export default function GameSettingsPanel({
             </section>
           ))}
 
-          <div className="flex justify-end">
+          <div className="flex justify-start">
             <Button
               type="button"
               onClick={() => void saveSettings()}
@@ -812,6 +827,86 @@ export default function GameSettingsPanel({
             </div>
 
             <DialogFooter />
+          </DialogContent>
+        </Dialog>
+
+        <Dialog
+          open={linkDialogOpen}
+          onOpenChange={(nextOpen) => setLinkDialogOpen(nextOpen)}
+        >
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>
+                导入{imageFieldLabelMap[linkDialogField]}链接
+              </DialogTitle>
+              <DialogDescription>请输入可访问的图片链接。</DialogDescription>
+            </DialogHeader>
+
+            <Input
+              value={linkInputValue}
+              onChange={(event) => setLinkInputValue(event.target.value)}
+              placeholder="https://example.com/image.png"
+              onKeyDown={(event) => {
+                if (event.key === 'Enter') {
+                  event.preventDefault()
+                  applyLinkImport()
+                }
+              }}
+            />
+
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setLinkDialogOpen(false)}
+              >
+                取消
+              </Button>
+              <Button type="button" onClick={applyLinkImport}>
+                确定
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        <Dialog
+          open={cropDialogOpen}
+          onOpenChange={(nextOpen) => setCropDialogOpen(nextOpen)}
+        >
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>
+                裁剪{imageFieldLabelMap[cropDialogField]}
+              </DialogTitle>
+              <DialogDescription>
+                请输入裁剪区域 x,y,w,h（示例：10,20,400,400）。
+              </DialogDescription>
+            </DialogHeader>
+
+            <Input
+              value={cropRectInput}
+              onChange={(event) => setCropRectInput(event.target.value)}
+              placeholder="x,y,w,h"
+              onKeyDown={(event) => {
+                if (event.key === 'Enter') {
+                  event.preventDefault()
+                  applyCropImage()
+                }
+              }}
+            />
+
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setCropDialogOpen(false)}
+              >
+                取消
+              </Button>
+              <Button type="button" onClick={applyCropImage}>
+                确定裁剪
+              </Button>
+            </DialogFooter>
           </DialogContent>
         </Dialog>
       </SheetContent>
