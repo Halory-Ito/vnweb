@@ -45,7 +45,6 @@ next-env.d.ts
 
 # assets
 /public/assets
-
+/public/fonts
 /assets
-
-local.db
+/local.db
