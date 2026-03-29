@@ -8,6 +8,7 @@ import 'dayjs/locale/zh-cn' // 导入本地化语言
 dayjs.locale('zh-cn') // 使用本地化语言
 
 import AppLayout from '@/components/layout/app-layout'
+import WebsiteTitleUpdater from '@/components/layout/website-title-updater'
 import TanStackProvider from '@/components/providers/tanstack-provider'
 import { SidebarProvider } from '@/components/ui/sidebar'
 import { Toaster } from '@/components/ui/sonner'
@@ -42,6 +43,7 @@ export default function RootLayout({
               <TooltipProvider>
                 <AppLayout>{children}</AppLayout>
                 <Toaster />
+                <WebsiteTitleUpdater />
               </TooltipProvider>
             </SidebarProvider>
           </ThemeProvider>
