@@ -5,12 +5,11 @@ import { ReactNode } from 'react'
 
 import { Button } from '@/components/ui/button'
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuShortcut,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+} from '@/components/ui/card'
 
 type GameStatsProps = {
   totalPlayTimeText: string
@@ -22,7 +21,7 @@ type GameStatsProps = {
   isUpdatingStatus: boolean
   onOpenPlayTime: () => void
   onOpenRating: () => void
-  onUpdatePlayStatus: (nextStatus: number) => void
+  onOpenPlayStatus: () => void
 }
 
 const statusLabelMap: Record<number, string> = {
@@ -62,35 +61,39 @@ const StatCard = ({
   icon,
   value,
   interactiveIcon = false,
+  onClick,
 }: {
   title: string
   icon: ReactNode
   value: ReactNode
   interactiveIcon?: boolean
+  onClick?: () => void
 }) => (
-  <div className="rounded-md p-3">
-    <div className="flex items-center justify-center gap-3">
+  <Card
+    variant="outline"
+    className={`group relative overflow-hidden transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md ${
+      onClick ? 'cursor-pointer' : ''
+    }`}
+    onClick={onClick}
+  >
+    {/* 背景光效 */}
+    <div className="bg-primary/5 pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+      <CardDescription className="text-xs font-medium tracking-wider uppercase">
+        {title}
+      </CardDescription>
       {interactiveIcon ? (
-        icon
-      ) : (
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon-lg"
-          className="pointer-events-none"
-          tabIndex={-1}
-        >
+        <div className="text-muted-foreground/60 group-hover:text-primary transition-colors duration-300">
           {icon}
-        </Button>
-      )}
-      <div className="text-base font-medium">
-        <div>
-          <span>{title}</span>
         </div>
-        <div>{value}</div>
-      </div>
-    </div>
-  </div>
+      ) : (
+        <div className="text-muted-foreground/60">{icon}</div>
+      )}
+    </CardHeader>
+    <CardContent>
+      <div className="text-2xl font-bold tracking-tight">{value}</div>
+    </CardContent>
+  </Card>
 )
 
 export default function GameStats({
@@ -100,94 +103,44 @@ export default function GameStats({
   isRunning,
   sessionSeconds,
   rating,
-  isUpdatingStatus,
   onOpenPlayTime,
   onOpenRating,
-  onUpdatePlayStatus,
+  onOpenPlayStatus,
 }: GameStatsProps) {
   return (
-    <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+    <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
       <StatCard
         title="游玩时间"
         interactiveIcon
-        icon={
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon-lg"
-            aria-label="编辑游玩时间"
-            className="text-muted-foreground hover:text-primary transition-colors"
-            onClick={onOpenPlayTime}
-          >
-            <ClockIcon className="size-8" />
-          </Button>
-        }
+        icon={<ClockIcon className="size-5" />}
+        onClick={onOpenPlayTime}
         value={totalPlayTimeText}
       />
       <StatCard
-        title="最后运行日期"
-        icon={<TimerResetIcon className="size-8" />}
+        title="最后运行"
+        icon={<TimerResetIcon className="size-5" />}
         value={formatDateOnly(lastLaunchedAt)}
       />
       <StatCard
         title="游玩状态"
         interactiveIcon
-        icon={
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon-lg"
-                disabled={isUpdatingStatus}
-                aria-label="修改游玩状态"
-                className="text-muted-foreground hover:text-primary transition-colors"
-              >
-                <Gamepad2Icon className="size-8" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-40">
-              {statusOptions.map((status) => (
-                <DropdownMenuItem
-                  key={status}
-                  onClick={() => onUpdatePlayStatus(status)}
-                >
-                  {statusLabelMap[status]}
-                  {playStatus === status ? (
-                    <DropdownMenuShortcut>✔</DropdownMenuShortcut>
-                  ) : null}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        }
-        value={
-          <div className="space-y-1">
-            <div>{statusLabelMap[playStatus] ?? '未开始'}</div>
-            {isRunning ? (
-              <div className="text-muted-foreground text-xs">
-                本次 {formatDuration(sessionSeconds)}
-              </div>
-            ) : null}
-          </div>
-        }
+        icon={<Gamepad2Icon className="size-5" />}
+        onClick={onOpenPlayStatus}
+        value={statusLabelMap[playStatus] ?? '未开始'}
       />
       <StatCard
         title="我的评分"
         interactiveIcon
-        icon={
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon-lg"
-            aria-label="修改评分"
-            className="text-muted-foreground hover:text-primary transition-colors"
-            onClick={onOpenRating}
-          >
-            <StarIcon className="size-8" />
-          </Button>
+        icon={<StarIcon className="size-5" />}
+        onClick={onOpenRating}
+        value={
+          <div className="flex items-center gap-1">
+            <span>{rating ?? 0}</span>
+            <span className="text-muted-foreground text-sm font-normal">
+              /10
+            </span>
+          </div>
         }
-        value={String(rating ?? 0)}
       />
     </div>
   )

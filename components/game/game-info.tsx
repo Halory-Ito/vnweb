@@ -35,6 +35,7 @@ import {
 import { Input } from '../ui/input'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs'
 import GameBasicInfoDialog from './dialog/game-basic-info-dialog'
+import GamePlayStatusDialog from './dialog/game-play-status-dialog'
 import GamePlayTimeDialog from './dialog/game-play-time-dialog'
 import GameRatingDialog from './dialog/game-rating-dialog'
 import GameUpdateDataDialog from './dialog/game-update-data-dialog'
@@ -77,6 +78,7 @@ export default function GameInfo({ game }: GameInfoProps) {
   const [ratingOpen, setRatingOpen] = useState(false)
   const [pvDialogOpen, setPvDialogOpen] = useState(false)
   const [ostDialogOpen, setOstDialogOpen] = useState(false)
+  const [playStatusDialogOpen, setPlayStatusDialogOpen] = useState(false)
   const [isLaunching, setIsLaunching] = useState(false)
   const [isStopping, setIsStopping] = useState(false)
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false)
@@ -324,9 +326,7 @@ export default function GameInfo({ game }: GameInfoProps) {
             isUpdatingStatus={isUpdatingStatus}
             onOpenPlayTime={() => setPlayTimeOpen(true)}
             onOpenRating={() => setRatingOpen(true)}
-            onUpdatePlayStatus={(status) => {
-              void updatePlayStatus(status)
-            }}
+            onOpenPlayStatus={() => setPlayStatusDialogOpen(true)}
           />
 
           <div>
@@ -428,6 +428,15 @@ export default function GameInfo({ game }: GameInfoProps) {
         gameId={game.id}
         open={ostDialogOpen}
         onOpenChange={setOstDialogOpen}
+      />
+      <GamePlayStatusDialog
+        gameId={game.id}
+        gameTitle={title}
+        currentStatus={playStatus}
+        open={playStatusDialogOpen}
+        onOpenChange={setPlayStatusDialogOpen}
+        onStatusChange={updatePlayStatus}
+        disabled={isUpdatingStatus}
       />
 
       <Dialog open={exePathDialogOpen} onOpenChange={setExePathDialogOpen}>
