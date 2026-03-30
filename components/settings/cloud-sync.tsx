@@ -1,16 +1,15 @@
 'use client'
 
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Loader2 } from 'lucide-react'
 import { useSearchParams } from 'next/navigation'
 import { useEffect } from 'react'
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
 
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Skeleton } from '@/components/ui/skeleton'
+import {
+  CloudSyncAccountCard,
+  type CloudSyncProvider,
+} from '@/components/settings/cloud-sync-account-card'
 import {
   bindThirdPartyAccount,
   getThirdPartyAccounts,
@@ -18,20 +17,52 @@ import {
   unlinkThirdPartyAccount,
 } from '@/lib/cloud-sync-utils'
 
-type Provider = 'steam' | 'bangumi' | 'vndb'
-
-const providerLabels: Record<Provider, string> = {
-  steam: 'Steam',
-  bangumi: 'Bangumi',
-  vndb: 'VNDB',
+const providerConfig: Record<
+  CloudSyncProvider,
+  {
+    label: string
+    icon: React.ReactNode
+    description: string
+    inputPlaceholder: string
+  }
+> = {
+  steam: {
+    label: 'Steam',
+    icon: (
+      <svg viewBox="0 0 24 24" className="size-5" fill="currentColor">
+        <path d="M11.979 0C5.678 0 .511 4.86.022 11.037l6.432 2.658c.545-.371 1.203-.59 1.912-.59.063 0 .125.004.188.006l2.861-4.142V8.91c0-2.495 2.028-4.524 4.524-4.524 2.494 0 4.524 2.031 4.524 4.527s-2.03 4.525-4.524 4.525h-.105l-4.076 2.911c0 .052.004.105.004.159 0 1.875-1.515 3.396-3.39 3.396-1.635 0-3.016-1.173-3.331-2.727L.436 15.27C1.862 20.307 6.486 24 11.979 24c6.627 0 11.999-5.373 11.999-12S18.605 0 11.979 0zM7.54 18.21l-1.473-.61c.262.543.714.999 1.314 1.25 1.297.539 2.793-.076 3.332-1.375.263-.63.264-1.319.005-1.949s-.75-1.121-1.377-1.383c-.624-.26-1.29-.249-1.878-.03l1.523.63c.956.4 1.409 1.5 1.009 2.455-.397.957-1.497 1.41-2.454 1.012H7.54zm11.415-9.303a3.01 3.01 0 0 0-3.015-3.015 3.01 3.01 0 0 0-3.015 3.015 3.01 3.01 0 0 0 3.015 3.015 3.01 3.01 0 0 0 3.015-3.015zm-5.273.005c0-1.264 1.029-2.293 2.292-2.293 1.263 0 2.291 1.029 2.291 2.293s-1.028 2.291-2.291 2.291a2.294 2.294 0 0 1-2.292-2.291z" />
+      </svg>
+    ),
+    description: '通过 Steam UID 绑定账号',
+    inputPlaceholder: '请输入 17 位 Steam UID',
+  },
+  bangumi: {
+    label: 'Bangumi',
+    icon: (
+      <svg viewBox="0 0 24 24" className="size-5" fill="currentColor">
+        <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z" />
+      </svg>
+    ),
+    description: '使用 OAuth 授权登录',
+    inputPlaceholder: '',
+  },
+  vndb: {
+    label: 'VNDB',
+    icon: (
+      <svg viewBox="0 0 24 24" className="size-5" fill="currentColor">
+        <path d="M2 12C2 6.48 6.48 2 12 2s10 4.48 10 10-4.48 10-10 10S2 17.52 2 12zm11 4v2h-3v-2h3zm0-4v2h-3V8h3zm0-4v2h-3V4h3zm-7 8v2H3v-2h3zm0-4v2H3V8h3zm0-4v2H3V4h3z" />
+      </svg>
+    ),
+    description: '通过 API Token 绑定账号',
+    inputPlaceholder: '请输入 VNDB API Token',
+  },
 }
 
 export default function CloudSync() {
   const searchParams = useSearchParams()
   const queryClient = useQueryClient()
-  const [processingProvider, setProcessingProvider] = useState<Provider | null>(
-    null,
-  )
+  const [processingProvider, setProcessingProvider] =
+    useState<CloudSyncProvider | null>(null)
   const [vndbToken, setVndbToken] = useState('')
   const [steamUid, setSteamUid] = useState('')
 
@@ -44,6 +75,12 @@ export default function CloudSync() {
     const provider = (searchParams.get('provider') || '').toLowerCase()
     const status = (searchParams.get('status') || '').toLowerCase()
     const reason = searchParams.get('reason') || ''
+
+    const providerLabels = {
+      steam: 'Steam',
+      bangumi: 'Bangumi',
+      vndb: 'VNDB',
+    }
 
     const providerLabel =
       provider === 'steam' || provider === 'bangumi' || provider === 'vndb'
@@ -65,10 +102,10 @@ export default function CloudSync() {
   }, [queryClient, refetch, searchParams])
 
   const accountMap = useMemo(() => {
-    const map = new Map<Provider, ThirdPartyAccountItem>()
+    const map = new Map<CloudSyncProvider, ThirdPartyAccountItem>()
 
     for (const item of data?.items ?? []) {
-      const provider = item.provider.toLowerCase() as Provider
+      const provider = item.provider.toLowerCase() as CloudSyncProvider
       if (
         provider === 'steam' ||
         provider === 'bangumi' ||
@@ -121,7 +158,7 @@ export default function CloudSync() {
         queryKey: ['third-party-accounts'],
       })
       await refetch()
-      toast.success(`${providerLabels[provider]} 已绑定`)
+      toast.success(`${providerConfig[provider].label} 已绑定`)
     } catch (error) {
       const err = error as {
         response?: { data?: { error?: string } }
@@ -133,7 +170,7 @@ export default function CloudSync() {
     }
   }
 
-  const handleUnlink = async (provider: Provider) => {
+  const handleUnlink = async (provider: CloudSyncProvider) => {
     setProcessingProvider(provider)
     try {
       await unlinkThirdPartyAccount(provider)
@@ -141,7 +178,7 @@ export default function CloudSync() {
         queryKey: ['third-party-accounts'],
       })
       await refetch()
-      toast.success(`${providerLabels[provider]} 已解绑`)
+      toast.success(`${providerConfig[provider].label} 已解绑`)
     } catch (error) {
       const err = error as {
         response?: { data?: { error?: string } }
@@ -153,211 +190,44 @@ export default function CloudSync() {
     }
   }
 
-  const renderStatus = (provider: Provider) => {
-    const account = accountMap.get(provider)
-    if (!account) {
-      return <div className="text-muted-foreground text-sm">未登录</div>
-    }
-
-    const displayName = account.profile?.displayName || account.accountId
-    const secondaryName = account.profile?.secondaryName || ''
-    const avatar = account.profile?.avatar || ''
-
-    return (
-      <div className="bg-muted/30 flex items-center gap-3 rounded-md p-3 text-sm">
-        <Avatar size="lg">
-          {avatar ? <AvatarImage src={avatar} alt={displayName} /> : null}
-          <AvatarFallback>
-            {displayName.slice(0, 1).toUpperCase()}
-          </AvatarFallback>
-        </Avatar>
-        <div className="min-w-0 flex-1">
-          <div className="truncate font-medium">{displayName}</div>
-          <div className="text-muted-foreground truncate text-xs">
-            {secondaryName}
-          </div>
-          <div className="text-muted-foreground text-xs">
-            登录时间: {account.updatedAt || '-'}
-          </div>
-          <div className="text-muted-foreground text-xs">
-            账号 ID: {account.accountId}
-          </div>
-          {account.profile?.profileUrl ? (
-            <a
-              className="text-xs text-blue-600 underline-offset-2 hover:underline"
-              href={account.profile.profileUrl}
-              target="_blank"
-              rel="noreferrer"
-            >
-              查看主页
-            </a>
-          ) : null}
-        </div>
-      </div>
-    )
-  }
-
-  const renderLoadingSkeleton = () => {
-    return (
-      <div className="bg-muted/30 flex items-center gap-3 rounded-md p-3 text-sm">
-        <Skeleton className="size-10 shrink-0 rounded-full" />
-        <div className="flex-1 space-y-2">
-          <Skeleton className="h-4 w-32" />
-          <Skeleton className="h-3 w-24" />
-          <Skeleton className="h-3 w-40" />
-          <Skeleton className="h-3 w-36" />
-          <Skeleton className="h-3 w-16" />
-        </div>
-      </div>
-    )
-  }
-
   return (
-    <div className="space-y-4">
-      <div className="space-y-3 rounded-md border p-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="font-medium">Steam</div>
-            {/* <div className="text-muted-foreground text-xs">
-              输入 Steam UID 绑定账号
-            </div> */}
-          </div>
-          <div className="flex items-center gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              disabled={
-                processingProvider === 'steam' || !accountMap.has('steam')
-              }
-              onClick={() => void handleUnlink('steam')}
-            >
-              解绑
-            </Button>
-          </div>
-        </div>
-        {isLoading ? (
-          renderLoadingSkeleton()
-        ) : (
-          <div className="space-y-3">
-            {accountMap.has('steam') ? renderStatus('steam') : null}
-            {!accountMap.has('steam') ? (
-              <div className="space-y-2">
-                <Input
-                  value={steamUid}
-                  onChange={(event) => setSteamUid(event.target.value)}
-                  placeholder="请输入 17 位 Steam UID"
-                  disabled={processingProvider === 'steam'}
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  disabled={processingProvider === 'steam'}
-                  onClick={() => void handleBind('steam')}
-                >
-                  {processingProvider === 'steam' ? (
-                    <>
-                      <Loader2 className="mr-1 size-4 animate-spin" /> 绑定中...
-                    </>
-                  ) : (
-                    '绑定 Steam'
-                  )}
-                </Button>
-              </div>
-            ) : null}
-          </div>
-        )}
-      </div>
-
-      <div className="space-y-3 rounded-md border p-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="font-medium">Bangumi</div>
-            {/* <div className="text-muted-foreground text-xs">
-              使用 OAuth 授权码登录并展示账号资料
-            </div> */}
-          </div>
-          <div className="flex items-center gap-2">
-            {!accountMap.has('bangumi') && (
-              <Button
-                type="button"
-                variant="outline"
-                disabled={processingProvider === 'bangumi'}
-                onClick={() => startOAuthLogin('bangumi')}
-              >
-                {processingProvider === 'bangumi'
-                  ? '跳转中...'
-                  : '登录 Bangumi'}
-              </Button>
-            )}
-            <Button
-              type="button"
-              variant="outline"
-              disabled={
-                processingProvider === 'bangumi' || !accountMap.has('bangumi')
-              }
-              onClick={() => void handleUnlink('bangumi')}
-            >
-              解绑
-            </Button>
-          </div>
-        </div>
-        {isLoading ? renderLoadingSkeleton() : renderStatus('bangumi')}
-      </div>
-
-      <div className="space-y-3 rounded-md border p-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="font-medium">VNDB</div>
-            {/* <div className="text-muted-foreground text-xs">
-              输入 API Token 绑定账号
-            </div> */}
-          </div>
-          <div className="flex items-center gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              disabled={
-                processingProvider === 'vndb' || !accountMap.has('vndb')
-              }
-              onClick={() => void handleUnlink('vndb')}
-            >
-              解绑
-            </Button>
-          </div>
-        </div>
-        {isLoading ? (
-          renderLoadingSkeleton()
-        ) : (
-          <div className="space-y-3">
-            {accountMap.has('vndb') ? renderStatus('vndb') : null}
-            {!accountMap.has('vndb') ? (
-              <div className="space-y-2">
-                <Input
-                  type="password"
-                  value={vndbToken}
-                  onChange={(event) => setVndbToken(event.target.value)}
-                  placeholder="请输入 VNDB API Token"
-                  disabled={processingProvider === 'vndb'}
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  disabled={processingProvider === 'vndb'}
-                  onClick={() => void handleBind('vndb')}
-                >
-                  {processingProvider === 'vndb' ? (
-                    <>
-                      <Loader2 className="mr-1 size-4 animate-spin" /> 绑定中...
-                    </>
-                  ) : (
-                    '绑定 VNDB'
-                  )}
-                </Button>
-              </div>
-            ) : null}
-          </div>
-        )}
-      </div>
+    <div className="flex flex-col gap-4">
+      <CloudSyncAccountCard
+        provider="steam"
+        config={providerConfig.steam}
+        account={accountMap.get('steam')}
+        isLoading={isLoading}
+        isProcessing={processingProvider === 'steam'}
+        onBind={() => void handleBind('steam')}
+        onUnlink={() => void handleUnlink('steam')}
+        inputValue={steamUid}
+        onInputChange={setSteamUid}
+      />
+      <CloudSyncAccountCard
+        provider="bangumi"
+        config={providerConfig.bangumi}
+        account={accountMap.get('bangumi')}
+        isLoading={isLoading}
+        isProcessing={processingProvider === 'bangumi'}
+        onBind={() => {}}
+        onUnlink={() => void handleUnlink('bangumi')}
+        onOAuthLogin={() => startOAuthLogin('bangumi')}
+        inputValue=""
+        onInputChange={() => {}}
+        onBindDisabled
+      />
+      <CloudSyncAccountCard
+        provider="vndb"
+        config={providerConfig.vndb}
+        account={accountMap.get('vndb')}
+        isLoading={isLoading}
+        isProcessing={processingProvider === 'vndb'}
+        onBind={() => void handleBind('vndb')}
+        onUnlink={() => void handleUnlink('vndb')}
+        inputValue={vndbToken}
+        onInputChange={setVndbToken}
+        inputType="password"
+      />
     </div>
   )
 }

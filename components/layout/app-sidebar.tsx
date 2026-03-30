@@ -1,13 +1,6 @@
 'use client'
 
-import {
-  BoxIcon,
-  HomeIcon,
-  PlugIcon,
-  ScanIcon,
-  SettingsIcon,
-  UserIcon,
-} from 'lucide-react'
+import { BoxIcon, HomeIcon, ScanIcon, SettingsIcon } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
@@ -36,7 +29,6 @@ const contentItems: SidebarItem[] = [
   { title: '主页', href: '/game', icon: HomeIcon },
   { title: '记录', href: '/record', icon: BoxIcon },
   { title: '扫描', href: '/scan', icon: ScanIcon },
-  { title: '插件', href: '/plugins', icon: PlugIcon },
 ]
 
 const footerItems: SidebarItem[] = [

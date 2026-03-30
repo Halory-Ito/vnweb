@@ -1,7 +1,13 @@
 'use client'
 
 import { useQueryClient } from '@tanstack/react-query'
-import { CalendarDaysIcon, CheckIcon, Clock3Icon, PlayIcon } from 'lucide-react'
+import {
+  CalendarDaysIcon,
+  CheckIcon,
+  Clock3Icon,
+  PlayIcon,
+  StarIcon,
+} from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -129,67 +135,122 @@ export default function GameCard(props: GameCardProps) {
     props.onToggleSelect?.(props.id)
   }
 
+  const rating = Number(props.rating) || 0
+  const renderStars = () => {
+    const stars = []
+    for (let i = 1; i <= 5; i++) {
+      const isFilled = i <= Math.ceil(rating / 2)
+      stars.push(
+        <StarIcon
+          key={i}
+          className={`size-3 ${isFilled ? 'fill-amber-400 text-amber-400' : 'text-gray-600'}`}
+        />,
+      )
+    }
+    return stars
+  }
+
   return (
     <>
       <Link
         href={gameHref}
-        className="group relative flex w-36 flex-col items-center justify-center space-y-2 p-1"
+        className="group relative flex w-44 shrink-0 flex-col items-center p-1 transition-all duration-300 hover:-translate-y-1"
         onClick={handleCardClick}
       >
         {showSelection ? (
           <button
             type="button"
-            className={`border-border bg-background/90 absolute top-2 left-2 z-10 flex size-5 items-center justify-center rounded-full border transition-opacity ${
-              isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+            className={`border-border bg-background/90 absolute top-4 left-4 z-20 flex size-7 items-center justify-center rounded-full border-2 backdrop-blur-sm transition-all ${
+              isSelected
+                ? 'border-primary bg-primary text-primary-foreground scale-100 opacity-100'
+                : 'scale-90 opacity-0 group-hover:scale-100 group-hover:opacity-100'
             }`}
             onClick={handleToggleSelect}
             aria-label={isSelected ? '取消选择' : '选择'}
           >
-            {isSelected ? <CheckIcon className="size-3.5" /> : null}
+            {isSelected ? <CheckIcon className="size-4" /> : null}
           </button>
         ) : null}
-        <div className="relative h-48 w-36">
-          <Image
-            className="h-48 w-36 cursor-pointer rounded-lg border border-transparent object-cover transition-all duration-300 hover:scale-102 hover:border-blue-500"
-            src={props.cover}
-            alt={props.title}
-            width={144}
-            height={192}
-          />
 
-          {!selectionMode ? (
-            <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-lg bg-black/45 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-              <div className="flex h-full flex-col justify-between p-2">
-                <div className="flex flex-1 items-center justify-center">
-                  <button
-                    type="button"
-                    className="bg-primary text-primary-foreground pointer-events-auto inline-flex size-10 items-center justify-center rounded-full shadow-[0_0_0_2px_rgba(255,255,255,0.45)] transition-all duration-200 hover:scale-110 hover:shadow-[0_0_18px_rgba(255,255,255,0.7)]"
-                    onClick={(event) => void handleLaunchAndOpen(event)}
-                    aria-label="启动并查看"
-                    disabled={isLaunching}
+        {/* 封面图片 */}
+        <div className="relative w-full">
+          {/* 评分星星 */}
+          {rating > 0 && (
+            <div className="absolute top-2 left-2 z-10 flex items-center gap-0.5 rounded-full bg-black/70 px-2.5 py-1.5 backdrop-blur-md">
+              {renderStars()}
+              <span className="ml-1 text-xs font-medium text-amber-400">
+                {rating.toFixed(1)}
+              </span>
+            </div>
+          )}
+
+          {/* 主图片 */}
+          <div className="relative aspect-3/4 w-full overflow-hidden rounded-2xl shadow-lg transition-all duration-300 group-hover:shadow-2xl">
+            {/* 背景光晕效果 */}
+            <div className="bg-primary/20 pointer-events-none absolute -inset-4 opacity-0 blur-3xl transition-opacity duration-500 group-hover:opacity-60" />
+
+            <Image
+              className="h-full w-full cursor-pointer object-cover transition-transform duration-500 group-hover:scale-110"
+              src={props.cover}
+              alt={props.title}
+              fill
+              sizes="176px"
+            />
+
+            {/* 悬停遮罩 */}
+            {!selectionMode && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center bg-linear-to-t from-black/90 via-black/50 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                {/* 播放按钮 */}
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="icon"
+                  className="mb-5 size-14 rounded-full text-white shadow-xl backdrop-blur-sm transition-all duration-300 hover:scale-110 hover:bg-white/25 hover:shadow-2xl"
+                  onClick={(event) => void handleLaunchAndOpen(event)}
+                  disabled={isLaunching}
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    className="ml-0.5 size-6"
+                    fill="currentColor"
                   >
-                    <PlayIcon className="size-5" />
-                  </button>
-                </div>
-                <div className="space-y-1 text-xs text-white">
-                  <div className="flex items-center gap-1.5">
-                    <Clock3Icon className="size-3.5" />
-                    <span>{formatPlayTime(props.playTime)}</span>
+                    <polygon points="5 3 19 12 5 21 5 3" />
+                  </svg>
+                </Button>
+
+                {/* 游戏信息 - 两行显示 */}
+                <div className="absolute right-3 bottom-3 left-3 space-y-1.5">
+                  {/* 游戏时长 */}
+                  <div className="flex items-center gap-1.5 rounded-md px-2 py-1">
+                    <Clock3Icon className="size-3 text-white/80" />
+                    <span className="text-xs font-medium text-white">
+                      {formatPlayTime(props.playTime)}
+                    </span>
                   </div>
-                  <div className="flex items-center gap-1.5">
-                    <CalendarDaysIcon className="size-3.5" />
-                    <span>{formatLastRunDate(props.lastRunAt)}</span>
+                  {/* 上次游玩 */}
+                  <div className="flex items-center gap-1.5 rounded-md px-2 py-1">
+                    <CalendarDaysIcon className="size-3 text-white/80" />
+                    <span className="text-xs text-white/90">
+                      {formatLastRunDate(props.lastRunAt)}
+                    </span>
                   </div>
                 </div>
               </div>
-            </div>
-          ) : null}
+            )}
+
+            {/* 边框光效 */}
+            <div className="pointer-events-none absolute inset-0 rounded-2xl ring-1 ring-white/10 transition-all duration-300 group-hover:ring-2 group-hover:ring-white/20" />
+          </div>
         </div>
-        <div
-          className="w-full truncate text-center text-xs"
-          title={props.title}
-        >
-          {props.title}
+
+        {/* 标题 */}
+        <div className="mt-2.5 w-full px-1">
+          <h3
+            className="group-hover:text-primary truncate text-center text-sm leading-tight font-medium tracking-wide transition-colors"
+            title={props.title}
+          >
+            {props.title}
+          </h3>
         </div>
       </Link>
 

@@ -128,7 +128,7 @@ function GameHomeSkeleton() {
             <Skeleton className="size-9" />
           </div>
         </div>
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-8">
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8">
           <Skeleton className="aspect-3/4 w-full" />
           <Skeleton className="aspect-3/4 w-full" />
           <Skeleton className="aspect-3/4 w-full" />
