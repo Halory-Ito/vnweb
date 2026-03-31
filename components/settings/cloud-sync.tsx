@@ -14,8 +14,10 @@ import {
   bindThirdPartyAccount,
   getThirdPartyAccounts,
   type ThirdPartyAccountItem,
+  syncSteamPlaytime,
   unlinkThirdPartyAccount,
 } from '@/lib/cloud-sync-utils'
+import { readProxySettings } from '@/lib/proxy-settings'
 
 const providerConfig: Record<
   CloudSyncProvider,
@@ -190,6 +192,28 @@ export default function CloudSync() {
     }
   }
 
+  const handleSyncSteamPlaytime = async () => {
+    setProcessingProvider('steam')
+    try {
+      // 读取代理设置
+      const proxySettings = readProxySettings()
+      const result = await syncSteamPlaytime(proxySettings)
+      if (result.success) {
+        toast.success(result.message || '游戏时长同步成功')
+      } else {
+        toast.error(result.message || '游戏时长同步失败')
+      }
+    } catch (error) {
+      const err = error as {
+        response?: { data?: { error?: string } }
+        message?: string
+      }
+      toast.error(err.response?.data?.error || err.message || '同步失败')
+    } finally {
+      setProcessingProvider(null)
+    }
+  }
+
   return (
     <div className="flex flex-col gap-4">
       <CloudSyncAccountCard
@@ -200,6 +224,7 @@ export default function CloudSync() {
         isProcessing={processingProvider === 'steam'}
         onBind={() => void handleBind('steam')}
         onUnlink={() => void handleUnlink('steam')}
+        onSyncPlaytime={() => void handleSyncSteamPlaytime()}
         inputValue={steamUid}
         onInputChange={setSteamUid}
       />

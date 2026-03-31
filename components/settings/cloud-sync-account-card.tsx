@@ -36,6 +36,7 @@ interface CloudSyncAccountCardProps {
   inputValue: string
   onInputChange: (value: string) => void
   inputType?: 'text' | 'password'
+  onSyncPlaytime?: () => void | Promise<void>
 }
 
 function formatDate(dateString: string | null | undefined): string {
@@ -61,8 +62,10 @@ export function CloudSyncAccountCard({
   inputValue,
   onInputChange,
   inputType = 'text',
+  onSyncPlaytime,
 }: CloudSyncAccountCardProps) {
   const isBound = !!account
+  const isSteam = provider === 'steam'
 
   return (
     <Card variant="outline" className="transition-shadow hover:shadow-md">
@@ -106,14 +109,53 @@ export function CloudSyncAccountCard({
         ) : isBound ? (
           <>
             <AccountInfo account={account} />
-            <div className="mt-4 flex justify-end">
+            <div className="mt-4 flex items-center justify-between">
+              {isSteam && onSyncPlaytime && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={isProcessing}
+                  onClick={onSyncPlaytime}
+                  className="gap-2"
+                >
+                  {isProcessing ? (
+                    <>
+                      <svg
+                        viewBox="0 0 24 24"
+                        className="size-4 animate-spin"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                      >
+                        <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                      </svg>
+                      同步中...
+                    </>
+                  ) : (
+                    <>
+                      <svg
+                        viewBox="0 0 24 24"
+                        className="size-4"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                      >
+                        <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8" />
+                        <path d="M21 3v5h-5" />
+                      </svg>
+                      同步游戏时长
+                    </>
+                  )}
+                </Button>
+              )}
               <Button
                 type="button"
                 variant="ghost"
                 size="sm"
                 disabled={isProcessing}
                 onClick={onUnlink}
-                className="text-muted-foreground hover:text-destructive hover:bg-destructive/5"
+                className="text-muted-foreground hover:text-destructive hover:bg-destructive/5 ml-auto"
               >
                 <svg
                   viewBox="0 0 24 24"

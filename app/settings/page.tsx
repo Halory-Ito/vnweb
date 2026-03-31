@@ -2,6 +2,7 @@
 
 import AppearanceContent from './appearance/appearance-content'
 import BackupSettingsContent from './backup/backup-settings-content'
+import ProxyPage from './proxy/page'
 import CloudSync from '@/components/settings/cloud-sync'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
@@ -15,6 +16,7 @@ export default function Settings() {
         <TabsTrigger value="appearance">外观</TabsTrigger>
         <TabsTrigger value="backup">备份</TabsTrigger>
         <TabsTrigger value="sync">云同步</TabsTrigger>
+        <TabsTrigger value="proxy">代理</TabsTrigger>
       </TabsList>
       <TabsContent value="appearance">
         <AppearanceContent />
@@ -24,6 +26,9 @@ export default function Settings() {
       </TabsContent>
       <TabsContent value="sync">
         <CloudSync />
+      </TabsContent>
+      <TabsContent value="proxy">
+        <ProxyPage />
       </TabsContent>
     </Tabs>
   )
