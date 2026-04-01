@@ -26,17 +26,15 @@ export function normalizeProxySettings(
 ): ProxySettings {
     return {
         enabled: Boolean(input.enabled),
-        type:
-            input.type === "http" || input.type === "https" ||
+        type: input.type === "http" || input.type === "https" ||
                 input.type === "socks5"
-                ? input.type
-                : "http",
+            ? input.type
+            : "http",
         host: typeof input.host === "string" ? input.host.trim() : "",
-        port:
-            typeof input.port === "number" && input.port > 0 &&
+        port: typeof input.port === "number" && input.port > 0 &&
                 input.port <= 65535
-                ? input.port
-                : 7890,
+            ? input.port
+            : 7890,
         username: typeof input.username === "string"
             ? input.username.trim()
             : "",
@@ -95,4 +93,39 @@ export function buildProxyUrl(settings: ProxySettings): string | null {
         : "";
 
     return `${settings.type}://${auth}${settings.host}:${settings.port}`;
+}
+
+/**
+ * 获取当前启用的代理配置（从数据库）
+ * 仅在服务器端使用
+ */
+export async function getEnabledProxySettings(): Promise<ProxySettings | null> {
+    try {
+        const { db } = await import("@/lib/drizzle");
+        const { ProxyConfigTable } = await import("@/db/schema");
+        const { eq } = await import("drizzle-orm");
+
+        const result = await db
+            .select()
+            .from(ProxyConfigTable)
+            .where(eq(ProxyConfigTable.enabled, 1))
+            .limit(1);
+
+        if (result.length === 0 || !result[0]) {
+            return null;
+        }
+
+        const row = result[0];
+        return {
+            enabled: true,
+            type: row.type as ProxyType,
+            host: row.host,
+            port: row.port,
+            username: row.username || "",
+            password: row.password || "",
+        };
+    } catch (error) {
+        console.error("Failed to get enabled proxy settings:", error);
+        return null;
+    }
 }

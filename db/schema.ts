@@ -188,3 +188,17 @@ export const ScanErrorTable = sqliteTable("scan_error", {
   createdAt: text().default(dayjs().toString()), // 创建时间
   updatedAt: text().default(dayjs().toString()), // 更新时间
 });
+
+// 代理配置表
+export const ProxyConfigTable = sqliteTable("proxy_config", {
+  id: int().primaryKey({ autoIncrement: true }),
+  name: text().notNull(), // 配置名称
+  type: text().notNull(), // 协议类型：http、https、socks5
+  host: text().notNull(), // 代理服务器地址
+  port: int().notNull(), // 代理服务器端口
+  username: text().default(""), // 认证用户名（可选）
+  password: text().default(""), // 认证密码（可选）
+  enabled: int().default(0), // 是否启用，0否1是
+  createdAt: text().default(dayjs().toString()), // 创建时间
+  updatedAt: text().default(dayjs().toString()), // 更新时间
+});

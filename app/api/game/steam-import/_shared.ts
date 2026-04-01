@@ -1,4 +1,5 @@
 import axios from "axios";
+import { HttpsProxyAgent } from "https-proxy-agent";
 import { like } from "drizzle-orm";
 
 import { relateWebsiteTable } from "@/db/schema";
@@ -48,6 +49,30 @@ function buildAxiosProxyConfig(
       : undefined,
     protocol: settings.type,
   };
+}
+
+/**
+ * 构建代理 Agent（SOCKS5 需要使用 agent）
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function buildProxyAgent(settings: ProxySettings): any {
+  if (!settings.enabled || !settings.host || !settings.port) {
+    return null;
+  }
+
+  const auth = settings.username && settings.password
+    ? `${encodeURIComponent(settings.username)}:${
+      encodeURIComponent(settings.password)
+    }@`
+    : "";
+  const proxyUrl =
+    `${settings.type}://${auth}${settings.host}:${settings.port}`;
+
+  try {
+    return new HttpsProxyAgent(proxyUrl);
+  } catch {
+    return null;
+  }
 }
 
 type AxiosProxyConfig = {
@@ -235,8 +260,13 @@ export const fetchOwnedGames = async (
   throw new Error("获取 Steam 游戏库失败");
 };
 
-export const fetchSteamAppDetails = async (appId: number) => {
+export const fetchSteamAppDetails = async (
+  appId: number,
+  proxySettings?: ProxySettings,
+) => {
   try {
+    const httpsAgent = proxySettings ? buildProxyAgent(proxySettings) : null;
+
     const response = await axios.get<Record<string, SteamAppDetailResponse>>(
       STEAM_APP_DETAILS_API,
       {
@@ -245,6 +275,7 @@ export const fetchSteamAppDetails = async (appId: number) => {
           appids: appId,
           l: "schinese",
         },
+        ...(httpsAgent && { httpsAgent }),
       },
     );
 
