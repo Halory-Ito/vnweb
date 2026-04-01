@@ -40,6 +40,7 @@
     "drizzle-orm": "^0.45.1",
     "embla-carousel-react": "^8.6.0",
     "hls.js": "^1.6.15",
+    "html2canvas": "^1.4.1",
     "https-proxy-agent": "^8.0.0",
     "input-otp": "^1.4.2",
     "jotai": "^2.18.0",
