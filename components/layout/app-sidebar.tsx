@@ -1,6 +1,15 @@
 'use client'
 
-import { BoxIcon, HomeIcon, ScanIcon, SettingsIcon } from 'lucide-react'
+import { useQuery } from '@tanstack/react-query'
+import {
+  BoxIcon,
+  HomeIcon,
+  PuzzleIcon,
+  ScanIcon,
+  SettingsIcon,
+  ShoppingBasketIcon,
+} from 'lucide-react'
+import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
@@ -22,7 +31,15 @@ import {
 type SidebarItem = {
   title: string
   href: string
-  icon: React.ElementType
+  icon?: React.ElementType
+  iconSrc?: string
+}
+
+type PluginItem = {
+  id: string
+  name: string
+  icon: string
+  installed?: boolean
 }
 
 const contentItems: SidebarItem[] = [
@@ -33,6 +50,7 @@ const contentItems: SidebarItem[] = [
 
 const footerItems: SidebarItem[] = [
   // { title: '游戏主页', href: '/game/home', icon: UserIcon },
+  { title: '插件市场', href: '/market', icon: ShoppingBasketIcon },
   { title: '设置', href: '/settings', icon: SettingsIcon },
 ]
 
@@ -63,7 +81,22 @@ function SidebarIconButton({
               aria-label={item.title}
               className="justify-center"
             >
-              <Icon />
+              {item.iconSrc ? (
+                <div className="bg-muted relative size-4 overflow-hidden rounded-xs">
+                  <Image
+                    src={item.iconSrc}
+                    alt={item.title}
+                    fill
+                    sizes="16px"
+                    unoptimized
+                    className="object-cover"
+                  />
+                </div>
+              ) : Icon ? (
+                <Icon />
+              ) : (
+                <PuzzleIcon />
+              )}
               <span className="sr-only">{item.title}</span>
             </Link>
           </SidebarMenuButton>
@@ -76,6 +109,26 @@ function SidebarIconButton({
 
 export default function AppSideBar() {
   const pathname = usePathname()
+
+  const { data: plugins = [] } = useQuery<PluginItem[]>({
+    queryKey: ['plugins'],
+    queryFn: async () => {
+      const response = await fetch('/api/market/plugins')
+      if (!response.ok) {
+        throw new Error('Failed to fetch plugins')
+      }
+
+      return response.json()
+    },
+  })
+
+  const installedPluginItems: SidebarItem[] = plugins
+    .filter((plugin) => plugin.installed)
+    .map((plugin) => ({
+      title: plugin.name,
+      href: `/addOns/${plugin.id}/home`,
+      iconSrc: plugin.icon,
+    }))
 
   return (
     <Sidebar
@@ -102,6 +155,18 @@ export default function AppSideBar() {
             />
           ))}
         </SidebarMenu>
+
+        {installedPluginItems.length > 0 && (
+          <SidebarMenu className="gap-3 p-4 pt-2">
+            {installedPluginItems.map((item) => (
+              <SidebarIconButton
+                key={item.href}
+                item={item}
+                pathname={pathname}
+              />
+            ))}
+          </SidebarMenu>
+        )}
       </SidebarContent>
 
       <SidebarFooter className="items-center pb-4">

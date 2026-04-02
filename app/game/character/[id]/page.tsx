@@ -371,12 +371,12 @@ export default function CharacterDetailPage() {
       </div>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[280px_minmax(0,1fr)]">
-        <div className="rounded-md border p-3">
+        <div className="rounded-md">
           {data.imageUrl ? (
             <img
               src={data.imageUrl}
               alt={data.name || data.original || data.id}
-              className="h-auto w-full rounded-md object-cover"
+              className="h-auto w-full rounded-md object-cover transition-transform duration-400 hover:scale-105"
             />
           ) : (
             <div className="text-muted-foreground flex min-h-96 items-center justify-center rounded-md border text-sm">
