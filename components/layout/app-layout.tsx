@@ -3,7 +3,7 @@
 import { useAtom } from 'jotai'
 import { useTheme } from 'next-themes'
 import { usePathname } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import AppHeader from './app-header'
 import AppSideBar from './app-sidebar'
@@ -12,6 +12,7 @@ import {
   BACKGROUND_SETTINGS_EVENT,
   BACKGROUND_SETTINGS_STORAGE_KEY,
   DEFAULT_BACKGROUND_SETTINGS,
+  type BackgroundTransitionStyle,
   readBackgroundSettings,
 } from '@/lib/background-settings'
 import {
@@ -35,6 +36,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [backgroundSettings, setBackgroundSettings] = useState(
     DEFAULT_BACKGROUND_SETTINGS,
   )
+  const [displayBackground, setDisplayBackground] = useState('')
+  const [previousBackground, setPreviousBackground] = useState('')
+  const [isBgTransitioning, setIsBgTransitioning] = useState(false)
+  const [transitionStyle, setTransitionStyle] =
+    useState<BackgroundTransitionStyle>('center-fade')
+  const [transitionDurationMs, setTransitionDurationMs] = useState(420)
+  const transitionTimerRef = useRef<number | null>(null)
 
   useEffect(() => {
     setMounted(true)
@@ -141,20 +149,111 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     : bg
   const activeBackground = isGameInfoPage ? bg : nonGameInfoBackground
 
+  useEffect(() => {
+    setTransitionStyle(backgroundSettings.transitionStyle)
+    setTransitionDurationMs(backgroundSettings.transitionDurationMs)
+  }, [
+    backgroundSettings.transitionDurationMs,
+    backgroundSettings.transitionStyle,
+  ])
+
+  const enterClassByStyle: Record<BackgroundTransitionStyle, string> = {
+    none: '',
+    'center-fade': 'app-bg-image-layer-enter-center-fade',
+    'cross-fade': 'app-bg-image-layer-enter-cross-fade',
+    'slide-up': 'app-bg-image-layer-enter-slide-up',
+    'zoom-fade': 'app-bg-image-layer-enter-zoom-fade',
+  }
+
+  const exitClassByStyle: Record<BackgroundTransitionStyle, string> = {
+    none: '',
+    'center-fade': 'app-bg-image-layer-exit-center-fade',
+    'cross-fade': 'app-bg-image-layer-exit-cross-fade',
+    'slide-up': 'app-bg-image-layer-exit-slide-up',
+    'zoom-fade': 'app-bg-image-layer-exit-zoom-fade',
+  }
+
+  useEffect(() => {
+    if (!activeBackground) {
+      setDisplayBackground('')
+      setPreviousBackground('')
+      setIsBgTransitioning(false)
+      return
+    }
+
+    if (!displayBackground) {
+      setDisplayBackground(activeBackground)
+      return
+    }
+
+    if (activeBackground === displayBackground) {
+      return
+    }
+
+    if (transitionStyle === 'none' || transitionDurationMs <= 0) {
+      setPreviousBackground('')
+      setDisplayBackground(activeBackground)
+      setIsBgTransitioning(false)
+      return
+    }
+
+    setPreviousBackground(displayBackground)
+    setDisplayBackground(activeBackground)
+    setIsBgTransitioning(true)
+
+    if (transitionTimerRef.current) {
+      window.clearTimeout(transitionTimerRef.current)
+    }
+
+    transitionTimerRef.current = window.setTimeout(() => {
+      setPreviousBackground('')
+      setIsBgTransitioning(false)
+      transitionTimerRef.current = null
+    }, transitionDurationMs)
+  }, [
+    activeBackground,
+    displayBackground,
+    transitionDurationMs,
+    transitionStyle,
+  ])
+
+  useEffect(() => {
+    return () => {
+      if (transitionTimerRef.current) {
+        window.clearTimeout(transitionTimerRef.current)
+      }
+    }
+  }, [])
+
   return (
     <div className="relative flex h-screen w-screen overflow-hidden">
-      <div
-        className="app-bg-image-layer pointer-events-none absolute inset-0 z-0 transition-all duration-300"
-        style={
-          mounted && resolvedTheme === 'dark'
-            ? {
-                backgroundImage: `url(${activeBackground})`,
-              }
-            : {
-                backgroundImage: 'none',
-              }
-        }
-      />
+      {mounted && resolvedTheme === 'dark' ? (
+        <>
+          {previousBackground && isBgTransitioning ? (
+            <div
+              className={`app-bg-image-layer pointer-events-none absolute inset-0 z-0 ${exitClassByStyle[transitionStyle]}`}
+              style={{
+                backgroundImage: `url(${previousBackground})`,
+                animationDuration: `${transitionDurationMs}ms`,
+              }}
+            />
+          ) : null}
+          <div
+            className={`app-bg-image-layer pointer-events-none absolute inset-0 z-0 ${isBgTransitioning ? enterClassByStyle[transitionStyle] : ''}`}
+            style={{
+              backgroundImage: displayBackground
+                ? `url(${displayBackground})`
+                : 'none',
+              animationDuration: `${transitionDurationMs}ms`,
+            }}
+          />
+        </>
+      ) : (
+        <div
+          className="app-bg-image-layer pointer-events-none absolute inset-0 z-0"
+          style={{ backgroundImage: 'none' }}
+        />
+      )}
 
       <div className="app-glass-overlay pointer-events-none absolute inset-0 z-10" />
 

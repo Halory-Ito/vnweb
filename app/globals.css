@@ -11,8 +11,126 @@
   background-repeat: no-repeat;
   background-size: cover;
   filter: blur(var(--app-glass-blur));
+  transform-origin: center;
+  will-change: opacity, transform;
   /* transform: scale(1.06); */
   /* transform-origin: center; */
+}
+
+.app-bg-image-layer-enter-center-fade {
+  animation: app-bg-center-fade-in 420ms ease-out;
+}
+
+.app-bg-image-layer-exit-center-fade {
+  animation: app-bg-center-fade-out 420ms ease-out;
+}
+
+.app-bg-image-layer-enter-cross-fade {
+  animation: app-bg-cross-fade-in 420ms ease-out;
+}
+
+.app-bg-image-layer-exit-cross-fade {
+  animation: app-bg-cross-fade-out 420ms ease-out;
+}
+
+.app-bg-image-layer-enter-slide-up {
+  animation: app-bg-slide-up-in 420ms ease-out;
+}
+
+.app-bg-image-layer-exit-slide-up {
+  animation: app-bg-slide-up-out 420ms ease-out;
+}
+
+.app-bg-image-layer-enter-zoom-fade {
+  animation: app-bg-zoom-fade-in 420ms ease-out;
+}
+
+.app-bg-image-layer-exit-zoom-fade {
+  animation: app-bg-zoom-fade-out 420ms ease-out;
+}
+
+@keyframes app-bg-center-fade-in {
+  0% {
+    opacity: 0;
+    transform: scale(1.04);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes app-bg-center-fade-out {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.04);
+  }
+}
+
+@keyframes app-bg-cross-fade-in {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes app-bg-cross-fade-out {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes app-bg-slide-up-in {
+  0% {
+    opacity: 0;
+    transform: translateY(16px) scale(1.02);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes app-bg-slide-up-out {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-16px) scale(1.02);
+  }
+}
+
+@keyframes app-bg-zoom-fade-in {
+  0% {
+    opacity: 0;
+    transform: scale(1.08);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes app-bg-zoom-fade-out {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.08);
+  }
 }
 
 .app-glass-overlay {

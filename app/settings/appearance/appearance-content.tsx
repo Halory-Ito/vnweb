@@ -12,9 +12,17 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Slider } from '@/components/ui/slider'
 import { Switch } from '@/components/ui/switch'
 import {
+  BACKGROUND_TRANSITION_STYLE_OPTIONS,
   DEFAULT_BACKGROUND_SETTINGS,
   normalizeBackgroundSettings,
   notifyBackgroundSettingsChanged,
@@ -442,6 +450,57 @@ export default function AppearanceContent() {
           >
             {isUploadingBackground ? '上传中...' : '选择图片'}
           </Button>
+        </div>
+
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <p className="text-sm font-medium">切换动画样式</p>
+            <p className="text-muted-foreground text-xs">
+              设置背景图片切换时的过渡效果。
+            </p>
+          </div>
+          <div>
+            <Select
+              value={backgroundSettings.transitionStyle}
+              onValueChange={(value) =>
+                updateBackgroundSettings({
+                  transitionStyle:
+                    value as (typeof backgroundSettings)['transitionStyle'],
+                })
+              }
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="选择动画样式" />
+              </SelectTrigger>
+              <SelectContent>
+                {BACKGROUND_TRANSITION_STYLE_OPTIONS.map((item) => (
+                  <SelectItem key={item.value} value={item.value}>
+                    {item.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium">过渡时长</span>
+            <span className="text-muted-foreground text-sm">
+              {backgroundSettings.transitionDurationMs}ms
+            </span>
+          </div>
+          <Slider
+            min={0}
+            max={3000}
+            step={50}
+            value={[backgroundSettings.transitionDurationMs]}
+            onValueChange={(value) =>
+              updateBackgroundSettings({
+                transitionDurationMs: value[0] ?? 0,
+              })
+            }
+          />
         </div>
       </div>
 
