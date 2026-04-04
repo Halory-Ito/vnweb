@@ -154,7 +154,7 @@ export default function BackupSettingsContent() {
         </div>
 
         {/* 提示信息 */}
-        <div className="rounded-md border border-yellow-500/20 bg-yellow-500/10 p-4">
+        {/* <div className="rounded-md border border-yellow-500/20 bg-yellow-500/10 p-4">
           <p className="text-sm text-yellow-600 dark:text-yellow-400">
             <strong>注意事项：</strong>
           </p>
@@ -164,7 +164,7 @@ export default function BackupSettingsContent() {
             <li>如果导入失败，可以使用备份文件恢复</li>
             <li>建议在导入前关闭应用程序</li>
           </ul>
-        </div>
+        </div> */}
       </div>
     </div>
   )
