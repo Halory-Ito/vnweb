@@ -547,22 +547,31 @@ const RecentGame = ({
     .slice(0, 20)
   return (
     <div className="h-full w-full">
-      <div className="mb-4 flex items-center justify-between">
-        <div className="text-xl font-bold">最近游戏</div>
-        <div className="space-x-4">
+      <div className="bg-background/60 mb-4 flex items-center justify-between rounded-xl border p-3">
+        <div className="flex items-center gap-3">
+          <div className="text-xl font-bold tracking-tight">最近游戏</div>
+          <span className="text-muted-foreground rounded-full border px-2 py-0.5 text-xs">
+            共 {items.length} 项
+          </span>
+        </div>
+        <div className="flex items-center gap-2">
           <Button
             variant="outline"
             size="icon"
+            className="shrink-0"
+            aria-label="向左滚动最近游戏列表"
             onClick={() => scrollCards('left')}
           >
-            <ArrowLeftIcon />
+            <ArrowLeftIcon className="size-4" />
           </Button>
           <Button
             variant="outline"
             size="icon"
+            className="shrink-0"
+            aria-label="向右滚动最近游戏列表"
             onClick={() => scrollCards('right')}
           >
-            <ArrowRightIcon />
+            <ArrowRightIcon className="size-4" />
           </Button>
         </div>
       </div>
@@ -615,22 +624,31 @@ const MyColletion = ({ collections }: MyCollectionProps) => {
     })
   return (
     <div className="h-full w-full">
-      <div className="mb-4 flex items-center justify-between">
-        <div className="text-xl font-bold">我的收藏</div>
-        <div className="space-x-4">
+      <div className="bg-background/60 mb-4 flex items-center justify-between rounded-xl border p-3">
+        <div className="flex items-center gap-3">
+          <div className="text-xl font-bold tracking-tight">我的收藏</div>
+          <span className="text-muted-foreground rounded-full border px-2 py-0.5 text-xs">
+            共 {items.length} 项
+          </span>
+        </div>
+        <div className="flex items-center gap-2">
           <Button
             variant="outline"
             size="icon"
+            className="shrink-0"
+            aria-label="向左滚动收藏列表"
             onClick={() => scrollCards('left')}
           >
-            <ArrowLeftIcon />
+            <ArrowLeftIcon className="size-4" />
           </Button>
           <Button
             variant="outline"
             size="icon"
+            className="shrink-0"
+            aria-label="向右滚动收藏列表"
             onClick={() => scrollCards('right')}
           >
-            <ArrowRightIcon />
+            <ArrowRightIcon className="size-4" />
           </Button>
         </div>
       </div>
@@ -687,17 +705,33 @@ const AllGame = ({
   })
   return (
     <div className="h-full w-full">
-      <div className="mb-4 flex items-center space-x-4">
-        <div className="text-xl font-bold">所有游戏</div>
-        <div className="text-xl font-bold">排序依据:</div>
-        <SortSelect orderBy={orderBy} setOrderBy={setOrderBy} />
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={() => setOrder(order === 'asc' ? 'desc' : 'asc')}
-        >
-          {order === 'asc' ? <ArrowDownIcon /> : <ArrowUpIcon />}
-        </Button>
+      <div className="bg-background/60 mb-4 flex flex-col gap-3 rounded-xl border p-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-3">
+          <div className="text-xl font-bold tracking-tight">所有游戏</div>
+          <span className="text-muted-foreground rounded-full border px-2 py-0.5 text-xs">
+            共 {items.length} 项
+          </span>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+          <div className="text-muted-foreground text-sm font-medium">
+            排序依据
+          </div>
+          <SortSelect orderBy={orderBy} setOrderBy={setOrderBy} />
+          <Button
+            variant="outline"
+            size="icon"
+            className="shrink-0"
+            aria-label={order === 'asc' ? '切换为降序' : '切换为升序'}
+            onClick={() => setOrder(order === 'asc' ? 'desc' : 'asc')}
+          >
+            {order === 'asc' ? (
+              <ArrowDownIcon className="size-4" />
+            ) : (
+              <ArrowUpIcon className="size-4" />
+            )}
+          </Button>
+        </div>
       </div>
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-8">
         {items.map((item) => (

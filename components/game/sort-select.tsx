@@ -23,7 +23,7 @@ interface SortSelectProps {
 
 export function SortSelect({ orderBy, setOrderBy }: SortSelectProps) {
   return (
-    <FieldGroup className="w-32">
+    <FieldGroup className="w-36">
       <Field>
         <Select defaultValue={orderBy} onValueChange={setOrderBy}>
           <SelectTrigger>

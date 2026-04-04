@@ -1,9 +1,11 @@
+import dayjs from "dayjs";
 import { eq } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 
 import {
     GameIdMapTable,
     GamePlayTable,
+    GameRecordTable,
     ThirdPartyAccountTable,
 } from "@/db/schema";
 import { db } from "@/lib/drizzle";
@@ -78,7 +80,10 @@ const syncSteamPlaytime = async (req: NextRequest) => {
 
         // 统计更新的游戏数量
         let updatedCount = 0;
+        let recordedCount = 0;
         const errors: string[] = [];
+        const syncEndedAt = dayjs();
+        const syncEndedAtIso = syncEndedAt.toISOString();
 
         // 更新游戏时长
         for (const game of ownedGames) {
@@ -100,23 +105,65 @@ const syncSteamPlaytime = async (req: NextRequest) => {
             try {
                 // 检查是否已存在游戏时长记录
                 const existingRecord = await db
-                    .select({ id: GamePlayTable.id })
+                    .select({
+                        id: GamePlayTable.id,
+                        totalPlayTime: GamePlayTable.totalPlayTime,
+                    })
                     .from(GamePlayTable)
                     .where(eq(GamePlayTable.gameId, gameId))
                     .limit(1);
+
+                const existingTimerRecord = await db
+                    .select({ id: GameRecordTable.id })
+                    .from(GameRecordTable)
+                    .where(eq(GameRecordTable.gameId, gameId))
+                    .limit(1);
+
+                const hasTimerRecord = Boolean(existingTimerRecord[0]);
+
+                const previousTotal = Math.max(
+                    0,
+                    Number(existingRecord[0]?.totalPlayTime || 0),
+                );
+                const deltaSeconds = hasTimerRecord
+                    ? playtimeSeconds - previousTotal
+                    : playtimeSeconds;
 
                 if (existingRecord[0]) {
                     // 更新现有记录
                     await db
                         .update(GamePlayTable)
-                        .set({ totalPlayTime: playtimeSeconds })
+                        .set({
+                            totalPlayTime: playtimeSeconds,
+                            ...(deltaSeconds > 0
+                                ? { lastLaunchedAt: syncEndedAtIso }
+                                : {}),
+                        })
                         .where(eq(GamePlayTable.gameId, gameId));
                 } else {
                     // 创建新记录
                     await db.insert(GamePlayTable).values({
                         gameId,
                         totalPlayTime: playtimeSeconds,
+                        ...(deltaSeconds > 0
+                            ? { lastLaunchedAt: syncEndedAtIso }
+                            : {}),
                     });
+                }
+
+                if (deltaSeconds > 0) {
+                    const startAt = syncEndedAt.subtract(
+                        deltaSeconds,
+                        "second",
+                    );
+
+                    await db.insert(GameRecordTable).values({
+                        gameId,
+                        playDate: startAt.toISOString(),
+                        playTime: deltaSeconds,
+                    });
+
+                    recordedCount += 1;
                 }
 
                 updatedCount += 1;
@@ -139,7 +186,8 @@ const syncSteamPlaytime = async (req: NextRequest) => {
         return NextResponse.json({
             data: {
                 success: true,
-                message: `成功同步 ${updatedCount} 个游戏的时长`,
+                message:
+                    `成功同步 ${updatedCount} 个游戏的时长，新增 ${recordedCount} 条计时记录`,
             },
         });
     } catch (error) {
