@@ -1,6 +1,7 @@
 'use client'
 
 import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useSetAtom } from 'jotai'
 import {
   ClipboardPasteIcon,
   CircleCheckIcon,
@@ -15,9 +16,12 @@ import {
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useMemo, useRef, useState } from 'react'
+import Cropper, { type Area, type Point } from 'react-easy-crop'
 import { toast } from 'sonner'
 
+import { bgAtom } from '@/atom/global'
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   Dialog,
   DialogContent,
@@ -41,11 +45,17 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet'
+import { Slider } from '@/components/ui/slider'
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
+import {
+  DEFAULT_LAST_GAME_BACKGROUND_IMAGE,
+  readBackgroundSettings,
+  updateLastGameBackground,
+} from '@/lib/background-settings'
 import {
   enqueueGameImageLocalizationById,
   type GameSearchImageItem,
@@ -70,35 +80,11 @@ const imageFieldLabelMap: Record<ImageField, string> = {
   logo: '徽标',
 }
 
-const parseCropRect = (
-  input: string,
-  width: number,
-  height: number,
-): { x: number; y: number; w: number; h: number } | null => {
-  const raw = input
-    .split(',')
-    .map((v) => Number(v.trim()))
-    .filter((v) => Number.isFinite(v))
-
-  if (raw.length !== 4) {
-    return null
-  }
-
-  const [rawX, rawY, rawW, rawH] = raw
-  const x = Math.max(0, Math.floor(rawX))
-  const y = Math.max(0, Math.floor(rawY))
-  const w = Math.max(1, Math.floor(rawW))
-  const h = Math.max(1, Math.floor(rawH))
-
-  const maxW = Math.max(1, width - x)
-  const maxH = Math.max(1, height - y)
-
-  return {
-    x,
-    y,
-    w: Math.min(w, maxW),
-    h: Math.min(h, maxH),
-  }
+const imageFieldAspectMap: Record<ImageField, number> = {
+  cover: 2 / 3,
+  bg: 16 / 9,
+  icon: 1,
+  logo: 3,
 }
 
 const readFileAsDataUrl = (file: File) =>
@@ -114,7 +100,12 @@ const loadImageElement = (src: string) =>
     const image = new window.Image()
     image.crossOrigin = 'anonymous'
     image.onload = () => resolve(image)
-    image.onerror = () => reject(new Error('图片加载失败，可能不支持跨域裁剪'))
+    image.onerror = () =>
+      reject(
+        new Error(
+          '图片加载失败，可能不支持跨域裁剪，建议先点击确认保存后，再重新进入该页面进行剪切',
+        ),
+      )
     image.src = src
   })
 
@@ -153,6 +144,7 @@ export default function GameSettingsPanel({
 }: GameSettingsPanelProps) {
   const router = useRouter()
   const queryClient = useQueryClient()
+  const setGlobalBg = useSetAtom(bgAtom)
 
   const [exePath, setExePath] = useState('')
   const [cover, setCover] = useState('')
@@ -188,7 +180,11 @@ export default function GameSettingsPanel({
   const [linkInputValue, setLinkInputValue] = useState('')
   const [cropDialogOpen, setCropDialogOpen] = useState(false)
   const [cropDialogField, setCropDialogField] = useState<ImageField>('cover')
-  const [cropRectInput, setCropRectInput] = useState('')
+  const [cropSource, setCropSource] = useState('')
+  const [cropPosition, setCropPosition] = useState<Point>({ x: 0, y: 0 })
+  const [cropZoom, setCropZoom] = useState(1)
+  const [cropFreeAspect, setCropFreeAspect] = useState(false)
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null)
 
   const fileInputRefs = {
     cover: useRef<HTMLInputElement | null>(null),
@@ -196,8 +192,6 @@ export default function GameSettingsPanel({
     icon: useRef<HTMLInputElement | null>(null),
     logo: useRef<HTMLInputElement | null>(null),
   }
-  const cropImageRef = useRef<HTMLImageElement | null>(null)
-
   const latestImageSelectionRef = useRef<Record<ImageField, string>>({
     cover: '',
     bg: '',
@@ -477,35 +471,39 @@ export default function GameSettingsPanel({
       return
     }
 
-    try {
-      const image = await loadImageElement(target)
-      const defaultSize = Math.min(image.width, image.height)
-      const defaultX = Math.floor((image.width - defaultSize) / 2)
-      const defaultY = Math.floor((image.height - defaultSize) / 2)
-
-      cropImageRef.current = image
-      setCropDialogField(field)
-      setCropRectInput(`${defaultX},${defaultY},${defaultSize},${defaultSize}`)
-      setCropDialogOpen(true)
-    } catch (error) {
-      toast.error((error as Error).message || '裁剪图片失败')
-    }
+    setCropDialogField(field)
+    setCropSource(target)
+    setCropPosition({ x: 0, y: 0 })
+    setCropZoom(1)
+    setCropFreeAspect(false)
+    setCroppedAreaPixels(null)
+    setCropDialogOpen(true)
   }
 
-  const applyCropImage = () => {
-    const image = cropImageRef.current
-    if (!image) {
+  const applyCropImage = async () => {
+    if (!cropSource) {
       toast.error('裁剪失败：图片未准备好')
       return
     }
 
-    const rect = cropRectInput.trim()
-      ? parseCropRect(cropRectInput, image.width, image.height)
-      : null
-
-    if (!rect) {
-      toast.error('裁剪参数格式不正确，请填写 x,y,w,h')
+    if (!croppedAreaPixels) {
+      toast.error('裁剪失败：请先调整裁剪区域')
       return
+    }
+
+    let image: HTMLImageElement
+    try {
+      image = await loadImageElement(cropSource)
+    } catch (error) {
+      toast.error((error as Error).message || '图片加载失败，无法裁剪')
+      return
+    }
+
+    const rect = {
+      x: Math.max(0, Math.floor(croppedAreaPixels.x)),
+      y: Math.max(0, Math.floor(croppedAreaPixels.y)),
+      w: Math.max(1, Math.floor(croppedAreaPixels.width)),
+      h: Math.max(1, Math.floor(croppedAreaPixels.height)),
     }
 
     const canvas = document.createElement('canvas')
@@ -567,13 +565,52 @@ export default function GameSettingsPanel({
 
     setIsSaving(true)
     try {
+      const nextCover = (coverLocalized || cover).trim()
+      const nextBg = (bgLocalized || bg).trim()
+      const nextIcon = (iconLocalized || icon).trim()
+      const nextLogo = (logoLocalized || logo).trim()
+
+      const backgroundSettings = readBackgroundSettings()
+      const fallbackGlobalBackground =
+        (backgroundSettings.customBackgroundEnabled &&
+          backgroundSettings.customBackgroundImage.trim()) ||
+        backgroundSettings.lastGameBackgroundImage.trim() ||
+        DEFAULT_LAST_GAME_BACKGROUND_IMAGE
+      const resolvedDisplayBg = nextBg || fallbackGlobalBackground
+
       await updateGameSettingsById(gameId, {
         exePath,
-        cover: coverLocalized || cover,
-        bg: bgLocalized || bg,
-        icon: iconLocalized || icon,
-        logo: logoLocalized || logo,
+        cover: nextCover,
+        bg: nextBg,
+        icon: nextIcon,
+        logo: nextLogo,
       })
+
+      queryClient.setQueryData(['game', String(gameId)], (prev: unknown) => {
+        if (!prev || typeof prev !== 'object') {
+          return prev
+        }
+        const prevGame = prev as {
+          cover?: string
+          bg?: string
+          icon?: string
+          logo?: string
+          exePath?: string
+        }
+        return {
+          ...prevGame,
+          cover: nextCover,
+          bg: nextBg,
+          icon: nextIcon,
+          logo: nextLogo,
+          exePath,
+        }
+      })
+
+      setGlobalBg(resolvedDisplayBg)
+      if (nextBg) {
+        updateLastGameBackground(nextBg)
+      }
 
       await queryClient.invalidateQueries({
         queryKey: ['game', String(gameId)],
@@ -879,21 +916,57 @@ export default function GameSettingsPanel({
                 裁剪{imageFieldLabelMap[cropDialogField]}
               </DialogTitle>
               <DialogDescription>
-                请输入裁剪区域 x,y,w,h（示例：10,20,400,400）。
+                拖拽移动裁剪区域，并通过滑块缩放。
               </DialogDescription>
             </DialogHeader>
 
-            <Input
-              value={cropRectInput}
-              onChange={(event) => setCropRectInput(event.target.value)}
-              placeholder="x,y,w,h"
-              onKeyDown={(event) => {
-                if (event.key === 'Enter') {
-                  event.preventDefault()
-                  applyCropImage()
-                }
-              }}
-            />
+            <div className="space-y-3">
+              <div className="bg-muted/30 relative h-72 w-full overflow-hidden rounded-md border">
+                {cropSource ? (
+                  <Cropper
+                    image={cropSource}
+                    crop={cropPosition}
+                    zoom={cropZoom}
+                    aspect={
+                      cropFreeAspect
+                        ? undefined
+                        : imageFieldAspectMap[cropDialogField]
+                    }
+                    minZoom={1}
+                    maxZoom={4}
+                    zoomSpeed={0.1}
+                    cropShape="rect"
+                    showGrid
+                    onCropChange={setCropPosition}
+                    onZoomChange={setCropZoom}
+                    onCropComplete={(_, croppedPixels) =>
+                      setCroppedAreaPixels(croppedPixels)
+                    }
+                  />
+                ) : null}
+              </div>
+
+              <div className="space-y-2">
+                <label className="flex items-center gap-2 text-sm">
+                  <Checkbox
+                    checked={cropFreeAspect}
+                    onCheckedChange={(checked) =>
+                      setCropFreeAspect(checked === true)
+                    }
+                  />
+                  <span>自由比例（不锁定宽高比）</span>
+                </label>
+
+                <div className="text-muted-foreground text-xs">缩放</div>
+                <Slider
+                  value={[cropZoom]}
+                  min={1}
+                  max={4}
+                  step={0.01}
+                  onValueChange={(value) => setCropZoom(value[0] ?? 1)}
+                />
+              </div>
+            </div>
 
             <DialogFooter>
               <Button
