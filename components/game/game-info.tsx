@@ -61,7 +61,22 @@ import type { GameFilterState } from '@/types/game-types'
 
 type GameInfoProps = {
   game: GameDetail
+  initialTab?: string
 }
+
+const GAME_INFO_TABS = [
+  'overview',
+  'characters',
+  'pv',
+  'ost',
+  'record',
+  'memory',
+] as const
+
+type GameInfoTab = (typeof GAME_INFO_TABS)[number]
+
+const isGameInfoTab = (value: string): value is GameInfoTab =>
+  GAME_INFO_TABS.includes(value as GameInfoTab)
 
 const formatHours = (seconds: number) => {
   const safe = Math.max(0, Number(seconds) || 0)
@@ -69,7 +84,7 @@ const formatHours = (seconds: number) => {
   return `${hours.toFixed(1)} 小时`
 }
 
-export default function GameInfo({ game }: GameInfoProps) {
+export default function GameInfo({ game, initialTab }: GameInfoProps) {
   const title = game.nameCn || game.name
   const [basicInfoOpen, setBasicInfoOpen] = useState(false)
   const [updateDataOpen, setUpdateDataOpen] = useState(false)
@@ -93,6 +108,10 @@ export default function GameInfo({ game }: GameInfoProps) {
   const queryClient = useQueryClient()
   const router = useRouter()
   const [, setGameFilter] = useAtom(gameFilterAtom)
+  const currentTab =
+    typeof initialTab === 'string' && isGameInfoTab(initialTab)
+      ? initialTab
+      : 'overview'
 
   const applyTagFilter = (
     field: keyof GameFilterState,
@@ -252,6 +271,13 @@ export default function GameInfo({ game }: GameInfoProps) {
     setOstDialogOpen(true)
   }
 
+  const handleTabChange = (value: string) => {
+    if (!isGameInfoTab(value) || value === currentTab) {
+      return
+    }
+    router.push(`/game/info/${game.id}/${value}`)
+  }
+
   return (
     <ContextMenu>
       <ContextMenuTrigger asChild>
@@ -330,7 +356,11 @@ export default function GameInfo({ game }: GameInfoProps) {
           />
 
           <div>
-            <Tabs defaultValue="overview" className="mx-auto w-full">
+            <Tabs
+              value={currentTab}
+              onValueChange={handleTabChange}
+              className="mx-auto w-full"
+            >
               <TabsList className="mx-auto dark:bg-transparent">
                 <TabsTrigger value="overview">概览</TabsTrigger>
                 <TabsTrigger value="characters">相关人物</TabsTrigger>

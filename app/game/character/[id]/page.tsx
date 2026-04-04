@@ -245,7 +245,7 @@ export default function CharacterDetailPage() {
     })
   }, [data])
 
-  const backHref = gameId ? `/game/info/${gameId}` : '/game/home'
+  const backHref = gameId ? `/game/info/${gameId}/characters` : '/game/home'
 
   const saveEdit = async () => {
     if (!canEdit) {

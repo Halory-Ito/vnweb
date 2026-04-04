@@ -1,21 +1,41 @@
 'use client'
 
 import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { RefreshCw, Settings, Trash2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import {
+  type CharacterSyncSource,
+  clearVndbCharactersByGameId,
   getGameById,
   getVndbCharactersByGameId,
   syncVndbCharactersByGameId,
@@ -69,10 +89,18 @@ const CharacterCard = ({
 export default function GameCharacters({ gameId }: GameCharactersProps) {
   const router = useRouter()
   const queryClient = useQueryClient()
-  const [bindDialogOpen, setBindDialogOpen] = useState(false)
-  const [bindPromptDismissed, setBindPromptDismissed] = useState(false)
-  const [vndbIdInput, setVndbIdInput] = useState('')
-  const [isBinding, setIsBinding] = useState(false)
+  const [settingsDialogOpen, setSettingsDialogOpen] = useState(false)
+  const [clearDialogOpen, setClearDialogOpen] = useState(false)
+  const [isSavingSettings, setIsSavingSettings] = useState(false)
+  const [isClearing, setIsClearing] = useState(false)
+  const [isSyncing, setIsSyncing] = useState(false)
+  const [syncSource, setSyncSource] = useState<CharacterSyncSource>('bangumi')
+  const [settingsForm, setSettingsForm] = useState({
+    vndbId: '',
+    bangumiId: '',
+    strategy: 'bangumi' as 'bangumi' | 'vndb',
+    saveImagesToLocal: true,
+  })
 
   const { data: gameDetail } = useQuery({
     queryKey: ['game', String(gameId)],
@@ -117,9 +145,14 @@ export default function GameCharacters({ gameId }: GameCharactersProps) {
     [externalSourceIds],
   )
 
-  const hasVndbBinding = parsedSourceIds.some(
-    (item) => item.provider.trim().toLowerCase() === 'vndb',
-  )
+  const vndbBoundId =
+    parsedSourceIds.find(
+      (item) => item.provider.trim().toLowerCase() === 'vndb',
+    )?.externalId || ''
+  const bangumiBoundId =
+    parsedSourceIds.find(
+      (item) => item.provider.trim().toLowerCase() === 'bangumi',
+    )?.externalId || ''
 
   useEffect(() => {
     if (!error) {
@@ -135,60 +168,129 @@ export default function GameCharacters({ gameId }: GameCharactersProps) {
   }, [error])
 
   const vnId = data?.vnId || ''
+  const bgmSubjectId = data?.bgmSubjectId || ''
 
-  useEffect(() => {
-    if (vnId) {
-      setBindPromptDismissed(false)
-      return
+  const normalizeVndbId = (rawInput: string) => {
+    if (/^v\d+$/i.test(rawInput)) {
+      return `v${rawInput.slice(1)}`
     }
-
-    if (!isLoading && !isFetching && !hasVndbBinding && !bindPromptDismissed) {
-      setBindDialogOpen(true)
+    if (/^\d+$/.test(rawInput)) {
+      return `v${rawInput}`
     }
-  }, [bindPromptDismissed, hasVndbBinding, isFetching, isLoading, vnId])
-
-  if (isLoading) {
-    return <div className="text-muted-foreground text-sm">加载中...</div>
+    return ''
   }
 
-  const items = data?.items ?? []
-
-  const handleConfirmBindVndbId = async () => {
-    const rawInput = vndbIdInput.trim()
-    if (!rawInput) {
-      toast.error('请输入 VNDB 游戏 ID')
-      return
+  const normalizeBangumiId = (rawInput: string) => {
+    const subjectMatch = rawInput.match(/subject\/(\d+)/i)
+    if (subjectMatch?.[1]) {
+      return subjectMatch[1]
     }
+    if (/^\d+$/.test(rawInput)) {
+      return rawInput
+    }
+    return ''
+  }
 
-    const normalizedId = /^v\d+$/i.test(rawInput)
-      ? `v${rawInput.slice(1)}`
-      : /^\d+$/.test(rawInput)
-        ? `v${rawInput}`
-        : ''
+  const openSettingsDialog = () => {
+    setSettingsForm({
+      vndbId: vnId || vndbBoundId || '',
+      bangumiId: bgmSubjectId || bangumiBoundId || '',
+      strategy: syncSource === 'vndb' ? 'vndb' : 'bangumi',
+      saveImagesToLocal: true,
+    })
+    setSettingsDialogOpen(true)
+  }
 
-    if (!normalizedId) {
+  const refreshCharacters = async () => {
+    await refetchCharacters()
+  }
+
+  const clearCharacters = async () => {
+    setIsClearing(true)
+    try {
+      await clearVndbCharactersByGameId(gameId)
+      await queryClient.invalidateQueries({
+        queryKey: ['game-characters', gameId],
+      })
+      await refetchCharacters()
+      toast.success('角色信息已清空')
+    } catch (clearError) {
+      const err = clearError as {
+        response?: { data?: { error?: string } }
+        message?: string
+      }
+      toast.error(
+        err.response?.data?.error || err.message || '清空角色信息失败',
+      )
+    } finally {
+      setIsClearing(false)
+      setClearDialogOpen(false)
+    }
+  }
+
+  const saveSettingsAndSync = async () => {
+    const rawVndbId = settingsForm.vndbId.trim()
+    const rawBangumiId = settingsForm.bangumiId.trim()
+    const normalizedVndbId = rawVndbId ? normalizeVndbId(rawVndbId) : ''
+    const normalizedBangumiId = rawBangumiId
+      ? normalizeBangumiId(rawBangumiId)
+      : ''
+
+    if (rawVndbId && !normalizedVndbId) {
       toast.error('VNDB 游戏 ID 格式错误，应为 v12345 或 12345')
       return
     }
 
+    if (rawBangumiId && !normalizedBangumiId) {
+      toast.error('Bangumi 游戏 ID 格式错误，应为 12345 或 subject/12345')
+      return
+    }
+
+    if (settingsForm.strategy === 'vndb' && !normalizedVndbId) {
+      toast.error('当前策略需要 VNDB 游戏 ID，请先填写')
+      return
+    }
+
+    if (settingsForm.strategy === 'bangumi' && !normalizedBangumiId) {
+      toast.error('当前策略需要 Bangumi 游戏 ID，请先填写')
+      return
+    }
+
     const nextSourceIds = [
-      ...parsedSourceIds.filter(
-        (item) => item.provider.trim().toLowerCase() !== 'vndb',
-      ),
-      { provider: 'vndb', externalId: normalizedId },
+      ...parsedSourceIds.filter((item) => {
+        const provider = item.provider.trim().toLowerCase()
+        return provider !== 'vndb' && provider !== 'bangumi'
+      }),
     ]
+
+    if (normalizedVndbId) {
+      nextSourceIds.push({ provider: 'vndb', externalId: normalizedVndbId })
+    }
+
+    if (normalizedBangumiId) {
+      nextSourceIds.push({
+        provider: 'bangumi',
+        externalId: normalizedBangumiId,
+      })
+    }
 
     const sourcePayload = nextSourceIds
       .map((item) => `${item.provider}:${item.externalId}`)
       .join(';')
 
-    setIsBinding(true)
+    setIsSavingSettings(true)
+    setIsSyncing(true)
     try {
       await updateGameInfoById(gameId, {
         externalSourceIds: sourcePayload,
       })
 
-      await syncVndbCharactersByGameId(gameId)
+      await syncVndbCharactersByGameId(gameId, {
+        source: settingsForm.strategy,
+        saveImagesToLocal: settingsForm.saveImagesToLocal,
+      })
+
+      setSyncSource(settingsForm.strategy)
 
       await queryClient.invalidateQueries({
         queryKey: ['game', String(gameId)],
@@ -201,109 +303,202 @@ export default function GameCharacters({ gameId }: GameCharactersProps) {
       await queryClient.invalidateQueries({ queryKey: ['game-sidebar'] })
 
       await refetchCharacters()
-      setBindDialogOpen(false)
-      setBindPromptDismissed(false)
-      toast.success('VNDB 绑定成功，已同步人物信息')
-    } catch (bindError) {
-      const err = bindError as {
+      setSettingsDialogOpen(false)
+      toast.success('设置已保存并完成同步')
+    } catch (saveError) {
+      const err = saveError as {
         response?: { data?: { error?: string } }
         message?: string
       }
-      toast.error(err.response?.data?.error || err.message || '绑定 VNDB 失败')
+      toast.error(err.response?.data?.error || err.message || '保存设置失败')
     } finally {
-      setIsBinding(false)
+      setIsSavingSettings(false)
+      setIsSyncing(false)
     }
   }
 
-  if (!vnId) {
-    return (
-      <>
-        <div className="space-y-3 rounded-md border p-4 text-center">
-          <div className="text-muted-foreground text-sm">
-            当前游戏未绑定 VNDB 游戏 ID
-          </div>
+  if (isLoading) {
+    return <div className="text-muted-foreground text-sm">加载中...</div>
+  }
+
+  const items = data?.items ?? []
+
+  const showEmptyState = !items.length
+
+  return (
+    <>
+      <div className="space-y-3 rounded-md p-4">
+        <div className="flex items-center justify-start gap-2">
           <Button
             type="button"
+            size="icon"
             variant="outline"
-            onClick={() => {
-              setBindPromptDismissed(false)
-              setBindDialogOpen(true)
-            }}
+            title="设置"
+            disabled={isSavingSettings || isSyncing}
+            onClick={openSettingsDialog}
           >
-            立即绑定
+            <Settings className="size-4" />
+          </Button>
+          <Button
+            type="button"
+            size="icon"
+            variant="outline"
+            title="重新加载"
+            disabled={isFetching || isSyncing || isSavingSettings || isClearing}
+            onClick={() => void refreshCharacters()}
+          >
+            <RefreshCw
+              className={`size-4 ${isFetching ? 'animate-spin' : ''}`}
+            />
+          </Button>
+          <Button
+            type="button"
+            size="icon"
+            variant="destructive"
+            title="清空"
+            disabled={isClearing || isSavingSettings || isSyncing}
+            onClick={() => setClearDialogOpen(true)}
+          >
+            <Trash2 className="size-4" />
           </Button>
         </div>
-        <Dialog
-          open={bindDialogOpen}
-          onOpenChange={(open) => {
-            setBindDialogOpen(open)
-            if (!open && !isBinding) {
-              setBindPromptDismissed(true)
-            }
-          }}
-        >
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>绑定 VNDB 游戏 ID</DialogTitle>
-              <DialogDescription>
-                当前游戏尚未绑定 VNDB，是否现在绑定并同步相关人物？
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-2">
+      </div>
+
+      <AlertDialog open={clearDialogOpen} onOpenChange={setClearDialogOpen}>
+        <AlertDialogContent size="sm">
+          <AlertDialogHeader>
+            <AlertDialogTitle>确认清空角色信息</AlertDialogTitle>
+            <AlertDialogDescription>
+              将删除当前游戏的全部角色数据及本地角色图片，此操作不可恢复。
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isClearing}>取消</AlertDialogCancel>
+            <AlertDialogAction
+              variant="destructive"
+              disabled={isClearing}
+              onClick={() => void clearCharacters()}
+            >
+              {isClearing ? '清空中...' : '确认清空'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <Dialog
+        open={settingsDialogOpen}
+        onOpenChange={(open) => {
+          setSettingsDialogOpen(open)
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>角色同步设置</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div className="space-y-1">
               <div className="text-sm">VNDB 游戏 ID</div>
               <Input
-                value={vndbIdInput}
-                onChange={(event) => setVndbIdInput(event.target.value)}
+                value={settingsForm.vndbId}
+                onChange={(event) =>
+                  setSettingsForm((prev) => ({
+                    ...prev,
+                    vndbId: event.target.value,
+                  }))
+                }
                 placeholder="例如：v17 或 17"
               />
             </div>
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                disabled={isBinding}
-                onClick={() => {
-                  setBindDialogOpen(false)
-                  setBindPromptDismissed(true)
-                }}
-              >
-                取消
-              </Button>
-              <Button
-                type="button"
-                disabled={isBinding}
-                onClick={() => void handleConfirmBindVndbId()}
-              >
-                {isBinding ? '绑定中...' : '确定'}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      </>
-    )
-  }
 
-  if (!items.length) {
-    return (
-      <div className="text-muted-foreground rounded-md border p-4 text-center text-sm">
-        未获取到相关人物
-      </div>
-    )
-  }
+            <div className="space-y-1">
+              <div className="text-sm">Bangumi 游戏 ID</div>
+              <Input
+                value={settingsForm.bangumiId}
+                onChange={(event) =>
+                  setSettingsForm((prev) => ({
+                    ...prev,
+                    bangumiId: event.target.value,
+                  }))
+                }
+                placeholder="例如：17 或 subject/17"
+              />
+            </div>
 
-  return (
-    <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7">
-      {items.map((item) => (
-        <CharacterCard
-          key={item.id}
-          item={item}
-          onClick={() => {
-            router.push(
-              `/game/character/${encodeURIComponent(item.id)}?gameId=${gameId}`,
-            )
-          }}
-        />
-      ))}
-    </div>
+            <div className="space-y-1">
+              <div className="text-sm">角色来源策略（二选一）</div>
+              <Select
+                value={settingsForm.strategy}
+                onValueChange={(value) =>
+                  setSettingsForm((prev) => ({
+                    ...prev,
+                    strategy: value as typeof settingsForm.strategy,
+                  }))
+                }
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="选择策略" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="bangumi">bangumi</SelectItem>
+                  <SelectItem value="vndb">vndb</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <label className="flex items-center gap-2 text-sm">
+              <Checkbox
+                checked={settingsForm.saveImagesToLocal}
+                onCheckedChange={(checked) =>
+                  setSettingsForm((prev) => ({
+                    ...prev,
+                    saveImagesToLocal: checked === true,
+                  }))
+                }
+              />
+              <span>将角色图片保存到本地</span>
+            </label>
+          </div>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              disabled={isSavingSettings || isSyncing}
+              onClick={() => {
+                setSettingsDialogOpen(false)
+              }}
+            >
+              取消
+            </Button>
+            <Button
+              type="button"
+              disabled={isSavingSettings || isSyncing}
+              onClick={() => void saveSettingsAndSync()}
+            >
+              {isSavingSettings || isSyncing ? '保存中...' : '保存'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {showEmptyState ? (
+        <div className="text-muted-foreground rounded-md border p-4 text-center text-sm">
+          未获取到相关人物
+        </div>
+      ) : (
+        <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7">
+          {items.map((item) => (
+            <CharacterCard
+              key={item.id}
+              item={item}
+              onClick={() => {
+                router.push(
+                  `/game/character/${encodeURIComponent(item.id)}?gameId=${gameId}`,
+                )
+              }}
+            />
+          ))}
+        </div>
+      )}
+    </>
   )
 }

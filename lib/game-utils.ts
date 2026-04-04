@@ -57,6 +57,12 @@ export type VndbCharacterListItem = {
   role: "main" | "primary" | "side" | "appears" | "";
 };
 
+export type CharacterSyncSource = "vndb" | "bangumi" | "both";
+export type CharacterMergeStrategy =
+  | "prefer_vndb"
+  | "prefer_bangumi"
+  | "prefer_bangumi_with_vndb_fallback";
+
 export type VndbCharacterDetail = {
   id: string;
   name: string;
@@ -175,22 +181,53 @@ export const getVndbCharactersByGameId = async (gameId: number) => {
     response.data as {
       data: {
         vnId: string;
+        bgmSubjectId: string;
         items: VndbCharacterListItem[];
       };
     }
   ).data;
 };
 
-export const syncVndbCharactersByGameId = async (gameId: number) => {
-  const response = await api.post("/db/vndb/characters", { gameId });
+export const syncVndbCharactersByGameId = async (
+  gameId: number,
+  options?: {
+    source?: CharacterSyncSource;
+    mergeStrategy?: CharacterMergeStrategy;
+    saveImagesToLocal?: boolean;
+  },
+) => {
+  const response = await api.post("/db/vndb/characters", {
+    gameId,
+    source: options?.source,
+    mergeStrategy: options?.mergeStrategy,
+    saveImagesToLocal: options?.saveImagesToLocal,
+  });
   return (
     response.data as {
       data: {
         gameId: number;
         vnId: string;
+        bgmSubjectId: string;
         total: number;
         inserted: number;
         updated: number;
+      };
+    }
+  ).data;
+};
+
+export const clearVndbCharactersByGameId = async (gameId: number) => {
+  const response = await api.delete("/db/vndb/characters", {
+    params: {
+      gameId,
+    },
+  });
+
+  return (
+    response.data as {
+      data: {
+        gameId: number;
+        cleared: boolean;
       };
     }
   ).data;
