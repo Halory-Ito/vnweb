@@ -7,8 +7,35 @@ import { Button } from '@/components/ui/button'
 
 export default function BackupSettingsContent() {
   const [isExporting, setIsExporting] = useState(false)
+  const [isExportingXlsx, setIsExportingXlsx] = useState(false)
   const [isImporting, setIsImporting] = useState(false)
   const importFileInputRef = useRef<HTMLInputElement>(null)
+
+  const downloadResponseFile = async (
+    response: Response,
+    fallbackFileName: string,
+  ) => {
+    const contentDisposition = response.headers.get('Content-Disposition')
+    let fileName = fallbackFileName
+    if (contentDisposition) {
+      const match = contentDisposition.match(
+        /filename\*?=(?:UTF-8''|"?)([^";]+)/i,
+      )
+      if (match?.[1]) {
+        fileName = decodeURIComponent(match[1].replace(/"/g, ''))
+      }
+    }
+
+    const blob = await response.blob()
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = fileName
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  }
 
   const handleExport = async () => {
     setIsExporting(true)
@@ -22,32 +49,34 @@ export default function BackupSettingsContent() {
         throw new Error(error.error || '导出失败')
       }
 
-      // 获取文件名
-      const contentDisposition = response.headers.get('Content-Disposition')
-      let fileName = 'vnweb-backup.zip'
-      if (contentDisposition) {
-        const match = contentDisposition.match(/filename="?([^"]+)"?/)
-        if (match) {
-          fileName = match[1]
-        }
-      }
-
-      // 下载文件
-      const blob = await response.blob()
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = fileName
-      document.body.appendChild(a)
-      a.click()
-      document.body.removeChild(a)
-      URL.revokeObjectURL(url)
+      await downloadResponseFile(response, 'vnweb-backup.zip')
 
       toast.success('备份导出成功')
     } catch (error) {
       toast.error((error as Error).message || '导出备份失败')
     } finally {
       setIsExporting(false)
+    }
+  }
+
+  const handleExportXlsx = async () => {
+    setIsExportingXlsx(true)
+    try {
+      const response = await fetch('/api/settings/backup/export-xlsx', {
+        method: 'POST',
+      })
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({ error: '导出失败' }))
+        throw new Error(error.error || '导出失败')
+      }
+
+      await downloadResponseFile(response, 'vnweb-timer-records.xlsx')
+      toast.success('计时记录导出成功')
+    } catch (error) {
+      toast.error((error as Error).message || '导出 xlsx 失败')
+    } finally {
+      setIsExportingXlsx(false)
     }
   }
 
@@ -111,15 +140,29 @@ export default function BackupSettingsContent() {
                 将数据库和本地图片、音频、视频等资源打包下载。
               </p>
             </div>
-            <Button
-              type="button"
-              variant="outline"
-              disabled={isExporting}
-              onClick={handleExport}
-            >
-              {isExporting ? '导出中...' : '导出'}
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                disabled={isExportingXlsx}
+                onClick={handleExportXlsx}
+              >
+                {isExportingXlsx ? '导出中...' : '导出 XLSX'}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                disabled={isExporting}
+                onClick={handleExport}
+              >
+                {isExporting ? '导出中...' : '导出 ZIP'}
+              </Button>
+            </div>
           </div>
+          <p className="text-muted-foreground text-xs">
+            XLSX
+            将导出每条计时记录：序号、封面、游戏名称、游戏原名、开始时间、结束时间、本次游戏时长。
+          </p>
         </div>
 
         {/* 导入功能 */}
