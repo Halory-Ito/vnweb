@@ -1,0 +1,259 @@
+
+[1m[46m RUN [49m[22m [36mv4.0.18 [39m[90mD:/Program/Code/Project/vnweb[39m
+      [2mCoverage enabled with [22m[33mv8[39m
+
+ [32m鉁?[39m [30m[43m node [49m[39m test/api/game/[id]/records/route.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m鉁?[39m [30m[43m node [49m[39m test/api/game/[id]/pv/steam-sync/route.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m2 passed[39m[22m[90m (2)[39m
+[2m      Tests [22m [1m[32m6 passed[39m[22m[90m (6)[39m
+[2m   Start at [22m 10:37:34
+[2m   Duration [22m 2.17s[2m (transform 231ms, setup 0ms, import 1.47s, tests 23ms, environment 0ms)[22m
+
+[34m % [39m[2mCoverage report from [22m[33mv8[39m
+-------------------|---------|----------|---------|---------|-------------------
+File               | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s 
+-------------------|---------|----------|---------|---------|-------------------
+All files          |    1.45 |     1.09 |    1.22 |     1.5 |                   
+ app               |       0 |      100 |       0 |       0 |                   
+  layout.tsx       |       0 |      100 |       0 |       0 | 8-32              
+  page.tsx         |       0 |      100 |       0 |       0 | 4-5               
+ ...addOns/cctv-4k |       0 |        0 |       0 |       0 |                   
+  manifest.ts      |       0 |      100 |     100 |       0 | 1                 
+  utils.ts         |       0 |        0 |       0 |       0 | 1-108             
+ ...s/cctv-4k/home |       0 |        0 |       0 |       0 |                   
+  page.tsx         |       0 |        0 |       0 |       0 | 26-465            
+ ...tv-4k/home/_ui |       0 |        0 |       0 |       0 |                   
+  ...nel-panel.tsx |       0 |        0 |       0 |       0 | 46-96             
+  ...es-dialog.tsx |       0 |        0 |       0 |       0 | 40-269            
+  player-panel.tsx |       0 |        0 |       0 |       0 | 27                
+  ...rm-dialog.tsx |       0 |        0 |       0 |       0 | 49-136            
+  source-panel.tsx |       0 |        0 |       0 |       0 | 20-51             
+  top-actions.tsx  |       0 |      100 |       0 |       0 | 18                
+  types.ts         |       0 |        0 |       0 |       0 |                   
+ .../cctv-4k/intro |       0 |      100 |       0 |       0 |                   
+  page.tsx         |       0 |      100 |       0 |       0 | 10-90             
+ ...tv-4k/settings |       0 |        0 |       0 |       0 |                   
+  page.tsx         |       0 |        0 |       0 |       0 | 19-51             
+ .../nanami-chiaki |       0 |      100 |     100 |       0 |                   
+  manifest.ts      |       0 |      100 |     100 |       0 | 1                 
+ ...mi-chiaki/home |       0 |      100 |       0 |       0 |                   
+  page.tsx         |       0 |      100 |       0 |       0 | 2                 
+ ...i-chiaki/intro |       0 |      100 |       0 |       0 |                   
+  page.tsx         |       0 |      100 |       0 |       0 | 2                 
+ ...hiaki/settings |       0 |      100 |       0 |       0 |                   
+  page.tsx         |       0 |      100 |       0 |       0 | 2                 
+ ...ctv-4k/sources |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 16-251            
+ ...cctv-4k/stream |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 4-90              
+ ...api/collection |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 13-150            
+ ...tion/[id]/game |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 17-220            
+ app/api/db/bgm    |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 8-69              
+ app/api/db/sgdb   |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 9-62              
+ app/api/db/vndb   |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 5-80              
+ ...character/[id] |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 30-311            
+ ...ndb/characters |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 10-182            
+ app/api/game      |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 16-268            
+ app/api/game/[id] |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 21-661            
+ ...]/browse-local |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 10-79             
+ ...image-localize |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 15-70             
+ ...me/[id]/launch |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 16-175            
+ ...me/[id]/memory |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 10-179            
+ ...ory/[memoryId] |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 10-238            
+ .../game/[id]/ost |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 7-229             
+ ...id]/ost/import |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 9-107             
+ ...[id]/ost/lyric |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 9-129             
+ ...i/game/[id]/pv |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 7-229             
+ ...[id]/pv/import |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 9-107             
+ .../pv/steam-sync |   80.88 |    56.86 |   81.81 |   83.33 |                   
+  route.ts         |   80.88 |    56.86 |   81.81 |   83.33 | ...13,144,196-203 
+ ...e/[id]/records |   69.09 |    57.14 |    62.5 |   70.37 |                   
+  route.ts         |   69.09 |    57.14 |    62.5 |   70.37 | ...24,131,137-168 
+ ...e/[id]/runtime |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 7-52              
+ ...game/[id]/stop |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 8-38              
+ ...-import/search |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 43-178            
+ ...e/extract-icon |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 11-33             
+ ...filter-options |       0 |      100 |       0 |       0 |                   
+  route.ts         |       0 |      100 |       0 |       0 | 6-70              
+ ...e/image-search |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 19-121            
+ app/api/game/list |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 7-58              
+ ...metadata-batch |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 71-602            
+ ...i/game/sidebar |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 14-308            
+ ...e/steam-import |       0 |        0 |       0 |       0 |                   
+  _shared.ts       |       0 |        0 |       0 |       0 | 10-322            
+  route.ts         |       0 |        0 |       0 |       0 | 27-273            
+ ...rt/name-search |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 17-195            
+ ...-import/search |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 15-85             
+ ...d-party-import |       0 |        0 |       0 |       0 |                   
+  _shared.ts       |       0 |        0 |       0 |       0 | 8-55              
+ ...-import/search |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 34-130            
+ ...market/plugins |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 5-128             
+ ...sets/[...path] |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 4-62              
+ ...plugins/import |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 17-375            
+ ...lugins/install |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 6-64              
+ ...gins/uninstall |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 6-64              
+ .../record/export |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 8-278             
+ ...d/month-report |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 7-128             
+ ...overview/stats |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 7-173             
+ ...ecord/timeline |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 16-152            
+ ...rd/year-report |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 7-146             
+ ...api/scan/error |       0 |      100 |       0 |       0 |                   
+  route.ts         |       0 |      100 |       0 |       0 | 7-24              
+ ...i/scan/scanner |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 16-114            
+ ...n/scanner/[id] |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 16-119            
+ ...ner/[id]/start |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 39-473            
+ ...kground/upload |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 5-79              
+ .../backup/export |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 9-97              
+ ...up/export-xlsx |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 14-327            
+ .../backup/import |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 8-140             
+ ...-sync/accounts |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 27-436            
+ ...loud-sync/auth |       0 |        0 |       0 |       0 |                   
+  _shared.ts       |       0 |        0 |       0 |       0 | 11-80             
+ ...ngumi/callback |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 11-130            
+ .../bangumi/start |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 5-28              
+ ...steam/callback |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 9-98              
+ ...th/steam/start |       0 |      100 |       0 |       0 |                   
+  route.ts         |       0 |      100 |       0 |       0 | 3-27              
+ .../vndb/callback |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 11-145            
+ ...uth/vndb/start |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 5-37              
+ .../sync-playtime |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 18-195            
+ ...s/font/cleanup |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 9-46              
+ ...gs/font/import |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 6-95              
+ ...ont/local-list |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 6-75              
+ ...settings/proxy |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 7-138             
+ ...ngs/proxy/test |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 7-68              
+ ...ings/theme-css |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 5-54              
+ app/api/test      |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 5-302             
+ app/game          |       0 |      100 |       0 |       0 |                   
+  layout.tsx       |       0 |      100 |       0 |       0 | 10-19             
+  page.tsx         |       0 |      100 |       0 |       0 | 4                 
+ ...character/[id] |       0 |        0 |       0 |       0 |                   
+  page.tsx         |       0 |        0 |       0 |       0 | 16-580            
+ ...ollection/[id] |       0 |        0 |       0 |       0 |                   
+  page.tsx         |       0 |        0 |       0 |       0 | 82-674            
+ app/game/home     |       0 |      100 |       0 |       0 |                   
+  page.tsx         |       0 |      100 |       0 |       0 | 4                 
+ ...game/info/[id] |       0 |        0 |       0 |       0 |                   
+  page.tsx         |       0 |        0 |       0 |       0 | 18-165            
+ ...nfo/[id]/[tab] |       0 |        0 |       0 |       0 |                   
+  page.tsx         |       0 |        0 |       0 |       0 | 18-165            
+ app/market        |       0 |        0 |       0 |       0 |                   
+  page.tsx         |       0 |        0 |       0 |       0 | 62-646            
+ app/record        |       0 |        0 |       0 |       0 |                   
+  layout.tsx       |       0 |      100 |       0 |       0 | 3-14              
+  page.tsx         |       0 |      100 |       0 |       0 | 7                 
+  query-options.ts |       0 |        0 |       0 |       0 | 101-149           
+ app/record/export |       0 |      100 |       0 |       0 |                   
+  page.tsx         |       0 |      100 |       0 |       0 | 2                 
+ app/record/month  |       0 |      100 |       0 |       0 |                   
+  page.tsx         |       0 |      100 |       0 |       0 | 6                 
+ ...ecord/overview |       0 |        0 |       0 |       0 |                   
+  page.tsx         |       0 |        0 |       0 |       0 | 21-146            
+  query-options.ts |       0 |        0 |       0 |       0 | 4-14              
+ app/record/week   |       0 |      100 |       0 |       0 |                   
+  page.tsx         |       0 |      100 |       0 |       0 | 6                 
+ app/record/year   |       0 |      100 |       0 |       0 |                   
+  page.tsx         |       0 |      100 |       0 |       0 | 6                 
+ app/scan          |       0 |        0 |       0 |       0 |                   
+  page.tsx         |       0 |        0 |       0 |       0 | 58-829            
+ app/settings      |       0 |      100 |       0 |       0 |                   
+  layout.tsx       |       0 |      100 |       0 |       0 | 3-12              
+  page.tsx         |       0 |      100 |       0 |       0 | 11                
+ ...ngs/appearance |       0 |        0 |       0 |       0 |                   
+  ...e-content.tsx |       0 |        0 |       0 |       0 | 55-673            
+  page.tsx         |       0 |      100 |       0 |       0 | 4                 
+ ...ettings/backup |       0 |        0 |       0 |       0 |                   
+  ...s-content.tsx |       0 |        0 |       0 |       0 | 9-184             
+  page.tsx         |       0 |      100 |       0 |       0 | 4                 
+ ...settings/proxy |       0 |        0 |       0 |       0 |                   
+  page.tsx         |       0 |        0 |       0 |       0 | 36-441            
+ app/settings/sync |       0 |      100 |       0 |       0 |                   
+  page.tsx         |       0 |      100 |       0 |       0 | 4                 
+ ...settings/theme |       0 |        0 |       0 |       0 |                   
+  ...e-content.tsx |       0 |        0 |       0 |       0 | 18-119            
+ app/test          |       0 |        0 |       0 |       0 |                   
+  page.tsx         |       0 |        0 |       0 |       0 | 11-156            
+ lib               |       0 |        0 |       0 |       0 |                   
+  ...d-settings.ts |       0 |        0 |       0 |       0 | 16-124            
+  ...sync-utils.ts |       0 |      100 |       0 |       0 | 18-60             
+  drizzle.ts       |       0 |        0 |     100 |       0 | 5-7               
+  font-settings.ts |       0 |        0 |       0 |       0 | 7-127             
+  font-utils.ts    |       0 |      100 |     100 |       0 | 8-14              
+  ...sion-utils.ts |       0 |        0 |       0 |       0 | 6-52              
+  game-utils.ts    |       0 |        0 |       0 |       0 | 85-863            
+  ...s-settings.ts |       0 |        0 |       0 |       0 | 6-75              
+  path-utils.ts    |       0 |        0 |       0 |       0 | 5-22              
+  ...er-options.ts |       0 |      100 |     100 |       0 | 6-16              
+  ...y-settings.ts |       0 |        0 |       0 |       0 | 12-129            
+  request-utils.ts |       0 |        0 |       0 |       0 | 3-25              
+  scan-utils.ts    |       0 |      100 |       0 |       0 | 25-77             
+  utils.ts         |       0 |      100 |       0 |       0 | 5                 
+  vndb-client.ts   |       0 |        0 |       0 |       0 | 4-56              
+  vndb-utils.ts    |       0 |        0 |       0 |       0 | 105-578           
+ lib/server        |       0 |        0 |       0 |       0 |                   
+  ...ge-storage.ts |       0 |        0 |       0 |       0 | 21-373            
+  proxy-utils.ts   |       0 |        0 |       0 |       0 | 18-42             
+  ...acter-sync.ts |       0 |        0 |       0 |       0 | 117-899           
+-------------------|---------|----------|---------|---------|-------------------

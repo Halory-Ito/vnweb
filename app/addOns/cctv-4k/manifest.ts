@@ -5,5 +5,5 @@ export const manifest: AddOnesProps = {
     version: "1.0.0",
     icon: "cover.png",
     authors: ["Karaku"],
-    installed: true,
+    installed: false,
 };

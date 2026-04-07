@@ -34,7 +34,10 @@ const guideSteps = [
 export default function Intro() {
   return (
     <div className="mx-auto w-full max-w-5xl space-y-6 p-4 md:p-6">
-      <Card className="via-background to-background overflow-hidden border-red-500/25 bg-gradient-to-br from-red-500/10">
+      <Card
+        variant="outline"
+        className="via-background to-background overflow-hidden border-red-500/25 bg-linear-to-br from-red-500/10"
+      >
         <CardContent className="p-6 md:p-8">
           <Badge className="mb-3 bg-red-500/85 text-white">CCTV 4K 插件</Badge>
           <h1 className="mb-2 text-2xl font-semibold md:text-3xl">

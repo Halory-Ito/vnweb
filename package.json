@@ -15,7 +15,12 @@
     "fmt": "oxfmt",
     "fmt:check": "oxfmt --check",
     "test": "vitest",
-    "test:browser": "vitest --config=vitest.browser.config.ts"
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:node": "vitest run --project node",
+    "test:browser": "vitest run --project browser",
+    "test:coverage:node": "vitest run --coverage --project node",
+    "test:coverage:browser": "vitest run --coverage --project browser"
   },
   "dependencies": {
     "@base-ui/react": "^1.2.0",
