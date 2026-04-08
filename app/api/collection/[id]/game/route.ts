@@ -2,7 +2,11 @@ import dayjs from 'dayjs'
 import { and, eq } from 'drizzle-orm'
 import { NextRequest, NextResponse } from 'next/server'
 
-import { CollectionGameTable, CollectionTable, GameInfoTable } from '@/db/schema'
+import {
+  CollectionGameTable,
+  CollectionTable,
+  GameInfoTable,
+} from '@/db/schema'
 import { db } from '@/lib/drizzle'
 
 type AddGameToCollectionPayload = {
@@ -26,7 +30,9 @@ const addGameToCollection = async (
       return NextResponse.json({ error: '无效的收藏夹 id' }, { status: 400 })
     }
 
-    const payload = (await req.json().catch(() => ({}))) as AddGameToCollectionPayload
+    const payload = (await req
+      .json()
+      .catch(() => ({}))) as AddGameToCollectionPayload
     const gameId = Number(payload.gameId)
 
     if (!Number.isInteger(gameId) || gameId <= 0) {
@@ -148,16 +154,25 @@ const moveGameToOtherCollection = async (
     const targetCollectionId = Number(payload.targetCollectionId)
 
     if (!Number.isInteger(sourceCollectionId) || sourceCollectionId <= 0) {
-      return NextResponse.json({ error: '无效的来源收藏夹 id' }, { status: 400 })
+      return NextResponse.json(
+        { error: '无效的来源收藏夹 id' },
+        { status: 400 },
+      )
     }
     if (!Number.isInteger(targetCollectionId) || targetCollectionId <= 0) {
-      return NextResponse.json({ error: '无效的目标收藏夹 id' }, { status: 400 })
+      return NextResponse.json(
+        { error: '无效的目标收藏夹 id' },
+        { status: 400 },
+      )
     }
     if (!Number.isInteger(gameId) || gameId <= 0) {
       return NextResponse.json({ error: '无效的游戏 id' }, { status: 400 })
     }
     if (sourceCollectionId === targetCollectionId) {
-      return NextResponse.json({ error: '目标收藏夹不能与来源一致' }, { status: 400 })
+      return NextResponse.json(
+        { error: '目标收藏夹不能与来源一致' },
+        { status: 400 },
+      )
     }
 
     const target = await db

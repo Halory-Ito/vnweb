@@ -25,14 +25,17 @@
 ### 接口清单（按模块）
 
 #### addOns
+
 - [GET,POST,PUT,DELETE] /api/addOns/cctv-4k/sources
 - [GET] /api/addOns/cctv-4k/stream
 
 #### collection
+
 - [GET,POST] /api/collection
 - [POST,PATCH,DELETE] /api/collection/[id]/game
 
 #### db
+
 - [未识别] /api/db/bgm
 - [未识别] /api/db/sgdb
 - [未识别] /api/db/vndb
@@ -40,6 +43,7 @@
 - [未识别] /api/db/vndb/characters
 
 #### game
+
 - [POST] /api/game
 - [GET,PATCH,DELETE] /api/game/[id]
 - [POST] /api/game/[id]/browse-local
@@ -69,6 +73,7 @@
 - [GET] /api/game/vndb-import/search
 
 #### market
+
 - [GET] /api/market/plugins
 - [GET] /api/market/plugins/assets/[...path]
 - [POST] /api/market/plugins/import
@@ -76,6 +81,7 @@
 - [POST] /api/market/plugins/uninstall
 
 #### record
+
 - [GET] /api/record/export
 - [GET] /api/record/month-report
 - [GET] /api/record/overview/stats
@@ -83,12 +89,14 @@
 - [GET] /api/record/year-report
 
 #### scan
+
 - [GET] /api/scan/error
 - [GET,POST] /api/scan/scanner
 - [PATCH,DELETE] /api/scan/scanner/[id]
 - [POST] /api/scan/scanner/[id]/start
 
 #### settings
+
 - [POST] /api/settings/background/upload
 - [POST] /api/settings/backup/export
 - [POST] /api/settings/backup/import
@@ -107,5 +115,5 @@
 - [GET] /api/settings/proxy/test
 
 #### test
-- [未识别] /api/test
 
+- [未识别] /api/test

@@ -36,7 +36,10 @@ const getGameById = async (req: NextRequest) => {
   try {
     const id = req.nextUrl.searchParams.get('id')
     if (!id || Number.isNaN(Number(id))) {
-      return NextResponse.json({ error: 'Invalid id parameter' }, { status: 400 })
+      return NextResponse.json(
+        { error: 'Invalid id parameter' },
+        { status: 400 },
+      )
     }
 
     const gameId = Number(id)

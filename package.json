@@ -14,6 +14,7 @@
     "db:init": "drizzle-kit push",
     "fmt": "oxfmt",
     "fmt:check": "oxfmt --check",
+    "cli": "tsx cmd/tui.ts",
     "test": "vitest",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",

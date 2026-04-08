@@ -38,7 +38,9 @@ const getRuntime = async (
     const currentSessionSeconds = play.lastLaunchedAt
       ? Math.max(
           0,
-          Math.floor((Date.now() - new Date(play.lastLaunchedAt).getTime()) / 1000),
+          Math.floor(
+            (Date.now() - new Date(play.lastLaunchedAt).getTime()) / 1000,
+          ),
         )
       : 0
 

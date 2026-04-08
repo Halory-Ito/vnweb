@@ -1,4 +1,3 @@
-
 components/ui/combobox.tsx:277:3: Parameter 'children' is declared but never used. Unused parameters should start with a '_'. [Warning/eslint(no-unused-vars)]
 components/game/filter-dropdown.tsx:1:7: Variable 'FilterDropdown' is declared but never used. Unused variables should start with a '_'. [Warning/eslint(no-unused-vars)]
 hooks/use-horizontal-scroll.ts:1:1: Empty files are not allowed. [Warning/eslint-plugin-unicorn(no-empty-file)]

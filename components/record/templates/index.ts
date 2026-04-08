@@ -1,19 +1,19 @@
-export { ClassicTemplate } from "./classic-template";
-export type { TemplateProps } from "./classic-template";
-export { ModernTemplate } from "./modern-template";
-export { MinimalTemplate } from "./minimal-template";
-export { GamingTemplate } from "./gaming-template";
+export { ClassicTemplate } from './classic-template'
+export type { TemplateProps } from './classic-template'
+export { ModernTemplate } from './modern-template'
+export { MinimalTemplate } from './minimal-template'
+export { GamingTemplate } from './gaming-template'
 
-import { ClassicTemplate } from "./classic-template";
-import { ModernTemplate } from "./modern-template";
-import { MinimalTemplate } from "./minimal-template";
-import { GamingTemplate } from "./gaming-template";
+import { ClassicTemplate } from './classic-template'
+import { GamingTemplate } from './gaming-template'
+import { MinimalTemplate } from './minimal-template'
+import { ModernTemplate } from './modern-template'
 
 export const TEMPLATES = {
-    classic: ClassicTemplate,
-    modern: ModernTemplate,
-    minimal: MinimalTemplate,
-    gaming: GamingTemplate,
-} as const;
+  classic: ClassicTemplate,
+  modern: ModernTemplate,
+  minimal: MinimalTemplate,
+  gaming: GamingTemplate,
+} as const
 
-export type TemplateId = keyof typeof TEMPLATES;
+export type TemplateId = keyof typeof TEMPLATES
