@@ -98,6 +98,42 @@ describe("app/api/game/image-search POST", () => {
         expect(body).toEqual({ data: { game: null, items: [] } });
     });
 
+    test("fetches bg/icon/logo images by imageType and normalizes invalid items", async () => {
+        mocks.SGDBClient.searchGame.mockResolvedValue([
+            { id: 9, name: "g9" },
+        ]);
+        mocks.SGDBClient.getHeroesById.mockResolvedValueOnce([
+            null,
+            { id: 11, url: "u1", thumb: "t1", width: 1, height: 2 },
+        ]);
+        mocks.SGDBClient.getIconsById.mockResolvedValueOnce([
+            { id: 12, url: "u2", thumb: "t2", width: 3, height: 4 },
+        ]);
+        mocks.SGDBClient.getLogosById.mockResolvedValueOnce([
+            { id: 13, url: "u3", thumb: "t3", width: 5, height: 6 },
+        ]);
+
+        const bgRes = await POST(
+            createRequest({ source: "steamgriddb", keyword: "name", imageType: "bg" }),
+        );
+        const bgBody = await bgRes.json();
+        expect(bgRes.status).toBe(200);
+        expect(mocks.SGDBClient.getHeroesById).toHaveBeenCalledWith(9);
+        expect(bgBody.data.items).toHaveLength(1);
+
+        const iconRes = await POST(
+            createRequest({ source: "steamgriddb", keyword: "name", imageType: "icon" }),
+        );
+        expect(iconRes.status).toBe(200);
+        expect(mocks.SGDBClient.getIconsById).toHaveBeenCalledWith(9);
+
+        const logoRes = await POST(
+            createRequest({ source: "steamgriddb", keyword: "name", imageType: "logo" }),
+        );
+        expect(logoRes.status).toBe(200);
+        expect(mocks.SGDBClient.getLogosById).toHaveBeenCalledWith(9);
+    });
+
     test("returns 500 when sgdb call throws", async () => {
         mocks.SGDBClient.searchGame.mockRejectedValueOnce(
             new Error("sgdb failed"),

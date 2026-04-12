@@ -42,6 +42,14 @@ describe("game/[id]/records route", () => {
     beforeEach(() => {
         mocks.state.queue = [];
         mocks.db.select.mockClear();
+        mocks.db.delete.mockClear();
+        mocks.db.insert.mockClear();
+        mocks.db.update.mockClear();
+    });
+
+    test("GET returns 400 for invalid game id", async () => {
+        const res = await GET({} as NextRequest, ctx("x"));
+        expect(res.status).toBe(400);
     });
 
     test("GET returns 404 when game not found", async () => {
@@ -66,6 +74,39 @@ describe("game/[id]/records route", () => {
         expect(body.data.totalPlayTime).toBe(60);
     });
 
+    test("GET falls back to epoch when record start date is invalid", async () => {
+        mocks.state.queue.push([{ id: 1 }], [{ id: 1, playDate: "bad", playTime: 30 }]);
+
+        const res = await GET({} as NextRequest, ctx("1"));
+        const body = await res.json();
+
+        expect(res.status).toBe(200);
+        expect(body.data.records[0].startAt).toBe("1970-01-01T00:00:00.000Z");
+        expect(body.data.records[0].durationSeconds).toBe(30);
+    });
+
+    test("GET returns 500 when query throws", async () => {
+        mocks.state.queue.push(new Error("records failed"));
+
+        const res = await GET({} as NextRequest, ctx("1"));
+        const body = await res.json();
+
+        expect(res.status).toBe(500);
+        expect(body.error).toBe("Failed to query game records");
+    });
+
+    test("PUT returns 400 for invalid game id", async () => {
+        const res = await PUT(req({ records: [] }), ctx("x"));
+        expect(res.status).toBe(400);
+    });
+
+    test("PUT returns 404 when game not found", async () => {
+        mocks.state.queue.push([]);
+
+        const res = await PUT(req({ records: [] }), ctx("1"));
+        expect(res.status).toBe(404);
+    });
+
     test("PUT returns 500 for invalid record range", async () => {
         mocks.state.queue.push([{ id: 1 }]);
 
@@ -82,5 +123,60 @@ describe("game/[id]/records route", () => {
 
         expect(res.status).toBe(500);
         expect(body.error).toContain("Invalid record");
+    });
+
+    test("PUT updates total play time on existing play row", async () => {
+        mocks.state.queue.push([{ id: 1 }], [{ id: 10 }]);
+
+        const res = await PUT(
+            req({
+                records: [{
+                    startAt: "2026-01-01T00:00:00.000Z",
+                    endAt: "2026-01-01T00:01:30.000Z",
+                }],
+            }),
+            ctx("1"),
+        );
+        const body = await res.json();
+
+        expect(res.status).toBe(200);
+        expect(body.data.totalPlayTime).toBe(90);
+        expect(mocks.db.delete).toHaveBeenCalledTimes(1);
+        expect(mocks.db.insert).toHaveBeenCalledTimes(1);
+        expect(mocks.db.update).toHaveBeenCalledTimes(1);
+    });
+
+    test("PUT creates play row when missing", async () => {
+        mocks.state.queue.push([{ id: 1 }], []);
+
+        const res = await PUT(
+            req({
+                records: [{
+                    startAt: "2026-01-01T00:00:00.000Z",
+                    endAt: "2026-01-01T00:00:10.000Z",
+                }],
+            }),
+            ctx("1"),
+        );
+        const body = await res.json();
+
+        expect(res.status).toBe(200);
+        expect(body.data.totalPlayTime).toBe(10);
+        expect(mocks.db.insert).toHaveBeenCalledTimes(2);
+    });
+
+    test("PUT returns 500 when delete old records fails", async () => {
+        mocks.state.queue.push([{ id: 1 }]);
+        mocks.db.delete.mockImplementationOnce(() => ({
+            where: vi.fn(async () => {
+                throw new Error("delete failed");
+            }),
+        }));
+
+        const res = await PUT(req({ records: [] }), ctx("1"));
+        const body = await res.json();
+
+        expect(res.status).toBe(500);
+        expect(body.error).toBe("delete failed");
     });
 });

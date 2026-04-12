@@ -58,7 +58,7 @@ type ImportPreviewResponse = {
   existingPlugin?: PluginImportPreview | null
 }
 
-async function getErrorMessage(response: Response, fallback: string) {
+export async function getErrorMessage(response: Response, fallback: string) {
   const payload = (await response.json().catch(() => ({}))) as {
     error?: string
   }
@@ -66,7 +66,7 @@ async function getErrorMessage(response: Response, fallback: string) {
   return payload.error || fallback
 }
 
-function compareVersions(nextVersion: string, prevVersion: string) {
+export function compareVersions(nextVersion: string, prevVersion: string) {
   const nextParts = nextVersion
     .split('.')
     .map((part) => Number.parseInt(part.replace(/\D/g, ''), 10) || 0)
@@ -255,20 +255,10 @@ export default function MarketPage() {
   }
 
   const runImport = (overwrite: boolean) => {
-    if (!selectedZipFile || !importPreview) {
-      toast.error('请先上传并解析有效的插件压缩文件')
-      return
-    }
-
-    confirmImportMutation.mutate({ file: selectedZipFile, overwrite })
+    confirmImportMutation.mutate({ file: selectedZipFile as File, overwrite })
   }
 
   const handleConfirmImport = () => {
-    if (!selectedZipFile || !importPreview) {
-      toast.error('请先上传并解析有效的插件压缩文件')
-      return
-    }
-
     if (hasImportConflict) {
       setOverwriteConfirmOpen(true)
       return

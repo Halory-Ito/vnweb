@@ -176,6 +176,172 @@ describe("app/api/game/sidebar GET", () => {
         expect(body.data.items[2].items).toHaveLength(1);
     });
 
+    test("search matches by original name when nameCn does not match", async () => {
+        mocks.state.queue.push([
+            {
+                id: 2,
+                name: "Little Busters",
+                nameCn: "",
+                icon: "",
+                date: "2020-01-01",
+                developer: "Key",
+                publisher: "P",
+                gameType: "VN",
+                platforms: "pc",
+                tags: "tag1",
+                originalPainter: "x",
+                script: "y",
+                music: "z",
+                gameEngine: "krkr",
+                programmer: "p",
+                playStatus: 1,
+            },
+        ]);
+
+        const response = await GET(createRequest({ search: "little" }));
+        const body = await response.json();
+
+        expect(response.status).toBe(200);
+        expect(body.data.mode).toBe("search");
+        expect(body.data.items[0].items[0].title).toBe("Little Busters");
+    });
+
+    test("applies default filters for status/date/platform/tag", async () => {
+        mocks.state.queue.push(
+            [
+                {
+                    id: 1,
+                    name: "A",
+                    nameCn: "游戏A",
+                    icon: "",
+                    date: "2020-01-01",
+                    developer: "dev",
+                    publisher: "pub",
+                    gameType: "VN",
+                    platforms: "pc, switch",
+                    tags: "tag1,tag2",
+                    originalPainter: "x",
+                    script: "y",
+                    music: "z",
+                    gameEngine: "krkr",
+                    programmer: "planner",
+                    playStatus: 1,
+                },
+                {
+                    id: 2,
+                    name: "B",
+                    nameCn: "游戏B",
+                    icon: "",
+                    date: "2018-01-01",
+                    developer: "other",
+                    publisher: "other",
+                    gameType: "RPG",
+                    platforms: "ps4",
+                    tags: "tag3",
+                    originalPainter: "other",
+                    script: "other",
+                    music: "other",
+                    gameEngine: "ue",
+                    programmer: "other",
+                    playStatus: 0,
+                },
+            ],
+            [{ id: 7, name: "收藏夹A" }],
+            [
+                {
+                    collectionId: 7,
+                    gameId: 1,
+                    gameName: "A",
+                    gameNameCn: "游戏A",
+                    gameIcon: "",
+                },
+                {
+                    collectionId: 7,
+                    gameId: 2,
+                    gameName: "B",
+                    gameNameCn: "游戏B",
+                    gameIcon: "",
+                },
+            ],
+            [
+                {
+                    gameId: 1,
+                    lastLaunchedAt: "2026-01-01",
+                    gameName: "A",
+                    gameNameCn: "游戏A",
+                    gameIcon: "",
+                },
+                {
+                    gameId: 2,
+                    lastLaunchedAt: "2026-01-02",
+                    gameName: "B",
+                    gameNameCn: "游戏B",
+                    gameIcon: "",
+                },
+            ],
+        );
+
+        const response = await GET(
+            createRequest({
+                playStatus: "1",
+                releaseDateFrom: "2019-01-01",
+                releaseDateTo: "2020-12-31",
+                platform: "switch",
+                tags: "tag2",
+                developer: "dev",
+                publisher: "pub",
+                category: "vn",
+                originalPainter: "x",
+                script: "y",
+                music: "z",
+                engine: "krkr",
+                planning: "plan",
+            }),
+        );
+        const body = await response.json();
+
+        expect(response.status).toBe(200);
+        expect(body.data.mode).toBe("default");
+        expect(body.data.items[1].items).toHaveLength(1);
+        expect(body.data.items[1].items[0].id).toBe("1");
+        expect(body.data.items[2].items).toHaveLength(1);
+        expect(body.data.items[0].items).toHaveLength(1);
+    });
+
+    test("returns empty result when date filter is invalid", async () => {
+        mocks.state.queue.push(
+            [
+                {
+                    id: 1,
+                    name: "A",
+                    nameCn: "游戏A",
+                    icon: "",
+                    date: "2020-01-01",
+                    developer: "dev",
+                    publisher: "pub",
+                    gameType: "VN",
+                    platforms: "pc",
+                    tags: "tag1",
+                    originalPainter: "",
+                    script: "",
+                    music: "",
+                    gameEngine: "",
+                    programmer: "",
+                    playStatus: 1,
+                },
+            ],
+            [{ id: 7, name: "收藏夹A" }],
+            [],
+            [],
+        );
+
+        const response = await GET(createRequest({ releaseDateFrom: "bad-date" }));
+        const body = await response.json();
+
+        expect(response.status).toBe(200);
+        expect(body.data.items[1].items).toHaveLength(0);
+    });
+
     test("returns 500 when query fails", async () => {
         mocks.state.queue.push(new Error("sidebar failed"));
 

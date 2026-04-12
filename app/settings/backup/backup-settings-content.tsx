@@ -87,6 +87,7 @@ export default function BackupSettingsContent() {
   const handleImportFileChange = async (
     event: React.ChangeEvent<HTMLInputElement>,
   ) => {
+    const input = event.currentTarget
     const file = event.target.files?.[0]
     if (!file) {
       return
@@ -117,7 +118,7 @@ export default function BackupSettingsContent() {
       toast.error((error as Error).message || '导入备份失败')
     } finally {
       setIsImporting(false)
-      event.currentTarget.value = ''
+      input.value = ''
     }
   }
 

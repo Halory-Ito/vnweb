@@ -1,30 +1,12 @@
 'use client'
 
-import { evaluate } from '@mdx-js/mdx'
-import { MDXProvider } from '@mdx-js/react'
 import { useQuery } from '@tanstack/react-query'
 import dayjs from 'dayjs'
-import {
-  ImageIcon,
-  PencilIcon,
-  PlusIcon,
-  SearchIcon,
-  Trash2Icon,
-} from 'lucide-react'
+import { ImageIcon, PlusIcon, SearchIcon, Trash2Icon } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import { useEffect, useMemo, useState } from 'react'
-import * as runtime from 'react/jsx-runtime'
 import { toast } from 'sonner'
 
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -44,10 +26,8 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import {
   createGameMemoryById,
-  deleteGameMemoryById,
   getGameMemoriesById,
   type GameMemoryItem,
-  updateGameMemoryById,
 } from '@/lib/game-utils'
 
 type GameMemoryProps = {
@@ -55,15 +35,11 @@ type GameMemoryProps = {
 }
 
 export default function GameMemory({ gameId }: GameMemoryProps) {
+  const router = useRouter()
   const [keywordInput, setKeywordInput] = useState('')
   const [keyword, setKeyword] = useState('')
   const [dialogOpen, setDialogOpen] = useState(false)
-  const [mode, setMode] = useState<'create' | 'edit'>('create')
   const [isSaving, setIsSaving] = useState(false)
-  const [isDeleting, setIsDeleting] = useState(false)
-  const [activeItem, setActiveItem] = useState<GameMemoryItem | null>(null)
-  const [detailOpen, setDetailOpen] = useState(false)
-  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null)
   const [title, setTitle] = useState('')
@@ -144,56 +120,25 @@ export default function GameMemory({ gameId }: GameMemoryProps) {
   }
 
   const openCreateDialog = () => {
-    setMode('create')
     resetDialog()
-    setDialogOpen(true)
-  }
-
-  const openEditDialog = () => {
-    if (!activeItem) {
-      return
-    }
-    setMode('edit')
-    setImageFile(null)
-    setImagePreviewUrl(activeItem.imageUrl || '')
-    setTitle(activeItem.title || '')
-    setDescription(activeItem.description || '')
     setDialogOpen(true)
   }
 
   const handleCreate = async () => {
     setIsSaving(true)
     try {
-      if (mode === 'create') {
-        if (!imageFile) {
-          toast.error('请先上传截图')
-          return
-        }
-
-        const optimizedImage = await compressImageForUpload(imageFile)
-        await createGameMemoryById(gameId, {
-          image: optimizedImage,
-          title: title.trim(),
-          description: description.trim(),
-        })
-        toast.success('回忆已保存')
-      } else {
-        if (!activeItem) {
-          toast.error('未找到待编辑回忆')
-          return
-        }
-
-        const optimizedImage = imageFile
-          ? await compressImageForUpload(imageFile)
-          : undefined
-
-        await updateGameMemoryById(gameId, activeItem.id, {
-          title: title.trim(),
-          description: description.trim(),
-          image: optimizedImage,
-        })
-        toast.success('回忆已更新')
+      if (!imageFile) {
+        toast.error('请先上传截图')
+        return
       }
+
+      const optimizedImage = await compressImageForUpload(imageFile)
+      await createGameMemoryById(gameId, {
+        image: optimizedImage,
+        title: title.trim(),
+        description: description.trim(),
+      })
+      toast.success('回忆已保存')
 
       setDialogOpen(false)
       resetDialog()
@@ -208,32 +153,7 @@ export default function GameMemory({ gameId }: GameMemoryProps) {
       setIsSaving(false)
     }
   }
-
-  const handleDelete = async () => {
-    if (!activeItem || isDeleting) {
-      return
-    }
-
-    setIsDeleting(true)
-    try {
-      await deleteGameMemoryById(gameId, activeItem.id)
-      toast.success('回忆已删除')
-      setDeleteConfirmOpen(false)
-      setDetailOpen(false)
-      setActiveItem(null)
-      await refetch()
-    } catch (error) {
-      const err = error as {
-        response?: { data?: { error?: string } }
-        message?: string
-      }
-      toast.error(err.response?.data?.error || err.message || '删除失败')
-    } finally {
-      setIsDeleting(false)
-    }
-  }
-
-  const activeImageUrl = imagePreviewUrl || activeItem?.imageUrl || ''
+  const activeImageUrl = imagePreviewUrl || ''
 
   return (
     <div className="space-y-6">
@@ -290,14 +210,12 @@ export default function GameMemory({ gameId }: GameMemoryProps) {
         />
       ) : (
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {items.map((item, index) => (
+          {items.map((item) => (
             <MemoryCard
               key={item.id}
               item={item}
-              index={index}
               onClick={() => {
-                setActiveItem(item)
-                setDetailOpen(true)
+                router.push(`/game/info/${gameId}/memory/${item.id}`)
               }}
             />
           ))}
@@ -316,17 +234,13 @@ export default function GameMemory({ gameId }: GameMemoryProps) {
       >
         <DialogContent className="sm:max-w-xl">
           <DialogHeader>
-            <DialogTitle>
-              {mode === 'create' ? '新增游戏回忆' : '编辑游戏回忆'}
-            </DialogTitle>
+            <DialogTitle>新增游戏回忆</DialogTitle>
           </DialogHeader>
 
           <div className="space-y-5">
             {/* 截图上传区域 */}
             <div className="space-y-3">
-              <div className="text-sm font-medium">
-                截图{mode === 'create' ? '' : '（不上传则保留原图）'}
-              </div>
+              <div className="text-sm font-medium">截图</div>
 
               {activeImageUrl ? (
                 <div className="group relative overflow-hidden rounded-xl border">
@@ -410,97 +324,6 @@ export default function GameMemory({ gameId }: GameMemoryProps) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      {/* 详情对话框 */}
-      <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
-        <DialogContent className="max-h-[85vh] max-w-4xl overflow-hidden p-0">
-          <div className="flex h-full flex-col">
-            {/* 头部 */}
-            <DialogHeader className="shrink-0 border-b px-6 py-4">
-              <DialogTitle className="text-xl">
-                {activeItem?.title || '游戏回忆'}
-              </DialogTitle>
-            </DialogHeader>
-
-            {/* 内容区域 - 可滚动 */}
-            {activeItem ? (
-              <div className="flex-1 overflow-y-auto px-6 py-4">
-                {/* 图片 */}
-                {activeItem.imageUrl ? (
-                  <div className="mb-4 overflow-hidden rounded-xl border">
-                    <img
-                      src={activeItem.imageUrl}
-                      alt={activeItem.title || '回忆截图'}
-                      className="max-h-[40vh] w-full object-contain"
-                      loading="lazy"
-                      decoding="async"
-                    />
-                  </div>
-                ) : null}
-
-                {/* 更新时间 */}
-                <div className="text-muted-foreground mb-4 flex items-center gap-2 text-xs">
-                  <SearchIcon className="size-3" />
-                  <span>
-                    更新于{' '}
-                    {dayjs(activeItem.updatedAt).format('YYYY-MM-DD HH:mm')}
-                  </span>
-                </div>
-
-                {/* 文本内容 */}
-                <div className="border-t pt-4">
-                  <div className="bg-card max-h-64 overflow-y-auto rounded-lg border p-4">
-                    <MdxContent markdown={activeItem.description || ''} />
-                  </div>
-                </div>
-              </div>
-            ) : null}
-
-            {/* 底部操作栏 */}
-            <DialogFooter className="shrink-0 border-t px-6 py-4">
-              <Button type="button" variant="outline" onClick={openEditDialog}>
-                <PencilIcon className="mr-2 size-4" />
-                编辑
-              </Button>
-              <Button
-                type="button"
-                variant="destructive"
-                disabled={isDeleting}
-                onClick={() => setDeleteConfirmOpen(true)}
-              >
-                <Trash2Icon className="mr-2 size-4" />
-                {isDeleting ? '删除中...' : '删除'}
-              </Button>
-            </DialogFooter>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* 删除确认 */}
-      <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>删除回忆</AlertDialogTitle>
-            <AlertDialogDescription>
-              确定删除回忆「{activeItem?.title || '未命名回忆'}
-              」吗？此操作无法撤销。
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>取消</AlertDialogCancel>
-            <AlertDialogAction
-              variant="destructive"
-              disabled={isDeleting || !activeItem}
-              onClick={(event) => {
-                event.preventDefault()
-                void handleDelete()
-              }}
-            >
-              {isDeleting ? '删除中...' : '确认删除'}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   )
 }
@@ -530,11 +353,9 @@ function EmptyState({
 
 function MemoryCard({
   item,
-  index,
   onClick,
 }: {
   item: GameMemoryItem
-  index: number
   onClick: () => void
 }) {
   const updatedAtText = item.updatedAt
@@ -544,8 +365,16 @@ function MemoryCard({
   return (
     <Card
       variant="outline"
-      className={`group relative mt-0 overflow-hidden pt-0 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg`}
+      className="group relative mt-0 cursor-pointer overflow-hidden pt-0 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
       onClick={onClick}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault()
+          onClick()
+        }
+      }}
     >
       {/* 封面图片 - 占满卡片顶部 */}
       <div className="bg-muted relative aspect-4/3 w-full">
@@ -591,126 +420,5 @@ function MemoryCard({
         </div>
       )}
     </Card>
-  )
-}
-
-function MdxContent({ markdown }: { markdown: string }) {
-  const [Content, setContent] = useState<React.ComponentType | null>(null)
-  const [errorText, setErrorText] = useState('')
-
-  useEffect(() => {
-    let cancelled = false
-
-    const compileMdx = async () => {
-      try {
-        const safeSource = markdown || '（无内容）'
-        const result = await evaluate(safeSource, {
-          ...runtime,
-          useMDXComponents: () => ({}),
-        })
-
-        if (!cancelled) {
-          setContent(() => result.default)
-          setErrorText('')
-        }
-      } catch {
-        if (!cancelled) {
-          setContent(null)
-          setErrorText('Markdown 渲染失败，请检查语法')
-        }
-      }
-    }
-
-    void compileMdx()
-    return () => {
-      cancelled = true
-    }
-  }, [markdown])
-
-  if (errorText) {
-    return (
-      <div className="bg-destructive/10 text-destructive rounded-lg p-3 text-sm">
-        {errorText}
-      </div>
-    )
-  }
-
-  if (!Content) {
-    return (
-      <div className="text-muted-foreground flex items-center gap-2 text-sm">
-        <div className="bg-muted h-4 w-4 animate-pulse rounded-full" />
-        <span>渲染中...</span>
-      </div>
-    )
-  }
-
-  return (
-    <MDXProvider
-      components={{
-        h1: ({ children }) => (
-          <h1 className="mt-6 mb-4 text-2xl font-bold first:mt-0">
-            {children}
-          </h1>
-        ),
-        h2: ({ children }) => (
-          <h2 className="mt-5 mb-3 text-xl font-semibold">{children}</h2>
-        ),
-        h3: ({ children }) => (
-          <h3 className="mt-4 mb-2 text-lg font-semibold">{children}</h3>
-        ),
-        p: ({ children }) => (
-          <p className="text-foreground mb-3 leading-relaxed">{children}</p>
-        ),
-        ul: ({ children }) => (
-          <ul className="mb-3 list-disc space-y-1 pl-5">{children}</ul>
-        ),
-        ol: ({ children }) => (
-          <ol className="mb-3 list-decimal space-y-1 pl-5">{children}</ol>
-        ),
-        li: ({ children }) => <li className="leading-relaxed">{children}</li>,
-        code: ({ children, className }) => {
-          const isInline = !className
-          if (isInline) {
-            return (
-              <code className="bg-muted text-primary rounded px-1.5 py-0.5 font-mono text-sm">
-                {children}
-              </code>
-            )
-          }
-          return <code className={className}>{children}</code>
-        },
-        pre: ({ children }) => (
-          <pre className="bg-muted mb-3 overflow-x-auto rounded-lg p-4">
-            {children}
-          </pre>
-        ),
-        blockquote: ({ children }) => (
-          <blockquote className="border-primary/30 text-muted-foreground mb-3 border-l-4 pl-4 italic">
-            {children}
-          </blockquote>
-        ),
-        hr: () => <hr className="border-border my-6" />,
-        a: ({ children, href }) => (
-          <a
-            href={href}
-            className="text-primary hover:text-primary/80 underline underline-offset-2"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            {children}
-          </a>
-        ),
-        strong: ({ children }) => (
-          <strong className="font-semibold">{children}</strong>
-        ),
-        em: ({ children }) => (
-          <em className="text-muted-foreground italic">{children}</em>
-        ),
-      }}
-    >
-      <article className="prose prose-sm dark:prose-invert max-w-none">
-        <Content />
-      </article>
-    </MDXProvider>
   )
 }

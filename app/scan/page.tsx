@@ -316,10 +316,6 @@ export default function Scan() {
   }
 
   const handleStartScan = async (id: number) => {
-    if (scanningDirectoryIds.includes(id)) {
-      return
-    }
-
     setScanningDirectoryIds((prev) => [...prev, id])
     const timer = window.setInterval(() => {
       void loadScanners()
@@ -377,14 +373,6 @@ export default function Scan() {
       return
     }
 
-    if (
-      !Number.isInteger(nextScanMode) ||
-      (nextScanMode !== 0 && nextScanMode !== 1)
-    ) {
-      toast.error('请选择有效的扫描模式')
-      return
-    }
-
     if (!Number.isInteger(nextScanLevel) || nextScanLevel < 0) {
       toast.error('扫描层级需为大于等于 0 的整数')
       return
@@ -429,20 +417,14 @@ export default function Scan() {
 
   const handleOpenEditDialog = (id: number) => {
     const target = scanDirectories.find((item) => item.id === id)
-    if (!target) {
-      return
-    }
-    setDirectoryPathInput(target.path)
-    setDirectoryProviderInput(target.sourceName)
-    setDirectoryScanModeInput(String(target.scanMode ?? 0))
-    setDirectoryScanLevelInput(String(target.scanLevel ?? 0))
-    setEditDirectoryId(id)
+    setDirectoryPathInput(target?.path ?? '')
+    setDirectoryProviderInput(target?.sourceName ?? DEFAULT_GAME_PROVIDER)
+    setDirectoryScanModeInput(String(target?.scanMode ?? 0))
+    setDirectoryScanLevelInput(String(target?.scanLevel ?? 0))
+    setEditDirectoryId(target?.id ?? null)
   }
 
   const handleSaveEditDirectory = async () => {
-    if (editDirectoryId === null) {
-      return
-    }
     const nextPath = directoryPathInput.trim()
     const nextProvider = directoryProviderInput.trim() || DEFAULT_GAME_PROVIDER
     const nextScanMode = Number(directoryScanModeInput)
@@ -466,7 +448,7 @@ export default function Scan() {
     }
 
     try {
-      const updated = await updateScannerById(editDirectoryId, {
+      const updated = await updateScannerById(editDirectoryId as number, {
         directory: nextPath,
         provider: nextProvider,
         scanMode: nextScanMode,

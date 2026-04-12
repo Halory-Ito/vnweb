@@ -117,7 +117,20 @@ describe("app/api/game/metadata-batch POST", () => {
 
         mocks.db.select.mockClear();
         mocks.db.update.mockClear();
-        mocks.BGMClient.request.mockClear();
+        mocks.BGMClient.request.mockReset();
+        mocks.BGMClient.request.mockResolvedValue({ data: { id: 123 } });
+        mocks.SGDBClient.searchGame.mockReset();
+        mocks.SGDBClient.searchGame.mockResolvedValue([]);
+        mocks.SGDBClient.getGameById.mockReset();
+        mocks.SGDBClient.getGameById.mockResolvedValue({});
+        mocks.SGDBClient.getGridsById.mockReset();
+        mocks.SGDBClient.getGridsById.mockResolvedValue([]);
+        mocks.SGDBClient.getIconsById.mockReset();
+        mocks.SGDBClient.getIconsById.mockResolvedValue([]);
+        mocks.SGDBClient.getLogosById.mockReset();
+        mocks.SGDBClient.getLogosById.mockResolvedValue([]);
+        mocks.SGDBClient.getHeroesById.mockReset();
+        mocks.SGDBClient.getHeroesById.mockResolvedValue([]);
         mocks.mapBGMSubjectToGameInfo.mockClear();
         mocks.localizeGameImageFields.mockClear();
     });
@@ -152,6 +165,21 @@ describe("app/api/game/metadata-batch POST", () => {
 
         expect(response.status).toBe(400);
         expect(body).toEqual({ error: "No game ids" });
+    });
+
+    test("returns 400 when fields are empty", async () => {
+        const response = await POST(
+            createRequest({
+                provider: "bangumi",
+                strategy: "replace",
+                gameIds: [1],
+                fields: [],
+            }),
+        );
+        const body = await response.json();
+
+        expect(response.status).toBe(400);
+        expect(body).toEqual({ error: "No fields selected" });
     });
 
     test("updates one game successfully", async () => {
@@ -228,5 +256,195 @@ describe("app/api/game/metadata-batch POST", () => {
         expect(body).toEqual({
             data: { updatedCount: 0, skippedCount: 1, failedCount: 1 },
         });
+    });
+
+    test("skips item when effective query is empty", async () => {
+        mocks.state.selectQueue.push([
+            {
+                id: 1,
+                date: "",
+                cover: "",
+                icon: "",
+                logo: "",
+                bg: "",
+                summary: "",
+                name: "",
+                nameCn: "",
+                tags: "",
+                nsfw: 0,
+                ailases: "",
+                platforms: "",
+                gameType: "",
+                gameEngine: "",
+                music: "",
+                script: "",
+                graphic: "",
+                originalPainter: "",
+                animationProduction: "",
+                developer: "",
+                publisher: "",
+                programmer: "",
+            },
+        ]);
+
+        const response = await POST(
+            createRequest({
+                gameIds: [1],
+                provider: "bangumi",
+                strategy: "replace",
+                fields: ["nameCn"],
+            }),
+        );
+        const body = await response.json();
+
+        expect(response.status).toBe(200);
+        expect(body.data).toEqual({ updatedCount: 0, skippedCount: 1, failedCount: 0 });
+        expect(mocks.db.update).not.toHaveBeenCalled();
+    });
+
+    test("skips item when provider search cannot find matched id", async () => {
+        mocks.state.selectQueue.push([
+            {
+                id: 1,
+                date: "2025-01-01",
+                cover: "",
+                icon: "",
+                logo: "",
+                bg: "",
+                summary: "",
+                name: "Game Name",
+                nameCn: "",
+                tags: "",
+                nsfw: 0,
+                ailases: "",
+                platforms: "",
+                gameType: "",
+                gameEngine: "",
+                music: "",
+                script: "",
+                graphic: "",
+                originalPainter: "",
+                animationProduction: "",
+                developer: "",
+                publisher: "",
+                programmer: "",
+            },
+        ]);
+        mocks.BGMClient.request.mockResolvedValueOnce({ data: { data: [] } });
+
+        const response = await POST(
+            createRequest({
+                gameIds: [1],
+                provider: "bangumi",
+                strategy: "replace",
+                query: "keyword",
+                fields: ["nameCn"],
+            }),
+        );
+        const body = await response.json();
+
+        expect(response.status).toBe(200);
+        expect(body.data).toEqual({ updatedCount: 0, skippedCount: 1, failedCount: 0 });
+    });
+
+    test("merges list and bool fields with merge strategy", async () => {
+        mocks.state.selectQueue.push([
+            {
+                id: 1,
+                date: "2025-01-01",
+                cover: "",
+                icon: "",
+                logo: "",
+                bg: "",
+                summary: "",
+                name: "old",
+                nameCn: "旧名字",
+                tags: "oldTag",
+                nsfw: 1,
+                ailases: "oldAlias",
+                platforms: "pc",
+                gameType: "",
+                gameEngine: "",
+                music: "",
+                script: "",
+                graphic: "",
+                originalPainter: "",
+                animationProduction: "",
+                developer: "",
+                publisher: "",
+                programmer: "",
+            },
+        ]);
+
+        const response = await POST(
+            createRequest({
+                gameIds: [1],
+                provider: "bangumi",
+                strategy: "merge",
+                query: "123",
+                fields: ["tags", "ailases", "platforms", "nsfw"],
+            }),
+        );
+        const body = await response.json();
+
+        expect(response.status).toBe(200);
+        expect(body.data.updatedCount).toBe(1);
+        expect(mocks.state.updateSetArgs[0]).toMatchObject({
+            tags: "oldTag,tag1,tag2",
+            ailases: "oldAlias,a1",
+            platforms: "pc",
+            nsfw: 1,
+        });
+    });
+
+    test("counts item as failed when update query throws", async () => {
+        mocks.state.selectQueue.push([
+            {
+                id: 1,
+                date: "2025-01-01",
+                cover: "",
+                icon: "",
+                logo: "",
+                bg: "",
+                summary: "old summary",
+                name: "old",
+                nameCn: "旧名字",
+                tags: "oldTag",
+                nsfw: 0,
+                ailases: "",
+                platforms: "",
+                gameType: "",
+                gameEngine: "",
+                music: "",
+                script: "",
+                graphic: "",
+                originalPainter: "",
+                animationProduction: "",
+                developer: "",
+                publisher: "",
+                programmer: "",
+            },
+        ]);
+        mocks.db.update.mockImplementationOnce(() => ({
+            set: vi.fn(() => ({
+                where: vi.fn(async () => {
+                    throw new Error("update failed");
+                }),
+            })),
+        }));
+
+        const response = await POST(
+            createRequest({
+                gameIds: [1],
+                provider: "bangumi",
+                strategy: "append",
+                query: "123",
+                fields: ["summary"],
+            }),
+        );
+        const body = await response.json();
+
+        expect(response.status).toBe(200);
+        expect(body.data).toEqual({ updatedCount: 0, skippedCount: 0, failedCount: 1 });
     });
 });

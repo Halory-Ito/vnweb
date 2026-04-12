@@ -52,6 +52,18 @@ describe("settings/proxy route", () => {
         expect(body.data[0].id).toBe(1);
     });
 
+    test("GET returns 500 when db query fails", async () => {
+        mocks.db.select.mockImplementationOnce(() => {
+            throw new Error("load failed");
+        });
+
+        const response = await GET();
+        const body = await response.json();
+
+        expect(response.status).toBe(500);
+        expect(body.success).toBe(false);
+    });
+
     test("POST validates required fields", async () => {
         const response = await POST(req({ name: "a" }));
         expect(response.status).toBe(400);
@@ -70,9 +82,65 @@ describe("settings/proxy route", () => {
         expect(response.status).toBe(200);
     });
 
+    test("POST keeps existing proxies when enabled is false", async () => {
+        const response = await POST(
+            req({
+                name: "p2",
+                type: "http",
+                host: "127.0.0.1",
+                port: 7891,
+                enabled: false,
+            }),
+        );
+
+        expect(response.status).toBe(200);
+        expect(mocks.db.update).not.toHaveBeenCalled();
+    });
+
+    test("POST returns 500 when insertion fails", async () => {
+        mocks.db.insert.mockImplementationOnce(() => {
+            throw new Error("insert failed");
+        });
+
+        const response = await POST(
+            req({
+                name: "p",
+                type: "http",
+                host: "127.0.0.1",
+                port: 7890,
+                enabled: true,
+            }),
+        );
+        const body = await response.json();
+
+        expect(response.status).toBe(500);
+        expect(body.success).toBe(false);
+    });
+
     test("PUT validates id", async () => {
         const response = await PUT(req({}));
         expect(response.status).toBe(400);
+    });
+
+    test("PUT returns 500 when update fails", async () => {
+        mocks.db.update.mockImplementationOnce(() => {
+            throw new Error("update failed");
+        });
+
+        const response = await PUT(
+            req({
+                id: 1,
+                name: "p",
+                type: "http",
+                host: "127.0.0.1",
+                port: 7890,
+                enabled: true,
+            }),
+        );
+        const body = await response.json();
+
+        expect(response.status).toBe(500);
+        expect(body.success).toBe(false);
     });
 
     test("DELETE validates id and deletes", async () => {
@@ -85,5 +153,19 @@ describe("settings/proxy route", () => {
             { url: "http://localhost/api/settings/proxy?id=1" } as NextRequest,
         );
         expect(ok.status).toBe(200);
+    });
+
+    test("DELETE returns 500 when deletion fails", async () => {
+        mocks.db.delete.mockImplementationOnce(() => {
+            throw new Error("delete failed");
+        });
+
+        const response = await DELETE(
+            { url: "http://localhost/api/settings/proxy?id=1" } as NextRequest,
+        );
+        const body = await response.json();
+
+        expect(response.status).toBe(500);
+        expect(body.success).toBe(false);
     });
 });

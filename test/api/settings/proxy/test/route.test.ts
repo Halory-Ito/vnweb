@@ -68,6 +68,19 @@ describe("settings/proxy/test GET", () => {
         expect(mocks.HttpsProxyAgent).toHaveBeenCalledTimes(1);
     });
 
+    test("marks non-2xx/3xx responses as failed", async () => {
+        mocks.get.mockResolvedValueOnce({ status: 500, statusText: "ERR" });
+
+        const response = await GET(
+            req("http://localhost/test?url=https://example.com"),
+        );
+        const body = await response.json();
+
+        expect(response.status).toBe(200);
+        expect(body.success).toBe(false);
+        expect(body.status).toBe(500);
+    });
+
     test("maps timeout error message", async () => {
         mocks.get.mockRejectedValueOnce(new Error("ETIMEDOUT"));
 
@@ -79,5 +92,18 @@ describe("settings/proxy/test GET", () => {
         expect(response.status).toBe(200);
         expect(body.success).toBe(false);
         expect(body.error).toContain("连接超时");
+    });
+
+    test("maps ENOTFOUND error message", async () => {
+        mocks.get.mockRejectedValueOnce(new Error("ENOTFOUND"));
+
+        const response = await GET(
+            req("http://localhost/test?url=https://example.com"),
+        );
+        const body = await response.json();
+
+        expect(response.status).toBe(200);
+        expect(body.success).toBe(false);
+        expect(body.error).toContain("无法解析");
     });
 });

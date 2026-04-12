@@ -1,5 +1,15 @@
+import { Suspense } from 'react'
+
 import CloudSync from '@/components/settings/cloud-sync'
 
-export default function SyncPage() {
+function SyncPageContent() {
   return <CloudSync />
+}
+
+export default function SyncPage() {
+  return (
+    <Suspense fallback={null}>
+      <SyncPageContent />
+    </Suspense>
+  )
 }

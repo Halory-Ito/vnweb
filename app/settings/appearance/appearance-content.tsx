@@ -193,6 +193,7 @@ export default function AppearanceContent() {
   const handleBackgroundFileChange = async (
     event: React.ChangeEvent<HTMLInputElement>,
   ) => {
+    const input = event.currentTarget
     const file = event.target.files?.[0]
     if (!file) {
       return
@@ -230,7 +231,7 @@ export default function AppearanceContent() {
       toast.error((error as Error).message || '上传背景图片失败')
     } finally {
       setIsUploadingBackground(false)
-      event.currentTarget.value = ''
+      input.value = ''
     }
   }
 

@@ -49,6 +49,22 @@ describe("game/[id]/image-localize POST", () => {
         expect(res.status).toBe(400);
     });
 
+    test("returns 400 for invalid game id", async () => {
+        const res = await POST(
+            req({ imageType: "cover", sourceUrl: "a" }),
+            ctx("0"),
+        );
+        expect(res.status).toBe(400);
+    });
+
+    test("returns 400 when source url is missing", async () => {
+        const res = await POST(
+            req({ imageType: "cover", sourceUrl: "" }),
+            ctx("1"),
+        );
+        expect(res.status).toBe(400);
+    });
+
     test("returns 404 when game not found", async () => {
         mocks.db.select.mockImplementationOnce(() => ({
             from: vi.fn(() => ({

@@ -45,9 +45,29 @@ describe("app/api/settings/theme-css route", () => {
         expect(body.data.content).toContain("color: red");
     });
 
+    test("GET returns 500 on unexpected read error", async () => {
+        mocks.fs.readFile.mockRejectedValueOnce(new Error("read failed"));
+
+        const response = await GET();
+        const body = await response.json();
+
+        expect(response.status).toBe(500);
+        expect(body).toEqual({ error: "读取主题文件失败" });
+    });
+
     test("PUT validates payload type", async () => {
         const response = await PUT(req({ content: 123 } as unknown));
         expect(response.status).toBe(400);
+    });
+
+    test("PUT validates css size limit", async () => {
+        const largeCss = "a".repeat(1024 * 1024 + 1);
+
+        const response = await PUT(req({ content: largeCss }));
+        const body = await response.json();
+
+        expect(response.status).toBe(400);
+        expect(body).toEqual({ error: "主题内容过大（超过 1MB）" });
     });
 
     test("PUT saves content", async () => {
@@ -59,5 +79,15 @@ describe("app/api/settings/theme-css route", () => {
         expect(response.status).toBe(200);
         expect(body.data.saved).toBe(true);
         expect(mocks.fs.writeFile).toHaveBeenCalledTimes(1);
+    });
+
+    test("PUT returns 500 when writing file fails", async () => {
+        mocks.fs.writeFile.mockRejectedValueOnce(new Error("write failed"));
+
+        const response = await PUT(req({ content: "h1{}" }));
+        const body = await response.json();
+
+        expect(response.status).toBe(500);
+        expect(body).toEqual({ error: "保存主题文件失败" });
     });
 });

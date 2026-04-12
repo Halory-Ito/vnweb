@@ -1,7 +1,7 @@
 @echo off
 cd /d "%~dp0"
 if "%~1"=="" (
-	npm run dev
+	npm run start
 ) else (
 	npm run cli -- %*
 )

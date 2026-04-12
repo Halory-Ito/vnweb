@@ -45,17 +45,30 @@ vi.mock("@/lib/drizzle", () => ({ db: mocks.db }));
 import { DELETE, GET, PATCH, POST } from "@/app/api/game/[id]/ost/route";
 
 const ctx = (id: string) => ({ params: Promise.resolve({ id }) });
-const req = (
-    payload: unknown,
-): NextRequest => ({
-    json: async () => payload,
-    nextUrl: new URL("http://localhost?itemId=1"),
-} as NextRequest);
+const req = (payload: unknown): NextRequest =>
+    ({
+        json: async () => payload,
+        nextUrl: new URL("http://localhost?itemId=1"),
+    }) as NextRequest;
 
 describe("game/[id]/ost route", () => {
     beforeEach(() => {
         mocks.state.queue = [];
         mocks.db.select.mockClear();
+        mocks.db.insert.mockClear();
+        mocks.db.update.mockClear();
+        mocks.db.delete.mockClear();
+    });
+
+    test("GET returns 400 for invalid game id", async () => {
+        const res = await GET({} as NextRequest, ctx("x"));
+        expect(res.status).toBe(400);
+    });
+
+    test("GET returns 404 when game not found", async () => {
+        mocks.state.queue.push([]);
+        const res = await GET({} as NextRequest, ctx("1"));
+        expect(res.status).toBe(404);
     });
 
     test("GET returns list", async () => {
@@ -68,10 +81,42 @@ describe("game/[id]/ost route", () => {
         expect(res.status).toBe(200);
     });
 
+    test("GET returns 500 when query fails", async () => {
+        mocks.state.queue.push([{ id: 1 }], new Error("ost list failed"));
+        const res = await GET({} as NextRequest, ctx("1"));
+        const body = await res.json();
+
+        expect(res.status).toBe(500);
+        expect(body.error).toBe("ost list failed");
+    });
+
     test("POST validates payload", async () => {
         mocks.state.queue.push([{ id: 1 }]);
         const res = await POST(req({}), ctx("1"));
         expect(res.status).toBe(400);
+    });
+
+    test("POST returns 404 when game not found", async () => {
+        mocks.state.queue.push([]);
+        const res = await POST(req({ name: "n", url: "u" }), ctx("1"));
+        expect(res.status).toBe(404);
+    });
+
+    test("POST returns 500 when insertion fails", async () => {
+        mocks.state.queue.push([{ id: 1 }]);
+        mocks.db.insert.mockImplementationOnce(() => ({
+            values: vi.fn(() => ({
+                returning: vi.fn(async () => {
+                    throw new Error("insert failed");
+                }),
+            })),
+        }));
+
+        const res = await POST(req({ name: "n", url: "u" }), ctx("1"));
+        const body = await res.json();
+
+        expect(res.status).toBe(500);
+        expect(body.error).toBe("insert failed");
     });
 
     test("PATCH updates item", async () => {
@@ -83,6 +128,45 @@ describe("game/[id]/ost route", () => {
         expect(res.status).toBe(200);
     });
 
+    test("PATCH returns 404 when item does not exist", async () => {
+        mocks.state.queue.push([{ id: 1 }]);
+        mocks.db.update.mockImplementationOnce(() => ({
+            set: vi.fn(() => ({
+                where: vi.fn(() => ({
+                    returning: vi.fn(async () => []),
+                })),
+            })),
+        }));
+
+        const res = await PATCH(
+            req({ itemId: 1, name: "n", url: "u" }),
+            ctx("1"),
+        );
+        expect(res.status).toBe(404);
+    });
+
+    test("PATCH returns 500 when update fails", async () => {
+        mocks.state.queue.push([{ id: 1 }]);
+        mocks.db.update.mockImplementationOnce(() => ({
+            set: vi.fn(() => ({
+                where: vi.fn(() => ({
+                    returning: vi.fn(async () => {
+                        throw new Error("update failed");
+                    }),
+                })),
+            })),
+        }));
+
+        const res = await PATCH(
+            req({ itemId: 1, name: "n", url: "u" }),
+            ctx("1"),
+        );
+        const body = await res.json();
+
+        expect(res.status).toBe(500);
+        expect(body.error).toBe("update failed");
+    });
+
     test("DELETE deletes item", async () => {
         mocks.state.queue.push([{ id: 1 }]);
         const res = await DELETE(
@@ -90,5 +174,47 @@ describe("game/[id]/ost route", () => {
             ctx("1"),
         );
         expect(res.status).toBe(200);
+    });
+
+    test("DELETE returns 400 when itemId is invalid", async () => {
+        mocks.state.queue.push([{ id: 1 }]);
+        const res = await DELETE(
+            { nextUrl: new URL("http://localhost?itemId=abc") } as NextRequest,
+            ctx("1"),
+        );
+        expect(res.status).toBe(400);
+    });
+
+    test("DELETE returns 404 when item does not exist", async () => {
+        mocks.state.queue.push([{ id: 1 }]);
+        mocks.db.delete.mockImplementationOnce(() => ({
+            where: vi.fn(() => ({ returning: vi.fn(async () => []) })),
+        }));
+
+        const res = await DELETE(
+            { nextUrl: new URL("http://localhost?itemId=1") } as NextRequest,
+            ctx("1"),
+        );
+        expect(res.status).toBe(404);
+    });
+
+    test("DELETE returns 500 when deletion fails", async () => {
+        mocks.state.queue.push([{ id: 1 }]);
+        mocks.db.delete.mockImplementationOnce(() => ({
+            where: vi.fn(() => ({
+                returning: vi.fn(async () => {
+                    throw new Error("delete failed");
+                }),
+            })),
+        }));
+
+        const res = await DELETE(
+            { nextUrl: new URL("http://localhost?itemId=1") } as NextRequest,
+            ctx("1"),
+        );
+        const body = await res.json();
+
+        expect(res.status).toBe(500);
+        expect(body.error).toBe("delete failed");
     });
 });

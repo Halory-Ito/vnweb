@@ -107,8 +107,65 @@ describe("settings/cloud-sync/accounts route", () => {
         expect(body.data.items[0].profile.displayName).toBe("Alice");
     });
 
+    test("GET returns steam and vndb profiles", async () => {
+        mocks.state.selectQueue.push([
+            {
+                id: 1,
+                provider: "steam",
+                accountId: "76561198000000000",
+                accessToken: "",
+                expiresAt: "",
+                updatedAt: "now",
+            },
+            {
+                id: 2,
+                provider: "vndb",
+                accountId: "u1",
+                accessToken: "token",
+                expiresAt: "",
+                updatedAt: "now",
+            },
+        ]);
+        mocks.axios.get
+            .mockResolvedValueOnce({
+                data: {
+                    response: {
+                        players: [
+                            {
+                                steamid: "76561198000000000",
+                                personaname: "SteamUser",
+                                profileurl: "https://steamcommunity.com/profiles/76561198000000000",
+                                avatarfull: "avatar.jpg",
+                            },
+                        ],
+                    },
+                },
+            })
+            .mockResolvedValueOnce({ data: { id: "u1", username: "vndbUser" } });
+
+        const response = await GET();
+        const body = await response.json();
+
+        expect(response.status).toBe(200);
+        expect(body.data.items).toHaveLength(2);
+        expect(body.data.items[0].profile.displayName).toBe("SteamUser");
+        expect(body.data.items[1].profile.displayName).toBe("vndbUser");
+    });
+
+    test("GET returns 500 when loading accounts fails", async () => {
+        mocks.state.selectQueue.push(new Error("select failed"));
+
+        const response = await GET();
+        expect(response.status).toBe(500);
+    });
+
     test("POST validates provider", async () => {
         const response = await POST(req({ provider: "x" }));
+        expect(response.status).toBe(400);
+    });
+
+    test("POST requires accessToken for non-steam providers", async () => {
+        const response = await POST(req({ provider: "bangumi", accessToken: "" }));
         expect(response.status).toBe(400);
     });
 
@@ -125,6 +182,42 @@ describe("settings/cloud-sync/accounts route", () => {
         expect(response.status).toBe(200);
         expect(body.data.provider).toBe("steam");
         expect(mocks.db.transaction).toHaveBeenCalledTimes(1);
+    });
+
+    test("POST handles vndb token login", async () => {
+        mocks.axios.get.mockResolvedValueOnce({ data: { id: "u9", username: "vnUser" } });
+
+        const response = await POST(
+            req({ provider: "vndb", accessToken: "token-1" }),
+        );
+        const body = await response.json();
+
+        expect(response.status).toBe(200);
+        expect(body.data.accountId).toBe("u9");
+    });
+
+    test("POST returns 500 for invalid steam uid", async () => {
+        const response = await POST(
+            req({ provider: "steam", accountId: "123", accessToken: "" }),
+        );
+        const body = await response.json();
+
+        expect(response.status).toBe(500);
+        expect(body.error).toContain("17 位数字");
+    });
+
+    test("POST returns 500 when steam api key is missing", async () => {
+        process.env.STEAM_API_KEY = "";
+        delete process.env.NEXT_PUBLIC_STEAM_API_KEY;
+        delete process.env.STEAM_WEB_API_KEY;
+
+        const response = await POST(
+            req({ provider: "steam", accountId: "76561198000000000" }),
+        );
+        const body = await response.json();
+
+        expect(response.status).toBe(500);
+        expect(body.error).toContain("STEAM_API_KEY");
     });
 
     test("POST maps axios 401 to 401 response", async () => {
@@ -151,6 +244,20 @@ describe("settings/cloud-sync/accounts route", () => {
 
         expect(ok.status).toBe(200);
         expect(body.data.deleted).toBe(true);
+    });
+
+    test("DELETE returns 500 when delete fails", async () => {
+        mocks.db.delete.mockImplementationOnce(() => ({
+            where: vi.fn(async () => {
+                throw new Error("delete failed");
+            }),
+        }));
+
+        const response = await DELETE({
+            nextUrl: new URL("http://localhost/api?provider=steam"),
+        } as NextRequest);
+
+        expect(response.status).toBe(500);
     });
 
     afterAll(() => {

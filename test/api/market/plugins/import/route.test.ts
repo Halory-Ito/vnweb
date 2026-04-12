@@ -86,6 +86,12 @@ const entry = (name: string, content: string | Uint8Array): ZipEntry => ({
             : Buffer.from(content),
 });
 
+const dirEntry = (name: string): ZipEntry => ({
+    entryName: name,
+    isDirectory: true,
+    getData: () => Buffer.from([]),
+});
+
 describe("app/api/market/plugins/import POST", () => {
     beforeEach(() => {
         mocks.state.entries = [];
@@ -102,6 +108,52 @@ describe("app/api/market/plugins/import POST", () => {
     test("returns 400 when file is missing", async () => {
         const response = await POST(createRequest({ file: null }));
         expect(response.status).toBe(400);
+    });
+
+    test("returns 400 when file is not zip", async () => {
+        const file = new File([new Uint8Array([1])], "plugin.txt", {
+            type: "text/plain",
+        });
+
+        const response = await POST(createRequest({ file }));
+        expect(response.status).toBe(400);
+    });
+
+    test("returns 500 when zip has no manifest", async () => {
+        mocks.state.entries = [entry("plugin-a/readme.md", "hello")];
+
+        const response = await POST(createRequest({ file: makeZipFile() }));
+        const body = await response.json();
+
+        expect(response.status).toBe(500);
+        expect(body.error).toContain("manifest.ts");
+    });
+
+    test("returns 500 when manifest content is invalid", async () => {
+        mocks.state.entries = [
+            entry("plugin-a/manifest.ts", `export default { id: "plugin-a" };`),
+        ];
+
+        const response = await POST(createRequest({ file: makeZipFile() }));
+        const body = await response.json();
+
+        expect(response.status).toBe(500);
+        expect(body.error).toContain("解析失败");
+    });
+
+    test("returns 500 when plugin id is invalid", async () => {
+        mocks.state.entries = [
+            entry(
+                "plugin-a/manifest.ts",
+                `export default { id: "bad id", name: "Plugin A" };`,
+            ),
+        ];
+
+        const response = await POST(createRequest({ file: makeZipFile() }));
+        const body = await response.json();
+
+        expect(response.status).toBe(500);
+        expect(body.error).toContain("id 不合法");
     });
 
     test("returns preview data for valid zip", async () => {
@@ -125,6 +177,22 @@ describe("app/api/market/plugins/import POST", () => {
         expect(body.success).toBe(true);
         expect(body.stage).toBe("preview");
         expect(body.plugin.id).toBe("plugin-a");
+    });
+
+    test("returns preview stage when action is omitted", async () => {
+        mocks.state.entries = [
+            entry(
+                "plugin-a/manifest.ts",
+                `export default { id: "plugin-a", name: "Plugin A", icon: "https://img/x.png" };`,
+            ),
+        ];
+
+        const response = await POST(createRequest({ file: makeZipFile() }));
+        const body = await response.json();
+
+        expect(response.status).toBe(200);
+        expect(body.stage).toBe("preview");
+        expect(body.plugin.previewIconUrl).toBe("https://img/x.png");
     });
 
     test("returns 409 when import conflicts without overwrite", async () => {
@@ -157,7 +225,9 @@ describe("app/api/market/plugins/import POST", () => {
                 "plugin-a/manifest.ts",
                 `export default { id: "plugin-a", name: "Plugin A", icon: "" };`,
             ),
+            dirEntry("plugin-a/assets"),
             entry("plugin-a/readme.md", "hello"),
+            entry("plugin-a/../evil.txt", "x"),
         ];
 
         const response = await POST(
@@ -173,5 +243,43 @@ describe("app/api/market/plugins/import POST", () => {
         expect(body.stage).toBe("import");
         expect(mocks.mkdir).toHaveBeenCalled();
         expect(mocks.writeFile).toHaveBeenCalled();
+    });
+
+    test("imports with overwrite and marks overwritten", async () => {
+        mocks.state.entries = [
+            entry(
+                "plugin-a/manifest.ts",
+                `export default { id: "plugin-a", name: "Plugin A" };`,
+            ),
+            entry("plugin-a/readme.md", "hello"),
+        ];
+        mocks.state.accessExists = true;
+
+        const response = await POST(
+            createRequest({ action: "import", overwrite: true, file: makeZipFile() }),
+        );
+        const body = await response.json();
+
+        expect(response.status).toBe(200);
+        expect(body.overwritten).toBe(true);
+        expect(mocks.rm).toHaveBeenCalledTimes(1);
+    });
+
+    test("maps EEXIST mkdir error to 409", async () => {
+        mocks.state.entries = [
+            entry(
+                "plugin-a/manifest.ts",
+                `export default { id: "plugin-a", name: "Plugin A" };`,
+            ),
+        ];
+        mocks.mkdir.mockRejectedValueOnce(new Error("EEXIST: file already exists"));
+
+        const response = await POST(
+            createRequest({ action: "import", overwrite: false, file: makeZipFile() }),
+        );
+        const body = await response.json();
+
+        expect(response.status).toBe(409);
+        expect(body.error).toContain("同名插件已存在");
     });
 });
