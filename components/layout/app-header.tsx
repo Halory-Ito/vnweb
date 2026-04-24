@@ -6,6 +6,7 @@ import { ArrowLeftIcon, ArrowRightIcon, FilterIcon, XIcon } from 'lucide-react'
 import { usePathname, useRouter } from 'next/navigation'
 
 import GameAddButton from '../vndb/vndb-trigger'
+import R18Switch from './r18-switch'
 import ThemeSwitch from './theme-switch'
 import {
   defaultGameFilter,
@@ -523,7 +524,8 @@ export default function AppHeader() {
           </>
         )}
       </div>
-      <div className="flex">
+      <div className="flex gap-4">
+        <R18Switch />
         <ThemeSwitch />
       </div>
     </div>

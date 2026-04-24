@@ -78,6 +78,9 @@ const getSidebarData = async (req: NextRequest) => {
   try {
     const searchParams = req.nextUrl.searchParams
     const search = (searchParams.get('search') || '').trim()
+    const includeNsfw =
+      (searchParams.get('includeNsfw') || 'true').trim().toLowerCase() !==
+      'false'
     const releaseDateFrom = (searchParams.get('releaseDateFrom') || '').trim()
     const releaseDateTo = (searchParams.get('releaseDateTo') || '').trim()
     const playStatus = (searchParams.get('playStatus') || '').trim()
@@ -109,6 +112,7 @@ const getSidebarData = async (req: NextRequest) => {
         music: GameInfoTable.music,
         gameEngine: GameInfoTable.gameEngine,
         programmer: GameInfoTable.programmer,
+        nsfw: GameInfoTable.nsfw,
         playStatus: GamePlayTable.status,
       })
       .from(GameInfoTable)
@@ -124,6 +128,10 @@ const getSidebarData = async (req: NextRequest) => {
         !includesText(title, search) &&
         !includesText(game.name, search)
       ) {
+        return false
+      }
+
+      if (!includeNsfw && Number(game.nsfw ?? 0) === 1) {
         return false
       }
 

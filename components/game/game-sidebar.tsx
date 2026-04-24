@@ -5,7 +5,7 @@ import { useAtomValue } from 'jotai'
 import { useEffect, useState } from 'react'
 
 import { GameSidebarItem } from './game-sidebar-item'
-import { gameFilterAtom, gameSearchAtom } from '@/atom/global'
+import { gameFilterAtom, gameSearchAtom, showNsfwAtom } from '@/atom/global'
 import {
   Accordion,
   AccordionContent,
@@ -17,11 +17,13 @@ import { getGameSidebarData } from '@/lib/game-utils'
 export default function GameSidebar() {
   const search = useAtomValue(gameSearchAtom)
   const filter = useAtomValue(gameFilterAtom)
+  const showNsfw = useAtomValue(showNsfwAtom)
   const [ctrlPressed, setCtrlPressed] = useState(false)
 
   const { data } = useQuery({
-    queryKey: ['game-sidebar', search, filter],
-    queryFn: () => getGameSidebarData({ search, filter }),
+    queryKey: ['game-sidebar', search, filter, showNsfw],
+    queryFn: () =>
+      getGameSidebarData({ search, filter, includeNsfw: showNsfw }),
   })
 
   const items = data?.items ?? []

@@ -884,8 +884,13 @@ export const deletePvManageItem = async (id: number) => {
   }
 }
 
-export const getGameCardList = async () => {
-  const response = await api.get('/game/list')
+export const getGameCardList = async (payload?: { includeNsfw?: boolean }) => {
+  const includeNsfw = payload?.includeNsfw ?? true
+  const response = await api.get('/game/list', {
+    params: {
+      includeNsfw,
+    },
+  })
   return (response.data as { data: GameCardListItem[] }).data
 }
 
@@ -932,9 +937,12 @@ export const batchUpdateGameMetadata = async (payload: {
 export const getGameSidebarData = async (payload: {
   search: string
   filter: GameFilterState
+  includeNsfw?: boolean
 }) => {
   const params = new URLSearchParams()
+  const includeNsfw = payload.includeNsfw ?? true
   params.set('search', payload.search)
+  params.set('includeNsfw', String(includeNsfw))
 
   params.set('releaseDateFrom', payload.filter.releaseDateFrom)
   params.set('releaseDateTo', payload.filter.releaseDateTo)

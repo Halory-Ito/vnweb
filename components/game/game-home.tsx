@@ -24,7 +24,7 @@ import { toast } from 'sonner'
 import GameBulkUpdateMetadataDialog from './dialog/game-bulk-update-metadata-dialog'
 import GameCard from './game-card'
 import { SortSelect } from './sort-select'
-import { selectedGameIdsAtom } from '@/atom/global'
+import { selectedGameIdsAtom, showNsfwAtom } from '@/atom/global'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -185,6 +185,7 @@ export default function GameHome() {
   const router = useRouter()
   const queryClient = useQueryClient()
   const [selectedGameIds, setSelectedGameIds] = useAtom(selectedGameIdsAtom)
+  const [showNsfw] = useAtom(showNsfwAtom)
   const [isAddingToCollection, setIsAddingToCollection] = useState(false)
   const [isDeletingGames, setIsDeletingGames] = useState(false)
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
@@ -199,8 +200,8 @@ export default function GameHome() {
   const [newCollectionName, setNewCollectionName] = useState('')
 
   const gameCardsQuery = useQuery({
-    queryKey: ['game-cards'],
-    queryFn: getGameCardList,
+    queryKey: ['game-cards', showNsfw],
+    queryFn: () => getGameCardList({ includeNsfw: showNsfw }),
   })
 
   const collectionsQuery = useQuery({

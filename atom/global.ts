@@ -10,6 +10,8 @@ const selectedGameIdsAtom = atom<string[]>([])
 
 const gameSearchAtom = atom('')
 
+const showNsfwAtom = atom(true)
+
 const defaultGameFilter: GameFilterState = {
   releaseDateFrom: '',
   releaseDateTo: '',
@@ -33,6 +35,7 @@ export {
   bgAtom,
   selectedGameIdsAtom,
   gameSearchAtom,
+  showNsfwAtom,
   gameFilterAtom,
   defaultGameFilter,
 }

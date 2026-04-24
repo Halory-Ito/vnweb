@@ -1,12 +1,17 @@
-import { desc } from 'drizzle-orm'
-import { NextResponse } from 'next/server'
+import { desc, eq } from 'drizzle-orm'
+import { NextRequest, NextResponse } from 'next/server'
 
 import { GameInfoTable, GamePlayTable } from '@/db/schema'
 import { db } from '@/lib/drizzle'
 
-const getGameCardList = async () => {
+const getGameCardList = async (req: NextRequest) => {
   try {
-    const games = await db
+    const includeNsfw =
+      (req.nextUrl.searchParams.get('includeNsfw') || 'true')
+        .trim()
+        .toLowerCase() !== 'false'
+
+    const gameListQuery = db
       .select({
         id: GameInfoTable.id,
         name: GameInfoTable.name,
@@ -17,6 +22,10 @@ const getGameCardList = async () => {
       })
       .from(GameInfoTable)
       .orderBy(desc(GameInfoTable.id))
+
+    const games = includeNsfw
+      ? await gameListQuery
+      : await gameListQuery.where(eq(GameInfoTable.nsfw, 0))
 
     const plays = await db
       .select({

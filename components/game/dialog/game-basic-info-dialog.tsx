@@ -14,6 +14,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
+import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { type GameDetail, updateGameInfoById } from '@/lib/game-utils'
 
@@ -33,6 +34,7 @@ type FormValues = {
   tags: string
   developer: string
   publisher: string
+  nsfw: boolean
 }
 
 export default function GameBasicInfoDialog({
@@ -53,6 +55,7 @@ export default function GameBasicInfoDialog({
     tags: (game.tags || []).join(', '),
     developer: game.developer || '',
     publisher: game.publisher || '',
+    nsfw: Boolean(game.nsfw),
   })
 
   useEffect(() => {
@@ -69,6 +72,7 @@ export default function GameBasicInfoDialog({
       tags: (game.tags || []).join(', '),
       developer: game.developer || '',
       publisher: game.publisher || '',
+      nsfw: Boolean(game.nsfw),
     })
   }, [
     open,
@@ -81,6 +85,7 @@ export default function GameBasicInfoDialog({
     game.tags,
     game.developer,
     game.publisher,
+    game.nsfw,
   ])
 
   const setField = (key: keyof FormValues, value: string) => {
@@ -103,6 +108,7 @@ export default function GameBasicInfoDialog({
           .filter(Boolean),
         developer: formValues.developer,
         publisher: formValues.publisher,
+        nsfw: formValues.nsfw,
       })
 
       await queryClient.invalidateQueries({
@@ -127,12 +133,12 @@ export default function GameBasicInfoDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-xl">
+      <DialogContent className="flex max-h-[85vh] flex-col overflow-hidden sm:max-w-xl">
         <DialogHeader>
           <DialogTitle>修改基本信息</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <div className="min-h-0 flex-1 space-y-4 overflow-y-auto pr-1">
           <div className="space-y-2">
             <div className="text-sm">游戏名称</div>
             <Input
@@ -191,6 +197,18 @@ export default function GameBasicInfoDialog({
             <Input
               value={formValues.publisher}
               onChange={(e) => setField('publisher', e.target.value)}
+            />
+          </div>
+          <div className="flex items-center justify-between rounded-md border px-3 py-2">
+            <div className="space-y-0.5">
+              <div className="text-sm">NSFW</div>
+            </div>
+            <Switch
+              checked={formValues.nsfw}
+              onCheckedChange={(checked) =>
+                setFormValues((prev) => ({ ...prev, nsfw: checked }))
+              }
+              aria-label="切换 NSFW 状态"
             />
           </div>
           <div className="space-y-2">
