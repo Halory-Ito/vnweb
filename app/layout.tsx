@@ -9,6 +9,7 @@ dayjs.locale('zh-cn') // 使用本地化语言
 
 import AppLayout from '@/components/layout/app-layout'
 import WebsiteTitleUpdater from '@/components/layout/website-title-updater'
+import JotaiProvider from '@/components/providers/jotai-provider'
 import TanStackProvider from '@/components/providers/tanstack-provider'
 import { SidebarProvider } from '@/components/ui/sidebar'
 import { Toaster } from '@/components/ui/sonner'
@@ -33,20 +34,22 @@ export default function RootLayout({
     <html lang="zh" className={LXGWWenKai.className} suppressHydrationWarning>
       <body>
         <TanStackProvider>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
-            <SidebarProvider>
-              <TooltipProvider>
-                <AppLayout>{children}</AppLayout>
-                <Toaster />
-                <WebsiteTitleUpdater />
-              </TooltipProvider>
-            </SidebarProvider>
-          </ThemeProvider>
+          <JotaiProvider>
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="system"
+              enableSystem
+              disableTransitionOnChange
+            >
+              <SidebarProvider>
+                <TooltipProvider>
+                  <AppLayout>{children}</AppLayout>
+                  <Toaster />
+                  <WebsiteTitleUpdater />
+                </TooltipProvider>
+              </SidebarProvider>
+            </ThemeProvider>
+          </JotaiProvider>
         </TanStackProvider>
       </body>
     </html>
