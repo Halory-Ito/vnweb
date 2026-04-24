@@ -4,7 +4,6 @@ import { useQuery } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import {
   ArrowLeftIcon,
-  BookTextIcon,
   Clock3Icon,
   ImageIcon,
   PencilIcon,
@@ -163,6 +162,8 @@ export default function GameMemoryDetailPage() {
     () => extractTocItems(item?.description || ''),
     [item?.description],
   )
+  const hasToc = tocItems.length > 0
+
   const handleContentRendered = useCallback(() => {
     setContentRenderVersion((previous) => previous + 1)
   }, [])
@@ -345,7 +346,9 @@ export default function GameMemoryDetailPage() {
       <div className="relative mx-auto w-full max-w-7xl px-4 pt-4 pb-12 md:px-6">
         {/* <div className="via-background to-background pointer-events-none absolute inset-x-0 top-0 -z-10 h-56 bg-linear-to-b from-amber-300/20" /> */}
 
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_280px]">
+        <div
+          className={`grid gap-6 ${hasToc ? 'lg:grid-cols-[minmax(0,1fr)_280px]' : 'lg:grid-cols-1'}`}
+        >
           <main className="space-y-6">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <Button asChild variant="outline" className="backdrop-blur-sm">
@@ -408,10 +411,6 @@ export default function GameMemoryDetailPage() {
                         更新于{' '}
                         {dayjs(item.updatedAt).format('YYYY-MM-DD HH:mm')}
                       </span>
-                      <span className="inline-flex items-center gap-1.5">
-                        <BookTextIcon className="size-3" />
-                        博客风格阅读
-                      </span>
                     </CardDescription>
                   </CardHeader>
                 </Card>
@@ -429,25 +428,16 @@ export default function GameMemoryDetailPage() {
             )}
           </main>
 
-          <aside className="h-fit lg:sticky lg:top-16">
-            <Card
-              variant="outline"
-              className="via-background to-background overflow-hidden border-amber-200/40 bg-linear-to-b from-amber-100/35 shadow-sm"
-            >
-              <CardHeader className="border-border/70 border-b pb-3">
-                <CardTitle className="flex items-center gap-2 text-base font-semibold tracking-wide">
-                  <span className="inline-flex size-6 items-center justify-center rounded-full bg-amber-500/20 text-xs font-bold text-amber-700 dark:text-amber-300">
-                    目
-                  </span>
-                  目录导航
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="max-h-[65vh] overflow-y-auto px-3 py-3">
-                {tocItems.length === 0 ? (
-                  <p className="text-muted-foreground text-sm">
-                    当前内容没有可生成目录的 Markdown 标题。
-                  </p>
-                ) : (
+          {hasToc ? (
+            <aside className="h-fit lg:sticky lg:top-16">
+              <Card
+                variant="outline"
+                className="via-background to-background overflow-hidden border-amber-200/40 bg-linear-to-b from-amber-100/35 shadow-sm"
+              >
+                <CardHeader className="border-border/70 border-b pb-3">
+                  <CardTitle className="flex items-center gap-2 text-base font-semibold tracking-wide"></CardTitle>
+                </CardHeader>
+                <CardContent className="max-h-[65vh] overflow-y-auto px-3 py-3">
                   <nav className="space-y-1.5">
                     {tocItems.map((tocItem) => {
                       const active = activeHeadingId === tocItem.id
@@ -498,10 +488,10 @@ export default function GameMemoryDetailPage() {
                       )
                     })}
                   </nav>
-                )}
-              </CardContent>
-            </Card>
-          </aside>
+                </CardContent>
+              </Card>
+            </aside>
+          ) : null}
         </div>
       </div>
 

@@ -257,11 +257,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
       <div className="app-glass-overlay pointer-events-none absolute inset-0 z-10" />
 
-      <div className="relative z-20 flex h-full w-full">
+      <div className="relative z-20 flex h-full w-full min-w-0 overflow-hidden">
         <AppSideBar />
-        <div className="w-full">
+        <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
           <AppHeader />
-          <div>{children}</div>
+          <div className="min-w-0 flex-1 overflow-hidden">{children}</div>
         </div>
       </div>
     </div>

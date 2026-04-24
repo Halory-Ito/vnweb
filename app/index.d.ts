@@ -11,5 +11,6 @@ type GameCardProps = {
   isSelected?: boolean
   showSelection?: boolean
   selectionMode?: boolean
+  modifierSelectEnabled?: boolean
   onToggleSelect?: (id: string) => void
 }

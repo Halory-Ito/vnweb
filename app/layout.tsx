@@ -30,7 +30,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className={LXGWWenKai.className} suppressHydrationWarning>
+    <html lang="zh" className={LXGWWenKai.className} suppressHydrationWarning>
       <body>
         <TanStackProvider>
           <ThemeProvider

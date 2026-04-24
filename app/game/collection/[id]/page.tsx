@@ -218,6 +218,7 @@ export default function CollectionDetailPage() {
 
   const refreshAll = async () => {
     await queryClient.invalidateQueries({ queryKey: ['collections'] })
+    await queryClient.invalidateQueries({ queryKey: ['game-sidebar'] })
     await queryClient.invalidateQueries({ queryKey: ['game'] })
     await queryClient.invalidateQueries({ queryKey: ['game-cards'] })
     router.refresh()

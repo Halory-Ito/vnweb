@@ -4,10 +4,13 @@ import { useQuery } from '@tanstack/react-query'
 import {
   BoxIcon,
   HomeIcon,
+  MapIcon,
+  MusicIcon,
   PuzzleIcon,
   ScanIcon,
   SettingsIcon,
   ShoppingBasketIcon,
+  VideoIcon,
 } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -46,6 +49,9 @@ const contentItems: SidebarItem[] = [
   { title: '主页', href: '/game', icon: HomeIcon },
   { title: '记录', href: '/record', icon: BoxIcon },
   { title: '扫描', href: '/scan', icon: ScanIcon },
+  { title: '攻略', href: '/guide', icon: MapIcon },
+  { title: 'PV', href: '/pv', icon: VideoIcon },
+  { title: 'OST', href: '/ost', icon: MusicIcon },
 ]
 
 const footerItems: SidebarItem[] = [
@@ -138,10 +144,16 @@ export default function AppSideBar() {
       <SidebarHeader className="items-center pt-4">
         <Link
           href="/game"
-          className="flex h-10 w-10 items-center justify-center rounded-md border font-semibold"
+          className="flex h-10 w-10 items-center justify-center rounded-md font-semibold"
           aria-label="VNWeb Logo"
         >
-          VN
+          <Image
+            src="/LOGO.png"
+            alt="VNWeb Logo"
+            width={36}
+            height={36}
+            className="object-contain"
+          />
         </Link>
       </SidebarHeader>
 

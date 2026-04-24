@@ -7,7 +7,7 @@ export default function Record() {
   return (
     <Tabs
       defaultValue="overview"
-      className="max-h-[calc(100vh-144px)] w-full overflow-y-scroll"
+      className="max-h-[calc(100vh-144px)] w-full overflow-y-scroll p-4"
     >
       <TabsList className="dark:bg-transparent">
         <TabsTrigger value="overview">总览</TabsTrigger>

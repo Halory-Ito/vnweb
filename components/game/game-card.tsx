@@ -35,6 +35,7 @@ export default function GameCard(props: GameCardProps) {
   const showSelection = Boolean(props.showSelection)
   const isSelected = Boolean(props.isSelected)
   const selectionMode = Boolean(props.selectionMode)
+  const modifierSelectEnabled = Boolean(props.modifierSelectEnabled)
 
   const gameHref = props.href || `/game/info/${props.id}`
 
@@ -122,6 +123,16 @@ export default function GameCard(props: GameCardProps) {
   }
 
   const handleCardClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
+    if (
+      modifierSelectEnabled &&
+      props.onToggleSelect &&
+      (event.ctrlKey || event.metaKey)
+    ) {
+      event.preventDefault()
+      props.onToggleSelect(props.id)
+      return
+    }
+
     if (!showSelection || !selectionMode || !props.onToggleSelect) {
       return
     }

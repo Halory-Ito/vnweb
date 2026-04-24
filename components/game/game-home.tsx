@@ -54,6 +54,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import {
   addGameToCollection,
   createCollection,
+  deleteCollectionById,
   deleteGameById,
   getCollections,
   getGameCardList,
@@ -74,6 +75,12 @@ type RecentGameProps = SelectableGameProps & {
 
 type MyCollectionProps = {
   collections: CollectionsData
+  selectedCollectionIds: string[]
+  isDeletingCollections: boolean
+  onToggleSelectCollection: (id: string) => void
+  onClearCollectionSelection: () => void
+  onSelectAllCollections: () => void
+  onOpenDeleteCollections: () => void
 }
 
 type AllGameProps = SelectableGameProps & {
@@ -181,6 +188,12 @@ export default function GameHome() {
   const [isAddingToCollection, setIsAddingToCollection] = useState(false)
   const [isDeletingGames, setIsDeletingGames] = useState(false)
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
+  const [selectedCollectionIds, setSelectedCollectionIds] = useState<string[]>(
+    [],
+  )
+  const [isDeletingCollections, setIsDeletingCollections] = useState(false)
+  const [deleteCollectionsConfirmOpen, setDeleteCollectionsConfirmOpen] =
+    useState(false)
   const [metadataDialogOpen, setMetadataDialogOpen] = useState(false)
   const [createCollectionOpen, setCreateCollectionOpen] = useState(false)
   const [newCollectionName, setNewCollectionName] = useState('')
@@ -212,6 +225,19 @@ export default function GameHome() {
       return next
     })
   }, [allGameIds, setSelectedGameIds])
+
+  useEffect(() => {
+    const allCollectionIdSet = new Set(
+      collections.map((item) => `collection-${item.id}`),
+    )
+    setSelectedCollectionIds((prev) => {
+      const next = prev.filter((id) => allCollectionIdSet.has(id))
+      if (next.length === prev.length) {
+        return prev
+      }
+      return next
+    })
+  }, [collections])
 
   if (gameCardsQuery.isLoading || collectionsQuery.isLoading) {
     return <GameHomeSkeleton />
@@ -246,7 +272,7 @@ export default function GameHome() {
     )
   }
 
-  if (gameCards.length === 0) {
+  if (gameCards.length === 0 && collections.length === 0) {
     return (
       <GameHomeEmptyState
         icon={SearchX}
@@ -296,6 +322,7 @@ export default function GameHome() {
       ).length
 
       await queryClient.invalidateQueries({ queryKey: ['collections'] })
+      await queryClient.invalidateQueries({ queryKey: ['game-sidebar'] })
       router.refresh()
       toast.success(`已添加 ${successCount}/${selectedGameIds.length} 项`)
     } catch (error) {
@@ -362,6 +389,66 @@ export default function GameHome() {
     }
   }
 
+  const handleToggleCollectionSelect = (id: string) => {
+    setSelectedCollectionIds((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
+    )
+  }
+
+  const handleClearCollectionSelection = () => {
+    setSelectedCollectionIds([])
+  }
+
+  const handleSelectAllCollections = () => {
+    setSelectedCollectionIds(
+      collections.map((collection) => `collection-${collection.id}`),
+    )
+  }
+
+  const handleDeleteCollections = async () => {
+    if (selectedCollectionIds.length === 0) {
+      return
+    }
+
+    const collectionIds = selectedCollectionIds
+      .map((id) => Number(id.replace('collection-', '')))
+      .filter((id) => Number.isInteger(id) && id > 0)
+
+    if (collectionIds.length === 0) {
+      toast.error('未找到可删除的收藏夹')
+      return
+    }
+
+    setIsDeletingCollections(true)
+    try {
+      const results = await Promise.allSettled(
+        collectionIds.map((id) => deleteCollectionById(id)),
+      )
+      const successCount = results.filter(
+        (item) => item.status === 'fulfilled',
+      ).length
+
+      await queryClient.invalidateQueries({ queryKey: ['collections'] })
+      await queryClient.invalidateQueries({ queryKey: ['game-sidebar'] })
+      setSelectedCollectionIds([])
+      setDeleteCollectionsConfirmOpen(false)
+      router.refresh()
+      toast.success(`已删除 ${successCount}/${collectionIds.length} 个收藏夹`)
+    } catch (error) {
+      const err = error as {
+        response?: {
+          data?: {
+            error?: string
+          }
+        }
+        message?: string
+      }
+      toast.error(err.response?.data?.error || err.message || '删除收藏夹失败')
+    } finally {
+      setIsDeletingCollections(false)
+    }
+  }
+
   return (
     <div className="max-h-[calc(100vh-70px)] w-full space-y-12 overflow-x-hidden overflow-y-scroll p-4">
       <RecentGame
@@ -370,7 +457,15 @@ export default function GameHome() {
         selectionMode={selectionMode}
         onToggleSelect={handleToggleSelect}
       />
-      <MyColletion collections={collections} />
+      <MyColletion
+        collections={collections}
+        selectedCollectionIds={selectedCollectionIds}
+        isDeletingCollections={isDeletingCollections}
+        onToggleSelectCollection={handleToggleCollectionSelect}
+        onClearCollectionSelection={handleClearCollectionSelection}
+        onSelectAllCollections={handleSelectAllCollections}
+        onOpenDeleteCollections={() => setDeleteCollectionsConfirmOpen(true)}
+      />
       <AllGame
         gameCards={gameCards}
         selectedGameIds={selectedGameIds}
@@ -518,6 +613,36 @@ export default function GameHome() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <AlertDialog
+        open={deleteCollectionsConfirmOpen}
+        onOpenChange={setDeleteCollectionsConfirmOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>删除已选收藏夹</AlertDialogTitle>
+            <AlertDialogDescription>
+              确定删除已选择的 {selectedCollectionIds.length}{' '}
+              个收藏夹吗？此操作不可撤销。
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeletingCollections}>
+              取消
+            </AlertDialogCancel>
+            <AlertDialogAction
+              variant="destructive"
+              disabled={isDeletingCollections}
+              onClick={(event) => {
+                event.preventDefault()
+                void handleDeleteCollections()
+              }}
+            >
+              {isDeletingCollections ? '删除中...' : '确认删除'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
@@ -595,7 +720,15 @@ const RecentGame = ({
   )
 }
 
-const MyColletion = ({ collections }: MyCollectionProps) => {
+const MyColletion = ({
+  collections,
+  selectedCollectionIds,
+  isDeletingCollections,
+  onToggleSelectCollection,
+  onClearCollectionSelection,
+  onSelectAllCollections,
+  onOpenDeleteCollections,
+}: MyCollectionProps) => {
   const scrollRef = useRef<HTMLDivElement>(null)
 
   const scrollCards = (direction: 'left' | 'right') => {
@@ -606,32 +739,70 @@ const MyColletion = ({ collections }: MyCollectionProps) => {
     })
   }
 
-  const items: GameCardProps[] = collections
-    .filter((collection) => collection.games.length > 0)
-    .map((collection) => {
-      const firstGame = collection.games[0]
-      return {
-        id: `collection-${collection.id}`,
-        href: `/game/collection/${collection.id}`,
-        title: collection.name,
-        cover: collection.firstGameCover || firstGame.cover || '/cover/wa2.jpg',
-        playTime: 0,
-        publishAt: '',
-        lastRunAt: '',
-        addedAt: '',
-        rating: 0,
-      }
-    })
+  const items: GameCardProps[] = collections.map((collection) => {
+    const firstGame = collection.games[0]
+    return {
+      id: `collection-${collection.id}`,
+      href: `/game/collection/${collection.id}`,
+      title: collection.name,
+      cover: collection.firstGameCover || firstGame?.cover || '/LOGO.png',
+      playTime: 0,
+      publishAt: '',
+      lastRunAt: '',
+      addedAt: '',
+      rating: 0,
+    }
+  })
+
+  const collectionSelectionMode = selectedCollectionIds.length > 0
+
   return (
     <div className="h-full w-full">
-      <div className="bg-background/60 mb-4 flex items-center justify-between rounded-xl border p-3">
+      <div className="bg-background/60 mb-4 flex flex-col gap-3 rounded-xl border p-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
           <div className="text-xl font-bold tracking-tight">我的收藏</div>
           <span className="text-muted-foreground rounded-full border px-2 py-0.5 text-xs">
             共 {items.length} 项
           </span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+          {collectionSelectionMode ? (
+            <>
+              <Button
+                variant="destructive"
+                size="sm"
+                disabled={isDeletingCollections}
+                onClick={onOpenDeleteCollections}
+              >
+                <Trash2Icon className="size-4" />
+                删除收藏夹
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onClearCollectionSelection}
+              >
+                <XIcon className="size-4" />
+                取消
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={selectedCollectionIds.length === items.length}
+                onClick={onSelectAllCollections}
+              >
+                <CheckIcon className="size-4" />
+                全选
+              </Button>
+              <div className="text-sm font-medium">
+                已选择 {selectedCollectionIds.length} 项
+              </div>
+            </>
+          ) : (
+            <div className="text-muted-foreground text-xs">
+              可按住 Ctrl 或 ⌘ 点击选择收藏夹
+            </div>
+          )}
           <Button
             variant="outline"
             size="icon"
@@ -658,7 +829,14 @@ const MyColletion = ({ collections }: MyCollectionProps) => {
       >
         {items.map((item) => (
           <div key={item.id} className="shrink-0">
-            <GameCard {...item} />
+            <GameCard
+              {...item}
+              isSelected={selectedCollectionIds.includes(item.id)}
+              showSelection
+              selectionMode={collectionSelectionMode}
+              modifierSelectEnabled
+              onToggleSelect={onToggleSelectCollection}
+            />
           </div>
         ))}
       </div>
@@ -733,7 +911,7 @@ const AllGame = ({
           </Button>
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-8">
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
         {items.map((item) => (
           <GameCard
             key={item.id}

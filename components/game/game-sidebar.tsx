@@ -50,13 +50,17 @@ export default function GameSidebar() {
   }, [])
 
   return (
-    <Accordion type="multiple" className="w-full">
+    <Accordion type="multiple" className="w-full min-w-0 overflow-x-hidden">
       {items.map((item) => (
-        <AccordionItem key={item.id} value={item.id} className="border-none">
-          <AccordionTrigger className="cursor-pointer p-2 font-bold hover:no-underline">
+        <AccordionItem
+          key={item.id}
+          value={item.id}
+          className="min-w-0 border-none"
+        >
+          <AccordionTrigger className="min-w-0 cursor-pointer p-2 font-bold hover:no-underline">
             {`${hasActiveFilter && item.id === 'all' ? '筛选结果' : item.title} (${item.items.length})`}
           </AccordionTrigger>
-          <AccordionContent className="space-y-2 p-2">
+          <AccordionContent className="min-w-0 space-y-2 p-2">
             {item.items.map((subItem) => (
               <GameSidebarItem
                 key={subItem.id}

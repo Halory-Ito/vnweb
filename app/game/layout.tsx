@@ -17,12 +17,21 @@ export default function GameLayout({
   children: React.ReactNode
 }) {
   return (
-    <ResizablePanelGroup orientation="horizontal" className="w-full">
-      <ResizablePanel className="h-full" defaultSize="16%" maxSize={'32%'}>
+    <ResizablePanelGroup
+      orientation="horizontal"
+      className="w-full min-w-0 overflow-hidden"
+    >
+      <ResizablePanel
+        className="h-full min-w-0 overflow-x-hidden"
+        defaultSize="16%"
+        maxSize={'32%'}
+      >
         <GameSidebar />
       </ResizablePanel>
       <ResizableHandle className="h-[calc(100vh-70px)]" />
-      <ResizablePanel defaultSize="75%">{children}</ResizablePanel>
+      <ResizablePanel className="min-w-0 overflow-x-hidden" defaultSize="75%">
+        {children}
+      </ResizablePanel>
     </ResizablePanelGroup>
   )
 }

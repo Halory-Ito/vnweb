@@ -227,6 +227,7 @@ export const GameSidebarItem = ({
       const collection = await createCollection(collectionName)
       await addGameToCollection(collection.id, gameId)
       await queryClient.invalidateQueries({ queryKey: ['collections'] })
+      await queryClient.invalidateQueries({ queryKey: ['game-sidebar'] })
       router.refresh()
       toast.success(`已添加到「${collection.name}」`)
     } catch (error) {
@@ -259,7 +260,7 @@ export const GameSidebarItem = ({
       <ContextMenuTrigger asChild>
         <Link
           className={cn(
-            'flex items-center gap-2 bg-background px-1 py-0.5 transition-colors hover:bg-accent hover:text-accent-foreground dark:bg-transparent dark:hover:bg-accent/80',
+            'flex w-full min-w-0 items-center gap-2 overflow-hidden bg-background px-1 py-0.5 transition-colors hover:bg-accent hover:text-accent-foreground dark:bg-transparent dark:hover:bg-accent/80',
             isSelected &&
               'bg-accent/70 text-accent-foreground dark:bg-accent/60 dark:text-accent-foreground',
             isActive &&
