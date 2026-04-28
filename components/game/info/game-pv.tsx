@@ -5,6 +5,12 @@ import Hls from 'hls.js'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 
+import {
+  isEmbedVideoUrl,
+  isHlsUrl,
+  toBilibiliEmbedUrl,
+  toYouTubeEmbedUrl,
+} from '@/app/pv/_ui/utils'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -37,8 +43,14 @@ export default function GamePV({ gameId }: GamePVProps) {
   const [isBinding, setIsBinding] = useState(false)
 
   const videoRef = useRef<HTMLVideoElement | null>(null)
+  const hlsRef = useRef<Hls | null>(null)
 
-  const isHlsUrl = (url: string) => /\.m3u8(?:$|[?#])/i.test(url)
+  const disposeHls = () => {
+    if (hlsRef.current) {
+      hlsRef.current.destroy()
+      hlsRef.current = null
+    }
+  }
 
   const { data, isLoading, error, refetch, isRefetching } = useQuery({
     queryKey: ['game-pvs', gameId],
@@ -56,6 +68,28 @@ export default function GamePV({ gameId }: GamePVProps) {
     () => items.find((item) => item.id === selectedId) ?? null,
     [items, selectedId],
   )
+
+  const playingMode = useMemo(() => {
+    if (!selectedItem?.url) {
+      return 'none' as const
+    }
+
+    if (isEmbedVideoUrl(selectedItem.url)) {
+      return 'embed' as const
+    }
+
+    return 'direct' as const
+  }, [selectedItem])
+
+  const playingEmbedUrl = useMemo(() => {
+    if (!selectedItem?.url) {
+      return ''
+    }
+    return (
+      toYouTubeEmbedUrl(selectedItem.url) ||
+      toBilibiliEmbedUrl(selectedItem.url)
+    )
+  }, [selectedItem])
 
   useEffect(() => {
     setItems(data?.items ?? [])
@@ -137,40 +171,66 @@ export default function GamePV({ gameId }: GamePVProps) {
     const video = videoRef.current
     const url = selectedItem?.url?.trim()
 
-    if (!video || !url) {
+    if (!video || !url || playingMode !== 'direct') {
+      disposeHls()
       return
     }
 
+    disposeHls()
+
     if (!isHlsUrl(url)) {
-      video.src = url
-      video.load()
+      if (video.src !== url) {
+        if (url.includes('steamstatic.com')) {
+          video.crossOrigin = 'anonymous'
+        } else {
+          video.crossOrigin = null
+        }
+        video.src = url
+        video.load()
+        void video.play().catch(() => {})
+      }
       return
     }
 
     if (video.canPlayType('application/vnd.apple.mpegurl')) {
-      video.src = url
-      video.load()
+      if (video.src !== url) {
+        video.crossOrigin = null
+        video.src = url
+        video.load()
+        void video.play().catch(() => {})
+      }
       return
     }
 
     if (Hls.isSupported()) {
       const hls = new Hls()
+      hlsRef.current = hls
       hls.loadSource(url)
       hls.attachMedia(video)
 
+      hls.on(Hls.Events.MANIFEST_PARSED, () => {
+        void video.play().catch(() => {})
+      })
+
       hls.on(Hls.Events.ERROR, (_event, data) => {
-        if (data.fatal) {
+        if (data.fatal && video.isConnected) {
           toast.error('HLS 视频播放失败，请稍后重试')
         }
       })
 
       return () => {
-        hls.destroy()
+        disposeHls()
       }
     }
 
     toast.error('当前浏览器不支持 HLS 播放')
-  }, [selectedItem])
+  }, [selectedItem, playingMode])
+
+  useEffect(() => {
+    return () => {
+      disposeHls()
+    }
+  }, [])
 
   const handleConfirmBindSteamId = async () => {
     const raw = steamIdInput.trim()
@@ -277,13 +337,26 @@ export default function GamePV({ gameId }: GamePVProps) {
 
       <div className="space-y-3 rounded-md border p-3">
         {selectedItem ? (
-          <video
-            ref={videoRef}
-            key={selectedItem.id}
-            controls
-            preload="metadata"
-            className="h-auto w-full rounded-md border bg-black"
-          />
+          playingMode === 'embed' ? (
+            <iframe
+              key={selectedItem.id}
+              src={playingEmbedUrl || undefined}
+              title={selectedItem.name || 'PV 播放'}
+              className="aspect-video w-full rounded-md border bg-black object-contain"
+              frameBorder="0"
+              scrolling="no"
+              allowFullScreen
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            />
+          ) : (
+            <video
+              ref={videoRef}
+              key={selectedItem.id}
+              controls
+              preload="metadata"
+              className="aspect-video h-auto w-full rounded-md border bg-black object-contain"
+            />
+          )
         ) : (
           <div className="text-muted-foreground flex min-h-60 items-center justify-center rounded-md border text-sm">
             请选择一个 PV 进行播放
