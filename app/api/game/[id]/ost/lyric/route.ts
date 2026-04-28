@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 
-import { GameInfoTable, GameOstTable } from '@/db/schema'
+import { GameInfoTable, GameOstSongsTable } from '@/db/schema'
 import { db } from '@/lib/drizzle'
 
 const MAX_UPLOAD_SIZE = 2 * 1024 * 1024
@@ -74,28 +74,33 @@ const uploadOstLyric = async (
 
     const rows = await db
       .select({
-        id: GameOstTable.id,
-        url: GameOstTable.url,
+        id: GameOstSongsTable.id,
+        ostId: GameOstSongsTable.ostId,
+        url: GameOstSongsTable.url,
+        name: GameOstSongsTable.name,
       })
-      .from(GameOstTable)
-      .where(and(eq(GameOstTable.id, itemId), eq(GameOstTable.gameId, gameId)))
+      .from(GameOstSongsTable)
+      .where(
+        and(
+          eq(GameOstSongsTable.id, itemId),
+          eq(GameOstSongsTable.gameId, gameId),
+        ),
+      )
       .limit(1)
 
     const item = rows[0]
     if (!item) {
-      return NextResponse.json({ error: 'OST item not found' }, { status: 404 })
+      return NextResponse.json({ error: 'OST song not found' }, { status: 404 })
     }
 
-    if (!item.url.startsWith(`/assets/ost/${gameId}/`)) {
+    if (!item.url.startsWith(`/assets/ost/`)) {
       return NextResponse.json(
         { error: '仅支持为本地 OST 文件上传歌词' },
         { status: 400 },
       )
     }
 
-    const audioPath = item.url.split('?')[0]
-    const parsed = path.posix.parse(audioPath)
-    const safeBaseName = normalizeName(parsed.name) || `ost_${itemId}`
+    const safeBaseName = normalizeName(item.name) || `song_${itemId}`
     const targetFileName = `${safeBaseName}.lrc`
 
     const targetDir = path.join(
@@ -103,7 +108,7 @@ const uploadOstLyric = async (
       'public',
       'assets',
       'ost',
-      String(gameId),
+      String(item.ostId),
     )
     const targetPath = path.join(targetDir, targetFileName)
 
@@ -112,10 +117,21 @@ const uploadOstLyric = async (
     const bytes = await file.arrayBuffer()
     await fs.writeFile(targetPath, Buffer.from(bytes))
 
+    const lyricsUrl = `/assets/ost/${item.ostId}/${targetFileName}`
+
+    // 保存歌词记录到数据库
+    const { GameOstLyricsTable } = await import('@/db/schema')
+    const now = new Date().toISOString()
+    await db.insert(GameOstLyricsTable).values({
+      ostSongId: itemId,
+      lyricsUrl,
+      updatedAt: now,
+    })
+
     return NextResponse.json({
       data: {
         itemId,
-        path: `/assets/ost/${gameId}/${targetFileName}`,
+        path: lyricsUrl,
       },
     })
   } catch (error) {

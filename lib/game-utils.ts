@@ -894,6 +894,88 @@ export const getGameCardList = async (payload?: { includeNsfw?: boolean }) => {
   return (response.data as { data: GameCardListItem[] }).data
 }
 
+export type OstManageItem = {
+  id: number
+  gameId: number
+  name: string
+  cover: string
+  resource: string
+  createdAt: string | null
+  updatedAt: string | null
+  gameName: string
+  gameNameCn: string
+  gameCover: string
+  gameBg: string
+}
+
+export const getOstManageList = async (params?: {
+  keyword?: string
+  gameId?: number
+}) => {
+  const response = await api.get('/ost', {
+    params: {
+      keyword: params?.keyword ?? '',
+      gameId: params?.gameId ?? undefined,
+    },
+  })
+  return (response.data as { data: { items: OstManageItem[] } }).data
+}
+
+export const createOstManageItem = async (payload: {
+  gameId: number
+  name: string
+  cover: string
+  resource?: string
+  songs?: Array<{
+    name: string
+    url: string
+    mediaType?: string
+  }>
+}) => {
+  const response = await api.post('/ost', payload)
+  return response.data as {
+    data: {
+      item: {
+        id: number
+        gameId: number
+        name: string
+        cover: string
+        resource: string
+        createdAt: string | null
+        updatedAt: string | null
+      }
+    }
+  }
+}
+
+export const updateOstManageItem = async (
+  id: number,
+  payload: {
+    gameId: number
+    name: string
+    cover: string
+    resource?: string
+  },
+) => {
+  const response = await api.patch(`/ost/${id}`, payload)
+  return response.data as {
+    data: {
+      updated: boolean
+      id: number
+    }
+  }
+}
+
+export const deleteOstManageItem = async (id: number) => {
+  const response = await api.delete(`/ost/${id}`)
+  return response.data as {
+    data: {
+      deleted: boolean
+      id: number
+    }
+  }
+}
+
 export const batchUpdateGameMetadata = async (payload: {
   gameIds: number[]
   provider: 'bangumi' | 'steamgriddb'

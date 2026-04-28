@@ -44,7 +44,8 @@ const getOsts = async (
       .select({
         id: GameOstTable.id,
         name: GameOstTable.name,
-        url: GameOstTable.url,
+        cover: GameOstTable.cover,
+        resource: GameOstTable.resource,
         createdAt: GameOstTable.createdAt,
         updatedAt: GameOstTable.updatedAt,
       })
@@ -79,15 +80,16 @@ const createOst = async (
 
     const payload = (await req.json().catch(() => ({}))) as {
       name?: string
-      url?: string
+      cover?: string
+      resource?: string
     }
 
     const name = normalizeText(payload.name)
-    const url = normalizeText(payload.url)
+    const cover = normalizeText(payload.cover)
 
-    if (!name || !url) {
+    if (!name || !cover) {
       return NextResponse.json(
-        { error: 'name and url are required' },
+        { error: 'name and cover are required' },
         { status: 400 },
       )
     }
@@ -98,14 +100,16 @@ const createOst = async (
       .values({
         gameId,
         name,
-        url,
+        cover,
+        resource: normalizeText(payload.resource || ''),
         createdAt: now,
         updatedAt: now,
       })
       .returning({
         id: GameOstTable.id,
         name: GameOstTable.name,
-        url: GameOstTable.url,
+        cover: GameOstTable.cover,
+        resource: GameOstTable.resource,
         createdAt: GameOstTable.createdAt,
         updatedAt: GameOstTable.updatedAt,
       })
@@ -138,16 +142,17 @@ const updateOst = async (
     const payload = (await req.json().catch(() => ({}))) as {
       itemId?: number
       name?: string
-      url?: string
+      cover?: string
+      resource?: string
     }
 
     const itemId = Number(payload.itemId)
     const name = normalizeText(payload.name)
-    const url = normalizeText(payload.url)
+    const cover = normalizeText(payload.cover)
 
-    if (!Number.isInteger(itemId) || itemId <= 0 || !name || !url) {
+    if (!Number.isInteger(itemId) || itemId <= 0 || !name || !cover) {
       return NextResponse.json(
-        { error: 'itemId, name and url are required' },
+        { error: 'itemId, name and cover are required' },
         { status: 400 },
       )
     }
@@ -157,14 +162,16 @@ const updateOst = async (
       .update(GameOstTable)
       .set({
         name,
-        url,
+        cover,
+        resource: normalizeText(payload.resource || ''),
         updatedAt: now,
       })
       .where(and(eq(GameOstTable.id, itemId), eq(GameOstTable.gameId, gameId)))
       .returning({
         id: GameOstTable.id,
         name: GameOstTable.name,
-        url: GameOstTable.url,
+        cover: GameOstTable.cover,
+        resource: GameOstTable.resource,
         createdAt: GameOstTable.createdAt,
         updatedAt: GameOstTable.updatedAt,
       })

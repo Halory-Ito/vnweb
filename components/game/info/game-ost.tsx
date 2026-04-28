@@ -1,26 +1,46 @@
 'use client'
 
 import {
+  ChevronLeft,
   ListOrdered,
+  Palette,
   Pause,
   Play,
   Repeat,
   Repeat1,
+  RotateCcw,
   Shuffle,
   SkipBack,
   SkipForward,
   Volume2,
   VolumeX,
+  Layers,
 } from 'lucide-react'
-import { useEffect, useMemo, useRef, useState, type WheelEvent } from 'react'
+import { useTheme } from 'next-themes'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
+import { ScrollArea } from '@/components/ui/scroll-area'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Slider } from '@/components/ui/slider'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { getGameOstsById, type GameMediaLinkItem } from '@/lib/game-utils'
+import { api } from '@/lib/request-utils'
 
+// --- 工具函数：Hex 转 RGBA ---
+const hexToRgba = (hex: string, opacity: number) => {
+  if (!hex) return 'rgba(255, 255, 255, 1)'
+  const r = parseInt(hex.slice(1, 3), 16)
+  const g = parseInt(hex.slice(3, 5), 16)
+  const b = parseInt(hex.slice(5, 7), 16)
+  return `rgba(${r}, ${g}, ${b}, ${opacity / 100})`
+}
+
+// --- 类型定义 ---
 type GameOSTProps = {
   gameId: number
   cover: string
@@ -28,13 +48,30 @@ type GameOSTProps = {
 }
 
 type PlayMode = 'shuffle' | 'sequence' | 'list-loop' | 'single-loop'
-type ViewMode = 'lyric' | 'cover'
+type ViewMode = 'album' | 'song'
+
+type OstAlbumItem = {
+  id: number
+  gameId: number
+  name: string
+  cover: string
+  resource: string
+}
+
+type OstSongItem = {
+  id: number
+  gameId: number
+  ostId: number
+  name: string
+  url: string
+  mediaType: string
+}
 
 const MODE_LABELS: Record<PlayMode, string> = {
-  shuffle: '随机播放',
-  sequence: '顺序播放',
-  'list-loop': '列表循环',
-  'single-loop': '单曲循环',
+  shuffle: '随机',
+  sequence: '顺序',
+  'list-loop': '循环',
+  'single-loop': '单曲',
 }
 
 const MODE_ORDER: PlayMode[] = [
@@ -44,749 +81,485 @@ const MODE_ORDER: PlayMode[] = [
   'single-loop',
 ]
 
-type LyricLine = {
-  time: number
-  text: string
-}
-
 const formatTime = (seconds: number) => {
-  if (!Number.isFinite(seconds) || seconds < 0) {
-    return '00:00'
-  }
+  if (!Number.isFinite(seconds) || seconds < 0) return '00:00'
   const safe = Math.floor(seconds)
   const minute = Math.floor(safe / 60)
   const second = safe % 60
   return `${String(minute).padStart(2, '0')}:${String(second).padStart(2, '0')}`
 }
 
-const toLyricUrl = (audioUrl: string) => {
-  const clean = audioUrl.split('?')[0]
-  const dotIndex = clean.lastIndexOf('.')
-  if (dotIndex < 0) {
-    return `${clean}.lrc`
-  }
-  return `${clean.slice(0, dotIndex)}.lrc`
-}
-
-const parseLrc = (raw: string): LyricLine[] => {
-  const lines = raw.split(/\r?\n/)
-  const parsed: LyricLine[] = []
-
-  for (const line of lines) {
-    const matches = [...line.matchAll(/\[(\d{1,2}):(\d{1,2}(?:\.\d{1,3})?)\]/g)]
-    if (matches.length === 0) {
-      continue
-    }
-
-    const text = line
-      .replace(/\[(\d{1,2}):(\d{1,2}(?:\.\d{1,3})?)\]/g, '')
-      .trim()
-    for (const match of matches) {
-      const minute = Number(match[1])
-      const second = Number(match[2])
-      if (!Number.isFinite(minute) || !Number.isFinite(second)) {
-        continue
-      }
-      parsed.push({
-        time: minute * 60 + second,
-        text,
-      })
-    }
-  }
-
-  return parsed.sort((a, b) => a.time - b.time)
-}
-
 export default function GameOST({ gameId, cover, title }: GameOSTProps) {
+  const { resolvedTheme } = useTheme()
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const pendingAutoPlayRef = useRef(false)
-  const lastVolumeRef = useRef(80)
-  const volumeContainerRef = useRef<HTMLDivElement | null>(null)
+  const colorInputRef = useRef<HTMLInputElement>(null)
 
+  // --- 状态管理 ---
   const [isLoading, setIsLoading] = useState(false)
-  const [items, setItems] = useState<GameMediaLinkItem[]>([])
-  const [selectedIndex, setSelectedIndex] = useState(0)
+  const [ostItems, setOstItems] = useState<OstAlbumItem[]>([])
+  const [viewMode, setViewMode] = useState<ViewMode>('album')
+  const [selectedAlbum, setSelectedAlbum] = useState<OstAlbumItem | null>(null)
+  const [songs, setSongs] = useState<OstSongItem[]>([])
+  const [selectedSongIndex, setSelectedSongIndex] = useState(0)
   const [isPlaying, setIsPlaying] = useState(false)
   const [playMode, setPlayMode] = useState<PlayMode>('sequence')
   const [duration, setDuration] = useState(0)
   const [currentTime, setCurrentTime] = useState(0)
   const [isSeeking, setIsSeeking] = useState(false)
-  const [lyrics, setLyrics] = useState<LyricLine[]>([])
-  const [lyricsLoading, setLyricsLoading] = useState(false)
-  const [viewMode, setViewMode] = useState<ViewMode>('lyric')
   const [volume, setVolume] = useState(80)
-  const [showVolumePanel, setShowVolumePanel] = useState(false)
 
-  const selectedItem = useMemo(() => {
-    if (items.length === 0) {
-      return null
+  const [playerColor, setPlayerColor] = useState('')
+  const [opacity, setOpacity] = useState(100)
+  const [hasCustomStyle, setHasCustomStyle] = useState(false)
+
+  // --- 样式初始化与持久化 ---
+  useEffect(() => {
+    const savedColor = localStorage.getItem(`ost-color-${gameId}`)
+    const savedOpacity = localStorage.getItem(`ost-opacity-${gameId}`)
+
+    if (savedColor) {
+      setPlayerColor(savedColor)
+      setOpacity(savedOpacity ? parseInt(savedOpacity) : 100)
+      setHasCustomStyle(true)
+    } else {
+      setPlayerColor(resolvedTheme === 'dark' ? '#18181b' : '#ffffff')
+      setOpacity(100)
+      setHasCustomStyle(false)
     }
-    return items[Math.max(0, Math.min(selectedIndex, items.length - 1))] ?? null
-  }, [items, selectedIndex])
+  }, [resolvedTheme, gameId])
 
+  const handleColorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newColor = e.target.value
+    setPlayerColor(newColor)
+    setHasCustomStyle(true)
+    localStorage.setItem(`ost-color-${gameId}`, newColor)
+  }
+
+  const handleOpacityChange = (val: number[]) => {
+    const newOpacity = val[0]
+    setOpacity(newOpacity)
+    setHasCustomStyle(true)
+    localStorage.setItem(`ost-opacity-${gameId}`, newOpacity.toString())
+  }
+
+  const resetStyle = () => {
+    localStorage.removeItem(`ost-color-${gameId}`)
+    localStorage.removeItem(`ost-opacity-${gameId}`)
+    setHasCustomStyle(false)
+    setPlayerColor(resolvedTheme === 'dark' ? '#18181b' : '#ffffff')
+    setOpacity(100)
+  }
+
+  // --- API 数据加载 ---
   const loadData = async () => {
     setIsLoading(true)
     try {
-      const data = await getGameOstsById(gameId)
-      setItems(data.items)
-      setSelectedIndex((prev) =>
-        data.items.length === 0 ? 0 : Math.min(prev, data.items.length - 1),
-      )
-    } catch (error) {
-      const err = error as {
-        response?: { data?: { error?: string } }
-        message?: string
-      }
-      toast.error(err.response?.data?.error || err.message || '加载OST失败')
+      const response = await api.get('/ost', { params: { gameId } })
+      const data = response.data as { data: { items: OstAlbumItem[] } }
+      setOstItems(data.data.items)
+    } catch {
+      toast.error('加载 OST 失败')
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  const loadSongs = async (ostId: number) => {
+    try {
+      const response = await api.get('/ost/songs', { params: { ostId } })
+      const data = response.data as { data: { items: OstSongItem[] } }
+      setSongs(data.data.items)
+    } catch {
+      setSongs([])
     }
   }
 
   useEffect(() => {
     void loadData()
   }, [gameId])
-
   useEffect(() => {
-    const audio = audioRef.current
-    if (!audio) {
-      return
-    }
+    if (selectedAlbum) void loadSongs(selectedAlbum.id)
+  }, [selectedAlbum])
 
-    audio.loop = playMode === 'single-loop'
-  }, [playMode])
-
-  useEffect(() => {
-    const audio = audioRef.current
-    if (!audio) {
-      return
-    }
-
-    audio.volume = Math.max(0, Math.min(1, volume / 100))
-  }, [volume, selectedItem])
-
-  useEffect(() => {
-    const onPointerDown = (event: MouseEvent) => {
-      const container = volumeContainerRef.current
-      if (!container) {
-        return
-      }
-
-      if (!container.contains(event.target as Node)) {
-        setShowVolumePanel(false)
-      }
-    }
-
-    document.addEventListener('mousedown', onPointerDown)
-    return () => {
-      document.removeEventListener('mousedown', onPointerDown)
-    }
-  }, [])
-
-  useEffect(() => {
-    const selected = selectedItem
-    if (!selected) {
-      setLyrics([])
-      return
-    }
-
-    const loadLyric = async () => {
-      const lyricUrl = toLyricUrl(selected.url)
-      setLyricsLoading(true)
-      try {
-        const response = await fetch(lyricUrl)
-        if (!response.ok) {
-          setLyrics([])
-          return
-        }
-
-        const content = await response.text()
-        setLyrics(parseLrc(content))
-      } catch {
-        setLyrics([])
-      } finally {
-        setLyricsLoading(false)
-      }
-    }
-
-    void loadLyric()
-  }, [selectedItem])
-
-  useEffect(() => {
-    if (!selectedItem) {
-      return
-    }
-    if (!pendingAutoPlayRef.current) {
-      return
-    }
-    pendingAutoPlayRef.current = false
-    void playCurrent()
-  }, [selectedItem])
-
-  const playCurrent = async () => {
-    const audio = audioRef.current
-    if (!audio || !selectedItem) {
-      return
-    }
-
-    try {
-      await audio.play()
-      setIsPlaying(true)
-    } catch {
-      setIsPlaying(false)
-    }
-  }
-
-  const pauseCurrent = () => {
-    const audio = audioRef.current
-    if (!audio) {
-      return
-    }
-    audio.pause()
-    setIsPlaying(false)
-  }
-
-  const getNextIndex = () => {
-    if (items.length === 0) {
-      return 0
-    }
-
-    if (playMode === 'shuffle') {
-      if (items.length === 1) {
-        return 0
-      }
-      let next = selectedIndex
-      while (next === selectedIndex) {
-        next = Math.floor(Math.random() * items.length)
-      }
-      return next
-    }
-
-    if (playMode === 'list-loop') {
-      return (selectedIndex + 1) % items.length
-    }
-
-    return Math.min(selectedIndex + 1, items.length - 1)
-  }
-
-  const getPrevIndex = () => {
-    if (items.length === 0) {
-      return 0
-    }
-
-    if (playMode === 'shuffle') {
-      if (items.length === 1) {
-        return 0
-      }
-      let prev = selectedIndex
-      while (prev === selectedIndex) {
-        prev = Math.floor(Math.random() * items.length)
-      }
-      return prev
-    }
-
-    if (playMode === 'list-loop') {
-      return (selectedIndex - 1 + items.length) % items.length
-    }
-
-    return Math.max(selectedIndex - 1, 0)
-  }
-
-  const handleNext = async () => {
-    if (items.length === 0) {
-      return
-    }
-    const nextIndex = getNextIndex()
-    pendingAutoPlayRef.current = true
-    setSelectedIndex(nextIndex)
-  }
-
-  const handlePrev = async () => {
-    if (items.length === 0) {
-      return
-    }
-    const prevIndex = getPrevIndex()
-    pendingAutoPlayRef.current = true
-    setSelectedIndex(prevIndex)
-  }
-
-  const handleEnded = () => {
-    if (playMode === 'single-loop') {
-      return
-    }
-
-    if (playMode === 'sequence' && selectedIndex >= items.length - 1) {
-      setIsPlaying(false)
-      return
-    }
-
-    void handleNext()
-  }
-
-  const toggleMode = () => {
-    const currentIndex = MODE_ORDER.indexOf(playMode)
-    const nextMode = MODE_ORDER[(currentIndex + 1) % MODE_ORDER.length]
-    setPlayMode(nextMode)
-  }
-
-  const currentLyricIndex = useMemo(() => {
-    if (lyrics.length === 0) {
-      return -1
-    }
-
-    let index = -1
-    for (let i = 0; i < lyrics.length; i += 1) {
-      if (lyrics[i].time <= currentTime + 0.05) {
-        index = i
-      } else {
-        break
-      }
-    }
-    return index
-  }, [lyrics, currentTime])
-
-  const handleSeek = (value: number[]) => {
-    const next = value[0] ?? 0
-    setCurrentTime(next)
-    setIsSeeking(true)
-  }
-
-  const commitSeek = (value: number[]) => {
-    const next = value[0] ?? 0
-    const audio = audioRef.current
-    if (audio) {
-      audio.currentTime = next
-    }
-    setCurrentTime(next)
-    setIsSeeking(false)
-  }
-
-  const handleLyricClick = (time: number) => {
-    const audio = audioRef.current
-    if (!audio) {
-      return
-    }
-
-    audio.currentTime = time
-    setCurrentTime(time)
-    void playCurrent()
-  }
-
-  const handleVolumeChange = (value: number[]) => {
-    const next = Math.max(0, Math.min(100, value[0] ?? 0))
-    setVolume(next)
-    if (next > 0) {
-      lastVolumeRef.current = next
-    }
-  }
-
-  const handleVolumeWheel = (event: WheelEvent<HTMLDivElement>) => {
-    event.preventDefault()
-    const delta = event.deltaY < 0 ? 4 : -4
-    const next = Math.max(0, Math.min(100, volume + delta))
-    setVolume(next)
-    if (next > 0) {
-      lastVolumeRef.current = next
-    }
-  }
-
-  const toggleVolumePanel = () => {
-    if (!selectedItem) {
-      return
-    }
-
-    setShowVolumePanel((prev) => !prev)
-  }
-
-  const restoreFromMute = () => {
-    const next = lastVolumeRef.current || 80
-    setVolume(next)
-  }
-
-  const muteVolume = () => {
-    if (volume > 0) {
-      lastVolumeRef.current = volume
-    }
-    setVolume(0)
-  }
-
-  const handleViewModeChange = (value: string) => {
-    if (value === 'lyric' || value === 'cover') {
-      setViewMode(value)
-    }
-  }
-
-  const renderVolumeControl = (buttonClassName?: string) => {
+  const selectedSong = useMemo(() => {
+    if (songs.length === 0) return null
     return (
-      <div ref={volumeContainerRef} className="relative">
-        <Button
-          type="button"
-          variant="outline"
-          size="icon"
-          className={buttonClassName}
-          disabled={!selectedItem}
-          onClick={toggleVolumePanel}
-          title="音量"
-        >
-          {volume > 0 ? (
-            <Volume2 className="size-4" />
-          ) : (
-            <VolumeX className="size-4" />
-          )}
-        </Button>
-
-        {showVolumePanel ? (
-          <div
-            onWheel={handleVolumeWheel}
-            className="bg-background absolute right-0 bottom-12 z-20 flex w-16 flex-col items-center gap-2 rounded-md border p-2 shadow-md"
-          >
-            <button
-              type="button"
-              className="text-muted-foreground hover:text-foreground text-xs"
-              onClick={volume <= 0 ? restoreFromMute : muteVolume}
-            >
-              {volume <= 0 ? '恢复' : '静音'}
-            </button>
-            <Slider
-              orientation="vertical"
-              min={0}
-              max={100}
-              step={1}
-              className="h-28 data-[orientation=vertical]:min-h-28"
-              value={[volume]}
-              onValueChange={handleVolumeChange}
-              disabled={!selectedItem}
-            />
-            <div className="text-muted-foreground text-xs">{volume}%</div>
-          </div>
-        ) : null}
-      </div>
+      songs[Math.max(0, Math.min(selectedSongIndex, songs.length - 1))] ?? null
     )
+  }, [songs, selectedSongIndex])
+
+  const handleNext = () => {
+    if (songs.length === 0) return
+    let next = selectedSongIndex
+    if (playMode === 'shuffle' && songs.length > 1) {
+      while (next === selectedSongIndex)
+        next = Math.floor(Math.random() * songs.length)
+    } else if (playMode === 'list-loop') {
+      next = (selectedSongIndex + 1) % songs.length
+    } else {
+      next = Math.min(selectedSongIndex + 1, songs.length - 1)
+    }
+    pendingAutoPlayRef.current = true
+    setSelectedSongIndex(next)
   }
 
-  return (
-    <div className="grid grid-cols-1 gap-4 lg:grid-cols-[320px_minmax(0,1fr)]">
-      <div className="space-y-3 rounded-md border p-3">
-        <div className="flex items-center justify-between">
-          {/* <div className="text-sm font-medium">OST 列表</div> */}
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            disabled={isLoading}
-            onClick={() => void loadData()}
-          >
-            刷新
-          </Button>
-        </div>
+  useEffect(() => {
+    if (selectedSong && pendingAutoPlayRef.current) {
+      pendingAutoPlayRef.current = false
+      const audio = audioRef.current
+      if (audio) {
+        audio.src = selectedSong.url
+        audio
+          .play()
+          .then(() => setIsPlaying(true))
+          .catch(() => setIsPlaying(false))
+      }
+    }
+  }, [selectedSong])
 
-        <div className="max-h-105 space-y-2 overflow-y-auto">
-          {isLoading ? (
-            <div className="space-y-2">
-              <Skeleton className="h-10 w-full" />
-              <Skeleton className="h-10 w-full" />
-              <Skeleton className="h-10 w-full" />
-              <Skeleton className="h-10 w-full" />
-            </div>
-          ) : items.length === 0 ? (
-            <div className="text-muted-foreground text-sm">暂无OST</div>
+  // --- UI 组件渲染 ---
+  const renderCoverPlayer = () => (
+    <div
+      className="relative overflow-hidden rounded-2xl border p-5 shadow-xl transition-all duration-500"
+      style={{
+        borderColor:
+          resolvedTheme === 'dark'
+            ? 'rgba(255,255,255,0.1)'
+            : 'rgba(0,0,0,0.08)',
+      }}
+    >
+      <div
+        className="absolute inset-0 -z-10 transition-colors duration-500"
+        style={{
+          backgroundColor: hexToRgba(playerColor || '#ffffff', opacity),
+        }}
+      />
+      <div
+        className="pointer-events-none absolute inset-0 -z-10 opacity-50"
+        style={{
+          background:
+            resolvedTheme === 'dark'
+              ? 'radial-gradient(circle at top right, rgba(255,255,255,0.1), transparent)'
+              : 'radial-gradient(circle at top right, rgba(255,255,255,0.7), transparent)',
+        }}
+      />
+
+      <div className="relative grid grid-cols-1 gap-5 md:grid-cols-[160px_minmax(0,1fr)] md:items-center">
+        <div className="overflow-hidden rounded-xl border border-white/20 shadow-md backdrop-blur-sm">
+          {selectedAlbum?.cover ? (
+            <img
+              src={selectedAlbum.cover}
+              alt=""
+              className="aspect-square w-full object-cover"
+            />
           ) : (
-            items.map((item, index) => (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => setSelectedIndex(index)}
-                className={`w-full rounded-md border px-3 py-2 text-left text-sm transition-colors ${
-                  selectedIndex === index
-                    ? 'bg-muted border-primary'
-                    : 'hover:bg-muted/50'
-                }`}
-              >
-                <div className="truncate font-medium">{item.name}</div>
-              </button>
-            ))
+            <div className="bg-muted flex aspect-square items-center justify-center text-xs">
+              无封面
+            </div>
           )}
         </div>
-      </div>
 
-      <div className="space-y-4 rounded-md border p-4">
-        <audio
-          ref={audioRef}
-          key={selectedItem?.id ?? 'empty'}
-          src={selectedItem?.url}
-          preload="metadata"
-          onLoadedMetadata={(event) => {
-            setDuration(event.currentTarget.duration || 0)
-            setCurrentTime(0)
-          }}
-          onTimeUpdate={(event) => {
-            if (isSeeking) {
-              return
-            }
-            setCurrentTime(event.currentTarget.currentTime || 0)
-          }}
-          onPlay={() => setIsPlaying(true)}
-          onPause={() => setIsPlaying(false)}
-          onEnded={handleEnded}
-        />
-
-        <Tabs
-          value={viewMode}
-          onValueChange={handleViewModeChange}
-          className="space-y-4"
-        >
-          <div className="flex items-center justify-between gap-3">
-            <div className="text-sm font-medium">音乐播放器</div>
-            <TabsList className="dark:bg-transparent">
-              <TabsTrigger value="lyric" className="px-3 text-xs">
-                歌词模式
-              </TabsTrigger>
-              <TabsTrigger value="cover" className="px-3 text-xs">
-                封面模式
-              </TabsTrigger>
-            </TabsList>
+        <div className="space-y-3">
+          <div className="space-y-0.5">
+            <h3 className="truncate text-lg leading-tight font-bold">
+              {selectedSong?.name || '未选择歌曲'}
+            </h3>
+            <p className="text-muted-foreground text-xs opacity-80">
+              {selectedAlbum?.name}
+            </p>
           </div>
 
-          <TabsContent value="lyric" className="mt-0 space-y-3">
-            <div className="text-lg font-semibold">
-              {selectedItem?.name || '请选择一首 OST'}
-            </div>
-            <div className="text-muted-foreground text-sm">{title}</div>
+          <Slider
+            min={0}
+            max={Math.max(duration, 1)}
+            step={0.1}
+            value={[Math.min(currentTime, duration)]}
+            onValueChange={(v) => {
+              setCurrentTime(v[0])
+              setIsSeeking(true)
+            }}
+            onValueCommit={(v) => {
+              if (audioRef.current) audioRef.current.currentTime = v[0]
+              setIsSeeking(false)
+            }}
+            disabled={!selectedSong}
+            className="py-1"
+          />
 
-            <div className="space-y-1">
-              <Slider
-                min={0}
-                max={Math.max(duration, 1)}
-                step={0.1}
-                value={[Math.min(currentTime, Math.max(duration, 1))]}
-                onValueChange={handleSeek}
-                onValueCommit={commitSeek}
-                disabled={!selectedItem}
-              />
-              <div className="text-muted-foreground flex justify-between text-xs">
-                <span>{formatTime(currentTime)}</span>
-                <span>{formatTime(duration)}</span>
-              </div>
-            </div>
+          <div className="flex flex-wrap items-center gap-1.5">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-8"
+              onClick={() => {
+                let prev = selectedSongIndex
+                if (playMode === 'shuffle')
+                  prev = Math.floor(Math.random() * songs.length)
+                else
+                  prev = (selectedSongIndex - 1 + songs.length) % songs.length
+                setSelectedSongIndex(prev)
+                pendingAutoPlayRef.current = true
+              }}
+              disabled={!selectedSong}
+            >
+              <SkipBack className="size-3.5" />
+            </Button>
 
-            <div className="flex flex-wrap items-center gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                size="icon"
-                disabled={!selectedItem}
-                onClick={() => void handlePrev()}
-                title="上一首"
-              >
-                <SkipBack className="size-4" />
-              </Button>
-
+            <Button
+              size="icon"
+              className="size-8 rounded-full"
+              onClick={() => {
+                if (isPlaying) {
+                  audioRef.current?.pause()
+                  setIsPlaying(false)
+                } else {
+                  audioRef.current?.play()
+                  setIsPlaying(true)
+                }
+              }}
+              disabled={!selectedSong}
+            >
               {isPlaying ? (
-                <Button
-                  type="button"
-                  size="icon"
-                  disabled={!selectedItem}
-                  onClick={pauseCurrent}
-                  title="暂停"
-                >
-                  <Pause className="size-4" />
-                </Button>
+                <Pause className="size-3.5" />
               ) : (
+                <Play className="size-3.5" />
+              )}
+            </Button>
+
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-8"
+              onClick={handleNext}
+              disabled={!selectedSong}
+            >
+              <SkipForward className="size-3.5" />
+            </Button>
+
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 px-2 text-[10px]"
+              onClick={() => {
+                const currentIndex = MODE_ORDER.indexOf(playMode)
+                setPlayMode(MODE_ORDER[(currentIndex + 1) % MODE_ORDER.length])
+              }}
+            >
+              <span className="max-w-10 truncate">{MODE_LABELS[playMode]}</span>
+            </Button>
+
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="ghost" size="icon" className="size-8">
+                  {volume > 0 ? (
+                    <Volume2 className="size-3.5" />
+                  ) : (
+                    <VolumeX className="size-3.5" />
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-12 p-3" side="top">
+                <Slider
+                  orientation="vertical"
+                  min={0}
+                  max={100}
+                  value={[volume]}
+                  onValueChange={(v) => {
+                    setVolume(v[0])
+                    if (audioRef.current) audioRef.current.volume = v[0] / 100
+                  }}
+                  className="h-24"
+                />
+              </PopoverContent>
+            </Popover>
+
+            <div className="ml-auto flex items-center gap-1">
+              {hasCustomStyle && (
                 <Button
-                  type="button"
+                  variant="ghost"
                   size="icon"
-                  disabled={!selectedItem}
-                  onClick={() => void playCurrent()}
-                  title="播放"
+                  className="text-muted-foreground size-8"
+                  onClick={resetStyle}
                 >
-                  <Play className="size-4" />
+                  <RotateCcw className="size-3.5" />
                 </Button>
               )}
 
-              <Button
-                type="button"
-                variant="outline"
-                size="icon"
-                disabled={!selectedItem}
-                onClick={() => void handleNext()}
-                title="下一首"
-              >
-                <SkipForward className="size-4" />
-              </Button>
-
-              <Button
-                type="button"
-                variant="outline"
-                onClick={toggleMode}
-                title="切换播放模式"
-              >
-                {playMode === 'shuffle' ? (
-                  <Shuffle className="size-4" />
-                ) : playMode === 'sequence' ? (
-                  <ListOrdered className="size-4" />
-                ) : playMode === 'single-loop' ? (
-                  <Repeat1 className="size-4" />
-                ) : (
-                  <Repeat className="size-4" />
-                )}
-                {MODE_LABELS[playMode]}
-              </Button>
-
-              {renderVolumeControl()}
-            </div>
-
-            <div className="space-y-2 rounded-md border p-3">
-              <div className="text-sm font-medium">歌词</div>
-              <div className="max-h-60 space-y-1 overflow-y-auto">
-                {lyricsLoading ? (
-                  <div className="text-muted-foreground text-sm">
-                    歌词加载中...
-                  </div>
-                ) : lyrics.length === 0 ? (
-                  <div className="text-muted-foreground text-sm">
-                    暂无歌词，可导入同名 .lrc 文件
-                  </div>
-                ) : (
-                  lyrics.map((line, index) => (
-                    <button
-                      key={`${line.time}-${index}`}
-                      type="button"
-                      onClick={() => handleLyricClick(line.time)}
-                      className={`block w-full rounded px-2 py-1 text-left text-sm ${
-                        currentLyricIndex === index
-                          ? 'bg-muted text-primary font-medium'
-                          : 'text-muted-foreground hover:bg-muted/50'
-                      }`}
-                    >
-                      {line.text || '...'}
-                    </button>
-                  ))
-                )}
-              </div>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="cover" className="mt-0">
-            <div className="relative overflow-hidden rounded-3xl border bg-linear-to-br from-zinc-100/80 via-white to-zinc-200/70 p-6 shadow-[0_20px_60px_rgba(0,0,0,0.12)] dark:from-zinc-800/70 dark:via-zinc-900 dark:to-zinc-800/70">
-              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.9),transparent_55%)] dark:bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.15),transparent_55%)]" />
-
-              <div className="relative grid grid-cols-1 gap-6 md:grid-cols-[240px_minmax(0,1fr)] md:items-center">
-                <div className="overflow-hidden rounded-2xl border border-white/40 bg-white/70 shadow-[0_14px_40px_rgba(0,0,0,0.18)] backdrop-blur dark:border-white/10 dark:bg-black/30">
-                  {cover ? (
-                    <img
-                      src={cover}
-                      alt={`${title} 封面`}
-                      className="aspect-square w-full object-cover"
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="ghost" size="icon" className="size-8">
+                    <Palette
+                      className="size-3.5"
+                      style={{
+                        color: hasCustomStyle ? playerColor : 'inherit',
+                      }}
                     />
-                  ) : (
-                    <div className="text-muted-foreground flex aspect-square items-center justify-center text-sm">
-                      无封面
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent
+                  className="w-48 space-y-4 p-4"
+                  side="top"
+                  align="end"
+                >
+                  <div className="space-y-2">
+                    <label className="flex items-center gap-2 text-xs font-medium">
+                      <Palette className="size-3" /> 背景颜色
+                    </label>
+                    <div
+                      className="flex h-8 w-full cursor-pointer items-center justify-center rounded-md border text-[10px]"
+                      style={{ backgroundColor: playerColor }}
+                      onClick={() => colorInputRef.current?.click()}
+                    >
+                      点击修改
                     </div>
-                  )}
-                </div>
-
-                <div className="space-y-4">
-                  <div className="space-y-1">
-                    <div className="truncate text-xl font-semibold">
-                      {selectedItem?.name || '请选择一首 OST'}
-                    </div>
-                    <div className="text-muted-foreground text-sm">{title}</div>
+                    <input
+                      ref={colorInputRef}
+                      type="color"
+                      className="hidden"
+                      value={playerColor}
+                      onChange={handleColorChange}
+                    />
                   </div>
-
-                  <div className="space-y-1">
+                  <div className="space-y-2">
+                    <label className="flex items-center justify-between text-xs font-medium">
+                      <span className="flex items-center gap-2">
+                        <Layers className="size-3" /> 透明度
+                      </span>
+                      <span className="text-[10px] opacity-60">{opacity}%</span>
+                    </label>
                     <Slider
                       min={0}
-                      max={Math.max(duration, 1)}
-                      step={0.1}
-                      value={[Math.min(currentTime, Math.max(duration, 1))]}
-                      onValueChange={handleSeek}
-                      onValueCommit={commitSeek}
-                      disabled={!selectedItem}
+                      max={100}
+                      step={1}
+                      value={[opacity]}
+                      onValueChange={handleOpacityChange}
                     />
-                    <div className="text-muted-foreground flex justify-between text-xs">
-                      <span>{formatTime(currentTime)}</span>
-                      <span>{formatTime(duration)}</span>
-                    </div>
                   </div>
-
-                  <div className="flex flex-wrap items-center gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      className="bg-white/60 backdrop-blur dark:bg-black/20"
-                      disabled={!selectedItem}
-                      onClick={() => void handlePrev()}
-                      title="上一首"
-                    >
-                      <SkipBack className="size-4" />
-                    </Button>
-
-                    {isPlaying ? (
-                      <Button
-                        type="button"
-                        size="icon"
-                        className="rounded-full"
-                        disabled={!selectedItem}
-                        onClick={pauseCurrent}
-                        title="暂停"
-                      >
-                        <Pause className="size-4" />
-                      </Button>
-                    ) : (
-                      <Button
-                        type="button"
-                        size="icon"
-                        className="rounded-full"
-                        disabled={!selectedItem}
-                        onClick={() => void playCurrent()}
-                        title="播放"
-                      >
-                        <Play className="size-4" />
-                      </Button>
-                    )}
-
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      className="bg-white/60 backdrop-blur dark:bg-black/20"
-                      disabled={!selectedItem}
-                      onClick={() => void handleNext()}
-                      title="下一首"
-                    >
-                      <SkipForward className="size-4" />
-                    </Button>
-
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="bg-white/60 backdrop-blur dark:bg-black/20"
-                      onClick={toggleMode}
-                      title="切换播放模式"
-                    >
-                      {playMode === 'shuffle' ? (
-                        <Shuffle className="size-4" />
-                      ) : playMode === 'sequence' ? (
-                        <ListOrdered className="size-4" />
-                      ) : playMode === 'single-loop' ? (
-                        <Repeat1 className="size-4" />
-                      ) : (
-                        <Repeat className="size-4" />
-                      )}
-                      {MODE_LABELS[playMode]}
-                    </Button>
-
-                    {renderVolumeControl(
-                      'bg-white/60 backdrop-blur dark:bg-black/20',
-                    )}
-                  </div>
-                </div>
-              </div>
+                </PopoverContent>
+              </Popover>
             </div>
-          </TabsContent>
-        </Tabs>
+          </div>
+        </div>
       </div>
+    </div>
+  )
+
+  return (
+    <div className="space-y-4">
+      <audio
+        ref={audioRef}
+        key={selectedSong?.url ?? 'empty'}
+        onLoadedMetadata={(e) => setDuration(e.currentTarget.duration || 0)}
+        onTimeUpdate={(e) => {
+          if (!isSeeking) setCurrentTime(e.currentTarget.currentTime)
+        }}
+        onEnded={handleNext}
+      />
+
+      {viewMode === 'album' ? (
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8">
+          {isLoading
+            ? Array.from({ length: 8 }).map((_, i) => (
+                <Skeleton key={i} className="aspect-square rounded-2xl" />
+              ))
+            : ostItems.map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => {
+                    setSelectedAlbum(item)
+                    setViewMode('song')
+                  }}
+                  className="group space-y-2"
+                >
+                  <div className="relative aspect-square overflow-hidden rounded-2xl shadow-md transition-transform group-hover:-translate-y-1">
+                    <img
+                      src={item.cover}
+                      alt=""
+                      className="h-full w-full object-cover"
+                    />
+                  </div>
+                  <p className="truncate text-center text-xs font-medium">
+                    {item.name}
+                  </p>
+                </button>
+              ))}
+        </div>
+      ) : (
+        <div className="grid h-130 grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
+          <div className="order-2 flex flex-col justify-center lg:order-1">
+            {selectedSong ? (
+              renderCoverPlayer()
+            ) : (
+              <div className="text-muted-foreground flex flex-col items-center justify-center rounded-2xl border-2 border-dashed py-20">
+                <p className="text-sm">选择歌曲开始播放</p>
+              </div>
+            )}
+          </div>
+
+          {/* 右侧列表区域 */}
+          <div className="order-1 flex min-h-0 flex-col space-y-4 lg:order-2">
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => {
+                  setViewMode('album')
+                  setIsPlaying(false)
+                  audioRef.current?.pause()
+                }}
+              >
+                <ChevronLeft className="size-5" />
+              </Button>
+              <h3 className="truncate text-sm font-bold">
+                {selectedAlbum?.name}
+              </h3>
+            </div>
+
+            {/* 这里的 ScrollArea 决定了最大高度 */}
+            <ScrollArea className="max-h-110 flex-1 overflow-hidden rounded-xl border pr-3">
+              <div className="space-y-1 p-1">
+                {songs.map((song, i) => {
+                  const isSelected = selectedSongIndex === i
+                  return (
+                    <button
+                      key={song.id}
+                      onClick={() => {
+                        setSelectedSongIndex(i)
+                        pendingAutoPlayRef.current = true
+                      }}
+                      className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-xs transition-all duration-300 ${
+                        isSelected
+                          ? 'font-bold shadow-sm' // 移除 bg-primary，通过 style 设置背景
+                          : 'hover:bg-muted opacity-80'
+                      }`}
+                      // --- 需求(1) 实现：选中背景与播放器一致 ---
+                      style={
+                        isSelected
+                          ? {
+                              backgroundColor: hexToRgba(
+                                playerColor || '#ffffff',
+                                opacity,
+                              ),
+                              // 如果背景太暗，自动将文字设为白色（可选逻辑）
+                              color:
+                                resolvedTheme === 'dark' && opacity > 50
+                                  ? '#fff'
+                                  : 'inherit',
+                            }
+                          : {}
+                      }
+                    >
+                      <span className="opacity-50">{i + 1}</span>
+                      <span className="flex-1 truncate">{song.name}</span>
+                    </button>
+                  )
+                })}
+              </div>
+            </ScrollArea>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

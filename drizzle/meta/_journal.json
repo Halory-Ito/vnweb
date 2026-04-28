@@ -15,6 +15,20 @@
       "when": 1775017694140,
       "tag": "0001_fuzzy_rafael_vega",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1745880000000,
+      "tag": "0002_update_game_ost",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1745880060000,
+      "tag": "0003_create_ost_tables",
+      "breakpoints": true
     }
   ]
 }

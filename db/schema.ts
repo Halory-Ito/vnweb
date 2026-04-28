@@ -40,12 +40,35 @@ export const GamePvTable = sqliteTable('game_pv', {
   updatedAt: text().default(dayjs().toString()), // 更新时间
 })
 
-// 游戏 OST 表
+// 调整：游戏 OST 表
 export const GameOstTable = sqliteTable('game_ost', {
   id: int().primaryKey({ autoIncrement: true }),
   gameId: int().notNull(),
   name: text().notNull(), // ost名称
-  url: text().notNull(), // ost链接地址
+  cover: text().notNull(), // ost封面图片链接
+  resource: text().default(''), // OST 曲目资源来源，如 khinsider、netease 等
+  createdAt: text().default(dayjs().toString()), // 创建时间
+  updatedAt: text().default(dayjs().toString()), // 更新时间
+})
+
+// 新增：游戏 OST 曲目表
+export const GameOstSongsTable = sqliteTable('game_ost_songs', {
+  id: int().primaryKey({ autoIncrement: true }),
+  gameId: int().notNull(),
+  ostId: int().notNull(), // 关联的 OST id
+  name: text().notNull(), // OST 曲目名称
+  url: text().notNull(), // OST 曲目链接地址
+  mediaType: text().default(''), // OST 曲目媒体类型，如 mp3、flac 等
+  createdAt: text().default(dayjs().toString()), // 创建时间
+  updatedAt: text().default(dayjs().toString()), // 更新时间
+})
+
+// 新增：歌词关联表
+export const GameOstLyricsTable = sqliteTable('game_ost_lyrics', {
+  id: int().primaryKey({ autoIncrement: true }),
+  ostSongId: int().notNull(), // 关联的 OST 曲目 id
+  lyricsText: text().default(''), // 歌词文本
+  lyricsUrl: text().default(''), // 歌词链接地址
   createdAt: text().default(dayjs().toString()), // 创建时间
   updatedAt: text().default(dayjs().toString()), // 更新时间
 })
