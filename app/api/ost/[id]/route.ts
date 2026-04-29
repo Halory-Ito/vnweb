@@ -132,4 +132,45 @@ const deleteOst = async (
   }
 }
 
-export { updateOst as PATCH, deleteOst as DELETE }
+const getOst = async (
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) => {
+  try {
+    const { id } = await params
+    const ostId = Number(id)
+
+    if (!Number.isInteger(ostId) || ostId <= 0) {
+      return NextResponse.json({ error: '无效的 OST id' }, { status: 400 })
+    }
+
+    const result = await db
+      .select({
+        id: GameOstTable.id,
+        gameId: GameOstTable.gameId,
+        name: GameOstTable.name,
+        cover: GameOstTable.cover,
+        resource: GameOstTable.resource,
+        createdAt: GameOstTable.createdAt,
+        updatedAt: GameOstTable.updatedAt,
+      })
+      .from(GameOstTable)
+      .where(eq(GameOstTable.id, ostId))
+      .limit(1)
+
+    if (!result[0]) {
+      return NextResponse.json({ error: 'OST 不存在' }, { status: 404 })
+    }
+
+    return NextResponse.json({
+      data: {
+        item: result[0],
+      },
+    })
+  } catch (error) {
+    console.error('Get ost failed:', error)
+    return NextResponse.json({ error: 'Failed to get ost' }, { status: 500 })
+  }
+}
+
+export { updateOst as PATCH, deleteOst as DELETE, getOst as GET }

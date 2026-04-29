@@ -921,6 +921,61 @@ export const getOstManageList = async (params?: {
   return (response.data as { data: { items: OstManageItem[] } }).data
 }
 
+export const getOstById = async (id: number) => {
+  const response = await api.get(`/ost/${id}`)
+  return (response.data as { data: { item: OstManageItem } }).data
+}
+
+export type OstSongItem = {
+  id: number
+  gameId: number
+  ostId: number
+  name: string
+  url: string
+  mediaType: string
+  lyricsText: string
+  lyricsPath: string
+  createdAt?: string
+  updatedAt?: string
+}
+
+export const getOstSongs = async (ostId: number) => {
+  const response = await api.get('/ost/songs', { params: { ostId } })
+  return (response.data as { data: { items: OstSongItem[] } }).data
+}
+
+export const createOstSong = async (payload: {
+  gameId: number
+  ostId: number
+  name: string
+  url: string
+  mediaType?: string
+  lyricsText?: string
+  lyricsPath?: string
+}) => {
+  const response = await api.post('/ost/songs', payload)
+  return (response.data as { data: { item: OstSongItem } }).data
+}
+
+export const updateOstSong = async (
+  id: number,
+  payload: {
+    name: string
+    url: string
+    mediaType?: string
+    lyricsText?: string
+    lyricsPath?: string
+  },
+) => {
+  const response = await api.put(`/ost/songs/${id}`, payload)
+  return (response.data as { data: { item: OstSongItem } }).data
+}
+
+export const deleteOstSong = async (id: number) => {
+  const response = await api.delete(`/ost/songs/${id}`)
+  return response.data
+}
+
 export const createOstManageItem = async (payload: {
   gameId: number
   name: string

@@ -1,6 +1,7 @@
 'use client'
 
 import { ImageIcon, PencilIcon, Trash2Icon } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 
 import { toDisplayDate } from './utils'
 import { Button } from '@/components/ui/button'
@@ -23,6 +24,8 @@ export function OstManageContent({
   onEdit,
   onDelete,
 }: OstManageContentProps) {
+  const router = useRouter()
+
   return (
     <div className="flex flex-col gap-4">
       <div className="text-muted-foreground flex items-center text-sm font-medium">
@@ -60,7 +63,12 @@ export function OstManageContent({
               className="group relative flex flex-col p-1 transition-all duration-300 hover:-translate-y-1"
             >
               <div className="relative w-full">
-                <div className="relative aspect-square w-full cursor-pointer overflow-hidden rounded-2xl shadow-lg transition-all duration-300 group-hover:shadow-2xl">
+                <div
+                  className="relative aspect-square w-full cursor-pointer overflow-hidden rounded-2xl shadow-lg transition-all duration-300 group-hover:shadow-2xl"
+                  onClick={() => {
+                    router.push(`/ost/${item.id}`)
+                  }}
+                >
                   <div className="from-primary/20 to-primary/5 absolute -inset-4 bg-linear-to-br opacity-0 blur-3xl transition-opacity duration-500 group-hover:opacity-40" />
 
                   {item.cover ? (

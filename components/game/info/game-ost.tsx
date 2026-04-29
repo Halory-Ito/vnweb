@@ -17,9 +17,11 @@ import {
   Layers,
 } from 'lucide-react'
 import { useTheme } from 'next-themes'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import dynamic from 'next/dynamic'
+import { useEffect, useMemo, useRef, useState, useCallback } from 'react'
 import { toast } from 'sonner'
 
+import NativeWaveform from './native-waveform'
 import { Button } from '@/components/ui/button'
 import {
   Popover,
@@ -29,6 +31,7 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Slider } from '@/components/ui/slider'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { api } from '@/lib/request-utils'
 
 // --- 工具函数：Hex 转 RGBA ---
@@ -38,6 +41,41 @@ const hexToRgba = (hex: string, opacity: number) => {
   const g = parseInt(hex.slice(3, 5), 16)
   const b = parseInt(hex.slice(5, 7), 16)
   return `rgba(${r}, ${g}, ${b}, ${opacity / 100})`
+}
+
+// --- 工具函数：歌词解析 ---
+export interface LyricLine {
+  time: number
+  text: string
+}
+
+export const parseLrc = (lrc: string): LyricLine[] => {
+  const lines = lrc.split('\n')
+  const result: LyricLine[] = []
+  const timeExp = /\[(\d{2,}):(\d{2})(?:\.(\d{2,3}))?\]/g
+
+  for (const line of lines) {
+    timeExp.lastIndex = 0
+    let match
+    const matches = []
+    while ((match = timeExp.exec(line)) !== null) {
+      matches.push(match)
+    }
+
+    if (matches.length > 0) {
+      const text = line.replace(timeExp, '').trim()
+      if (text) {
+        for (const m of matches) {
+          const min = parseInt(m[1], 10)
+          const sec = parseInt(m[2], 10)
+          const msStr = m[3] || '0'
+          const ms = parseInt(msStr.padEnd(3, '0').slice(0, 3), 10)
+          result.push({ time: min * 60 + sec + ms / 1000, text })
+        }
+      }
+    }
+  }
+  return result.sort((a, b) => a.time - b.time)
 }
 
 // --- 类型定义 ---
@@ -65,6 +103,8 @@ type OstSongItem = {
   name: string
   url: string
   mediaType: string
+  lyricsText: string
+  lyricsPath: string
 }
 
 const MODE_LABELS: Record<PlayMode, string> = {
@@ -109,7 +149,90 @@ export default function GameOST({ gameId, cover, title }: GameOSTProps) {
   const [isSeeking, setIsSeeking] = useState(false)
   const [volume, setVolume] = useState(80)
 
+  const [audioBlob, setAudioBlob] = useState<Blob | null>(null)
+  const [lyrics, setLyrics] = useState<LyricLine[]>([])
+
+  // 用于获取容器宽度来支持波纹响应式
+  const visualizerContainerRef = useRef<HTMLDivElement>(null)
+  const [visualizerWidth, setVisualizerWidth] = useState(400)
+  const tabListRef = useRef<HTMLDivElement>(null)
+
   const [playerColor, setPlayerColor] = useState('')
+
+  // 歌词滚动逻辑
+  const activeLyricRef = useRef<HTMLParagraphElement>(null)
+  const lyricsContainerRef = useRef<HTMLDivElement>(null)
+  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const [isUserScrolling, setIsUserScrolling] = useState(false)
+
+  // 歌词自动滚动到可见区域正中心
+  const scrollToActiveLyric = useCallback(() => {
+    if (activeLyricRef.current && lyricsContainerRef.current) {
+      const container = lyricsContainerRef.current
+      const activeElement = activeLyricRef.current
+
+      // 获取容器可见区域的实际尺寸和位置
+      const containerRect = container.getBoundingClientRect()
+      const activeRect = activeElement.getBoundingClientRect()
+
+      // 计算可见区域的垂直中心点（相对于视口）
+      const viewportCenterY = containerRect.top + containerRect.height / 2
+
+      // 计算歌词元素需要滚动到的位置
+      // 用歌词元素中心点 - 可见区域中心点 = 需要的滚动偏移
+      const activeCenterY = activeRect.top + activeRect.height / 2
+      const scrollOffset = activeCenterY - viewportCenterY
+
+      // 新的 scrollTop = 当前 scrollTop + 偏移量
+      const targetScrollTop = container.scrollTop + scrollOffset
+
+      container.scrollTo({
+        top: targetScrollTop,
+        behavior: 'smooth',
+      })
+    }
+  }, [])
+
+  // 处理用户滚动行为
+  const handleLyricsScroll = useCallback(() => {
+    setIsUserScrolling(true)
+
+    // 清除之前的定时器
+    if (scrollTimeoutRef.current) {
+      clearTimeout(scrollTimeoutRef.current)
+    }
+
+    // 设置5秒后恢复自动滚动
+    scrollTimeoutRef.current = setTimeout(() => {
+      setIsUserScrolling(false)
+    }, 5000)
+  }, [])
+
+  // 监听 currentTime 变化时自动滚动
+  useEffect(() => {
+    if (!isUserScrolling && lyrics.length > 0) {
+      scrollToActiveLyric()
+    }
+  }, [currentTime, isUserScrolling, lyrics.length, scrollToActiveLyric])
+
+  // 点击歌词跳转到对应时间点
+  const handleLyricClick = useCallback((time: number) => {
+    if (audioRef.current) {
+      audioRef.current.currentTime = time
+      setCurrentTime(time)
+      setIsSeeking(false)
+    }
+  }, [])
+
+  // 组件卸载时清除定时器
+  useEffect(() => {
+    return () => {
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current)
+      }
+    }
+  }, [])
+
   const [opacity, setOpacity] = useState(100)
   const [hasCustomStyle, setHasCustomStyle] = useState(false)
 
@@ -170,6 +293,9 @@ export default function GameOST({ gameId, cover, title }: GameOSTProps) {
       const response = await api.get('/ost/songs', { params: { ostId } })
       const data = response.data as { data: { items: OstSongItem[] } }
       setSongs(data.data.items)
+      // 加载完歌曲后，自动播放第一首
+      setSelectedSongIndex(0)
+      pendingAutoPlayRef.current = true
     } catch {
       setSongs([])
     }
@@ -204,19 +330,94 @@ export default function GameOST({ gameId, cover, title }: GameOSTProps) {
     setSelectedSongIndex(next)
   }
 
+  // 获取网易云歌曲真实 URL
+  const fetchNeteaseSongUrl = async (
+    songUrl: string,
+    level: string = 'exhigh',
+  ) => {
+    // 从 URL 中提取歌曲 ID，例如：/song/url/v1?id=2155422575&level=exhigh
+    const match = songUrl.match(/[?&]id=(\d+)/)
+    if (!match) return songUrl
+
+    const songId = match[1]
+    try {
+      const response = await fetch(
+        `/api/ost/netease/song/url?id=${songId}&level=${level}`,
+      )
+      if (!response.ok) return songUrl
+
+      const data = await response.json()
+      if (data.data && data.data.length > 0 && data.data[0].url) {
+        return data.data[0].url
+      }
+      return songUrl
+    } catch {
+      return songUrl
+    }
+  }
+
   useEffect(() => {
     if (selectedSong && pendingAutoPlayRef.current) {
       pendingAutoPlayRef.current = false
       const audio = audioRef.current
       if (audio) {
-        audio.src = selectedSong.url
-        audio
-          .play()
-          .then(() => setIsPlaying(true))
-          .catch(() => setIsPlaying(false))
+        setAudioBlob(null)
+        setLyrics([])
+        setIsUserScrolling(false)
+
+        // 处理歌词：优先使用 lyricsText，其次使用 lyricsPath
+        if (selectedSong.lyricsText) {
+          setLyrics(parseLrc(selectedSong.lyricsText))
+        } else if (selectedSong.lyricsPath) {
+          fetch(selectedSong.lyricsPath)
+            .then((res) => {
+              if (!res.ok) throw new Error('Failed to fetch lyrics')
+              return res.text()
+            })
+            .then((text) => setLyrics(parseLrc(text)))
+            .catch((err) => console.warn('获取歌词文件失败:', err))
+        }
+
+        // 获取音频 URL：网易云需要先获取真实 URL
+        const playSong = (audioUrl: string) => {
+          audio.src = audioUrl
+          audio
+            .play()
+            .then(() => setIsPlaying(true))
+            .catch(() => setIsPlaying(false))
+
+          // 获取用于波形可视化的 Blob
+          fetch(audioUrl)
+            .then((res) => {
+              const contentType = res.headers.get('content-type')
+              if (
+                res.ok &&
+                (contentType?.includes('audio/') ||
+                  contentType?.includes('mpeg') ||
+                  audioUrl.endsWith('.mp3'))
+              ) {
+                return res.blob()
+              }
+              throw new Error('Not an audio file')
+            })
+            .then((blob) => setAudioBlob(blob))
+            .catch((err) => console.warn('获取音源可视化Blob失败:', err))
+        }
+
+        // 检查是否是网易云歌曲
+        if (
+          selectedAlbum?.resource === 'netease' &&
+          selectedSong.url.includes('/song/url/v1')
+        ) {
+          void fetchNeteaseSongUrl(selectedSong.url).then((realUrl) => {
+            playSong(realUrl)
+          })
+        } else {
+          playSong(selectedSong.url)
+        }
       }
     }
-  }, [selectedSong])
+  }, [selectedSong, selectedAlbum])
 
   // --- UI 组件渲染 ---
   const renderCoverPlayer = () => (
@@ -445,6 +646,106 @@ export default function GameOST({ gameId, cover, title }: GameOSTProps) {
     </div>
   )
 
+  const renderVisualizer = () => {
+    return (
+      <div
+        ref={(el) => {
+          if (el) setVisualizerWidth(el.offsetWidth)
+        }}
+        className="bg-background/50 flex h-36 w-full items-center justify-center overflow-hidden rounded-xl border p-4 shadow-sm backdrop-blur"
+      >
+        <NativeWaveform
+          blob={audioBlob}
+          currentTime={currentTime}
+          duration={duration}
+          baseColor={
+            resolvedTheme === 'dark'
+              ? 'rgba(255,255,255,0.2)'
+              : 'rgba(0,0,0,0.1)'
+          }
+          activeColor={hasCustomStyle ? playerColor : 'hsl(var(--primary))'}
+        />
+      </div>
+    )
+  }
+
+  const renderLyrics = () => {
+    if (lyrics.length === 0) {
+      return (
+        <div className="bg-background/50 text-muted-foreground flex h-64 items-center justify-center rounded-xl border text-sm shadow-sm backdrop-blur">
+          暂无本地歌词，或未从音源解析到歌词
+        </div>
+      )
+    }
+
+    const activeIndex = lyrics.findIndex((l, i) => {
+      const nextTime = lyrics[i + 1]?.time ?? Infinity
+      return currentTime >= l.time && currentTime < nextTime
+    })
+
+    return (
+      <ScrollArea
+        className="bg-background/50 h-64 w-full rounded-xl border p-4 text-center shadow-sm backdrop-blur [&>div]:overflow-hidden"
+        onScroll={handleLyricsScroll}
+      >
+        <div
+          ref={lyricsContainerRef}
+          className="max-h-full space-y-4 overflow-y-auto"
+        >
+          {lyrics.map((line, i) => {
+            const isActive = i === activeIndex
+            return (
+              <p
+                key={i}
+                ref={isActive ? activeLyricRef : null}
+                id={`lyric-line-${i}`}
+                onClick={() => handleLyricClick(line.time)}
+                className={`cursor-pointer py-1 transition-all duration-300 ${
+                  isActive
+                    ? 'scale-105 text-base font-bold'
+                    : 'text-muted-foreground text-sm opacity-60 hover:opacity-100'
+                }`}
+                style={
+                  isActive
+                    ? {
+                        color: hasCustomStyle
+                          ? playerColor
+                          : 'hsl(var(--primary))',
+                      }
+                    : {}
+                }
+              >
+                {line.text}
+              </p>
+            )
+          })}
+        </div>
+      </ScrollArea>
+    )
+  }
+
+  const renderTabs = () => (
+    <Tabs defaultValue="visualizer" className="mt-2 w-full">
+      <div ref={tabListRef}>
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="visualizer">可视化</TabsTrigger>
+          <TabsTrigger value="lyrics">歌词</TabsTrigger>
+          <TabsTrigger value="all">全部</TabsTrigger>
+        </TabsList>
+      </div>
+      <TabsContent value="visualizer" className="mt-4">
+        {renderVisualizer()}
+      </TabsContent>
+      <TabsContent value="lyrics" className="mt-4">
+        {renderLyrics()}
+      </TabsContent>
+      <TabsContent value="all" className="mt-4 space-y-4">
+        {renderVisualizer()}
+        {renderLyrics()}
+      </TabsContent>
+    </Tabs>
+  )
+
   return (
     <div className="space-y-4">
       <audio
@@ -486,12 +787,15 @@ export default function GameOST({ gameId, cover, title }: GameOSTProps) {
               ))}
         </div>
       ) : (
-        <div className="grid h-130 grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
-          <div className="order-2 flex flex-col justify-center lg:order-1">
+        <div className="grid max-h-[800px] min-h-[520px] grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
+          <div className="order-2 flex flex-col gap-4 overflow-y-auto pr-2 pb-2 lg:order-1">
             {selectedSong ? (
-              renderCoverPlayer()
+              <>
+                {renderCoverPlayer()}
+                {renderTabs()}
+              </>
             ) : (
-              <div className="text-muted-foreground flex flex-col items-center justify-center rounded-2xl border-2 border-dashed py-20">
+              <div className="text-muted-foreground mt-10 flex flex-col items-center justify-center rounded-2xl border-2 border-dashed py-20">
                 <p className="text-sm">选择歌曲开始播放</p>
               </div>
             )}

@@ -149,23 +149,7 @@ export default function GamePV({ gameId }: GamePVProps) {
     }
   }, [])
 
-  useEffect(() => {
-    if (items.length > 0 || hasSteamBinding) {
-      setBindPromptDismissed(false)
-      setBindDialogOpen(false)
-      return
-    }
-
-    if (!isLoading && !isRefetching && !bindPromptDismissed) {
-      setBindDialogOpen(true)
-    }
-  }, [
-    bindPromptDismissed,
-    hasSteamBinding,
-    isLoading,
-    isRefetching,
-    items.length,
-  ])
+  // 移除自动弹窗逻辑，不再在游戏没有绑定Steam AppID时提示用户
 
   useEffect(() => {
     const video = videoRef.current

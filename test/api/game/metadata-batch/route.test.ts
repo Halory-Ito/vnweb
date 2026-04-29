@@ -1,450 +1,461 @@
-import type { NextRequest } from "next/server";
-import { beforeEach, describe, expect, test, vi } from "vitest";
+import { beforeEach, describe, expect, test, vi } from 'vitest'
 
-type SelectQueueItem = unknown[] | Error;
+import type { NextRequest } from 'next/server'
+
+type SelectQueueItem = unknown[] | Error
 
 const mocks = vi.hoisted(() => {
-    const state = {
-        selectQueue: [] as SelectQueueItem[],
-        updateSetArgs: [] as unknown[],
-    };
+  const state = {
+    selectQueue: [] as SelectQueueItem[],
+    updateSetArgs: [] as unknown[],
+  }
 
-    const take = () => {
-        const item = state.selectQueue.shift();
-        if (!item) return [];
-        if (item instanceof Error) throw item;
-        return item;
-    };
+  const take = () => {
+    const item = state.selectQueue.shift()
+    if (!item) return []
+    if (item instanceof Error) throw item
+    return item
+  }
 
-    const select = vi.fn(() => ({
-        from: vi.fn(() => ({
-            where: vi.fn(() => ({
-                limit: vi.fn(async () => take()),
-            })),
-        })),
-    }));
+  const select = vi.fn(() => ({
+    from: vi.fn(() => ({
+      where: vi.fn(() => ({
+        limit: vi.fn(async () => take()),
+      })),
+    })),
+  }))
 
-    const update = vi.fn(() => ({
-        set: vi.fn((setArg: unknown) => {
-            state.updateSetArgs.push(setArg);
-            return {
-                where: vi.fn(async () => undefined),
-            };
-        }),
-    }));
+  const update = vi.fn(() => ({
+    set: vi.fn((setArg: unknown) => {
+      state.updateSetArgs.push(setArg)
+      return {
+        where: vi.fn(async () => undefined),
+      }
+    }),
+  }))
 
-    const BGMClient = {
-        request: vi.fn(async () => ({ data: { id: 123 } })),
-    };
+  const BGMClient = {
+    request: vi.fn(async () => ({ data: { id: 123 } })),
+  }
 
-    const SGDBClient = {
-        searchGame: vi.fn(async () => [] as unknown[]),
-        getGameById: vi.fn(async () => ({})),
-        getGridsById: vi.fn(async () => [] as unknown[]),
-        getIconsById: vi.fn(async () => [] as unknown[]),
-        getLogosById: vi.fn(async () => [] as unknown[]),
-        getHeroesById: vi.fn(async () => [] as unknown[]),
-    };
+  const SGDBClient = {
+    searchGame: vi.fn(async () => [] as unknown[]),
+    getGameById: vi.fn(async () => ({})),
+    getGridsById: vi.fn(async () => [] as unknown[]),
+    getIconsById: vi.fn(async () => [] as unknown[]),
+    getLogosById: vi.fn(async () => [] as unknown[]),
+    getHeroesById: vi.fn(async () => [] as unknown[]),
+  }
 
-    const mapBGMSubjectToGameInfo = vi.fn(() => ({
-        date: "2026-01-01",
-        cover: "https://img/cover.jpg",
-        icon: "",
-        logo: "",
-        bg: "",
-        summary: "new summary",
-        name: "name-en",
-        nameCn: "新名字",
-        tags: ["tag1", "tag2"],
-        nsfw: false,
-        ailases: ["a1"],
-        platforms: ["pc"],
-        gameType: "VN",
-        gameEngine: "krkr",
-        websites: [],
-        links: [],
-        music: "m",
-        script: "s",
-        graphic: "g",
-        originalPainter: "p",
-        animationProduction: "ap",
-        developer: "dev",
-        publisher: "pub",
-        programmer: "prog",
-    }));
+  const mapBGMSubjectToGameInfo = vi.fn(() => ({
+    date: '2026-01-01',
+    cover: 'https://img/cover.jpg',
+    icon: '',
+    logo: '',
+    bg: '',
+    summary: 'new summary',
+    name: 'name-en',
+    nameCn: '新名字',
+    tags: ['tag1', 'tag2'],
+    nsfw: false,
+    ailases: ['a1'],
+    platforms: ['pc'],
+    gameType: 'VN',
+    gameEngine: 'krkr',
+    websites: [],
+    links: [],
+    music: 'm',
+    script: 's',
+    graphic: 'g',
+    originalPainter: 'p',
+    animationProduction: 'ap',
+    developer: 'dev',
+    publisher: 'pub',
+    programmer: 'prog',
+  }))
 
-    const localizeGameImageFields = vi.fn(async () => ({
-        cover: "https://local/cover.jpg",
-        icon: "",
-        logo: "",
-        bg: "",
-    }));
+  const localizeGameImageFields = vi.fn(async () => ({
+    cover: 'https://local/cover.jpg',
+    icon: '',
+    logo: '',
+    bg: '',
+  }))
 
-    return {
-        state,
-        db: { select, update },
-        BGMClient,
-        SGDBClient,
-        mapBGMSubjectToGameInfo,
-        localizeGameImageFields,
-    };
-});
+  return {
+    state,
+    db: { select, update },
+    BGMClient,
+    SGDBClient,
+    mapBGMSubjectToGameInfo,
+    localizeGameImageFields,
+  }
+})
 
-vi.mock("@/lib/drizzle", () => ({ db: mocks.db }));
-vi.mock("@/lib/vndb-client", () => ({
-    BGMClient: mocks.BGMClient,
-    SGDBClient: mocks.SGDBClient,
-}));
-vi.mock(
-    "@/lib/vndb-utils",
-    () => ({ mapBGMSubjectToGameInfo: mocks.mapBGMSubjectToGameInfo }),
-);
-vi.mock(
-    "@/lib/server/game-image-storage",
-    () => ({ localizeGameImageFields: mocks.localizeGameImageFields }),
-);
+vi.mock('@/lib/drizzle', () => ({ db: mocks.db }))
+vi.mock('@/lib/vndb-client', () => ({
+  BGMClient: mocks.BGMClient,
+  SGDBClient: mocks.SGDBClient,
+}))
+vi.mock('@/lib/vndb-utils', () => ({
+  mapBGMSubjectToGameInfo: mocks.mapBGMSubjectToGameInfo,
+}))
+vi.mock('@/lib/server/game-image-storage', () => ({
+  localizeGameImageFields: mocks.localizeGameImageFields,
+}))
 
-import { POST } from "@/app/api/game/metadata-batch/route";
+import { POST } from '@/app/api/game/metadata-batch/route'
 
 const createRequest = (payload: unknown): NextRequest => {
-    return { json: async () => payload } as NextRequest;
-};
+  return { json: async () => payload } as NextRequest
+}
 
-describe("app/api/game/metadata-batch POST", () => {
-    beforeEach(() => {
-        mocks.state.selectQueue = [];
-        mocks.state.updateSetArgs = [];
+describe('app/api/game/metadata-batch POST', () => {
+  beforeEach(() => {
+    mocks.state.selectQueue = []
+    mocks.state.updateSetArgs = []
 
-        mocks.db.select.mockClear();
-        mocks.db.update.mockClear();
-        mocks.BGMClient.request.mockReset();
-        mocks.BGMClient.request.mockResolvedValue({ data: { id: 123 } });
-        mocks.SGDBClient.searchGame.mockReset();
-        mocks.SGDBClient.searchGame.mockResolvedValue([]);
-        mocks.SGDBClient.getGameById.mockReset();
-        mocks.SGDBClient.getGameById.mockResolvedValue({});
-        mocks.SGDBClient.getGridsById.mockReset();
-        mocks.SGDBClient.getGridsById.mockResolvedValue([]);
-        mocks.SGDBClient.getIconsById.mockReset();
-        mocks.SGDBClient.getIconsById.mockResolvedValue([]);
-        mocks.SGDBClient.getLogosById.mockReset();
-        mocks.SGDBClient.getLogosById.mockResolvedValue([]);
-        mocks.SGDBClient.getHeroesById.mockReset();
-        mocks.SGDBClient.getHeroesById.mockResolvedValue([]);
-        mocks.mapBGMSubjectToGameInfo.mockClear();
-        mocks.localizeGameImageFields.mockClear();
-    });
+    mocks.db.select.mockClear()
+    mocks.db.update.mockClear()
+    mocks.BGMClient.request.mockReset()
+    mocks.BGMClient.request.mockResolvedValue({ data: { id: 123 } })
+    mocks.SGDBClient.searchGame.mockReset()
+    mocks.SGDBClient.searchGame.mockResolvedValue([])
+    mocks.SGDBClient.getGameById.mockReset()
+    mocks.SGDBClient.getGameById.mockResolvedValue({})
+    mocks.SGDBClient.getGridsById.mockReset()
+    mocks.SGDBClient.getGridsById.mockResolvedValue([])
+    mocks.SGDBClient.getIconsById.mockReset()
+    mocks.SGDBClient.getIconsById.mockResolvedValue([])
+    mocks.SGDBClient.getLogosById.mockReset()
+    mocks.SGDBClient.getLogosById.mockResolvedValue([])
+    mocks.SGDBClient.getHeroesById.mockReset()
+    mocks.SGDBClient.getHeroesById.mockResolvedValue([])
+    mocks.mapBGMSubjectToGameInfo.mockClear()
+    mocks.localizeGameImageFields.mockClear()
+  })
 
-    test("returns 400 for invalid provider", async () => {
-        const response = await POST(createRequest({ provider: "x" }));
-        const body = await response.json();
+  test('returns 400 for invalid provider', async () => {
+    const response = await POST(createRequest({ provider: 'x' }))
+    const body = await response.json()
 
-        expect(response.status).toBe(400);
-        expect(body).toEqual({ error: "Invalid provider" });
-    });
+    expect(response.status).toBe(400)
+    expect(body).toEqual({ error: 'Invalid provider' })
+  })
 
-    test("returns 400 for invalid strategy", async () => {
-        const response = await POST(
-            createRequest({ provider: "bangumi", strategy: "bad" }),
-        );
-        const body = await response.json();
+  test('returns 400 for invalid strategy', async () => {
+    const response = await POST(
+      createRequest({ provider: 'bangumi', strategy: 'bad' }),
+    )
+    const body = await response.json()
 
-        expect(response.status).toBe(400);
-        expect(body).toEqual({ error: "Invalid strategy" });
-    });
+    expect(response.status).toBe(400)
+    expect(body).toEqual({ error: 'Invalid strategy' })
+  })
 
-    test("returns 400 when required arrays are empty", async () => {
-        const response = await POST(
-            createRequest({
-                provider: "bangumi",
-                strategy: "replace",
-                gameIds: [],
-            }),
-        );
-        const body = await response.json();
+  test('returns 400 when required arrays are empty', async () => {
+    const response = await POST(
+      createRequest({
+        provider: 'bangumi',
+        strategy: 'replace',
+        gameIds: [],
+      }),
+    )
+    const body = await response.json()
 
-        expect(response.status).toBe(400);
-        expect(body).toEqual({ error: "No game ids" });
-    });
+    expect(response.status).toBe(400)
+    expect(body).toEqual({ error: 'No game ids' })
+  })
 
-    test("returns 400 when fields are empty", async () => {
-        const response = await POST(
-            createRequest({
-                provider: "bangumi",
-                strategy: "replace",
-                gameIds: [1],
-                fields: [],
-            }),
-        );
-        const body = await response.json();
+  test('returns 400 when fields are empty', async () => {
+    const response = await POST(
+      createRequest({
+        provider: 'bangumi',
+        strategy: 'replace',
+        gameIds: [1],
+        fields: [],
+      }),
+    )
+    const body = await response.json()
 
-        expect(response.status).toBe(400);
-        expect(body).toEqual({ error: "No fields selected" });
-    });
+    expect(response.status).toBe(400)
+    expect(body).toEqual({ error: 'No fields selected' })
+  })
 
-    test("updates one game successfully", async () => {
-        // Step 1: 准备当前游戏快照。
-        mocks.state.selectQueue.push([
-            {
-                id: 1,
-                date: "2025-01-01",
-                cover: "old-cover",
-                icon: "",
-                logo: "",
-                bg: "",
-                summary: "old summary",
-                name: "old",
-                nameCn: "旧名字",
-                tags: "oldTag",
-                nsfw: 0,
-                ailases: "oldAlias",
-                platforms: "pc",
-                gameType: "",
-                gameEngine: "",
-                music: "",
-                script: "",
-                graphic: "",
-                originalPainter: "",
-                animationProduction: "",
-                developer: "",
-                publisher: "",
-                programmer: "",
-            },
-        ]);
+  test('updates one game successfully', async () => {
+    // Step 1: 准备当前游戏快照。
+    mocks.state.selectQueue.push([
+      {
+        id: 1,
+        date: '2025-01-01',
+        cover: 'old-cover',
+        icon: '',
+        logo: '',
+        bg: '',
+        summary: 'old summary',
+        name: 'old',
+        nameCn: '旧名字',
+        tags: 'oldTag',
+        nsfw: 0,
+        ailases: 'oldAlias',
+        platforms: 'pc',
+        gameType: '',
+        gameEngine: '',
+        music: '',
+        script: '',
+        graphic: '',
+        originalPainter: '',
+        animationProduction: '',
+        developer: '',
+        publisher: '',
+        programmer: '',
+      },
+    ])
 
-        // Step 2: 执行批量更新。
-        const response = await POST(
-            createRequest({
-                gameIds: [1],
-                provider: "bangumi",
-                strategy: "replace",
-                query: "123",
-                fields: ["nameCn", "summary", "cover", "tags"],
-            }),
-        );
-        const body = await response.json();
+    // Step 2: 执行批量更新。
+    const response = await POST(
+      createRequest({
+        gameIds: [1],
+        provider: 'bangumi',
+        strategy: 'replace',
+        query: '123',
+        fields: ['nameCn', 'summary', 'cover', 'tags'],
+      }),
+    )
+    const body = await response.json()
 
-        // Step 3: 断言统计和 patch 内容。
-        expect(response.status).toBe(200);
-        expect(body).toEqual({
-            data: { updatedCount: 1, skippedCount: 0, failedCount: 0 },
-        });
-        expect(mocks.db.update).toHaveBeenCalledTimes(1);
-        expect(mocks.state.updateSetArgs[0]).toMatchObject({
-            nameCn: "新名字",
-            summary: "new summary",
-            cover: "https://local/cover.jpg",
-            tags: "tag1,tag2",
-        });
-    });
+    // Step 3: 断言统计和 patch 内容。
+    expect(response.status).toBe(200)
+    expect(body).toEqual({
+      data: { updatedCount: 1, skippedCount: 0, failedCount: 0 },
+    })
+    expect(mocks.db.update).toHaveBeenCalledTimes(1)
+    expect(mocks.state.updateSetArgs[0]).toMatchObject({
+      nameCn: '新名字',
+      summary: 'new summary',
+      cover: 'https://local/cover.jpg',
+      tags: 'tag1,tag2',
+    })
+  })
 
-    test("counts skipped and failed items", async () => {
-        mocks.state.selectQueue.push([], new Error("select failed"));
+  test('counts skipped and failed items', async () => {
+    mocks.state.selectQueue.push([], new Error('select failed'))
 
-        const response = await POST(
-            createRequest({
-                gameIds: [1, 2],
-                provider: "bangumi",
-                strategy: "replace",
-                query: "123",
-                fields: ["nameCn"],
-            }),
-        );
-        const body = await response.json();
+    const response = await POST(
+      createRequest({
+        gameIds: [1, 2],
+        provider: 'bangumi',
+        strategy: 'replace',
+        query: '123',
+        fields: ['nameCn'],
+      }),
+    )
+    const body = await response.json()
 
-        expect(response.status).toBe(200);
-        expect(body).toEqual({
-            data: { updatedCount: 0, skippedCount: 1, failedCount: 1 },
-        });
-    });
+    expect(response.status).toBe(200)
+    expect(body).toEqual({
+      data: { updatedCount: 0, skippedCount: 1, failedCount: 1 },
+    })
+  })
 
-    test("skips item when effective query is empty", async () => {
-        mocks.state.selectQueue.push([
-            {
-                id: 1,
-                date: "",
-                cover: "",
-                icon: "",
-                logo: "",
-                bg: "",
-                summary: "",
-                name: "",
-                nameCn: "",
-                tags: "",
-                nsfw: 0,
-                ailases: "",
-                platforms: "",
-                gameType: "",
-                gameEngine: "",
-                music: "",
-                script: "",
-                graphic: "",
-                originalPainter: "",
-                animationProduction: "",
-                developer: "",
-                publisher: "",
-                programmer: "",
-            },
-        ]);
+  test('skips item when effective query is empty', async () => {
+    mocks.state.selectQueue.push([
+      {
+        id: 1,
+        date: '',
+        cover: '',
+        icon: '',
+        logo: '',
+        bg: '',
+        summary: '',
+        name: '',
+        nameCn: '',
+        tags: '',
+        nsfw: 0,
+        ailases: '',
+        platforms: '',
+        gameType: '',
+        gameEngine: '',
+        music: '',
+        script: '',
+        graphic: '',
+        originalPainter: '',
+        animationProduction: '',
+        developer: '',
+        publisher: '',
+        programmer: '',
+      },
+    ])
 
-        const response = await POST(
-            createRequest({
-                gameIds: [1],
-                provider: "bangumi",
-                strategy: "replace",
-                fields: ["nameCn"],
-            }),
-        );
-        const body = await response.json();
+    const response = await POST(
+      createRequest({
+        gameIds: [1],
+        provider: 'bangumi',
+        strategy: 'replace',
+        fields: ['nameCn'],
+      }),
+    )
+    const body = await response.json()
 
-        expect(response.status).toBe(200);
-        expect(body.data).toEqual({ updatedCount: 0, skippedCount: 1, failedCount: 0 });
-        expect(mocks.db.update).not.toHaveBeenCalled();
-    });
+    expect(response.status).toBe(200)
+    expect(body.data).toEqual({
+      updatedCount: 0,
+      skippedCount: 1,
+      failedCount: 0,
+    })
+    expect(mocks.db.update).not.toHaveBeenCalled()
+  })
 
-    test("skips item when provider search cannot find matched id", async () => {
-        mocks.state.selectQueue.push([
-            {
-                id: 1,
-                date: "2025-01-01",
-                cover: "",
-                icon: "",
-                logo: "",
-                bg: "",
-                summary: "",
-                name: "Game Name",
-                nameCn: "",
-                tags: "",
-                nsfw: 0,
-                ailases: "",
-                platforms: "",
-                gameType: "",
-                gameEngine: "",
-                music: "",
-                script: "",
-                graphic: "",
-                originalPainter: "",
-                animationProduction: "",
-                developer: "",
-                publisher: "",
-                programmer: "",
-            },
-        ]);
-        mocks.BGMClient.request.mockResolvedValueOnce({ data: { data: [] } });
+  test('skips item when provider search cannot find matched id', async () => {
+    mocks.state.selectQueue.push([
+      {
+        id: 1,
+        date: '2025-01-01',
+        cover: '',
+        icon: '',
+        logo: '',
+        bg: '',
+        summary: '',
+        name: 'Game Name',
+        nameCn: '',
+        tags: '',
+        nsfw: 0,
+        ailases: '',
+        platforms: '',
+        gameType: '',
+        gameEngine: '',
+        music: '',
+        script: '',
+        graphic: '',
+        originalPainter: '',
+        animationProduction: '',
+        developer: '',
+        publisher: '',
+        programmer: '',
+      },
+    ])
+    mocks.BGMClient.request.mockResolvedValueOnce({ data: { data: [] } as any })
 
-        const response = await POST(
-            createRequest({
-                gameIds: [1],
-                provider: "bangumi",
-                strategy: "replace",
-                query: "keyword",
-                fields: ["nameCn"],
-            }),
-        );
-        const body = await response.json();
+    const response = await POST(
+      createRequest({
+        gameIds: [1],
+        provider: 'bangumi',
+        strategy: 'replace',
+        query: 'keyword',
+        fields: ['nameCn'],
+      }),
+    )
+    const body = await response.json()
 
-        expect(response.status).toBe(200);
-        expect(body.data).toEqual({ updatedCount: 0, skippedCount: 1, failedCount: 0 });
-    });
+    expect(response.status).toBe(200)
+    expect(body.data).toEqual({
+      updatedCount: 0,
+      skippedCount: 1,
+      failedCount: 0,
+    })
+  })
 
-    test("merges list and bool fields with merge strategy", async () => {
-        mocks.state.selectQueue.push([
-            {
-                id: 1,
-                date: "2025-01-01",
-                cover: "",
-                icon: "",
-                logo: "",
-                bg: "",
-                summary: "",
-                name: "old",
-                nameCn: "旧名字",
-                tags: "oldTag",
-                nsfw: 1,
-                ailases: "oldAlias",
-                platforms: "pc",
-                gameType: "",
-                gameEngine: "",
-                music: "",
-                script: "",
-                graphic: "",
-                originalPainter: "",
-                animationProduction: "",
-                developer: "",
-                publisher: "",
-                programmer: "",
-            },
-        ]);
+  test('merges list and bool fields with merge strategy', async () => {
+    mocks.state.selectQueue.push([
+      {
+        id: 1,
+        date: '2025-01-01',
+        cover: '',
+        icon: '',
+        logo: '',
+        bg: '',
+        summary: '',
+        name: 'old',
+        nameCn: '旧名字',
+        tags: 'oldTag',
+        nsfw: 1,
+        ailases: 'oldAlias',
+        platforms: 'pc',
+        gameType: '',
+        gameEngine: '',
+        music: '',
+        script: '',
+        graphic: '',
+        originalPainter: '',
+        animationProduction: '',
+        developer: '',
+        publisher: '',
+        programmer: '',
+      },
+    ])
 
-        const response = await POST(
-            createRequest({
-                gameIds: [1],
-                provider: "bangumi",
-                strategy: "merge",
-                query: "123",
-                fields: ["tags", "ailases", "platforms", "nsfw"],
-            }),
-        );
-        const body = await response.json();
+    const response = await POST(
+      createRequest({
+        gameIds: [1],
+        provider: 'bangumi',
+        strategy: 'merge',
+        query: '123',
+        fields: ['tags', 'ailases', 'platforms', 'nsfw'],
+      }),
+    )
+    const body = await response.json()
 
-        expect(response.status).toBe(200);
-        expect(body.data.updatedCount).toBe(1);
-        expect(mocks.state.updateSetArgs[0]).toMatchObject({
-            tags: "oldTag,tag1,tag2",
-            ailases: "oldAlias,a1",
-            platforms: "pc",
-            nsfw: 1,
-        });
-    });
+    expect(response.status).toBe(200)
+    expect(body.data.updatedCount).toBe(1)
+    expect(mocks.state.updateSetArgs[0]).toMatchObject({
+      tags: 'oldTag,tag1,tag2',
+      ailases: 'oldAlias,a1',
+      platforms: 'pc',
+      nsfw: 1,
+    })
+  })
 
-    test("counts item as failed when update query throws", async () => {
-        mocks.state.selectQueue.push([
-            {
-                id: 1,
-                date: "2025-01-01",
-                cover: "",
-                icon: "",
-                logo: "",
-                bg: "",
-                summary: "old summary",
-                name: "old",
-                nameCn: "旧名字",
-                tags: "oldTag",
-                nsfw: 0,
-                ailases: "",
-                platforms: "",
-                gameType: "",
-                gameEngine: "",
-                music: "",
-                script: "",
-                graphic: "",
-                originalPainter: "",
-                animationProduction: "",
-                developer: "",
-                publisher: "",
-                programmer: "",
-            },
-        ]);
-        mocks.db.update.mockImplementationOnce(() => ({
-            set: vi.fn(() => ({
-                where: vi.fn(async () => {
-                    throw new Error("update failed");
-                }),
-            })),
-        }));
+  test('counts item as failed when update query throws', async () => {
+    mocks.state.selectQueue.push([
+      {
+        id: 1,
+        date: '2025-01-01',
+        cover: '',
+        icon: '',
+        logo: '',
+        bg: '',
+        summary: 'old summary',
+        name: 'old',
+        nameCn: '旧名字',
+        tags: 'oldTag',
+        nsfw: 0,
+        ailases: '',
+        platforms: '',
+        gameType: '',
+        gameEngine: '',
+        music: '',
+        script: '',
+        graphic: '',
+        originalPainter: '',
+        animationProduction: '',
+        developer: '',
+        publisher: '',
+        programmer: '',
+      },
+    ])
+    mocks.db.update.mockImplementationOnce(() => ({
+      set: vi.fn(() => ({
+        where: vi.fn(async () => {
+          throw new Error('update failed')
+        }),
+      })),
+    }))
 
-        const response = await POST(
-            createRequest({
-                gameIds: [1],
-                provider: "bangumi",
-                strategy: "append",
-                query: "123",
-                fields: ["summary"],
-            }),
-        );
-        const body = await response.json();
+    const response = await POST(
+      createRequest({
+        gameIds: [1],
+        provider: 'bangumi',
+        strategy: 'append',
+        query: '123',
+        fields: ['summary'],
+      }),
+    )
+    const body = await response.json()
 
-        expect(response.status).toBe(200);
-        expect(body.data).toEqual({ updatedCount: 0, skippedCount: 0, failedCount: 1 });
-    });
-});
+    expect(response.status).toBe(200)
+    expect(body.data).toEqual({
+      updatedCount: 0,
+      skippedCount: 0,
+      failedCount: 1,
+    })
+  })
+})

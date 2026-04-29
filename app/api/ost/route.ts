@@ -6,6 +6,8 @@ import path from 'node:path'
 import { GameInfoTable, GameOstTable, GameOstSongsTable } from '@/db/schema'
 import { db } from '@/lib/drizzle'
 
+const NETEASE_API_BASE = process.env.NETEASE_API_BASE || 'http://localhost:2999'
+
 const normalizeText = (value: unknown) => {
   if (typeof value !== 'string') {
     return ''
@@ -149,6 +151,8 @@ const createOst = async (req: NextRequest) => {
         name: string
         url: string
         mediaType?: string
+        lyricsText?: string
+        lyricsPath?: string
       }>
     }
 
@@ -203,15 +207,48 @@ const createOst = async (req: NextRequest) => {
 
     // 如果有歌曲列表，则同时保存到 game_ost_songs 表
     if (payload.songs && payload.songs.length > 0) {
-      const songValues = payload.songs.map((song) => ({
-        gameId,
-        ostId,
-        name: normalizeText(song.name),
-        url: normalizeText(song.url),
-        mediaType: normalizeText(song.mediaType || ''),
-        createdAt: now,
-        updatedAt: now,
-      }))
+      const songValues = await Promise.all(
+        payload.songs.map(async (song) => {
+          let lyricsText = normalizeText(song.lyricsText || '')
+
+          // 如果是网易云资源且没有提供 lyricsText，则从歌词服务获取
+          if (
+            resource === 'netease' &&
+            !lyricsText &&
+            song.url.includes('?id=')
+          ) {
+            const match = song.url.match(/[?&]id=(\d+)/)
+            if (match) {
+              const songId = match[1]
+              try {
+                const lyricResponse = await fetch(
+                  `${NETEASE_API_BASE}/lyric?id=${songId}`,
+                )
+                if (lyricResponse.ok) {
+                  const lyricData = await lyricResponse.json()
+                  if (lyricData.lrc?.lyric) {
+                    lyricsText = lyricData.lrc.lyric
+                  }
+                }
+              } catch (err) {
+                console.error('Failed to fetch lyric for song:', song.name, err)
+              }
+            }
+          }
+
+          return {
+            gameId,
+            ostId,
+            name: normalizeText(song.name),
+            url: normalizeText(song.url),
+            mediaType: normalizeText(song.mediaType || ''),
+            lyricsText,
+            lyricsPath: '',
+            createdAt: now,
+            updatedAt: now,
+          }
+        }),
+      )
 
       await db.insert(GameOstSongsTable).values(songValues)
     }
