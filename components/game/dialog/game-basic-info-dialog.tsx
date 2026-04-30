@@ -34,6 +34,15 @@ type FormValues = {
   tags: string
   developer: string
   publisher: string
+  gameType: string
+  gameEngine: string
+  platforms: string
+  music: string
+  script: string
+  graphic: string
+  originalPainter: string
+  animationProduction: string
+  programmer: string
   nsfw: boolean
 }
 
@@ -55,6 +64,15 @@ export default function GameBasicInfoDialog({
     tags: (game.tags || []).join(', '),
     developer: game.developer || '',
     publisher: game.publisher || '',
+    gameType: game.gameType || '',
+    gameEngine: game.gameEngine || '',
+    platforms: (game.platforms || []).join(', '),
+    music: game.music || '',
+    script: game.script || '',
+    graphic: game.graphic || '',
+    originalPainter: game.originalPainter || '',
+    animationProduction: game.animationProduction || '',
+    programmer: game.programmer || '',
     nsfw: Boolean(game.nsfw),
   })
 
@@ -72,6 +90,15 @@ export default function GameBasicInfoDialog({
       tags: (game.tags || []).join(', '),
       developer: game.developer || '',
       publisher: game.publisher || '',
+      gameType: game.gameType || '',
+      gameEngine: game.gameEngine || '',
+      platforms: (game.platforms || []).join(', '),
+      music: game.music || '',
+      script: game.script || '',
+      graphic: game.graphic || '',
+      originalPainter: game.originalPainter || '',
+      animationProduction: game.animationProduction || '',
+      programmer: game.programmer || '',
       nsfw: Boolean(game.nsfw),
     })
   }, [
@@ -85,6 +112,15 @@ export default function GameBasicInfoDialog({
     game.tags,
     game.developer,
     game.publisher,
+    game.gameType,
+    game.gameEngine,
+    game.platforms,
+    game.music,
+    game.script,
+    game.graphic,
+    game.originalPainter,
+    game.animationProduction,
+    game.programmer,
     game.nsfw,
   ])
 
@@ -108,6 +144,18 @@ export default function GameBasicInfoDialog({
           .filter(Boolean),
         developer: formValues.developer,
         publisher: formValues.publisher,
+        gameType: formValues.gameType,
+        gameEngine: formValues.gameEngine,
+        platforms: formValues.platforms
+          .split(',')
+          .map((tag) => tag.trim())
+          .filter(Boolean),
+        music: formValues.music,
+        script: formValues.script,
+        graphic: formValues.graphic,
+        originalPainter: formValues.originalPainter,
+        animationProduction: formValues.animationProduction,
+        programmer: formValues.programmer,
         nsfw: formValues.nsfw,
       })
 
@@ -154,7 +202,7 @@ export default function GameBasicInfoDialog({
             />
           </div>
           <div className="space-y-2">
-            <div className="text-sm">发布日期</div>
+            <div className="text-sm">发售日期</div>
             <Input
               value={formValues.date}
               onChange={(e) => setField('date', e.target.value)}
@@ -197,6 +245,69 @@ export default function GameBasicInfoDialog({
             <Input
               value={formValues.publisher}
               onChange={(e) => setField('publisher', e.target.value)}
+            />
+          </div>
+          <div className="space-y-2">
+            <div className="text-sm">游戏类型</div>
+            <Input
+              value={formValues.gameType}
+              onChange={(e) => setField('gameType', e.target.value)}
+            />
+          </div>
+          <div className="space-y-2">
+            <div className="text-sm">游戏引擎</div>
+            <Input
+              value={formValues.gameEngine}
+              onChange={(e) => setField('gameEngine', e.target.value)}
+            />
+          </div>
+          <div className="space-y-2">
+            <div className="text-sm">平台（逗号分隔）</div>
+            <Input
+              value={formValues.platforms}
+              onChange={(e) => setField('platforms', e.target.value)}
+            />
+          </div>
+          <div className="space-y-2">
+            <div className="text-sm">音乐</div>
+            <Input
+              value={formValues.music}
+              onChange={(e) => setField('music', e.target.value)}
+            />
+          </div>
+          <div className="space-y-2">
+            <div className="text-sm">剧本</div>
+            <Input
+              value={formValues.script}
+              onChange={(e) => setField('script', e.target.value)}
+            />
+          </div>
+          <div className="space-y-2">
+            <div className="text-sm">美术</div>
+            <Input
+              value={formValues.graphic}
+              onChange={(e) => setField('graphic', e.target.value)}
+            />
+          </div>
+          <div className="space-y-2">
+            <div className="text-sm">原画</div>
+            <Input
+              value={formValues.originalPainter}
+              onChange={(e) => setField('originalPainter', e.target.value)}
+            />
+          </div>
+          <div className="space-y-2">
+            <div className="text-sm">动画制作</div>
+            <Input
+              value={formValues.animationProduction}
+              onChange={(e) => setField('animationProduction', e.target.value)}
+            />
+          </div>
+          <div className="space-y-2">
+            <div className="text-sm">程序</div>
+            <Input
+              value={formValues.programmer}
+              onChange={(e) => setField('programmer', e.target.value)}
             />
           </div>
           <div className="flex items-center justify-between rounded-md border px-3 py-2">
