@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 import { getAppOrigin, issueOAuthState } from '../../_shared'
+import { BANGUMI_OAUTH_CLIENT_ID } from '@/app/config'
 
 const AUTHORIZE_URL = 'https://bgm.tv/oauth/authorize'
 
 const startBangumiLogin = async (req: NextRequest) => {
-  const clientId = process.env.BANGUMI_OAUTH_CLIENT_ID || ''
+  const clientId =
+    process.env.BANGUMI_OAUTH_CLIENT_ID || BANGUMI_OAUTH_CLIENT_ID || ''
   if (!clientId) {
     return NextResponse.json(
       { error: '缺少 BANGUMI_OAUTH_CLIENT_ID 配置' },

@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-const NETEASE_API_BASE = process.env.NETEASE_API_BASE || 'http://localhost:2999'
-
+import { NETEASE_API_BASE } from '@/app/config'
 /**
  * 获取网易云音乐专辑详情和歌曲列表
  * 使用第三方镜像 API

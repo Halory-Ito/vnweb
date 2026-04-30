@@ -7,6 +7,10 @@ import {
   saveThirdPartyAccount,
   validateOAuthState,
 } from '../../_shared'
+import {
+  BANGUMI_OAUTH_CLIENT_ID,
+  BANGUMI_OAUTH_CLIENT_SECRET,
+} from '@/app/config'
 
 const TOKEN_URL = 'https://bgm.tv/oauth/access_token'
 const PROFILE_URL = 'https://api.bgm.tv/v0/me'
@@ -41,8 +45,12 @@ const bangumiCallback = async (req: NextRequest) => {
       )
     }
 
-    const clientId = process.env.BANGUMI_OAUTH_CLIENT_ID || ''
-    const clientSecret = process.env.BANGUMI_OAUTH_CLIENT_SECRET || ''
+    const clientId =
+      process.env.BANGUMI_OAUTH_CLIENT_ID || BANGUMI_OAUTH_CLIENT_ID || ''
+    const clientSecret =
+      process.env.BANGUMI_OAUTH_CLIENT_SECRET ||
+      BANGUMI_OAUTH_CLIENT_SECRET ||
+      ''
     if (!clientId || !clientSecret) {
       return NextResponse.redirect(
         toSettingsUrl(req, 'failed', 'missing_config'),

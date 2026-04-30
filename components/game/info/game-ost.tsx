@@ -21,7 +21,7 @@ import dynamic from 'next/dynamic'
 import { useEffect, useMemo, useRef, useState, useCallback } from 'react'
 import { toast } from 'sonner'
 
-import NativeWaveform from './native-waveform'
+import LiveVisualizer from './live-visiualize'
 import { Button } from '@/components/ui/button'
 import {
   Popover,
@@ -107,17 +107,31 @@ type OstSongItem = {
   lyricsPath: string
 }
 
+const MODE_KEYS: PlayMode[] = [
+  'list-loop',
+  'sequence',
+  'shuffle',
+  'single-loop',
+]
+
+const MODE_ICONS: Record<PlayMode, React.ReactNode> = {
+  'list-loop': <Repeat className="size-3.5" />,
+  sequence: <ListOrdered className="size-3.5" />,
+  shuffle: <Shuffle className="size-3.5" />,
+  'single-loop': <Repeat1 className="size-3.5" />,
+}
+
 const MODE_LABELS: Record<PlayMode, string> = {
   shuffle: '随机',
   sequence: '顺序',
-  'list-loop': '循环',
-  'single-loop': '单曲',
+  'list-loop': '列表循环',
+  'single-loop': '单曲循环',
 }
 
 const MODE_ORDER: PlayMode[] = [
-  'shuffle',
-  'sequence',
   'list-loop',
+  'sequence',
+  'shuffle',
   'single-loop',
 ]
 
@@ -165,26 +179,17 @@ export default function GameOST({ gameId, cover, title }: GameOSTProps) {
   const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const [isUserScrolling, setIsUserScrolling] = useState(false)
 
-  // 歌词自动滚动到可见区域正中心
   const scrollToActiveLyric = useCallback(() => {
     if (activeLyricRef.current && lyricsContainerRef.current) {
       const container = lyricsContainerRef.current
       const activeElement = activeLyricRef.current
 
-      // 获取容器可见区域的实际尺寸和位置
-      const containerRect = container.getBoundingClientRect()
-      const activeRect = activeElement.getBoundingClientRect()
-
-      // 计算可见区域的垂直中心点（相对于视口）
-      const viewportCenterY = containerRect.top + containerRect.height / 2
-
-      // 计算歌词元素需要滚动到的位置
-      // 用歌词元素中心点 - 可见区域中心点 = 需要的滚动偏移
-      const activeCenterY = activeRect.top + activeRect.height / 2
-      const scrollOffset = activeCenterY - viewportCenterY
-
-      // 新的 scrollTop = 当前 scrollTop + 偏移量
-      const targetScrollTop = container.scrollTop + scrollOffset
+      // 计算中心位置：
+      // 目标位置 = (歌词距离顶部的距离) - (容器高度的一半) + (歌词高度的一半)
+      const targetScrollTop =
+        activeElement.offsetTop -
+        container.clientHeight / 2 +
+        activeElement.clientHeight / 2
 
       container.scrollTo({
         top: targetScrollTop,
@@ -192,6 +197,13 @@ export default function GameOST({ gameId, cover, title }: GameOSTProps) {
       })
     }
   }, [])
+
+  useEffect(() => {
+    // 只有当用户没有在手动滚动时，才执行自动居中
+    if (!isUserScrolling && lyrics.length > 0) {
+      scrollToActiveLyric()
+    }
+  }, [currentTime, isUserScrolling, lyrics.length, scrollToActiveLyric])
 
   // 处理用户滚动行为
   const handleLyricsScroll = useCallback(() => {
@@ -326,8 +338,17 @@ export default function GameOST({ gameId, cover, title }: GameOSTProps) {
     } else {
       next = Math.min(selectedSongIndex + 1, songs.length - 1)
     }
-    pendingAutoPlayRef.current = true
-    setSelectedSongIndex(next)
+
+    if (next === selectedSongIndex && songs.length > 0) {
+      // 强制重新播放当前歌曲
+      if (audioRef.current) {
+        audioRef.current.currentTime = 0
+        audioRef.current.play().catch(() => setIsPlaying(false))
+      }
+    } else {
+      pendingAutoPlayRef.current = true
+      setSelectedSongIndex(next)
+    }
   }
 
   // 获取网易云歌曲真实 URL
@@ -355,6 +376,13 @@ export default function GameOST({ gameId, cover, title }: GameOSTProps) {
       return songUrl
     }
   }
+
+  // 1. 确保音量实时同步，无论如何切换 Tab
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = volume / 100
+    }
+  }, [volume, selectedSong]) // 监听 volume 状态和歌曲切换
 
   useEffect(() => {
     if (selectedSong && pendingAutoPlayRef.current) {
@@ -418,6 +446,36 @@ export default function GameOST({ gameId, cover, title }: GameOSTProps) {
       }
     }
   }, [selectedSong, selectedAlbum])
+
+  // 专门处理音量的 Effect
+  useEffect(() => {
+    if (audioRef.current) {
+      // 强制同步，不给浏览器任何“淡入”的机会
+      audioRef.current.volume = volume / 100
+    }
+  }, [volume])
+
+  // 当切歌逻辑触发时，手动更新 src 而不是靠 key 自动更新
+  useEffect(() => {
+    if (selectedSong && audioRef.current) {
+      const audio = audioRef.current
+
+      // 如果 src 没变就不重新加载（防止切换 Tab 导致重新播放）
+      if (audio.src !== selectedSong.url) {
+        // 记录当前是否在播放
+        const wasPlaying = isPlaying
+
+        // 获取真实 URL 的逻辑保持不变...
+        // playSong 内部直接操作 audio.src
+        audio.src = selectedSong.url
+        audio.load() // 强制加载新源
+
+        if (wasPlaying) {
+          audio.play().catch(() => setIsPlaying(false))
+        }
+      }
+    }
+  }, [selectedSong])
 
   // --- UI 组件渲染 ---
   const renderCoverPlayer = () => (
@@ -495,12 +553,24 @@ export default function GameOST({ gameId, cover, title }: GameOSTProps) {
               className="size-8"
               onClick={() => {
                 let prev = selectedSongIndex
-                if (playMode === 'shuffle')
-                  prev = Math.floor(Math.random() * songs.length)
-                else
+                if (playMode === 'shuffle' && songs.length > 1) {
+                  while (prev === selectedSongIndex)
+                    prev = Math.floor(Math.random() * songs.length)
+                } else if (playMode === 'list-loop') {
                   prev = (selectedSongIndex - 1 + songs.length) % songs.length
-                setSelectedSongIndex(prev)
-                pendingAutoPlayRef.current = true
+                } else {
+                  prev = Math.max(selectedSongIndex - 1, 0)
+                }
+
+                if (prev === selectedSongIndex) {
+                  if (audioRef.current) {
+                    audioRef.current.currentTime = 0
+                    audioRef.current.play().catch(() => setIsPlaying(false))
+                  }
+                } else {
+                  setSelectedSongIndex(prev)
+                  pendingAutoPlayRef.current = true
+                }
               }}
               disabled={!selectedSong}
             >
@@ -540,14 +610,15 @@ export default function GameOST({ gameId, cover, title }: GameOSTProps) {
 
             <Button
               variant="ghost"
-              size="sm"
-              className="h-8 px-2 text-[10px]"
+              size="icon"
+              className="size-8"
+              title={MODE_LABELS[playMode]}
               onClick={() => {
                 const currentIndex = MODE_ORDER.indexOf(playMode)
                 setPlayMode(MODE_ORDER[(currentIndex + 1) % MODE_ORDER.length])
               }}
             >
-              <span className="max-w-10 truncate">{MODE_LABELS[playMode]}</span>
+              {MODE_ICONS[playMode]}
             </Button>
 
             <Popover>
@@ -648,32 +719,33 @@ export default function GameOST({ gameId, cover, title }: GameOSTProps) {
 
   const renderVisualizer = () => {
     return (
-      <div
-        ref={(el) => {
-          if (el) setVisualizerWidth(el.offsetWidth)
-        }}
-        className="bg-background/50 flex h-36 w-full items-center justify-center overflow-hidden rounded-xl border p-4 shadow-sm backdrop-blur"
-      >
-        <NativeWaveform
-          blob={audioBlob}
-          currentTime={currentTime}
-          duration={duration}
-          baseColor={
-            resolvedTheme === 'dark'
-              ? 'rgba(255,255,255,0.2)'
-              : 'rgba(0,0,0,0.1)'
-          }
-          activeColor={hasCustomStyle ? playerColor : 'hsl(var(--primary))'}
+      <div className="relative flex h-40 w-full items-center justify-center overflow-hidden rounded-xl border bg-black/5 shadow-inner backdrop-blur-md">
+        {/* 背景微弱光晕 */}
+        <div
+          className="absolute inset-0 opacity-10"
+          style={{
+            background: `radial-gradient(circle, ${playerColor} 0%, transparent 70%)`,
+          }}
         />
+
+        <LiveVisualizer
+          audioRef={audioRef}
+          isPlaying={isPlaying}
+          color={hasCustomStyle ? playerColor : 'hsl(var(--primary))'}
+        />
+
+        {/* 时间显示悬浮窗 */}
+        <div className="absolute right-3 bottom-2 rounded bg-black/20 px-2 py-1 font-mono text-[10px] text-white/70 backdrop-blur-sm">
+          {formatTime(currentTime)} / {formatTime(duration)}
+        </div>
       </div>
     )
   }
-
   const renderLyrics = () => {
     if (lyrics.length === 0) {
       return (
-        <div className="bg-background/50 text-muted-foreground flex h-64 items-center justify-center rounded-xl border text-sm shadow-sm backdrop-blur">
-          暂无本地歌词，或未从音源解析到歌词
+        <div className="bg-background/40 flex h-64 items-center justify-center rounded-xl border-2 border-dashed text-sm backdrop-blur-md">
+          <p className="opacity-50">暂无本地歌词</p>
         </div>
       )
     }
@@ -684,13 +756,15 @@ export default function GameOST({ gameId, cover, title }: GameOSTProps) {
     })
 
     return (
-      <ScrollArea
-        className="bg-background/50 h-64 w-full rounded-xl border p-4 text-center shadow-sm backdrop-blur [&>div]:overflow-hidden"
-        onScroll={handleLyricsScroll}
-      >
+      <div className="bg-background/50 relative h-64 w-full overflow-hidden rounded-xl border backdrop-blur">
+        {/* 顶部和底部的遮罩，让歌词有渐隐效果 */}
+        <div className="from-background/80 pointer-events-none absolute inset-x-0 top-0 z-10 h-16 bg-gradient-to-b to-transparent" />
+        <div className="from-background/80 pointer-events-none absolute inset-x-0 bottom-0 z-10 h-16 bg-gradient-to-t to-transparent" />
+
         <div
           ref={lyricsContainerRef}
-          className="max-h-full space-y-4 overflow-y-auto"
+          onScroll={handleLyricsScroll}
+          className="h-full overflow-y-auto scroll-smooth px-4 py-32 text-center" // py-32 保证最后一句也能滚到中心
         >
           {lyrics.map((line, i) => {
             const isActive = i === activeIndex
@@ -698,12 +772,11 @@ export default function GameOST({ gameId, cover, title }: GameOSTProps) {
               <p
                 key={i}
                 ref={isActive ? activeLyricRef : null}
-                id={`lyric-line-${i}`}
                 onClick={() => handleLyricClick(line.time)}
-                className={`cursor-pointer py-1 transition-all duration-300 ${
+                className={`cursor-pointer py-3 transition-all duration-500 ${
                   isActive
-                    ? 'scale-105 text-base font-bold'
-                    : 'text-muted-foreground text-sm opacity-60 hover:opacity-100'
+                    ? 'scale-110 text-lg font-bold opacity-100'
+                    : 'text-sm opacity-40 hover:opacity-80'
                 }`}
                 style={
                   isActive
@@ -720,14 +793,19 @@ export default function GameOST({ gameId, cover, title }: GameOSTProps) {
             )
           })}
         </div>
-      </ScrollArea>
+      </div>
     )
   }
 
   const renderTabs = () => (
     <Tabs defaultValue="visualizer" className="mt-2 w-full">
       <div ref={tabListRef}>
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList
+          style={{
+            backgroundColor: hexToRgba(playerColor || '#ffffff', opacity),
+          }}
+          className={`grid w-full grid-cols-3`}
+        >
           <TabsTrigger value="visualizer">可视化</TabsTrigger>
           <TabsTrigger value="lyrics">歌词</TabsTrigger>
           <TabsTrigger value="all">全部</TabsTrigger>
@@ -750,14 +828,35 @@ export default function GameOST({ gameId, cover, title }: GameOSTProps) {
     <div className="space-y-4">
       <audio
         ref={audioRef}
-        key={selectedSong?.url ?? 'empty'}
-        onLoadedMetadata={(e) => setDuration(e.currentTarget.duration || 0)}
+        // 1. ！！！务必移除 key 属性 ！！！
+        // key={selectedSong?.url ?? 'empty'}
+
+        crossOrigin="anonymous"
+        onLoadedMetadata={(e) => {
+          // 2. 在元数据加载瞬间立即强制同步音量
+          e.currentTarget.volume = volume / 100
+          setDuration(e.currentTarget.duration || 0)
+        }}
         onTimeUpdate={(e) => {
           if (!isSeeking) setCurrentTime(e.currentTarget.currentTime)
         }}
-        onEnded={handleNext}
+        onEnded={() => {
+          if (playMode === 'single-loop') {
+            if (audioRef.current) {
+              audioRef.current.currentTime = 0
+              audioRef.current.play().catch(() => setIsPlaying(false))
+            }
+          } else if (playMode === 'sequence') {
+            if (selectedSongIndex < songs.length - 1) {
+              handleNext()
+            } else {
+              setIsPlaying(false) // 顺序播放到最后一首停止
+            }
+          } else {
+            handleNext()
+          }
+        }}
       />
-
       {viewMode === 'album' ? (
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8">
           {isLoading

@@ -3,10 +3,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import fs from 'node:fs'
 import path from 'node:path'
 
+import { NETEASE_API_BASE } from '@/app/config'
 import { GameInfoTable, GameOstTable, GameOstSongsTable } from '@/db/schema'
 import { db } from '@/lib/drizzle'
-
-const NETEASE_API_BASE = process.env.NETEASE_API_BASE || 'http://localhost:2999'
 
 const normalizeText = (value: unknown) => {
   if (typeof value !== 'string') {

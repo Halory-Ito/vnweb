@@ -421,10 +421,10 @@ export default function GameInfo({ game, initialTab }: GameInfoProps) {
         <ContextMenuItem onClick={() => setUpdateDataOpen(true)}>
           更新资料数据
         </ContextMenuItem>
-        <ContextMenuItem onClick={handleEditGamePV}>修改游戏PV</ContextMenuItem>
+        {/* <ContextMenuItem onClick={handleEditGamePV}>修改游戏PV</ContextMenuItem>
         <ContextMenuItem onClick={handleEditGameOST}>
           修改游戏OST
-        </ContextMenuItem>
+        </ContextMenuItem> */}
       </ContextMenuContent>
 
       <GameBasicInfoDialog

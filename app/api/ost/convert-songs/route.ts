@@ -1,10 +1,9 @@
 import { eq } from 'drizzle-orm'
 import { NextRequest, NextResponse } from 'next/server'
 
+import { NETEASE_API_BASE } from '@/app/config'
 import { GameOstSongsTable } from '@/db/schema'
 import { db } from '@/lib/drizzle'
-
-const NETEASE_API_BASE = process.env.NETEASE_API_BASE || 'http://localhost:2999'
 
 // 获取网易云歌词
 async function fetchLyrics(songId: number): Promise<string> {
