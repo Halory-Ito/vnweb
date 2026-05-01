@@ -2,7 +2,7 @@ import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
   /* config options here */
-  reactCompiler: true,
+  // reactCompiler: true,
   experimental: {
     // 自动按需引入第三方包，大幅缩小打包体积
     optimizePackageImports: [

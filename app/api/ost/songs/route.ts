@@ -1,4 +1,3 @@
-import dayjs from 'dayjs'
 import { eq } from 'drizzle-orm'
 import { NextRequest, NextResponse } from 'next/server'
 

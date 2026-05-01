@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-import { NETEASE_API_BASE } from '@/app/config'
+import { NETEASE_API_BASE, NETEASE_COOKIE } from '@/app/config'
 /**
  * 获取网易云音乐歌曲真实 URL
  * 使用 /song/url/v1 接口
@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
       .filter(Boolean)
 
     // 调用歌曲 URL API，单个 ID 直接传递，多个 ID 用逗号分隔
-    const apiUrl = `${NETEASE_API_BASE}/song/url/v1?id=${ids.join(',')}&level=${level}`
+    const apiUrl = `${NETEASE_API_BASE}/song/url/v1?id=${ids.join(',')}&level=${level}&cookie=${NETEASE_COOKIE}`
 
     const res = await fetch(apiUrl, {
       headers: {
