@@ -49,14 +49,14 @@ const contentItems: SidebarItem[] = [
   { title: '主页', href: '/game', icon: HomeIcon },
   { title: '记录', href: '/record', icon: BoxIcon },
   { title: '扫描', href: '/scan', icon: ScanIcon },
-  { title: '攻略', href: '/guide', icon: MapIcon },
+  // { title: '攻略', href: '/guide', icon: MapIcon },
   { title: 'PV', href: '/pv', icon: VideoIcon },
   { title: 'OST', href: '/ost', icon: MusicIcon },
 ]
 
 const footerItems: SidebarItem[] = [
   // { title: '游戏主页', href: '/game/home', icon: UserIcon },
-  { title: '插件市场', href: '/market', icon: ShoppingBasketIcon },
+  // { title: '插件市场', href: '/market', icon: ShoppingBasketIcon },
   { title: '设置', href: '/settings', icon: SettingsIcon },
 ]
 

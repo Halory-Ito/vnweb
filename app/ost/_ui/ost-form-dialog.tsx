@@ -240,7 +240,7 @@ export function OstFormDialog({
           </DialogHeader>
 
           <div className="flex-1 overflow-auto py-4">
-            <Table>
+            <Table className="table-fixed">
               <TableHeader className="bg-background sticky top-0 z-10">
                 <TableRow>
                   <TableHead className="w-20">封面</TableHead>

@@ -65,16 +65,6 @@ export const GameOstSongsTable = sqliteTable('game_ost_songs', {
   updatedAt: text().default(dayjs().toString()), // 更新时间
 })
 
-// 已废弃：歌词关联表（歌词信息现已直接存储在 GameOstSongsTable 中）
-export const GameOstLyricsTable = sqliteTable('game_ost_lyrics', {
-  id: int().primaryKey({ autoIncrement: true }),
-  ostSongId: int().notNull(), // 关联的 OST 曲目 id
-  lyricsText: text().default(''), // 歌词文本
-  lyricsUrl: text().default(''), // 歌词链接地址
-  createdAt: text().default(dayjs().toString()), // 创建时间
-  updatedAt: text().default(dayjs().toString()), // 更新时间
-})
-
 // 游戏游玩表
 export const GamePlayTable = sqliteTable('game_play', {
   id: int().primaryKey({ autoIncrement: true }),

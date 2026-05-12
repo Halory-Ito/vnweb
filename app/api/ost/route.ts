@@ -288,19 +288,6 @@ const deleteOst = async (req: NextRequest) => {
       return NextResponse.json({ error: 'OST 不存在' }, { status: 404 })
     }
 
-    // 先删除关联的歌词记录
-    const songIds = await db
-      .select({ id: GameOstSongsTable.id })
-      .from(GameOstSongsTable)
-      .where(eq(GameOstSongsTable.ostId, ostId))
-
-    if (songIds.length > 0) {
-      const lyricsTable = (await import('@/db/schema')).GameOstLyricsTable
-      for (const song of songIds) {
-        await db.delete(lyricsTable).where(eq(lyricsTable.ostSongId, song.id))
-      }
-    }
-
     // 删除关联的歌曲记录
     await db.delete(GameOstSongsTable).where(eq(GameOstSongsTable.ostId, ostId))
 

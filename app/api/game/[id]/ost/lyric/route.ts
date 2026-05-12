@@ -119,14 +119,15 @@ const uploadOstLyric = async (
 
     const lyricsUrl = `/assets/ost/${item.ostId}/${targetFileName}`
 
-    // 保存歌词记录到数据库
-    const { GameOstLyricsTable } = await import('@/db/schema')
+    // 保存歌词文件路径到数据库
     const now = new Date().toISOString()
-    await db.insert(GameOstLyricsTable).values({
-      ostSongId: itemId,
-      lyricsUrl,
-      updatedAt: now,
-    })
+    await db
+      .update(GameOstSongsTable)
+      .set({
+        lyricsPath: lyricsUrl,
+        updatedAt: now,
+      })
+      .where(eq(GameOstSongsTable.id, itemId))
 
     return NextResponse.json({
       data: {

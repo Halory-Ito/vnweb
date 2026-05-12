@@ -29,6 +29,20 @@
       "when": 1745880060000,
       "tag": "0003_create_ost_tables",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1778034489753,
+      "tag": "0004_long_victor_mancha",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1778034666987,
+      "tag": "0005_drop_ost_lyrics_table",
+      "breakpoints": true
     }
   ]
 }

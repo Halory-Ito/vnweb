@@ -206,6 +206,7 @@ export default function GameCard(props: GameCardProps) {
               alt={props.title}
               fill
               sizes="176px"
+              fetchPriority="high"
             />
 
             {/* 悬停遮罩 */}
