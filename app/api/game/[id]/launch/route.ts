@@ -105,7 +105,7 @@ const launchGame = async (
     const iconFileName = `${safeName}_${safeDate}.ico`
 
     const assetsIconDir = path.join(process.cwd(), 'assets', 'icon')
-    const publicIconDir = path.join(process.cwd(), 'public', 'assets', 'icon')
+    const publicIconDir = path.join(process.cwd(), 'assets', 'icon')
 
     await fs.promises.mkdir(assetsIconDir, { recursive: true })
     await fs.promises.mkdir(publicIconDir, { recursive: true })

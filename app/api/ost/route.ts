@@ -105,7 +105,7 @@ const downloadCoverToLocal = async (
   ostName: string,
 ): Promise<string | null> => {
   try {
-    const assetsDir = path.join(process.cwd(), 'public', 'assets', 'ost')
+    const assetsDir = path.join(process.cwd(), 'assets', 'ost')
     const ostDir = path.join(assetsDir, String(ostId))
 
     if (!fs.existsSync(ostDir)) {
@@ -323,7 +323,7 @@ const syncCoverToLocal = async () => {
       const extension = getExtensionFromUrl(ost.cover)
       const sanitizedName = ost.name.replace(/[/\\?%*:|"<>]/g, '-')
       const localPath = `/assets/ost/${ost.id}/${sanitizedName}.${extension}`
-      const fullPath = path.join(process.cwd(), 'public', localPath)
+      const fullPath = path.join(process.cwd(), localPath)
 
       if (fs.existsSync(fullPath)) {
         // 文件已存在，更新数据库路径

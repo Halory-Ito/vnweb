@@ -117,7 +117,7 @@ const toImageFileInfo = ({
   const fileName = `${safeName}_${safeDate}_${imageType}.${fileExt}`
 
   const assetsDir = path.join(process.cwd(), 'assets', imageType)
-  const publicDir = path.join(process.cwd(), 'public', 'assets', imageType)
+  const publicDir = path.join(process.cwd(), 'assets', imageType)
 
   return {
     fileName,

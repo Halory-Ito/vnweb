@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 创建目录
-    const assetsDir = path.join(process.cwd(), 'public', 'assets', 'ost')
+    const assetsDir = path.join(process.cwd(), 'assets', 'ost')
     const ostDir = path.join(assetsDir, String(ostId))
 
     if (!fs.existsSync(ostDir)) {

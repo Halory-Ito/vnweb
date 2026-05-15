@@ -16,7 +16,7 @@ function getDbPath() {
 
 // 获取 assets 目录路径
 function getAssetsPath() {
-  return path.join(process.cwd(), 'public', 'assets')
+  return path.join(process.cwd(), 'assets')
 }
 
 // 需要包含的 assets 子目录

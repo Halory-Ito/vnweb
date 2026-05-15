@@ -15,7 +15,7 @@ function getDbPath() {
 
 // 获取 assets 目录路径
 function getAssetsPath() {
-  return path.join(process.cwd(), 'public', 'assets')
+  return path.join(process.cwd(), 'assets')
 }
 
 // 解压 zip 文件

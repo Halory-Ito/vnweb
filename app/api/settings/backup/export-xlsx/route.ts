@@ -44,9 +44,8 @@ const resolveCoverFilePath = (cover: string) => {
   const candidates = [
     path.isAbsolute(raw) ? raw : '',
     path.join(process.cwd(), publicRelative),
-    path.join(process.cwd(), 'public', publicRelative),
+    path.join(process.cwd(), publicRelative),
     path.join(process.cwd(), normalized),
-    path.join(process.cwd(), 'public', normalized),
   ].filter(Boolean)
 
   for (const candidate of candidates) {
