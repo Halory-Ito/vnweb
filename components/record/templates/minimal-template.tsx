@@ -25,7 +25,7 @@ export function MinimalTemplate({
 
   return (
     <div
-      className="relative w-full rounded-lg border p-6"
+      className="relative mx-auto w-full rounded-lg border p-6"
       style={{
         backgroundColor,
         borderColor: `${titleColor}20`,

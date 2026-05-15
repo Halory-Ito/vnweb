@@ -29,7 +29,7 @@ export function ModernTemplate({
 
   return (
     <div
-      className="relative w-full rounded-2xl p-6 shadow-2xl"
+      className="relative mx-auto w-full rounded-2xl p-6 shadow-2xl"
       style={{
         background: `linear-gradient(135deg, ${gradientStart} 0%, ${backgroundColor} 50%, ${gradientEnd} 100%)`,
         minHeight: '450px',

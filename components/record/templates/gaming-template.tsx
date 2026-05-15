@@ -29,7 +29,7 @@ export function GamingTemplate({
 
   return (
     <div
-      className="relative w-full overflow-hidden rounded-xl p-6 shadow-2xl"
+      className="relative mx-auto w-full overflow-hidden rounded-xl p-6 shadow-2xl"
       style={{
         backgroundColor,
         minHeight: '450px',

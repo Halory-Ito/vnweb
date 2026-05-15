@@ -13,6 +13,7 @@ import { MDXRemote, type MDXRemoteSerializeResult } from 'next-mdx-remote'
 import { serialize } from 'next-mdx-remote/serialize'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
+import 'highlight.js/styles/atom-one-dark.css'
 import {
   isValidElement,
   type ReactNode,
@@ -21,7 +22,11 @@ import {
   useMemo,
   useRef,
   useState,
+  Component,
+  type ErrorInfo,
 } from 'react'
+import rehypeHighlight from 'rehype-highlight'
+import remarkGfm from 'remark-gfm'
 import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
@@ -98,11 +103,7 @@ const extractTocItems = (markdown: string): TocItem[] => {
 
     const level = matched[1].length
     const text = normalizeHeadingText(matched[2]) || '未命名小节'
-    const baseId = slugifyHeading(text)
-    const usedCount = usedIds.get(baseId) ?? 0
-    usedIds.set(baseId, usedCount + 1)
-
-    const id = usedCount === 0 ? baseId : `${baseId}-${usedCount + 1}`
+    const id = slugifyHeading(text) || 'section'
     tocItems.push({ id, text, level })
   }
 
@@ -618,6 +619,204 @@ function DetailStateCard({
   )
 }
 
+class MDXErrorBoundary extends Component<
+  { children: ReactNode; fallbackText: string },
+  { hasError: boolean; error: Error | null }
+> {
+  constructor(props: { children: ReactNode; fallbackText: string }) {
+    super(props)
+    this.state = { hasError: false, error: null }
+  }
+
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error }
+  }
+
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    console.error('MDX rendering error:', error, errorInfo)
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="bg-destructive/10 text-destructive rounded-lg p-3 text-sm">
+          {this.props.fallbackText} ({this.state.error?.message})
+        </div>
+      )
+    }
+    return this.props.children
+  }
+}
+
+function MermaidDiagram({ chart }: { chart: string }) {
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!containerRef.current) return
+    let isCancelled = false
+    import('mermaid').then((m) => {
+      if (isCancelled) return
+      const mermaid = m.default
+      mermaid.initialize({ startOnLoad: false, theme: 'default' })
+      const id = `mermaid-${Math.random().toString(36).substring(2)}`
+      mermaid
+        .render(id, chart)
+        .then(({ svg }) => {
+          if (!isCancelled && containerRef.current) {
+            containerRef.current.innerHTML = svg
+          }
+        })
+        .catch((e) => {
+          console.error('Mermaid render error', e)
+          if (!isCancelled && containerRef.current) {
+            containerRef.current.innerHTML = `<div class="text-destructive text-sm p-4 border border-destructive/30 rounded-xl bg-destructive/10">Mermaid 渲染错误，请检查语法</div>`
+          }
+        })
+    })
+
+    return () => {
+      isCancelled = true
+    }
+  }, [chart])
+
+  return (
+    <div
+      ref={containerRef}
+      className="mermaid-container flex justify-center overflow-x-auto py-4"
+    />
+  )
+}
+
+const Heading = ({
+  tag: Tag,
+  className,
+  children,
+}: {
+  tag: any
+  className: string
+  children: ReactNode
+}) => {
+  const fallbackId = slugifyHeading(getNodeText(children)) || 'section'
+  return (
+    <Tag id={fallbackId} className={`group scroll-mt-24 ${className}`}>
+      {children}
+      <a
+        href={`#${fallbackId}`}
+        className="text-muted-foreground ml-2 text-xs opacity-0 transition-opacity group-hover:opacity-100"
+        aria-label="复制锚点"
+      >
+        #
+      </a>
+    </Tag>
+  )
+}
+
+const mdxComponents = {
+  h1: ({ children }: any) => (
+    <Heading
+      tag="h1"
+      className="mt-10 mb-4 text-3xl font-semibold first:mt-0 md:text-4xl"
+    >
+      {children}
+    </Heading>
+  ),
+  h2: ({ children }: any) => (
+    <Heading tag="h2" className="mt-8 mb-3 text-2xl font-semibold">
+      {children}
+    </Heading>
+  ),
+  h3: ({ children }: any) => (
+    <Heading tag="h3" className="mt-7 mb-3 text-xl font-semibold">
+      {children}
+    </Heading>
+  ),
+  h4: ({ children }: any) => (
+    <Heading tag="h4" className="mt-6 mb-2 text-lg font-semibold">
+      {children}
+    </Heading>
+  ),
+  p: ({ children }: any) => (
+    <p className="text-foreground mb-5 text-[1.05rem] leading-8 md:text-[1.1rem]">
+      {children}
+    </p>
+  ),
+  ul: ({ children }: any) => (
+    <ul className="mb-4 list-disc space-y-1.5 pl-6">{children}</ul>
+  ),
+  ol: ({ children }: any) => (
+    <ol className="mb-4 list-decimal space-y-1.5 pl-6">{children}</ol>
+  ),
+  li: ({ children }: any) => (
+    <li className="text-[1.02rem] leading-8 md:text-[1.08rem]">{children}</li>
+  ),
+  code: ({ children, className }: any) => {
+    const langMatch = /language-(\w+)/.exec(className || '')
+    const lang = langMatch ? langMatch[1] : ''
+
+    if (lang === 'mermaid') {
+      return <MermaidDiagram chart={String(children)} />
+    }
+
+    const isInline = !className
+    if (isInline) {
+      return (
+        <code className="bg-muted text-primary rounded px-1.5 py-0.5 font-mono text-[0.9em]">
+          {children}
+        </code>
+      )
+    }
+    return (
+      <code
+        className={`${className} bg-transparent p-0 font-mono text-sm leading-relaxed`}
+      >
+        {children}
+      </code>
+    )
+  },
+  pre: ({ children }: any) => (
+    <pre className="mb-4 overflow-x-auto rounded-xl border border-slate-700/50 !bg-[#282c34] p-4 shadow-sm">
+      {children}
+    </pre>
+  ),
+  blockquote: ({ children }: any) => (
+    <blockquote className="border-primary/40 bg-primary/5 text-muted-foreground mb-4 rounded-r-lg border-l-4 px-4 py-2 italic">
+      {children}
+    </blockquote>
+  ),
+  hr: () => <hr className="border-border my-8" />,
+  a: ({ children, href }: any) => (
+    <a
+      href={href}
+      className="text-primary hover:text-primary/80 underline underline-offset-2"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      {children}
+    </a>
+  ),
+  strong: ({ children }: any) => (
+    <strong className="font-semibold">{children}</strong>
+  ),
+  em: ({ children }: any) => (
+    <em className="text-muted-foreground italic">{children}</em>
+  ),
+  span: ({ children, style, className, ...props }: any) => (
+    <span style={style} className={className} {...props}>
+      {children}
+    </span>
+  ),
+  mark: ({ children }: any) => (
+    <mark className="rounded bg-amber-500/30 px-1 text-amber-900 dark:text-amber-200">
+      {children}
+    </mark>
+  ),
+  del: ({ children }: any) => (
+    <del className="text-muted-foreground line-through opacity-70">
+      {children}
+    </del>
+  ),
+}
+
 function MdxRemoteContent({
   markdown,
   tocItems,
@@ -637,10 +836,16 @@ function MdxRemoteContent({
 
     const compile = async () => {
       try {
-        const safeSource = markdown || '（无内容）'
+        let safeSource = markdown || '（无内容）'
+        safeSource = safeSource.replace(/==([^=]+)==/g, '<mark>$1</mark>')
+
         const result = await serialize(safeSource, {
-          blockJS: true,
-          blockDangerousJS: true,
+          mdxOptions: {
+            format: 'mdx',
+            remarkPlugins: [remarkGfm],
+            rehypePlugins: [[rehypeHighlight, { ignoreMissing: true }]],
+          },
+          parseFrontmatter: false,
         })
 
         if (!cancelled) {
@@ -684,99 +889,11 @@ function MdxRemoteContent({
     )
   }
 
-  let headingCursor = 0
-
-  const renderHeading =
-    (tag: 'h1' | 'h2' | 'h3' | 'h4', className: string) =>
-    ({ children }: { children?: ReactNode }) => {
-      const fallbackId = slugifyHeading(getNodeText(children))
-      const tocItem = tocItems[headingCursor]
-      const id = tocItem?.id || fallbackId
-      headingCursor += 1
-      const Tag = tag
-
-      return (
-        <Tag id={id} className={`group scroll-mt-24 ${className}`}>
-          {children}
-          <a
-            href={`#${id}`}
-            className="text-muted-foreground ml-2 text-xs opacity-0 transition-opacity group-hover:opacity-100"
-            aria-label="复制锚点"
-          >
-            #
-          </a>
-        </Tag>
-      )
-    }
-
   return (
     <article className="prose prose-lg prose-slate dark:prose-invert max-w-none leading-8">
-      <MDXRemote
-        {...compiledSource}
-        components={{
-          h1: renderHeading(
-            'h1',
-            'mt-10 mb-4 text-3xl font-semibold first:mt-0 md:text-4xl',
-          ),
-          h2: renderHeading('h2', 'mt-8 mb-3 text-2xl font-semibold'),
-          h3: renderHeading('h3', 'mt-7 mb-3 text-xl font-semibold'),
-          h4: renderHeading('h4', 'mt-6 mb-2 text-lg font-semibold'),
-          p: ({ children }) => (
-            <p className="text-foreground mb-5 text-[1.05rem] leading-8 md:text-[1.1rem]">
-              {children}
-            </p>
-          ),
-          ul: ({ children }) => (
-            <ul className="mb-4 list-disc space-y-1.5 pl-6">{children}</ul>
-          ),
-          ol: ({ children }) => (
-            <ol className="mb-4 list-decimal space-y-1.5 pl-6">{children}</ol>
-          ),
-          li: ({ children }) => (
-            <li className="text-[1.02rem] leading-8 md:text-[1.08rem]">
-              {children}
-            </li>
-          ),
-          code: ({ children, className }) => {
-            const isInline = !className
-            if (isInline) {
-              return (
-                <code className="bg-muted text-primary rounded px-1.5 py-0.5 font-mono text-[0.9em]">
-                  {children}
-                </code>
-              )
-            }
-            return <code className={className}>{children}</code>
-          },
-          pre: ({ children }) => (
-            <pre className="bg-muted mb-4 overflow-x-auto rounded-xl p-4">
-              {children}
-            </pre>
-          ),
-          blockquote: ({ children }) => (
-            <blockquote className="border-primary/40 bg-primary/5 text-muted-foreground mb-4 rounded-r-lg border-l-4 px-4 py-2 italic">
-              {children}
-            </blockquote>
-          ),
-          hr: () => <hr className="border-border my-8" />,
-          a: ({ children, href }) => (
-            <a
-              href={href}
-              className="text-primary hover:text-primary/80 underline underline-offset-2"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              {children}
-            </a>
-          ),
-          strong: ({ children }) => (
-            <strong className="font-semibold">{children}</strong>
-          ),
-          em: ({ children }) => (
-            <em className="text-muted-foreground italic">{children}</em>
-          ),
-        }}
-      />
+      <MDXErrorBoundary fallbackText="Markdown 内容存在不支持的标签或格式，无法渲染。">
+        <MDXRemote {...compiledSource} components={mdxComponents} />
+      </MDXErrorBoundary>
     </article>
   )
 }
