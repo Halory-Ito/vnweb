@@ -11,6 +11,10 @@ vi.mock("@/app/api/settings/cloud-sync/auth/_shared", () => ({
     getAppOrigin: mocks.getAppOrigin,
 }));
 
+vi.mock("@/app/config", () => ({
+    BANGUMI_OAUTH_CLIENT_ID: "",
+}));
+
 import { GET } from "@/app/api/settings/cloud-sync/auth/bangumi/start/route";
 
 describe("settings/cloud-sync/auth/bangumi/start GET", () => {

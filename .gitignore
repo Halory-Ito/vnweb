@@ -35,7 +35,7 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env.development
-**/app/config.ts
+app/config.ts
 
 # vercel
 .vercel
@@ -44,11 +44,11 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-/generated/prisma
-
 
 # assets
 /public/assets
 /public/fonts/SourceHanSerifCN-Regular-*.otf
 /assets/**
 /local.db
+
+app/config.ts

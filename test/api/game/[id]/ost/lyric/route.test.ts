@@ -15,10 +15,15 @@ const mocks = vi.hoisted(() => {
             where: vi.fn(() => ({ limit: vi.fn(async () => take()) })),
         })),
     }));
+    const update = vi.fn(() => ({
+        set: vi.fn(() => ({
+            where: vi.fn(() => ({})),
+        })),
+    }));
     const mkdir = vi.fn(async () => undefined);
     const writeFile = vi.fn(async () => undefined);
 
-    return { state, db: { select }, mkdir, writeFile };
+    return { state, db: { select, update }, mkdir, writeFile };
 });
 
 vi.mock("@/lib/drizzle", () => ({ db: mocks.db }));
@@ -37,6 +42,7 @@ describe("game/[id]/ost/lyric POST", () => {
     beforeEach(() => {
         mocks.state.queue = [];
         mocks.db.select.mockClear();
+        mocks.db.update.mockClear();
         mocks.mkdir.mockClear();
         mocks.writeFile.mockClear();
     });
@@ -104,7 +110,7 @@ describe("game/[id]/ost/lyric POST", () => {
     });
 
     test("uploads lyric file successfully", async () => {
-        mocks.state.queue.push([{ id: 1 }], [{ id: 1, url: "/assets/ost/1/a.mp3" }]);
+        mocks.state.queue.push([{ id: 1 }], [{ id: 1, ostId: 1, url: "/assets/ost/1/a.mp3", name: "song" }]);
 
         const fd = new FormData();
         fd.set("itemId", "1");
@@ -120,7 +126,7 @@ describe("game/[id]/ost/lyric POST", () => {
     });
 
     test("returns 500 when writing lyric fails", async () => {
-        mocks.state.queue.push([{ id: 1 }], [{ id: 1, url: "/assets/ost/1/a.mp3" }]);
+        mocks.state.queue.push([{ id: 1 }], [{ id: 1, ostId: 1, url: "/assets/ost/1/a.mp3", name: "song" }]);
         mocks.writeFile.mockRejectedValueOnce(new Error("write failed"));
 
         const fd = new FormData();

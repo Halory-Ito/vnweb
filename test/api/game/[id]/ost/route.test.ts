@@ -98,7 +98,7 @@ describe("game/[id]/ost route", () => {
 
     test("POST returns 404 when game not found", async () => {
         mocks.state.queue.push([]);
-        const res = await POST(req({ name: "n", url: "u" }), ctx("1"));
+        const res = await POST(req({ name: "n", cover: "c" }), ctx("1"));
         expect(res.status).toBe(404);
     });
 
@@ -112,7 +112,7 @@ describe("game/[id]/ost route", () => {
             })),
         }));
 
-        const res = await POST(req({ name: "n", url: "u" }), ctx("1"));
+        const res = await POST(req({ name: "n", cover: "c" }), ctx("1"));
         const body = await res.json();
 
         expect(res.status).toBe(500);
@@ -122,7 +122,7 @@ describe("game/[id]/ost route", () => {
     test("PATCH updates item", async () => {
         mocks.state.queue.push([{ id: 1 }]);
         const res = await PATCH(
-            req({ itemId: 1, name: "n", url: "u" }),
+            req({ itemId: 1, name: "n", cover: "c" }),
             ctx("1"),
         );
         expect(res.status).toBe(200);
@@ -139,7 +139,7 @@ describe("game/[id]/ost route", () => {
         }));
 
         const res = await PATCH(
-            req({ itemId: 1, name: "n", url: "u" }),
+            req({ itemId: 1, name: "n", cover: "c" }),
             ctx("1"),
         );
         expect(res.status).toBe(404);
@@ -158,7 +158,7 @@ describe("game/[id]/ost route", () => {
         }));
 
         const res = await PATCH(
-            req({ itemId: 1, name: "n", url: "u" }),
+            req({ itemId: 1, name: "n", cover: "c" }),
             ctx("1"),
         );
         const body = await res.json();

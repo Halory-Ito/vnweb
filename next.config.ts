@@ -29,6 +29,7 @@ const nextConfig: NextConfig = {
     dangerouslyAllowSVG: true,
   },
   transpilePackages: ['next-mdx-remote'],
+  output: 'standalone',
 }
 
 export default nextConfig
