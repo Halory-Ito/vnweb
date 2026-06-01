@@ -91,38 +91,9 @@ vnweb 是一个面向视觉小说与本地单机游戏整理场景的 Web 管理
 npm install
 ```
 
-### 2. 配置环境变量
+### 2. 编写配置文件
 
-在项目根目录创建 `.env`，至少配置数据库路径：
-
-```env
-DB_FILE_NAME=file:./local.db
-```
-
-可选环境变量：
-
-```env
-STEAM_API_KEY=
-STEAM_WEB_API_KEY=
-NEXT_PUBLIC_STEAM_API_KEY=
-NEXT_PUBLIC_STEAMGRIDDB_API_KEY=
-NEXT_PUBLIC_STEAMGRIDDB_BASE_URL=https://www.steamgriddb.com/api/v2
-
-VNDB_OAUTH_CLIENT_ID=
-VNDB_OAUTH_CLIENT_SECRET=
-VNDB_OAUTH_SCOPE=
-VNDB_OAUTH_AUTHORIZE_URL=
-VNDB_OAUTH_TOKEN_URL=
-VNDB_OAUTH_USERINFO_URL=
-
-BANGUMI_OAUTH_CLIENT_ID=
-BANGUMI_OAUTH_CLIENT_SECRET=
-```
-
-说明：
-
-- `DB_FILE_NAME` 是运行时必须配置的关键项
-- Steam 与 OAuth 相关变量属于可选项，仅在启用对应功能时需要
+见`app/config.example.ts`，填写好配置后，把该文件重命名为`config.ts`
 
 ### 3. 初始化数据库
 
@@ -133,13 +104,32 @@ npx drizzle-kit migrate
 
 如果是全新开发环境，也可以直接在清理旧库后重新执行迁移。
 
-### 4. 启动开发服务器
+### 4. 构建
 
 ```bash
-npm run dev
+npm run build
 ```
 
-默认打开后会重定向到 `/game/home`。
+### 5. 环境变量
+这里推荐将根目录下的`vnweb.bat`添加至环境变量中，然后你就可以在任意的位置执行系统的命令行工具：
+```sh
+# 1. 启动 web ui
+vnweb
+
+# 2. 查看帮助文档
+vnweb --help
+
+# 3. 查看游戏列表
+vnweb list game
+
+# 4. 根据名称搜索游戏
+vnweb search game_name
+
+# 5. 根据id启动游戏
+vnweb start game_id
+```
+
+
 
 ## 常用脚本
 
@@ -219,4 +209,3 @@ npm run db:studio
 界面截图：
 ![alt text](image.png)
 
-TODO: 增加一个禅模式（做成插件吧），表现为全屏图片，显示时间跟日期，天气，一言，音乐播放器（可选），白噪音（可选），导航主页（可选）
