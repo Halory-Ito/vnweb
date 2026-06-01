@@ -50,7 +50,11 @@ next-env.d.ts
 
 # assets
 /public/assets
-/public/fonts/SourceHanSerifCN-Regular-*.otf
+/public/fonts/*_*.ttf
+/public/fonts/*_*.otf
+/public/fonts/*_*.ttc
+/public/fonts/*_*.woff
+/public/fonts/*_*.woff2
 /assets/**
 /local.db
 

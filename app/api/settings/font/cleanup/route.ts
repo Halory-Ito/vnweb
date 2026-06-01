@@ -25,7 +25,7 @@ const cleanupPreviewFonts = async (req: NextRequest) => {
       return NextResponse.json({ data: { deleted: [] as string[] } })
     }
 
-    const fontsDir = path.join(process.cwd(), 'assets', 'fonts')
+    const fontsDir = path.join(process.cwd(), 'public', 'fonts')
     const deleted: string[] = []
 
     for (const publicPath of paths) {

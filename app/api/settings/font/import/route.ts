@@ -78,7 +78,7 @@ const importLocalFont = async (req: NextRequest) => {
       path.basename(resolvedSourcePath, path.extname(resolvedSourcePath)),
     )
     const fileName = `${baseName}_${Date.now()}${ext}`
-    const targetDir = path.join(process.cwd(), 'assets', 'fonts')
+    const targetDir = path.join(process.cwd(), 'public', 'fonts')
     const targetPath = path.join(targetDir, fileName)
 
     await fs.mkdir(targetDir, { recursive: true })
