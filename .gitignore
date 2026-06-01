@@ -35,7 +35,10 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env.development
-app/config.ts
+.env.production
+
+
+/app/config.ts
 
 # vercel
 .vercel
@@ -51,4 +54,3 @@ next-env.d.ts
 /assets/**
 /local.db
 
-app/config.ts
