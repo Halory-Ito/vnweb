@@ -61,6 +61,12 @@ const getFontNameFromPath = (fontPath: string) => {
   return withoutExt.replace(/_\d{10,14}$/, '')
 }
 
+const isImportedFontPath = (fontPath: string) => {
+  const normalized = fontPath.replace(/\\/g, '/')
+  const fileName = normalized.split('/').pop() || normalized
+  return /_\d{10,14}\.[^.]+$/.test(fileName)
+}
+
 export default function AppearanceContent() {
   const [glassSettings, setGlassSettings] = useState(DEFAULT_GLASS_SETTINGS)
   const [backgroundSettings, setBackgroundSettings] = useState(
@@ -337,6 +343,17 @@ export default function AppearanceContent() {
     const removablePaths = previewImportedPaths.filter(
       (item) => item !== previewFontPath,
     )
+
+    const oldFontPath = fontSettings.fontPath
+    if (
+      oldFontPath &&
+      oldFontPath !== previewFontPath &&
+      isImportedFontPath(oldFontPath) &&
+      !removablePaths.includes(oldFontPath)
+    ) {
+      removablePaths.push(oldFontPath)
+    }
+
     await cleanupPreviewFonts(removablePaths)
 
     updateFontSettings({ fontPath: previewFontPath })

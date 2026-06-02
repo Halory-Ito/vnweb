@@ -31,10 +31,10 @@ describe("settings/font/cleanup POST", () => {
         const response = await POST(
             req({
                 paths: [
-                    "/fonts/a.ttf",
-                    "/fonts/a.ttf",
+                    "/assets/fonts/a.ttf",
+                    "/assets/fonts/a.ttf",
                     "/bad/a.ttf",
-                    "/fonts/b.woff2",
+                    "/assets/fonts/b.woff2",
                 ],
             }),
         );
@@ -42,7 +42,7 @@ describe("settings/font/cleanup POST", () => {
 
         // Step 2: 断言删除列表与 unlink 次数。
         expect(response.status).toBe(200);
-        expect(body.data.deleted).toEqual(["/fonts/a.ttf", "/fonts/b.woff2"]);
+        expect(body.data.deleted).toEqual(["/assets/fonts/a.ttf", "/assets/fonts/b.woff2"]);
         expect(mocks.fs.unlink).toHaveBeenCalledTimes(2);
     });
 });

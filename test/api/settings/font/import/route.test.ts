@@ -48,7 +48,7 @@ describe("settings/font/import POST", () => {
 
         // Step 2: 断言导入结果。
         expect(response.status).toBe(200);
-        expect(body.data.path).toContain("/fonts/Arial_1700000000000.ttf");
+        expect(body.data.path).toContain("/assets/fonts/Arial_1700000000000.ttf");
         expect(mocks.fs.copyFile).toHaveBeenCalledTimes(1);
     });
 });
