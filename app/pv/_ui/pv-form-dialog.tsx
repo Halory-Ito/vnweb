@@ -28,7 +28,7 @@ type PvFormDialogProps = {
   onOpenChange: (open: boolean) => void
   onGameIdChange: (value: string) => void
   onNameChange: (value: string) => void
-  onUrlChange: (value: string) => void
+  onUrlChange: (value: string) => void | Promise<void>
   onSubmit: () => void
 }
 

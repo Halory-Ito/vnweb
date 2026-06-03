@@ -1,12 +1,14 @@
+// 向后兼容：从统一插件系统重新导出
 export type {
   BulkImportResult,
-  GameProviderPlugin,
   GameSearchItem,
   GameSearchResult,
   ProviderCapability,
   SteamOwnedGameItem,
   ThirdPartyLibraryGameItem,
-} from './types'
+} from '@/lib/plugins/types'
+
+export type { ProviderPlugin as GameProviderPlugin } from '@/lib/plugins/types'
 
 export {
   getAccountBindProviders,

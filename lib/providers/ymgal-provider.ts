@@ -1,6 +1,6 @@
 import { api } from '@/lib/request-utils'
 
-import type { GameProviderPlugin, GameSearchResult } from './types'
+import type { GameSearchResult, ProviderPlugin } from '@/lib/plugins/types'
 import type { GameInfo } from '@/types/game-types'
 
 // ── YMGal 响应类型 ────────────────────────────────────────
@@ -148,12 +148,13 @@ const mapYMGalGameToGameInfo = (game: YMGalGame): GameInfo => {
 }
 
 // ── 插件定义 ──────────────────────────────────────────────
-export const ymgalProvider: GameProviderPlugin = {
+export const ymgalProvider: ProviderPlugin = {
   id: 'ymgal',
   name: 'YMGal',
   description: '月幕 Galgame，中文 Galgame 数据库',
   icon: 'Moon',
   version: '1.0.0',
+  type: 'provider',
   capabilities: ['manual-search'],
   defaultEnabled: true,
 

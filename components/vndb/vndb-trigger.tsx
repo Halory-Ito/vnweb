@@ -21,10 +21,10 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import {
-  PROVIDER_SETTINGS_EVENT,
-  readProviderSettings,
-  isProviderEnabled,
-} from '@/lib/settings/provider-settings'
+  PLUGIN_SETTINGS_EVENT,
+  isPluginEnabled,
+  readPluginSettings,
+} from '@/lib/plugins'
 
 import {
   BangumiImportDialog,
@@ -38,14 +38,14 @@ export default function GameAddButton() {
 
   useEffect(() => {
     const handler = () => setTick((t) => t + 1)
-    window.addEventListener(PROVIDER_SETTINGS_EVENT, handler)
-    return () => window.removeEventListener(PROVIDER_SETTINGS_EVENT, handler)
+    window.addEventListener(PLUGIN_SETTINGS_EVENT, handler)
+    return () => window.removeEventListener(PLUGIN_SETTINGS_EVENT, handler)
   }, [])
 
-  const settings = readProviderSettings()
-  const steamEnabled = isProviderEnabled('steam', settings)
-  const bangumiEnabled = isProviderEnabled('bangumi', settings)
-  const vndbEnabled = isProviderEnabled('vndb', settings)
+  const settings = readPluginSettings()
+  const steamEnabled = isPluginEnabled('steam', settings)
+  const bangumiEnabled = isPluginEnabled('bangumi', settings)
+  const vndbEnabled = isPluginEnabled('vndb', settings)
   const hasBulkImport = steamEnabled || bangumiEnabled || vndbEnabled
 
   return (

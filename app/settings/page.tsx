@@ -5,7 +5,7 @@ import BackupSettingsContent from './backup/backup-settings-content'
 import ProxyPage from './proxy/page'
 import ThemeContent from './theme/theme-content'
 import CloudSync from '@/components/settings/cloud-sync'
-import ProviderSettings from '@/components/settings/provider-settings'
+import PluginSettings from '@/components/settings/plugin-settings'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 export default function Settings() {
@@ -38,7 +38,7 @@ export default function Settings() {
         <ProxyPage />
       </TabsContent>
       <TabsContent value="plugins">
-        <ProviderSettings />
+        <PluginSettings />
       </TabsContent>
     </Tabs>
   )

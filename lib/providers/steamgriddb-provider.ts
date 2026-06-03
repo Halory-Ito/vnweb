@@ -1,6 +1,6 @@
 import { api } from '@/lib/request-utils'
 
-import type { GameProviderPlugin, GameSearchResult } from './types'
+import type { GameSearchResult, ProviderPlugin } from '@/lib/plugins/types'
 import type { GameInfo } from '@/types/game-types'
 
 // ── SGDB 响应类型 ─────────────────────────────────────────
@@ -27,12 +27,13 @@ type SGDBSearchResponse = {
 }
 
 // ── 插件定义 ──────────────────────────────────────────────
-export const steamgriddbProvider: GameProviderPlugin = {
+export const steamgriddbProvider: ProviderPlugin = {
   id: 'steamgriddb',
   name: 'SteamGrid DB',
   description: 'SteamGrid DB 游戏封面图库，可用于补充游戏封面',
   icon: 'Image',
   version: '1.0.0',
+  type: 'provider',
   capabilities: ['manual-search'],
   defaultEnabled: true,
 

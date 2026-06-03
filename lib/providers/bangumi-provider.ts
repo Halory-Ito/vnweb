@@ -2,9 +2,9 @@ import { api } from '@/lib/request-utils'
 
 import type {
   BulkImportResult,
-  GameProviderPlugin,
   GameSearchResult,
-} from './types'
+  ProviderPlugin,
+} from '@/lib/plugins/types'
 import type { GameInfo } from '@/types/game-types'
 
 // ── BGM 响应类型 ──────────────────────────────────────────
@@ -109,12 +109,13 @@ const mapBGMSubjectToGameInfo = (subject: BGMSubject): GameInfo => {
 }
 
 // ── 插件定义 ──────────────────────────────────────────────
-export const bangumiProvider: GameProviderPlugin = {
+export const bangumiProvider: ProviderPlugin = {
   id: 'bangumi',
   name: 'Bangumi',
   description: 'Bangumi 番组计划，支持游戏收藏导入',
   icon: 'Clapperboard',
   version: '1.0.0',
+  type: 'provider',
   capabilities: ['manual-search', 'bulk-import', 'account-bind'],
   defaultEnabled: true,
   accountProviderId: 'bangumi',

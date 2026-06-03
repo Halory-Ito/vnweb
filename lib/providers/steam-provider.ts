@@ -1,19 +1,20 @@
 import { api } from '@/lib/request-utils'
 
 import type {
-  GameProviderPlugin,
   GameSearchResult,
+  ProviderPlugin,
   SteamOwnedGameItem,
-} from './types'
+} from '@/lib/plugins/types'
 import type { GameInfo } from '@/types/game-types'
 
 // ── 插件定义 ──────────────────────────────────────────────
-export const steamProvider: GameProviderPlugin = {
+export const steamProvider: ProviderPlugin = {
   id: 'steam',
   name: 'Steam',
   description: 'Steam 游戏平台，支持游戏库导入和游玩时长同步',
   icon: 'Gamepad2',
   version: '1.0.0',
+  type: 'provider',
   capabilities: ['manual-search', 'bulk-import'],
   defaultEnabled: true,
 

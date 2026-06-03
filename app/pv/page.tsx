@@ -11,12 +11,7 @@ import { PvManageContent } from './_ui/pv-manage-content'
 import { PvPageHeader } from './_ui/pv-page-header'
 import { PvPlayerDialog } from './_ui/pv-player-dialog'
 import { PvSearchToolbar } from './_ui/pv-search-toolbar'
-import {
-  isEmbedVideoUrl,
-  isHlsUrl,
-  toBilibiliEmbedUrl,
-  toYouTubeEmbedUrl,
-} from './_ui/utils'
+import { getHostname, isHlsUrl, isVideoFileUrl } from './_ui/utils'
 import {
   createPvManageItem,
   deletePvManageItem,
@@ -25,6 +20,7 @@ import {
   type PvManageItem,
   updatePvManageItem,
 } from '@/lib/game/game-utils'
+import { callHook } from '@/lib/plugins'
 
 import type { GameOption, PvFormState, ViewMode } from './_ui/types'
 
@@ -86,30 +82,47 @@ export default function PVPage() {
     [gameCards],
   )
 
-  const playingMode = useMemo(() => {
-    if (!playingItem?.url) {
-      return 'none' as const
+  const [resolvedVideo, setResolvedVideo] = useState<{
+    mode: 'direct' | 'embed' | 'none'
+    embedUrl: string
+    playUrl: string
+  }>({ mode: 'none', embedUrl: '', playUrl: '' })
+
+  useEffect(() => {
+    const url = playingItem?.url?.trim()
+    if (!url) {
+      setResolvedVideo({ mode: 'none', embedUrl: '', playUrl: '' })
+      return
     }
 
-    if (isEmbedVideoUrl(playingItem.url)) {
-      return 'embed' as const
+    // 1. 直链视频文件 → 直接播放
+    if (isVideoFileUrl(url)) {
+      setResolvedVideo({ mode: 'direct', embedUrl: '', playUrl: url })
+      return
     }
 
-    return 'direct' as const
-  }, [playingItem])
+    // 2. 调用插件 Hook 解析
+    let cancelled = false
+    void callHook('pv:video-resolve', { url }).then((result) => {
+      if (cancelled) return
+      if (result?.embedUrl) {
+        setResolvedVideo({ mode: 'embed', embedUrl: result.embedUrl, playUrl: '' })
+      } else if (result?.resolvedUrl) {
+        setResolvedVideo({ mode: 'direct', embedUrl: '', playUrl: result.resolvedUrl })
+      } else {
+        setResolvedVideo({ mode: 'none', embedUrl: '', playUrl: '' })
+      }
+    })
 
-  const playingEmbedUrl = useMemo(() => {
-    if (!playingItem?.url) {
-      return ''
-    }
-    return (
-      toYouTubeEmbedUrl(playingItem.url) || toBilibiliEmbedUrl(playingItem.url)
-    )
-  }, [playingItem])
+    return () => { cancelled = true }
+  }, [playingItem?.url])
+
+  const playingMode = resolvedVideo.mode
+  const playingEmbedUrl = resolvedVideo.embedUrl
 
   useEffect(() => {
     const video = videoEl
-    const url = playingItem?.url?.trim()
+    const url = resolvedVideo.playUrl
 
     if (!video || !url || playingMode !== 'direct') {
       disposeHls()
@@ -330,7 +343,20 @@ export default function PVPage() {
           setForm((prev) => ({ ...prev, gameId: value }))
         }
         onNameChange={(value) => setForm((prev) => ({ ...prev, name: value }))}
-        onUrlChange={(value) => setForm((prev) => ({ ...prev, url: value }))}
+        onUrlChange={async (value) => {
+          setForm((prev) => ({ ...prev, url: value }))
+          // 当输入看起来像短链或可解析 URL 时，调用插件 Hook
+          if (value.includes('b23.tv/') || value.includes('bilibili.com')) {
+            const result = await callHook('pv:resolve-url', { url: value })
+            if (result?.resolvedUrl) {
+              setForm((prev) => ({
+                ...prev,
+                url: result.resolvedUrl ?? prev.url,
+              }))
+              toast.success('链接已自动解析')
+            }
+          }
+        }}
         onSubmit={() => void handleSubmit()}
       />
 

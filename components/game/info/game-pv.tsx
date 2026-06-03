@@ -5,12 +5,8 @@ import Hls from 'hls.js'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 
-import {
-  isEmbedVideoUrl,
-  isHlsUrl,
-  toBilibiliEmbedUrl,
-  toYouTubeEmbedUrl,
-} from '@/app/pv/_ui/utils'
+import { isHlsUrl, isVideoFileUrl } from '@/app/pv/_ui/utils'
+import { callHook } from '@/lib/plugins'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -69,27 +65,41 @@ export default function GamePV({ gameId }: GamePVProps) {
     [items, selectedId],
   )
 
-  const playingMode = useMemo(() => {
-    if (!selectedItem?.url) {
-      return 'none' as const
+  const [resolvedVideo, setResolvedVideo] = useState<{
+    mode: 'direct' | 'embed' | 'none'
+    embedUrl: string
+    playUrl: string
+  }>({ mode: 'none', embedUrl: '', playUrl: '' })
+
+  useEffect(() => {
+    const url = selectedItem?.url?.trim()
+    if (!url) {
+      setResolvedVideo({ mode: 'none', embedUrl: '', playUrl: '' })
+      return
     }
 
-    if (isEmbedVideoUrl(selectedItem.url)) {
-      return 'embed' as const
+    if (isVideoFileUrl(url)) {
+      setResolvedVideo({ mode: 'direct', embedUrl: '', playUrl: url })
+      return
     }
 
-    return 'direct' as const
-  }, [selectedItem])
+    let cancelled = false
+    void callHook('pv:video-resolve', { url }).then((result) => {
+      if (cancelled) return
+      if (result?.embedUrl) {
+        setResolvedVideo({ mode: 'embed', embedUrl: result.embedUrl, playUrl: '' })
+      } else if (result?.resolvedUrl) {
+        setResolvedVideo({ mode: 'direct', embedUrl: '', playUrl: result.resolvedUrl })
+      } else {
+        setResolvedVideo({ mode: 'none', embedUrl: '', playUrl: '' })
+      }
+    })
 
-  const playingEmbedUrl = useMemo(() => {
-    if (!selectedItem?.url) {
-      return ''
-    }
-    return (
-      toYouTubeEmbedUrl(selectedItem.url) ||
-      toBilibiliEmbedUrl(selectedItem.url)
-    )
-  }, [selectedItem])
+    return () => { cancelled = true }
+  }, [selectedItem?.url])
+
+  const playingMode = resolvedVideo.mode
+  const playingEmbedUrl = resolvedVideo.embedUrl
 
   useEffect(() => {
     setItems(data?.items ?? [])
@@ -153,7 +163,7 @@ export default function GamePV({ gameId }: GamePVProps) {
 
   useEffect(() => {
     const video = videoRef.current
-    const url = selectedItem?.url?.trim()
+    const url = resolvedVideo.playUrl
 
     if (!video || !url || playingMode !== 'direct') {
       disposeHls()

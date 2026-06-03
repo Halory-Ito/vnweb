@@ -2,9 +2,9 @@ import { api } from '@/lib/request-utils'
 
 import type {
   BulkImportResult,
-  GameProviderPlugin,
   GameSearchResult,
-} from './types'
+  ProviderPlugin,
+} from '@/lib/plugins/types'
 import type { GameInfo } from '@/types/game-types'
 
 // ── VNDB 响应类型 ─────────────────────────────────────────
@@ -77,12 +77,13 @@ const mapVndbDetailToGameInfo = (entry: VndbDetailResponse): GameInfo => {
 }
 
 // ── 插件定义 ──────────────────────────────────────────────
-export const vndbProvider: GameProviderPlugin = {
+export const vndbProvider: ProviderPlugin = {
   id: 'vndb',
   name: 'VNDB',
   description: 'Visual Novel Database，视觉小说数据库',
   icon: 'BookOpen',
   version: '1.0.0',
+  type: 'provider',
   capabilities: ['manual-search', 'bulk-import', 'account-bind'],
   defaultEnabled: true,
   accountProviderId: 'vndb',

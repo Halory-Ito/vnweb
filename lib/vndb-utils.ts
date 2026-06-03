@@ -381,7 +381,7 @@ const mapVndbDetailToGameInfo = (entry: VndbDetailResponse): GameInfo => {
 export const getGameInfoByIdApi = async (id: string, provider: string) => {
   // 优先通过插件注册中心分发
   const plugin = getProviderById(provider)
-  if (plugin?.getById) {
+  if (plugin?.type === 'provider' && plugin.getById) {
     return plugin.getById(id)
   }
 
@@ -424,7 +424,7 @@ export const searchGameByNameApi = async (
 ) => {
   // 优先通过插件注册中心分发
   const plugin = getProviderById(provider)
-  if (plugin?.searchByName) {
+  if (plugin?.type === 'provider' && plugin.searchByName) {
     return plugin.searchByName(keyword, offset, limit)
   }
 
