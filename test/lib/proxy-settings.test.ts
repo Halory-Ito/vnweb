@@ -1,6 +1,6 @@
 import { describe, expect, test, vi } from "vitest";
 
-import { buildProxyUrl, normalizeProxySettings } from "@/lib/proxy-settings";
+import { buildProxyUrl, normalizeProxySettings } from "@/lib/settings/proxy-settings";
 
 describe("lib/proxy-settings", () => {
     test("normalize trims and validates fields", () => {
@@ -68,7 +68,7 @@ describe("lib/proxy-settings", () => {
             },
         }));
 
-        const mod = await import("@/lib/proxy-settings");
+        const mod = await import("@/lib/settings/proxy-settings");
         const result = await mod.getEnabledProxySettings();
 
         expect(result).toBeNull();
@@ -94,7 +94,7 @@ describe("lib/proxy-settings", () => {
             },
         }));
 
-        const mod = await import("@/lib/proxy-settings");
+        const mod = await import("@/lib/settings/proxy-settings");
         const result = await mod.getEnabledProxySettings();
 
         expect(result).toEqual({

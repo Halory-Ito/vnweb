@@ -6,7 +6,7 @@ import {
     notifyGlassSettingsChanged,
     readGlassSettings,
     writeGlassSettings,
-} from "@/lib/glass-settings";
+} from "@/lib/settings/glass-settings";
 
 describe("lib/glass-settings", () => {
     test("normalize clamps blur and opacity", () => {

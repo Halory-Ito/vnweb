@@ -18,7 +18,7 @@ import { Input } from '@/components/ui/input'
 import {
   getGameTimerRecordsById,
   updateGameTimerRecordsById,
-} from '@/lib/game-utils'
+} from '@/lib/game/game-utils'
 
 type GamePlayTimeDialogProps = {
   gameId: number

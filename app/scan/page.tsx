@@ -29,11 +29,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { getGameCardList } from '@/lib/game-utils'
-import {
-  DEFAULT_GAME_PROVIDER,
-  GAME_PROVIDER_OPTIONS,
-} from '@/lib/provider-options'
+import { getGameCardList } from '@/lib/game/game-utils'
+import { getAllProviders } from '@/lib/providers'
 import {
   createScanner,
   deleteScannerById,
@@ -42,7 +39,7 @@ import {
   type ScanErrorItem,
   startScannerById,
   updateScannerById,
-} from '@/lib/scan-utils'
+} from '@/lib/game/scan-utils'
 
 type ScanDirectoryItem = {
   id: number
@@ -147,8 +144,10 @@ export default function Scan() {
   const [excludePaths, setExcludePaths] = useState<string[]>([])
 
   const [directoryPathInput, setDirectoryPathInput] = useState('')
+  const allProviders = getAllProviders()
+  const defaultProviderId = allProviders[0]?.id ?? 'bangumi'
   const [directoryProviderInput, setDirectoryProviderInput] = useState(
-    DEFAULT_GAME_PROVIDER,
+    defaultProviderId,
   )
   const [directoryScanModeInput, setDirectoryScanModeInput] = useState('0')
   const [directoryScanLevelInput, setDirectoryScanLevelInput] = useState('0')
@@ -357,7 +356,7 @@ export default function Scan() {
 
   const handleOpenAddDialog = () => {
     setDirectoryPathInput('')
-    setDirectoryProviderInput(DEFAULT_GAME_PROVIDER)
+    setDirectoryProviderInput(defaultProviderId)
     setDirectoryScanModeInput('0')
     setDirectoryScanLevelInput('0')
     setAddDirectoryOpen(true)
@@ -365,7 +364,7 @@ export default function Scan() {
 
   const handleAddDirectory = async () => {
     const nextPath = directoryPathInput.trim()
-    const nextProvider = directoryProviderInput.trim() || DEFAULT_GAME_PROVIDER
+    const nextProvider = directoryProviderInput.trim() || defaultProviderId
     const nextScanMode = Number(directoryScanModeInput)
     const nextScanLevel = Number(directoryScanLevelInput)
     if (!nextPath) {
@@ -418,7 +417,7 @@ export default function Scan() {
   const handleOpenEditDialog = (id: number) => {
     const target = scanDirectories.find((item) => item.id === id)
     setDirectoryPathInput(target?.path ?? '')
-    setDirectoryProviderInput(target?.sourceName ?? DEFAULT_GAME_PROVIDER)
+    setDirectoryProviderInput(target?.sourceName ?? defaultProviderId)
     setDirectoryScanModeInput(String(target?.scanMode ?? 0))
     setDirectoryScanLevelInput(String(target?.scanLevel ?? 0))
     setEditDirectoryId(target?.id ?? null)
@@ -426,7 +425,7 @@ export default function Scan() {
 
   const handleSaveEditDirectory = async () => {
     const nextPath = directoryPathInput.trim()
-    const nextProvider = directoryProviderInput.trim() || DEFAULT_GAME_PROVIDER
+    const nextProvider = directoryProviderInput.trim() || defaultProviderId
     const nextScanMode = Number(directoryScanModeInput)
     const nextScanLevel = Number(directoryScanLevelInput)
     if (!nextPath) {
@@ -686,9 +685,9 @@ export default function Scan() {
                 <SelectValue placeholder="选择数据源" />
               </SelectTrigger>
               <SelectContent>
-                {GAME_PROVIDER_OPTIONS.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
+                {allProviders.map((provider) => (
+                  <SelectItem key={provider.id} value={provider.id}>
+                    {provider.name}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -761,9 +760,9 @@ export default function Scan() {
                 <SelectValue placeholder="选择数据源" />
               </SelectTrigger>
               <SelectContent>
-                {GAME_PROVIDER_OPTIONS.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
+                {allProviders.map((provider) => (
+                  <SelectItem key={provider.id} value={provider.id}>
+                    {provider.name}
                   </SelectItem>
                 ))}
               </SelectContent>

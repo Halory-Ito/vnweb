@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 
 import { GamePlayTable } from '@/db/schema'
 import { db } from '@/lib/drizzle'
-import { finalizeGameSession } from '@/lib/game-session-utils'
+import { finalizeGameSession } from '@/lib/game/game-session-utils'
 
 const stopGame = async (
   _req: NextRequest,

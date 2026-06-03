@@ -24,7 +24,7 @@ import {
 import { Switch } from '@/components/ui/switch'
 import { api } from '@/lib/request-utils'
 
-import type { ProxyType } from '@/lib/proxy-settings'
+import type { ProxyType } from '@/lib/settings/proxy-settings'
 
 export interface ProxyConfig {
   id?: number

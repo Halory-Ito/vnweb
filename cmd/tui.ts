@@ -12,7 +12,7 @@ import {
   GamePlayTable,
 } from '../db/schema'
 import { db } from '../lib/drizzle'
-import { finalizeGameSession } from '../lib/game-session-utils'
+import { finalizeGameSession } from '../lib/game/game-session-utils'
 
 type GameRow = {
   id: number

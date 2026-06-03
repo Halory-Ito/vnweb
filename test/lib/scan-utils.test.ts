@@ -18,7 +18,7 @@ import {
     getScannerList,
     startScannerById,
     updateScannerById,
-} from "@/lib/scan-utils";
+} from "@/lib/game/scan-utils";
 
 describe("lib/scan-utils", () => {
     beforeEach(() => {

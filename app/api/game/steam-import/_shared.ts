@@ -5,7 +5,7 @@ import { HttpsProxyAgent } from 'https-proxy-agent'
 import { relateWebsiteTable } from '@/db/schema'
 import { db } from '@/lib/drizzle'
 
-import type { ProxySettings } from '@/lib/proxy-settings'
+import type { ProxySettings } from '@/lib/settings/proxy-settings'
 
 export const STEAM_OWNED_GAMES_API =
   'https://api.steampowered.com/IPlayerService/GetOwnedGames/v1/'

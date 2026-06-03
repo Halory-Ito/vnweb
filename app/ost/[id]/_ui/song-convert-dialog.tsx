@@ -20,7 +20,7 @@ import {
 } from '@/components/ui/input-group'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Spinner } from '@/components/ui/spinner'
-import { getNeteaseAlbumSongs } from '@/lib/ost-utils'
+import { getNeteaseAlbumSongs } from '@/lib/game/ost-utils'
 
 type ConvertDirection = 'khinsider-to-netease' | 'netease-to-khinsider'
 

@@ -56,7 +56,7 @@ import {
     updateGameTimerRecordsById,
     updateVndbCharacterById,
     uploadGameOstLyricById,
-} from "@/lib/game-utils";
+} from "@/lib/game/game-utils";
 
 describe("lib/game-utils", () => {
     beforeEach(() => {

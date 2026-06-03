@@ -17,7 +17,7 @@ import {
   syncSteamPlaytime,
   unlinkThirdPartyAccount,
 } from '@/lib/cloud-sync-utils'
-import { readProxySettings } from '@/lib/proxy-settings'
+import { readProxySettings } from '@/lib/settings/proxy-settings'
 
 const providerConfig: Record<
   CloudSyncProvider,

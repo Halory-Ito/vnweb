@@ -23,7 +23,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { updateGameInfoById } from '@/lib/game-utils'
+import { updateGameInfoById } from '@/lib/game/game-utils'
 import { getGameInfoByIdApi, searchGameByNameApi } from '@/lib/vndb-utils'
 
 import type { GameInfo } from '@/types/game-types'

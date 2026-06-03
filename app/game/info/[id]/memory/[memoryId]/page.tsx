@@ -46,7 +46,7 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { getGameMemoryById, updateGameMemoryById } from '@/lib/game-utils'
+import { getGameMemoryById, updateGameMemoryById } from '@/lib/game/game-utils'
 
 type RouteParams = {
   id: string

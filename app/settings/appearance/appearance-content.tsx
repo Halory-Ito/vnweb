@@ -28,7 +28,7 @@ import {
   notifyBackgroundSettingsChanged,
   readBackgroundSettings,
   writeBackgroundSettings,
-} from '@/lib/background-settings'
+} from '@/lib/settings/background-settings'
 import {
   applyFontSettingsToDocument,
   DEFAULT_FONT_SETTINGS,
@@ -36,7 +36,7 @@ import {
   notifyFontSettingsChanged,
   readFontSettings,
   writeFontSettings,
-} from '@/lib/font-settings'
+} from '@/lib/settings/font-settings'
 import {
   applyGlassSettingsToDocument,
   DEFAULT_GLASS_SETTINGS,
@@ -44,7 +44,7 @@ import {
   notifyGlassSettingsChanged,
   readGlassSettings,
   writeGlassSettings,
-} from '@/lib/glass-settings'
+} from '@/lib/settings/glass-settings'
 
 type LocalFontItem = {
   name: string

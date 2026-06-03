@@ -73,7 +73,7 @@ vi.mock("@/lib/drizzle", () => ({
     db: mocks.db,
 }));
 
-vi.mock("@/lib/proxy-settings", () => ({
+vi.mock("@/lib/settings/proxy-settings", () => ({
     getEnabledProxySettings: mocks.getEnabledProxySettings,
 }));
 

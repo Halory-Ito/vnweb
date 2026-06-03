@@ -41,7 +41,7 @@ import {
   syncVndbCharactersByGameId,
   updateGameInfoById,
   type VndbCharacterListItem,
-} from '@/lib/game-utils'
+} from '@/lib/game/game-utils'
 
 type GameCharactersProps = {
   gameId: number

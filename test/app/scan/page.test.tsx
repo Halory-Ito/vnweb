@@ -14,7 +14,7 @@ const mocks = vi.hoisted(() => ({
   toastError: vi.fn(),
 }))
 
-vi.mock('@/lib/scan-utils', () => ({
+vi.mock('@/lib/game/scan-utils', () => ({
   createScanner: mocks.createScanner,
   deleteScannerById: mocks.deleteScannerById,
   getScanErrors: mocks.getScanErrors,
@@ -23,7 +23,7 @@ vi.mock('@/lib/scan-utils', () => ({
   updateScannerById: mocks.updateScannerById,
 }))
 
-vi.mock('@/lib/game-utils', () => ({
+vi.mock('@/lib/game/game-utils', () => ({
   getGameCardList: mocks.getGameCardList,
 }))
 

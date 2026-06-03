@@ -14,19 +14,19 @@ import {
   DEFAULT_BACKGROUND_SETTINGS,
   type BackgroundTransitionStyle,
   readBackgroundSettings,
-} from '@/lib/background-settings'
+} from '@/lib/settings/background-settings'
 import {
   applyFontSettingsToDocument,
   FONT_SETTINGS_EVENT,
   FONT_SETTINGS_STORAGE_KEY,
   readFontSettings,
-} from '@/lib/font-settings'
+} from '@/lib/settings/font-settings'
 import {
   applyGlassSettingsToDocument,
   GLASS_SETTINGS_EVENT,
   GLASS_SETTINGS_STORAGE_KEY,
   readGlassSettings,
-} from '@/lib/glass-settings'
+} from '@/lib/settings/glass-settings'
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [bg, setBg] = useAtom(bgAtom)

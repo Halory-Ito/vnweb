@@ -2,7 +2,7 @@ import axios from 'axios'
 import { NextRequest, NextResponse } from 'next/server'
 
 import { fetchSteamAppDetails, toSteamStoreUrl } from '../_shared'
-import { getEnabledProxySettings } from '@/lib/proxy-settings'
+import { getEnabledProxySettings } from '@/lib/settings/proxy-settings'
 
 type SteamStoreSearchItem = {
   id?: number

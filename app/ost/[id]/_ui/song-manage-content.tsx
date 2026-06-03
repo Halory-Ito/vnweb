@@ -20,7 +20,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 
-import type { OstSongItem } from '@/lib/game-utils'
+import type { OstSongItem } from '@/lib/game/game-utils'
 
 type SongManageContentProps = {
   items: OstSongItem[]

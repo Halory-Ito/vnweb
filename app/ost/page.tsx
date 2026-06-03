@@ -16,7 +16,7 @@ import {
   getOstManageList,
   updateOstManageItem,
   type OstManageItem,
-} from '@/lib/game-utils'
+} from '@/lib/game/game-utils'
 
 import type { OstItem } from './_ui/types'
 

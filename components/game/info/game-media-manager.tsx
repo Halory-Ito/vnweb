@@ -29,7 +29,7 @@ import {
   uploadGameOstLyricById,
   updateGameOstById,
   updateGamePvById,
-} from '@/lib/game-utils'
+} from '@/lib/game/game-utils'
 
 type GameMediaManagerProps = {
   gameId: number

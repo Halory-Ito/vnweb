@@ -14,7 +14,7 @@ import {
 } from '@/db/schema'
 import { db } from '@/lib/drizzle'
 
-import type { ProxySettings } from '@/lib/proxy-settings'
+import type { ProxySettings } from '@/lib/settings/proxy-settings'
 
 export const maxDuration = 300
 

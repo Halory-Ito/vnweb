@@ -1,4 +1,4 @@
-import type { PvManageItem } from '@/lib/game-utils'
+import type { PvManageItem } from '@/lib/game/game-utils'
 
 export type ViewMode = 'grid' | 'list'
 

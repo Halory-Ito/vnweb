@@ -26,10 +26,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { getThirdPartyAccounts } from '@/lib/cloud-sync-utils'
-import {
-  DEFAULT_GAME_PROVIDER,
-  GAME_PROVIDER_OPTIONS,
-} from '@/lib/provider-options'
+import { getManualSearchProviderOptions } from '@/lib/providers'
 import {
   createGameInfoApi,
   getGameInfoByIdApi,
@@ -63,16 +60,9 @@ type GameInfoFormValues = {
   publisher: string
 }
 
-const MANUAL_ADD_ENABLED_PROVIDER_SET = new Set([
-  'bangumi',
-  'vndb',
-  'steamgriddb',
-  'steam',
-])
-
 export const VNDBSearchDialog = ({
   children,
-  initialProvider = DEFAULT_GAME_PROVIDER,
+  initialProvider,
   lockProvider = false,
   dialogTitle = '添加游戏',
   dialogDescription = '从游戏数据库中导入',
@@ -82,12 +72,15 @@ export const VNDBSearchDialog = ({
   const pageSize = 10
   const [gameName, setGameName] = useState<string>('')
   const [gameId, setGameId] = useState<string>('')
-  const [provider, setProvider] = useState<string>(initialProvider)
+  const providerOptions = getManualSearchProviderOptions()
+  const defaultProvider = initialProvider ?? providerOptions[0]?.value ?? 'bangumi'
+  const [provider, setProvider] = useState<string>(defaultProvider)
   const [searchDialogOpen, setSearchDialogOpen] = useState<boolean>(false)
   const [searchResultDialogOpen, setSearchResultDialogOpen] =
     useState<boolean>(false)
   const [editDialogOpen, setEditDialogOpen] = useState<boolean>(false)
   const [isSearching, setIsSearching] = useState<boolean>(false)
+  const [isIdentifying, setIsIdentifying] = useState<boolean>(false)
   const [isSaving, setIsSaving] = useState<boolean>(false)
   const [searchPage, setSearchPage] = useState<number>(1)
   const [searchTotal, setSearchTotal] = useState<number>(0)
@@ -95,15 +88,6 @@ export const VNDBSearchDialog = ({
   const [gameInfo, setGameInfo] = useState<GameInfo | null>(null)
   const [editableGameInfo, setEditableGameInfo] =
     useState<GameInfoFormValues | null>(null)
-
-  const selectableProviderOptions = GAME_PROVIDER_OPTIONS.map((option) => {
-    const disabled = !MANUAL_ADD_ENABLED_PROVIDER_SET.has(option.value)
-    return {
-      ...option,
-      disabled,
-      label: disabled ? `${option.label}（暂未实现）` : option.label,
-    }
-  })
 
   const toFormValues = (info: GameInfo): GameInfoFormValues => {
     return {
@@ -119,15 +103,30 @@ export const VNDBSearchDialog = ({
   }
 
   const handleSearchById = async () => {
-    const res = await getGameInfoByIdApi(gameId, provider)
-    if (res === null) {
+    const trimmedId = gameId.trim()
+    if (!trimmedId) {
+      toast.error('请输入游戏 ID')
       return
     }
 
-    setGameInfo(res)
-    setEditableGameInfo(toFormValues(res))
-    setSearchDialogOpen(false)
-    setEditDialogOpen(true)
+    setIsIdentifying(true)
+    try {
+      const res = await getGameInfoByIdApi(trimmedId, provider)
+      if (res === null) {
+        toast.error('未找到对应的游戏信息')
+        return
+      }
+
+      setGameInfo(res)
+      setEditableGameInfo(toFormValues(res))
+      setSearchDialogOpen(false)
+      setEditDialogOpen(true)
+    } catch (error) {
+      toast.error('识别失败，请检查 ID 是否正确')
+      console.error('Identify game failed:', error)
+    } finally {
+      setIsIdentifying(false)
+    }
   }
 
   const loadSearchResults = async (page: number) => {
@@ -245,7 +244,7 @@ export const VNDBSearchDialog = ({
               <div className="min-w-16">数据来源</div>
               {lockProvider ? (
                 <div className="text-sm font-medium">
-                  {selectableProviderOptions.find(
+                  {providerOptions.find(
                     (option) => option.value === provider,
                   )?.label ?? provider}
                 </div>
@@ -256,11 +255,10 @@ export const VNDBSearchDialog = ({
                   </SelectTrigger>
                   <SelectContent>
                     <SelectGroup>
-                      {selectableProviderOptions.map((option) => (
+                      {providerOptions.map((option) => (
                         <SelectItem
                           key={option.value}
                           value={option.value}
-                          disabled={option.disabled}
                         >
                           {option.label}
                         </SelectItem>
@@ -296,9 +294,10 @@ export const VNDBSearchDialog = ({
               <Button
                 type="button"
                 variant="outline"
+                disabled={isIdentifying || gameId.trim().length === 0}
                 onClick={handleSearchById}
               >
-                识别
+                {isIdentifying ? '识别中...' : '识别'}
               </Button>
             </div>
           </div>
@@ -315,7 +314,7 @@ export const VNDBSearchDialog = ({
           clearSearchResultDialog()
         }}
       >
-        <DialogContent className="sm:max-w-2xl">
+        <DialogContent className="flex max-h-[85vh] flex-col sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle>搜索结果</DialogTitle>
             <DialogDescription>
@@ -323,15 +322,15 @@ export const VNDBSearchDialog = ({
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-3">
-            <div className="text-muted-foreground grid grid-cols-[2fr_1fr_1fr_auto] gap-2 px-2 text-sm">
+          <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-hidden">
+            <div className="text-muted-foreground hidden grid-cols-[2fr_1fr_1fr_auto] gap-2 px-2 text-sm sm:grid">
               <div>游戏名</div>
               <div>开发商</div>
               <div>发行日期</div>
               <div className="text-right">操作</div>
             </div>
 
-            <div className="space-y-2">
+            <div className="min-h-0 flex-1 space-y-2 overflow-y-auto">
               {searchResults.length === 0 ? (
                 <div className="text-muted-foreground rounded-md border p-4 text-sm">
                   未找到匹配记录
@@ -340,15 +339,22 @@ export const VNDBSearchDialog = ({
                 searchResults.map((item) => (
                   <div
                     key={item.id}
-                    className="grid grid-cols-[2fr_1fr_1fr_auto] items-center gap-2 rounded-md border p-2"
+                    className="grid items-center gap-2 rounded-md border p-2 sm:grid-cols-[2fr_1fr_1fr_auto]"
                   >
-                    <div className="truncate">{item.name || '-'}</div>
-                    <div className="truncate">{item.developer || '-'}</div>
-                    <div className="truncate">{item.date || '-'}</div>
+                    <div className="truncate text-sm font-medium">
+                      {item.name || '-'}
+                    </div>
+                    <div className="text-muted-foreground truncate text-xs sm:text-sm">
+                      {item.developer || '-'}
+                    </div>
+                    <div className="text-muted-foreground truncate text-xs sm:text-sm">
+                      {item.date || '-'}
+                    </div>
                     <div className="text-right">
                       <Button
                         type="button"
                         variant="outline"
+                        size="sm"
                         onClick={() => handleSelectSearchItem(item)}
                       >
                         选择
@@ -385,92 +391,94 @@ export const VNDBSearchDialog = ({
       </Dialog>
 
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-        <DialogContent className="sm:max-w-xl">
+        <DialogContent className="flex max-h-[85vh] flex-col sm:max-w-xl">
           <DialogHeader>
             <DialogTitle>编辑游戏信息</DialogTitle>
             <DialogDescription>识别成功后可在此修改部分字段</DialogDescription>
           </DialogHeader>
 
           {editableGameInfo !== null && (
-            <form className="space-y-4" onSubmit={handleConfirm}>
-              <div className="space-y-2">
-                <div className="text-sm">游戏名称</div>
-                <Input
-                  value={editableGameInfo.name}
-                  onChange={(e) =>
-                    handleFormValueChange('name', e.target.value)
-                  }
-                />
-              </div>
+            <form className="flex min-h-0 flex-1 flex-col overflow-hidden" onSubmit={handleConfirm}>
+              <div className="min-h-0 flex-1 space-y-4 overflow-y-auto pr-1">
+                <div className="space-y-2">
+                  <div className="text-sm">游戏名称</div>
+                  <Input
+                    value={editableGameInfo.name}
+                    onChange={(e) =>
+                      handleFormValueChange('name', e.target.value)
+                    }
+                  />
+                </div>
 
-              <div className="space-y-2">
-                <div className="text-sm">中文名称</div>
-                <Input
-                  value={editableGameInfo.nameCn}
-                  onChange={(e) =>
-                    handleFormValueChange('nameCn', e.target.value)
-                  }
-                />
-              </div>
+                <div className="space-y-2">
+                  <div className="text-sm">中文名称</div>
+                  <Input
+                    value={editableGameInfo.nameCn}
+                    onChange={(e) =>
+                      handleFormValueChange('nameCn', e.target.value)
+                    }
+                  />
+                </div>
 
-              <div className="space-y-2">
-                <div className="text-sm">发布日期</div>
-                <Input
-                  value={editableGameInfo.date}
-                  onChange={(e) =>
-                    handleFormValueChange('date', e.target.value)
-                  }
-                />
-              </div>
+                <div className="space-y-2">
+                  <div className="text-sm">发布日期</div>
+                  <Input
+                    value={editableGameInfo.date}
+                    onChange={(e) =>
+                      handleFormValueChange('date', e.target.value)
+                    }
+                  />
+                </div>
 
-              <div className="space-y-2">
-                <div className="text-sm">封面链接</div>
-                <Input
-                  value={editableGameInfo.cover}
-                  onChange={(e) =>
-                    handleFormValueChange('cover', e.target.value)
-                  }
-                />
-              </div>
+                <div className="space-y-2">
+                  <div className="text-sm">封面链接</div>
+                  <Input
+                    value={editableGameInfo.cover}
+                    onChange={(e) =>
+                      handleFormValueChange('cover', e.target.value)
+                    }
+                  />
+                </div>
 
-              <div className="space-y-2">
-                <div className="text-sm">标签（逗号分隔）</div>
-                <Input
-                  value={editableGameInfo.tags}
-                  onChange={(e) =>
-                    handleFormValueChange('tags', e.target.value)
-                  }
-                />
-              </div>
+                <div className="space-y-2">
+                  <div className="text-sm">标签（逗号分隔）</div>
+                  <Input
+                    value={editableGameInfo.tags}
+                    onChange={(e) =>
+                      handleFormValueChange('tags', e.target.value)
+                    }
+                  />
+                </div>
 
-              <div className="space-y-2">
-                <div className="text-sm">开发商</div>
-                <Input
-                  value={editableGameInfo.developer}
-                  onChange={(e) =>
-                    handleFormValueChange('developer', e.target.value)
-                  }
-                />
-              </div>
+                <div className="space-y-2">
+                  <div className="text-sm">开发商</div>
+                  <Input
+                    value={editableGameInfo.developer}
+                    onChange={(e) =>
+                      handleFormValueChange('developer', e.target.value)
+                    }
+                  />
+                </div>
 
-              <div className="space-y-2">
-                <div className="text-sm">发行商</div>
-                <Input
-                  value={editableGameInfo.publisher}
-                  onChange={(e) =>
-                    handleFormValueChange('publisher', e.target.value)
-                  }
-                />
-              </div>
+                <div className="space-y-2">
+                  <div className="text-sm">发行商</div>
+                  <Input
+                    value={editableGameInfo.publisher}
+                    onChange={(e) =>
+                      handleFormValueChange('publisher', e.target.value)
+                    }
+                  />
+                </div>
 
-              <div className="space-y-2">
-                <div className="text-sm">简介</div>
-                <Textarea
-                  value={editableGameInfo.summary}
-                  onChange={(e) =>
-                    handleFormValueChange('summary', e.target.value)
-                  }
-                />
+                <div className="space-y-2">
+                  <div className="text-sm">简介</div>
+                  <Textarea
+                    value={editableGameInfo.summary}
+                    onChange={(e) =>
+                      handleFormValueChange('summary', e.target.value)
+                    }
+                  />
+                </div>
               </div>
 
               <DialogFooter>
@@ -712,7 +720,7 @@ export const SteamImportDialog = ({ children }: VNDBSearchDialogProps) => {
     <>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>{children}</DialogTrigger>
-        <DialogContent>
+        <DialogContent className="flex max-h-[85vh] flex-col">
           <DialogHeader>
             <DialogTitle>从 Steam 导入</DialogTitle>
             <DialogDescription>
@@ -720,7 +728,7 @@ export const SteamImportDialog = ({ children }: VNDBSearchDialogProps) => {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4">
+          <div className="min-h-0 flex-1 space-y-4 overflow-y-auto">
             <div className="space-y-2">
               <div className="text-sm">Steam UID</div>
               {boundSteamAccount ? (
@@ -1065,13 +1073,13 @@ const ProviderCollectionImportDialog = ({
     <>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>{children}</DialogTrigger>
-        <DialogContent>
+        <DialogContent className="flex max-h-[85vh] flex-col">
           <DialogHeader>
             <DialogTitle>{title}</DialogTitle>
             <DialogDescription>{description}</DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4">
+          <div className="min-h-0 flex-1 space-y-4 overflow-y-auto">
             <div className="space-y-2">
               <div className="text-sm">已绑定账号</div>
               {isLoadingAccounts ? (

@@ -24,7 +24,7 @@ import {
   getPvManageList,
   type PvManageItem,
   updatePvManageItem,
-} from '@/lib/game-utils'
+} from '@/lib/game/game-utils'
 
 import type { GameOption, PvFormState, ViewMode } from './_ui/types'
 

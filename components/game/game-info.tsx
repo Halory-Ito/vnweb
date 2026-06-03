@@ -55,7 +55,7 @@ import {
   launchGameById,
   stopGameById,
   updateGamePlayStatusById,
-} from '@/lib/game-utils'
+} from '@/lib/game/game-utils'
 
 import type { GameFilterState } from '@/types/game-types'
 

@@ -88,7 +88,7 @@ const mocks = vi.hoisted(() => {
 
 vi.mock("@/lib/drizzle", () => ({ db: mocks.db }));
 vi.mock(
-    "@/lib/proxy-settings",
+    "@/lib/settings/proxy-settings",
     () => ({ getEnabledProxySettings: mocks.getEnabledProxySettings }),
 );
 vi.mock("@/app/api/game/steam-import/_shared", () => ({

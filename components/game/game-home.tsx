@@ -58,7 +58,7 @@ import {
   deleteGameById,
   getCollections,
   getGameCardList,
-} from '@/lib/game-utils'
+} from '@/lib/game/game-utils'
 
 type SelectableGameProps = {
   selectedGameIds: string[]

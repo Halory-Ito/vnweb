@@ -11,7 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { OstSongItem } from '@/lib/game-utils'
+import { OstSongItem } from '@/lib/game/game-utils'
 
 type SongDeleteDialogProps = {
   item: OstSongItem | null

@@ -33,7 +33,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 
-import type { OstSongItem } from '@/lib/game-utils'
+import type { OstSongItem } from '@/lib/game/game-utils'
 
 const formSchema = z.object({
   name: z.string().min(1, '名称不能为空'),

@@ -10,7 +10,7 @@ import {
   toSteamIconUrl,
   toSteamLogoUrl,
 } from '../_shared'
-import { getEnabledProxySettings } from '@/lib/proxy-settings'
+import { getEnabledProxySettings } from '@/lib/settings/proxy-settings'
 
 export const maxDuration = 300
 

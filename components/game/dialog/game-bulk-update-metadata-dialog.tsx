@@ -22,7 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { batchUpdateGameMetadata } from '@/lib/game-utils'
+import { batchUpdateGameMetadata } from '@/lib/game/game-utils'
 
 type BulkProvider = 'bangumi' | 'steamgriddb'
 type MergeStrategy = 'replace' | 'merge' | 'append'

@@ -28,7 +28,7 @@ const mocks = vi.hoisted(() => {
 vi.mock("@/lib/drizzle", () => ({ db: mocks.db }));
 vi.mock("drizzle-orm", () => ({ sql: mocks.sql, eq: mocks.eq }));
 
-import { finalizeGameSession } from "@/lib/game-session-utils";
+import { finalizeGameSession } from "@/lib/game/game-session-utils";
 
 describe("lib/game-session-utils", () => {
     beforeEach(() => {

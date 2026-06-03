@@ -28,7 +28,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { getGameFilterOptions } from '@/lib/game-utils'
+import { getGameFilterOptions } from '@/lib/game/game-utils'
 
 import type { GameFilterState } from '@/types/game-types'
 

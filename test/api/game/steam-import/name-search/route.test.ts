@@ -35,7 +35,7 @@ const mocks = vi.hoisted(() => {
 
 vi.mock('axios', () => ({ default: { get: mocks.axiosGet } }))
 vi.mock('https-proxy-agent', () => ({ HttpsProxyAgent: mocks.HttpsProxyAgent }))
-vi.mock('@/lib/proxy-settings', () => ({
+vi.mock('@/lib/settings/proxy-settings', () => ({
   getEnabledProxySettings: mocks.getEnabledProxySettings,
 }))
 vi.mock('@/app/api/game/steam-import/_shared', () => ({

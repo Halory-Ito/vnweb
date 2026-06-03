@@ -1,4 +1,5 @@
 import { api } from '@/lib/request-utils'
+import { getProviderById } from '@/lib/providers'
 
 import type { GameInfo } from '@/types/game-types'
 
@@ -378,6 +379,13 @@ const mapVndbDetailToGameInfo = (entry: VndbDetailResponse): GameInfo => {
  */
 
 export const getGameInfoByIdApi = async (id: string, provider: string) => {
+  // 优先通过插件注册中心分发
+  const plugin = getProviderById(provider)
+  if (plugin?.getById) {
+    return plugin.getById(id)
+  }
+
+  // 兼容旧逻辑
   if (provider === 'bangumi') {
     const rawSubject = (await getBGMSubjectByIdApi(id)) as BGMSubject
     return mapBGMSubjectToGameInfo(rawSubject)
@@ -414,6 +422,13 @@ export const searchGameByNameApi = async (
   offset: number = 0,
   limit: number = 10,
 ) => {
+  // 优先通过插件注册中心分发
+  const plugin = getProviderById(provider)
+  if (plugin?.searchByName) {
+    return plugin.searchByName(keyword, offset, limit)
+  }
+
+  // 兼容旧逻辑
   if (provider === 'bangumi') {
     return searchBGMSubjectsApi(keyword, offset, limit)
   }

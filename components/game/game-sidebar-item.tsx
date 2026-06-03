@@ -49,7 +49,7 @@ import {
   deleteGameById,
   getCollections,
   launchGameById,
-} from '@/lib/game-utils'
+} from '@/lib/game/game-utils'
 import { cn } from '@/lib/utils'
 import { GameSidebarItemProps } from '@/types/game-types'
 

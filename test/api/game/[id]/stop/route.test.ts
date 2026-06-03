@@ -15,7 +15,7 @@ const mocks = vi.hoisted(() => {
 
 vi.mock("@/lib/drizzle", () => ({ db: mocks.db }));
 vi.mock(
-    "@/lib/game-session-utils",
+    "@/lib/game/game-session-utils",
     () => ({ finalizeGameSession: mocks.finalizeGameSession }),
 );
 

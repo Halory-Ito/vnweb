@@ -64,7 +64,7 @@ import {
   getCollections,
   moveGameToCollection,
   removeGameFromCollection,
-} from '@/lib/game-utils'
+} from '@/lib/game/game-utils'
 
 type CollectionEmptyStateProps = {
   icon: typeof AlertCircle

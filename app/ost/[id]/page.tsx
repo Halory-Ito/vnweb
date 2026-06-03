@@ -18,7 +18,7 @@ import {
   getOstSongs,
   updateOstSong,
   type OstSongItem,
-} from '@/lib/game-utils'
+} from '@/lib/game/game-utils'
 
 export default function SongPage({
   params,

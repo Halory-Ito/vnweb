@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { fetchSteamAppDetails } from '@/app/api/game/steam-import/_shared'
 import { GameIdMapTable, GameInfoTable, GamePvTable } from '@/db/schema'
 import { db } from '@/lib/drizzle'
-import { getEnabledProxySettings } from '@/lib/proxy-settings'
+import { getEnabledProxySettings } from '@/lib/settings/proxy-settings'
 
 const parseGameId = async (context: { params: Promise<{ id: string }> }) => {
   const { id } = await context.params

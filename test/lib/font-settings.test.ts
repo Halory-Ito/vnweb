@@ -6,7 +6,7 @@ import {
     notifyFontSettingsChanged,
     readFontSettings,
     writeFontSettings,
-} from "@/lib/font-settings";
+} from "@/lib/settings/font-settings";
 
 describe("lib/font-settings", () => {
     test("normalize clamps and rounds size/weight", () => {

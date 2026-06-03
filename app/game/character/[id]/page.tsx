@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Textarea } from '@/components/ui/textarea'
-import { getVndbCharacterById, updateVndbCharacterById } from '@/lib/game-utils'
+import { getVndbCharacterById, updateVndbCharacterById } from '@/lib/game/game-utils'
 
 const formatBirthday = (birthday: [number, number] | null) => {
   if (!birthday) {

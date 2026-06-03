@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 
-import type { GameDetail } from '@/lib/game-utils'
+import type { GameDetail } from '@/lib/game/game-utils'
 import type { GameFilterState } from '@/types/game-types'
 
 type GameOverviewProps = {

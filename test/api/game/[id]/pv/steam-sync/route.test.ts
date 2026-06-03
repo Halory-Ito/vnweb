@@ -48,7 +48,7 @@ vi.mock(
     () => ({ fetchSteamAppDetails: mocks.fetchSteamAppDetails }),
 );
 vi.mock(
-    "@/lib/proxy-settings",
+    "@/lib/settings/proxy-settings",
     () => ({ getEnabledProxySettings: mocks.getEnabledProxySettings }),
 );
 

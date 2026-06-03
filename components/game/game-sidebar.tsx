@@ -12,7 +12,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion'
-import { getGameSidebarData } from '@/lib/game-utils'
+import { getGameSidebarData } from '@/lib/game/game-utils'
 
 export default function GameSidebar() {
   const search = useAtomValue(gameSearchAtom)

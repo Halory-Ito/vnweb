@@ -28,7 +28,7 @@ import {
   createGameMemoryById,
   getGameMemoriesById,
   type GameMemoryItem,
-} from '@/lib/game-utils'
+} from '@/lib/game/game-utils'
 
 type GameMemoryProps = {
   gameId: number

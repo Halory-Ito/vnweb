@@ -4,7 +4,11 @@ import { NextRequest, NextResponse } from 'next/server'
 
 import { ScannerTable } from '@/db/schema'
 import { db } from '@/lib/drizzle'
-import { GAME_PROVIDER_OPTIONS } from '@/lib/provider-options'
+import { bangumiProvider } from '@/lib/providers/bangumi-provider'
+import { steamProvider } from '@/lib/providers/steam-provider'
+import { steamgriddbProvider } from '@/lib/providers/steamgriddb-provider'
+import { vndbProvider } from '@/lib/providers/vndb-provider'
+import { ymgalProvider } from '@/lib/providers/ymgal-provider'
 
 type UpdateScannerPayload = {
   directory?: string
@@ -13,7 +17,13 @@ type UpdateScannerPayload = {
   scanLevel?: number
 }
 
-const providerSet = new Set(GAME_PROVIDER_OPTIONS.map((item) => item.value))
+const providerSet = new Set([
+  bangumiProvider.id,
+  vndbProvider.id,
+  steamProvider.id,
+  steamgriddbProvider.id,
+  ymgalProvider.id,
+])
 
 const updateScanner = async (
   req: NextRequest,

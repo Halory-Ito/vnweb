@@ -22,7 +22,7 @@ import {
   relateWebsiteTable,
 } from '@/db/schema'
 import { db } from '@/lib/drizzle'
-import { getEnabledProxySettings } from '@/lib/proxy-settings'
+import { getEnabledProxySettings } from '@/lib/settings/proxy-settings'
 
 export const maxDuration = 300
 

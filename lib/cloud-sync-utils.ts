@@ -1,6 +1,6 @@
 import { api } from '@/lib/request-utils'
 
-import type { ProxySettings } from '@/lib/proxy-settings'
+import type { ProxySettings } from '@/lib/settings/proxy-settings'
 
 export type ThirdPartyAccountItem = {
   id: number

@@ -29,7 +29,7 @@ import {
   type ChartConfig,
 } from '@/components/ui/chart'
 import { Skeleton } from '@/components/ui/skeleton'
-import { getGameTimerRecordsById } from '@/lib/game-utils'
+import { getGameTimerRecordsById } from '@/lib/game/game-utils'
 
 type GameRecordProps = {
   gameId: number

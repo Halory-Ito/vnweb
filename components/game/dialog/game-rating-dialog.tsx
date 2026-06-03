@@ -14,7 +14,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
-import { updateGameRatingById } from '@/lib/game-utils'
+import { updateGameRatingById } from '@/lib/game/game-utils'
 
 type GameRatingDialogProps = {
   gameId: number

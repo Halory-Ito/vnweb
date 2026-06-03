@@ -32,7 +32,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { getGameCardList } from '@/lib/game-utils'
+import { getGameCardList } from '@/lib/game/game-utils'
 
 import type {
   GameOption,

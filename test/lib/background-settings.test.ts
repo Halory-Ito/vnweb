@@ -6,7 +6,7 @@ import {
     readBackgroundSettings,
     updateLastGameBackground,
     writeBackgroundSettings,
-} from "@/lib/background-settings";
+} from "@/lib/settings/background-settings";
 
 describe("lib/background-settings", () => {
     test("normalize clamps and falls back", () => {

@@ -51,7 +51,7 @@ vi.mock("../_shared", () => ({
     toSteamLogoUrl: mocks.toSteamLogoUrl,
 }));
 
-vi.mock("@/lib/proxy-settings", () => ({
+vi.mock("@/lib/settings/proxy-settings", () => ({
     getEnabledProxySettings: mocks.getEnabledProxySettings,
 }));
 

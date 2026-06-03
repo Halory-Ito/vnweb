@@ -55,14 +55,14 @@ import {
   DEFAULT_LAST_GAME_BACKGROUND_IMAGE,
   readBackgroundSettings,
   updateLastGameBackground,
-} from '@/lib/background-settings'
+} from '@/lib/settings/background-settings'
 import {
   enqueueGameImageLocalizationById,
   type GameSearchImageItem,
   getGameById,
   searchGameImages,
   updateGameSettingsById,
-} from '@/lib/game-utils'
+} from '@/lib/game/game-utils'
 
 type ImageField = 'cover' | 'bg' | 'icon' | 'logo'
 

@@ -9,7 +9,7 @@ import {
   relateWebsiteTable,
 } from '@/db/schema'
 import { db } from '@/lib/drizzle'
-import { getEnabledProxySettings } from '@/lib/proxy-settings'
+import { getEnabledProxySettings } from '@/lib/settings/proxy-settings'
 import { syncVndbCharactersByGameId } from '@/lib/server/vndb-character-sync'
 import { GameInfo } from '@/types/game-types'
 

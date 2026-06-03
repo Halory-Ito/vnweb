@@ -27,7 +27,7 @@ import {
   getGamePvsById,
   syncSteamPvsByGameId,
   type GameMediaLinkItem,
-} from '@/lib/game-utils'
+} from '@/lib/game/game-utils'
 
 type GamePVProps = {
   gameId: number

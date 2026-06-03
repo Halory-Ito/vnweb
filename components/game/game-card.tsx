@@ -24,7 +24,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
-import { launchGameById } from '@/lib/game-utils'
+import { launchGameById } from '@/lib/game/game-utils'
 
 export default function GameCard(props: GameCardProps) {
   const router = useRouter()
