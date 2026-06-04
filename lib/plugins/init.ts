@@ -8,25 +8,24 @@ import { bilibiliPlugin } from './builtin/bilibili-plugin'
 import { youtubePlugin } from './builtin/youtube-plugin'
 import { initializePlugins, registerPlugin } from './registry'
 
+// ── 同步注册所有内置插件（模块加载时立即执行） ──────────
+registerPlugin(bangumiProvider)
+registerPlugin(steamProvider)
+registerPlugin(steamgriddbProvider)
+registerPlugin(vndbProvider)
+registerPlugin(ymgalProvider)
+
+registerPlugin(bilibiliPlugin)
+registerPlugin(youtubePlugin)
+
 /**
  * 初始化插件系统：
- * 1. 注册所有内置插件
+ * 1. 内置插件已在模块加载时同步注册（见上方）
  * 2. 加载外部插件（仅服务端）
  * 3. 同步启用状态到 Hook 执行器
  */
 export async function bootstrapPlugins() {
-  // 注册内置数据源插件
-  registerPlugin(bangumiProvider)
-  registerPlugin(steamProvider)
-  registerPlugin(steamgriddbProvider)
-  registerPlugin(vndbProvider)
-  registerPlugin(ymgalProvider)
-
-  // 注册内置功能增强插件
-  registerPlugin(bilibiliPlugin)
-  registerPlugin(youtubePlugin)
-
-  // 加载外部插件（仅在服务端环境中执行，动态 import 避免 node:fs 进入客户端 bundle）
+  // 加载外部插件（仅在服务端环境中执行）
   if (typeof window === 'undefined') {
     try {
       const { loadExternalPlugins } = await import('./loader')

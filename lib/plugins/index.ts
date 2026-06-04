@@ -1,12 +1,14 @@
 // ── 类型 ──────────────────────────────────────────────────
 export type {
   AnyPlugin,
+  CharacterProviderPlugin,
   FeaturePlugin,
   GameEnrichMetadataInput,
   GameEnrichMetadataOutput,
   HookHandler,
   HookId,
   HookTypeMap,
+  NormalizedCharacterRow,
   PluginManifest,
   PluginType,
   ProviderCapability,
@@ -33,6 +35,9 @@ export {
   getAllProviders,
   getAccountBindProviders,
   getBulkImportProviders,
+  getCharacterProvider,
+  getCharacterProviders,
+  getEnabledCharacterProviders,
   getEnabledPlugins,
   getEnabledProviders,
   getEnabledFeatures,
@@ -41,6 +46,7 @@ export {
   getProvidersByCapability,
   initializePlugins,
   isPluginActive,
+  registerCharacterProvider,
   registerPlugin,
   togglePlugin,
 } from './registry'

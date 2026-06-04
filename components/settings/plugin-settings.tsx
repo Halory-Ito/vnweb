@@ -52,6 +52,7 @@ const CAPABILITY_VARIANTS: Record<
 const TYPE_LABELS: Record<AnyPlugin['type'], string> = {
   provider: '数据源',
   feature: '功能增强',
+  'character-provider': '角色数据源',
 }
 
 export default function PluginSettings() {
@@ -77,6 +78,9 @@ export default function PluginSettings() {
 
   const providers = plugins.filter((p) => p.type === 'provider')
   const features = plugins.filter((p) => p.type === 'feature')
+  const characterProviders = plugins.filter(
+    (p) => p.type === 'character-provider',
+  )
 
   return (
     <div className="space-y-8">
@@ -110,6 +114,26 @@ export default function PluginSettings() {
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             {providers.map((plugin) => (
+              <PluginCard
+                key={plugin.id}
+                plugin={plugin}
+                onToggle={handleToggle}
+              />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {characterProviders.length > 0 && (
+        <section className="space-y-4">
+          <div>
+            <h3 className="text-lg font-medium">角色数据源插件</h3>
+            <p className="text-muted-foreground text-sm">
+              管理角色信息的数据来源，禁用后同步角色时将跳过该数据源。
+            </p>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            {characterProviders.map((plugin) => (
               <PluginCard
                 key={plugin.id}
                 plugin={plugin}

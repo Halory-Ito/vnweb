@@ -57,7 +57,7 @@ export type VndbCharacterListItem = {
   role: 'main' | 'primary' | 'side' | 'appears' | ''
 }
 
-export type CharacterSyncSource = 'vndb' | 'bangumi' | 'both'
+export type CharacterSyncSource = string
 export type CharacterMergeStrategy =
   | 'prefer_vndb'
   | 'prefer_bangumi'

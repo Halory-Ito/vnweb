@@ -42,6 +42,7 @@ import {
   updateGameInfoById,
   type VndbCharacterListItem,
 } from '@/lib/game/game-utils'
+import { getEnabledCharacterProviders } from '@/lib/plugins'
 
 type GameCharactersProps = {
   gameId: number
@@ -95,12 +96,11 @@ export default function GameCharacters({ gameId }: GameCharactersProps) {
   const [isClearing, setIsClearing] = useState(false)
   const [isSyncing, setIsSyncing] = useState(false)
   const [syncSource, setSyncSource] = useState<CharacterSyncSource>('bangumi')
-  const [settingsForm, setSettingsForm] = useState({
-    vndbId: '',
-    bangumiId: '',
-    strategy: 'bangumi' as 'bangumi' | 'vndb',
-    saveImagesToLocal: true,
-  })
+  const [selectedSource, setSelectedSource] = useState('')
+  const [gameIdInput, setGameIdInput] = useState('')
+  const [saveImagesToLocal, setSaveImagesToLocal] = useState(true)
+
+  const characterProviders = useMemo(() => getEnabledCharacterProviders(), [])
 
   const { data: gameDetail } = useQuery({
     queryKey: ['game', String(gameId)],
@@ -145,15 +145,6 @@ export default function GameCharacters({ gameId }: GameCharactersProps) {
     [externalSourceIds],
   )
 
-  const vndbBoundId =
-    parsedSourceIds.find(
-      (item) => item.provider.trim().toLowerCase() === 'vndb',
-    )?.externalId || ''
-  const bangumiBoundId =
-    parsedSourceIds.find(
-      (item) => item.provider.trim().toLowerCase() === 'bangumi',
-    )?.externalId || ''
-
   useEffect(() => {
     if (!error) {
       return
@@ -170,34 +161,26 @@ export default function GameCharacters({ gameId }: GameCharactersProps) {
   const vnId = data?.vnId || ''
   const bgmSubjectId = data?.bgmSubjectId || ''
 
-  const normalizeVndbId = (rawInput: string) => {
-    if (/^v\d+$/i.test(rawInput)) {
-      return `v${rawInput.slice(1)}`
-    }
-    if (/^\d+$/.test(rawInput)) {
-      return `v${rawInput}`
-    }
-    return ''
-  }
-
-  const normalizeBangumiId = (rawInput: string) => {
-    const subjectMatch = rawInput.match(/subject\/(\d+)/i)
-    if (subjectMatch?.[1]) {
-      return subjectMatch[1]
-    }
-    if (/^\d+$/.test(rawInput)) {
-      return rawInput
-    }
-    return ''
+  // 根据 sourceId 获取已绑定的游戏外部 ID
+  const getBoundIdForSource = (sourceId: string) => {
+    // 优先从 GET 接口返回的数据中取
+    if (sourceId === 'vndb' && vnId) return vnId
+    if (sourceId === 'bangumi' && bgmSubjectId) return bgmSubjectId
+    // 其次从 externalSourceIds 解析
+    return (
+      parsedSourceIds.find(
+        (item) => item.provider.toLowerCase() === sourceId,
+      )?.externalId || ''
+    )
   }
 
   const openSettingsDialog = () => {
-    setSettingsForm({
-      vndbId: vnId || vndbBoundId || '',
-      bangumiId: bgmSubjectId || bangumiBoundId || '',
-      strategy: syncSource === 'vndb' ? 'vndb' : 'bangumi',
-      saveImagesToLocal: true,
-    })
+    const source = characterProviders.length > 0
+      ? characterProviders[0].sourceId
+      : ''
+    setSelectedSource(source)
+    setGameIdInput(getBoundIdForSource(source))
+    setSaveImagesToLocal(true)
     setSettingsDialogOpen(true)
   }
 
@@ -229,50 +212,36 @@ export default function GameCharacters({ gameId }: GameCharactersProps) {
   }
 
   const saveSettingsAndSync = async () => {
-    const rawVndbId = settingsForm.vndbId.trim()
-    const rawBangumiId = settingsForm.bangumiId.trim()
-    const normalizedVndbId = rawVndbId ? normalizeVndbId(rawVndbId) : ''
-    const normalizedBangumiId = rawBangumiId
-      ? normalizeBangumiId(rawBangumiId)
-      : ''
-
-    if (rawVndbId && !normalizedVndbId) {
-      toast.error('VNDB 游戏 ID 格式错误，应为 v12345 或 12345')
+    const provider = characterProviders.find(
+      (p) => p.sourceId === selectedSource,
+    )
+    if (!provider) {
+      toast.error('请先选择角色数据来源')
       return
     }
 
-    if (rawBangumiId && !normalizedBangumiId) {
-      toast.error('Bangumi 游戏 ID 格式错误，应为 12345 或 subject/12345')
+    const raw = gameIdInput.trim()
+    if (!raw) {
+      toast.error(`请输入 ${provider.name} 游戏 ID`)
       return
     }
 
-    if (settingsForm.strategy === 'vndb' && !normalizedVndbId) {
-      toast.error('当前策略需要 VNDB 游戏 ID，请先填写')
+    const normalized = provider.normalizeExternalId(raw)
+    if (!normalized) {
+      toast.error(`${provider.name} 游戏 ID 格式错误：${raw}`)
       return
     }
 
-    if (settingsForm.strategy === 'bangumi' && !normalizedBangumiId) {
-      toast.error('当前策略需要 Bangumi 游戏 ID，请先填写')
-      return
-    }
-
+    // 构建 externalSourceIds：保留非角色数据源的绑定，更新当前选中的角色数据源
+    const characterSourceIds = new Set(
+      characterProviders.map((p) => p.sourceId),
+    )
     const nextSourceIds = [
-      ...parsedSourceIds.filter((item) => {
-        const provider = item.provider.trim().toLowerCase()
-        return provider !== 'vndb' && provider !== 'bangumi'
-      }),
+      ...parsedSourceIds.filter(
+        (item) => !characterSourceIds.has(item.provider.toLowerCase()),
+      ),
+      { provider: provider.sourceId, externalId: normalized },
     ]
-
-    if (normalizedVndbId) {
-      nextSourceIds.push({ provider: 'vndb', externalId: normalizedVndbId })
-    }
-
-    if (normalizedBangumiId) {
-      nextSourceIds.push({
-        provider: 'bangumi',
-        externalId: normalizedBangumiId,
-      })
-    }
 
     const sourcePayload = nextSourceIds
       .map((item) => `${item.provider}:${item.externalId}`)
@@ -286,11 +255,11 @@ export default function GameCharacters({ gameId }: GameCharactersProps) {
       })
 
       await syncVndbCharactersByGameId(gameId, {
-        source: settingsForm.strategy,
-        saveImagesToLocal: settingsForm.saveImagesToLocal,
+        source: provider.sourceId as CharacterSyncSource,
+        saveImagesToLocal,
       })
 
-      setSyncSource(settingsForm.strategy)
+      setSyncSource(provider.sourceId as CharacterSyncSource)
 
       await queryClient.invalidateQueries({
         queryKey: ['game', String(gameId)],
@@ -397,62 +366,47 @@ export default function GameCharacters({ gameId }: GameCharactersProps) {
           </DialogHeader>
           <div className="space-y-3">
             <div className="space-y-1">
-              <div className="text-sm">VNDB 游戏 ID</div>
-              <Input
-                value={settingsForm.vndbId}
-                onChange={(event) =>
-                  setSettingsForm((prev) => ({
-                    ...prev,
-                    vndbId: event.target.value,
-                  }))
-                }
-                placeholder="例如：v17 或 17"
-              />
-            </div>
-
-            <div className="space-y-1">
-              <div className="text-sm">Bangumi 游戏 ID</div>
-              <Input
-                value={settingsForm.bangumiId}
-                onChange={(event) =>
-                  setSettingsForm((prev) => ({
-                    ...prev,
-                    bangumiId: event.target.value,
-                  }))
-                }
-                placeholder="例如：17 或 subject/17"
-              />
-            </div>
-
-            <div className="space-y-1">
-              <div className="text-sm">角色来源策略（二选一）</div>
+              <div className="text-sm">角色数据来源</div>
               <Select
-                value={settingsForm.strategy}
-                onValueChange={(value) =>
-                  setSettingsForm((prev) => ({
-                    ...prev,
-                    strategy: value as typeof settingsForm.strategy,
-                  }))
-                }
+                value={selectedSource}
+                onValueChange={(value) => {
+                  setSelectedSource(value)
+                  setGameIdInput(getBoundIdForSource(value))
+                }}
               >
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder="选择策略" />
+                  <SelectValue placeholder="选择来源" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="bangumi">bangumi</SelectItem>
-                  <SelectItem value="vndb">vndb</SelectItem>
+                  {characterProviders.map((provider) => (
+                    <SelectItem
+                      key={provider.sourceId}
+                      value={provider.sourceId}
+                    >
+                      {provider.name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
 
+            <div className="space-y-1">
+              <div className="text-sm">游戏 ID</div>
+              <Input
+                value={gameIdInput}
+                onChange={(event) => setGameIdInput(event.target.value)}
+                placeholder={
+                  characterProviders.find((p) => p.sourceId === selectedSource)
+                    ?.description || '请输入游戏 ID'
+                }
+              />
+            </div>
+
             <label className="flex items-center gap-2 text-sm">
               <Checkbox
-                checked={settingsForm.saveImagesToLocal}
+                checked={saveImagesToLocal}
                 onCheckedChange={(checked) =>
-                  setSettingsForm((prev) => ({
-                    ...prev,
-                    saveImagesToLocal: checked === true,
-                  }))
+                  setSaveImagesToLocal(checked === true)
                 }
               />
               <span>将角色图片保存到本地</span>

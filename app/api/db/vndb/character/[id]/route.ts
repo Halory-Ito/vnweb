@@ -33,14 +33,22 @@ const normalizeCharacterId = (rawId: string) => {
     return ''
   }
 
+  // Bangumi: bgm-123
   if (/^bgm-\d+$/i.test(trimmed)) {
     return trimmed.toLocaleLowerCase()
   }
 
+  // YMGal / 其他插件前缀: ymgal-123, xxx-123
+  if (/^[a-z]+-\d+$/i.test(trimmed)) {
+    return trimmed.toLocaleLowerCase()
+  }
+
+  // VNDB: c123
   if (/^c\d+$/i.test(trimmed)) {
     return `c${trimmed.slice(1)}`
   }
 
+  // 纯数字 → VNDB 格式
   if (/^\d+$/.test(trimmed)) {
     return `c${trimmed}`
   }

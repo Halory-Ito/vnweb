@@ -7,6 +7,7 @@ import { setActiveFeaturePlugins } from './hooks'
 
 import type {
   AnyPlugin,
+  CharacterProviderPlugin,
   FeaturePlugin,
   HookId,
   ProviderCapability,
@@ -16,6 +17,7 @@ import type {
 // ── 内置插件注册表 ────────────────────────────────────────
 const builtinPlugins: AnyPlugin[] = []
 const externalPlugins: AnyPlugin[] = []
+const characterProviders: CharacterProviderPlugin[] = []
 
 // ═══════════════════════════════════════════════════════════
 //  注册接口
@@ -35,9 +37,9 @@ export function registerExternalPlugin(plugin: AnyPlugin) {
   }
 }
 
-/** 获取所有插件（内置 + 外部） */
+/** 获取所有插件（内置 + 外部 + 角色数据源） */
 function allPlugins(): AnyPlugin[] {
-  return [...builtinPlugins, ...externalPlugins]
+  return [...builtinPlugins, ...externalPlugins, ...characterProviders]
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -119,6 +121,35 @@ export function getAccountBindProviders() {
 }
 
 // ═══════════════════════════════════════════════════════════
+//  角色数据源插件接口
+// ═══════════════════════════════════════════════════════════
+
+/** 注册一个角色数据源插件 */
+export function registerCharacterProvider(plugin: CharacterProviderPlugin) {
+  if (!characterProviders.some((p) => p.id === plugin.id)) {
+    characterProviders.push(plugin)
+  }
+}
+
+/** 获取所有已注册的角色数据源插件 */
+export function getCharacterProviders(): CharacterProviderPlugin[] {
+  return [...characterProviders]
+}
+
+/** 根据 sourceId 获取角色数据源插件 */
+export function getCharacterProvider(
+  sourceId: string,
+): CharacterProviderPlugin | undefined {
+  return characterProviders.find((p) => p.sourceId === sourceId)
+}
+
+/** 获取所有已启用的角色数据源插件 */
+export function getEnabledCharacterProviders(): CharacterProviderPlugin[] {
+  const settings = readPluginSettings()
+  return characterProviders.filter((p) => isPluginEnabled(p.id, settings))
+}
+
+// ═══════════════════════════════════════════════════════════
 //  启用/禁用接口
 // ═══════════════════════════════════════════════════════════
 
@@ -159,3 +190,15 @@ function syncFeaturePlugins() {
 export function initializePlugins() {
   syncFeaturePlugins()
 }
+
+// ── 自动注册内置角色数据源插件（模块加载时同步执行） ──────
+// 角色插件文件仅依赖 @/lib/plugins/types（纯类型），不依赖 registry.ts，无循环依赖
+import {
+  bangumiCharacterProvider,
+  vndbCharacterProvider,
+  ymgalCharacterProvider,
+} from '@/lib/providers/characters'
+
+registerCharacterProvider(vndbCharacterProvider)
+registerCharacterProvider(bangumiCharacterProvider)
+registerCharacterProvider(ymgalCharacterProvider)

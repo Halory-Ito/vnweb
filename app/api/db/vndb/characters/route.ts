@@ -114,7 +114,7 @@ const syncCharactersToDb = async (req: NextRequest) => {
   try {
     const payload = (await req.json().catch(() => ({}))) as {
       gameId?: number
-      source?: 'vndb' | 'bangumi' | 'both'
+      source?: string
       mergeStrategy?:
         | 'prefer_vndb'
         | 'prefer_bangumi'
