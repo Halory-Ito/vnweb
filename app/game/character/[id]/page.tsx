@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Textarea } from '@/components/ui/textarea'
+import CharacterQuotes from '@/components/game/character-quotes'
 import { getVndbCharacterById, updateVndbCharacterById } from '@/lib/game/game-utils'
 
 const formatBirthday = (birthday: [number, number] | null) => {
@@ -370,7 +371,9 @@ export default function CharacterDetailPage() {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[280px_minmax(0,1fr)]">
+      {/* 第一部分：角色基本情况 */}
+      <div className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">
+        {/* 左侧：角色头像 */}
         <div className="rounded-md">
           {data.imageUrl ? (
             <img
@@ -385,7 +388,9 @@ export default function CharacterDetailPage() {
           )}
         </div>
 
+        {/* 右侧：角色信息 */}
         <div className="space-y-4">
+          {/* 角色名称 */}
           <div className="rounded-md border p-4">
             <div className="flex items-start justify-between gap-3">
               <div>
@@ -428,6 +433,7 @@ export default function CharacterDetailPage() {
             </div>
           </div>
 
+          {/* 编辑表单 */}
           {editing ? (
             <div className="rounded-md border p-4">
               <div className="mb-3 text-base font-medium">编辑角色信息</div>
@@ -573,6 +579,7 @@ export default function CharacterDetailPage() {
             </div>
           ) : null}
 
+          {/* 基本信息 */}
           <div className="rounded-md border p-4">
             <div className="mb-3 text-base font-medium">基本信息</div>
             <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
@@ -589,14 +596,21 @@ export default function CharacterDetailPage() {
               ))}
             </div>
           </div>
-
-          <div className="rounded-md border p-4">
-            <div className="mb-3 text-base font-medium">概述</div>
-            <div className="text-muted-foreground text-sm leading-6 whitespace-pre-wrap">
-              {data.description || '暂无概述'}
-            </div>
-          </div>
         </div>
+      </div>
+
+      {/* 第二部分：角色简介 */}
+      <div className="mb-6 rounded-md border p-4">
+        <div className="mb-3 text-base font-medium">角色简介</div>
+        <div className="text-muted-foreground text-sm leading-6 whitespace-pre-wrap">
+          {data.description || '暂无简介'}
+        </div>
+      </div>
+
+      {/* 第三部分：角色台词 */}
+      <div className="rounded-md border p-4">
+        <div className="mb-3 text-base font-medium">角色台词</div>
+        <CharacterQuotes characterId={data.id} />
       </div>
     </div>
   )

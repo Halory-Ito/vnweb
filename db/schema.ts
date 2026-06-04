@@ -217,3 +217,14 @@ export const ProxyConfigTable = sqliteTable('proxy_config', {
   createdAt: text().default(dayjs().toString()), // 创建时间
   updatedAt: text().default(dayjs().toString()), // 更新时间
 })
+
+// 游戏台词摘录表
+export const GameQuoteTable = sqliteTable('game_quote', {
+  id: int().primaryKey({ autoIncrement: true }),
+  gameId: int().notNull(),
+  content: text().notNull(), // 台词内容
+  characterId: text().default(''), // 说台词的角色id，关联 CharacterTable 的 id
+  context: text().default(''), // 台词上下文信息
+  createdAt: text().default(dayjs().toString()), // 创建时间
+  updatedAt: text().default(dayjs().toString()), // 更新时间
+})

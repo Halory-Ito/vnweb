@@ -50,6 +50,7 @@ import GameCharacters from '@/components/game/info/game-characters'
 import GameMemory from '@/components/game/info/game-memory'
 import GameOST from '@/components/game/info/game-ost'
 import GamePV from '@/components/game/info/game-pv'
+import GameQuote from '@/components/game/info/game-quote'
 import {
   GameDetail,
   launchGameById,
@@ -71,6 +72,7 @@ const GAME_INFO_TABS = [
   'ost',
   'record',
   'memory',
+  'quote',
 ] as const
 
 type GameInfoTab = (typeof GAME_INFO_TABS)[number]
@@ -368,6 +370,7 @@ export default function GameInfo({ game, initialTab }: GameInfoProps) {
                 <TabsTrigger value="ost">OST</TabsTrigger>
                 <TabsTrigger value="record">记录</TabsTrigger>
                 <TabsTrigger value="memory">回忆</TabsTrigger>
+                <TabsTrigger value="quote">摘录</TabsTrigger>
               </TabsList>
 
               <TabsContent value="overview">
@@ -400,6 +403,12 @@ export default function GameInfo({ game, initialTab }: GameInfoProps) {
               <TabsContent value="memory">
                 <div className="rounded-md border p-4 text-sm">
                   <GameMemory gameId={game.id} />
+                </div>
+              </TabsContent>
+
+              <TabsContent value="quote">
+                <div className="rounded-md border p-4 text-sm">
+                  <GameQuote gameId={game.id} />
                 </div>
               </TabsContent>
             </Tabs>

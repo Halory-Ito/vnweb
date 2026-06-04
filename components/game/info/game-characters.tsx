@@ -38,6 +38,7 @@ import {
   clearVndbCharactersByGameId,
   getGameById,
   getVndbCharactersByGameId,
+  localizeCharacterImages,
   syncVndbCharactersByGameId,
   updateGameInfoById,
   type VndbCharacterListItem,
@@ -186,6 +187,19 @@ export default function GameCharacters({ gameId }: GameCharactersProps) {
 
   const refreshCharacters = async () => {
     await refetchCharacters()
+    toast.success('角色列表已刷新')
+
+    // 检查并本地化远程图片
+    try {
+      const result = await localizeCharacterImages(gameId)
+      if (result.total > 0 && result.localized > 0) {
+        toast.info(`正在下载 ${result.localized} 张角色图片到本地...`)
+        await refetchCharacters()
+        toast.success(`已完成 ${result.localized} 张图片的本地化`)
+      }
+    } catch {
+      toast.error('图片本地化失败')
+    }
   }
 
   const clearCharacters = async () => {

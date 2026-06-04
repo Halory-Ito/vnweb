@@ -56,25 +56,71 @@ export const localizeCharacterImage = async (
     return normalized
   }
 
-  const response = await fetch(normalized, {
-    headers: {
-      ...headers,
-    },
-  })
-  if (!response.ok) {
-    throw new Error(`下载角色图片失败: ${response.status}`)
+  // 使用 Node.js 原生 http/https 模块下载
+  const https = await import('node:https')
+  const http = await import('node:http')
+
+  const downloadImage = (url: string): Promise<Buffer> => {
+    return new Promise((resolve, reject) => {
+      const isHttps = url.startsWith('https')
+      const client = isHttps ? https : http
+
+      const options = new URL(url)
+      const reqOptions = {
+        hostname: options.hostname,
+        port: options.port,
+        path: options.pathname + options.search,
+        method: 'GET',
+        headers: {
+          ...headers,
+          'User-Agent': 'Mozilla/5.0',
+        },
+      }
+
+      const req = client.request(reqOptions, (res) => {
+        // 处理重定向
+        if (
+          res.statusCode &&
+          res.statusCode >= 300 &&
+          res.statusCode < 400 &&
+          res.headers.location
+        ) {
+          downloadImage(res.headers.location).then(resolve).catch(reject)
+          return
+        }
+
+        if (res.statusCode !== 200) {
+          reject(new Error(`下载角色图片失败: ${res.statusCode}`))
+          return
+        }
+
+        const chunks: Buffer[] = []
+        res.on('data', (chunk) => chunks.push(chunk))
+        res.on('end', () => resolve(Buffer.concat(chunks)))
+        res.on('error', reject)
+      })
+
+      req.on('error', reject)
+      req.end()
+    })
   }
 
-  const ext = pickImageExt(normalized, response.headers.get('content-type'))
+  const buffer = await downloadImage(normalized)
+
+  const ext = pickImageExt(normalized, null)
   const safeCharacterId = sanitizeFileNamePart(characterId) || 'character'
 
-  const publicDir = path.join(process.cwd(), 'assets', 'characters', String(gameId))
+  const publicDir = path.join(
+    process.cwd(),
+    'assets',
+    'characters',
+    String(gameId),
+  )
 
   await fs.mkdir(publicDir, { recursive: true })
 
   // 保留扩展名以便 Web 服务器正确识别 MIME 类型
   const filePath = path.join(publicDir, `${safeCharacterId}.${ext}`)
-  const buffer = Buffer.from(await response.arrayBuffer())
   await fs.writeFile(filePath, buffer)
 
   return `/assets/characters/${gameId}/${safeCharacterId}.${ext}`

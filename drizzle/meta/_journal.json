@@ -43,6 +43,13 @@
       "when": 1778034666987,
       "tag": "0005_drop_ost_lyrics_table",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1780565273896,
+      "tag": "0006_create_game_quote",
+      "breakpoints": true
     }
   ]
 }

@@ -5,6 +5,7 @@ import {
   BoxIcon,
   HomeIcon,
   MapIcon,
+  MessageSquareQuoteIcon,
   MusicIcon,
   PuzzleIcon,
   ScanIcon,
@@ -52,6 +53,7 @@ const contentItems: SidebarItem[] = [
   // { title: '攻略', href: '/guide', icon: MapIcon },
   { title: 'PV', href: '/pv', icon: VideoIcon },
   { title: 'OST', href: '/ost', icon: MusicIcon },
+  { title: '摘录', href: '/quote', icon: MessageSquareQuoteIcon },
 ]
 
 const footerItems: SidebarItem[] = [

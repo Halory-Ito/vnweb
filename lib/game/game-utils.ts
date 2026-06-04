@@ -246,6 +246,23 @@ export const clearVndbCharactersByGameId = async (gameId: number) => {
   ).data
 }
 
+export const localizeCharacterImages = async (gameId: number) => {
+  const response = await api.post('/db/vndb/characters/localize-images', {
+    gameId,
+  })
+
+  return (
+    response.data as {
+      data: {
+        total: number
+        localized: number
+        skipped: number
+        failed: number
+      }
+    }
+  ).data
+}
+
 export const getVndbCharacterById = async (
   characterId: string,
   gameId?: number,
@@ -1104,4 +1121,104 @@ export const getGameSidebarData = async (payload: {
       }
     }
   ).data
+}
+
+// 摘录相关类型
+export type QuoteManageItem = {
+  id: number
+  gameId: number
+  content: string
+  characterId: string
+  characterName: string
+  characterImage: string
+  context: string
+  createdAt: string | null
+  updatedAt: string | null
+  gameName: string
+  gameNameCn: string
+  gameCover: string
+}
+
+// 摘录相关API
+export const getQuoteManageList = async (params?: {
+  keyword?: string
+  dateFrom?: string
+  dateTo?: string
+}) => {
+  const response = await api.get('/quote', {
+    params: {
+      keyword: params?.keyword ?? '',
+      dateFrom: params?.dateFrom ?? '',
+      dateTo: params?.dateTo ?? '',
+    },
+  })
+  return (response.data as { data: { items: QuoteManageItem[] } }).data
+}
+
+export const createQuoteManageItem = async (payload: {
+  gameId: number
+  content: string
+  characterId: string
+  context: string
+}) => {
+  const response = await api.post('/quote', payload)
+  return response.data as {
+    data: {
+      item: {
+        id: number
+        gameId: number
+        content: string
+        characterId: string
+        context: string
+        createdAt: string | null
+        updatedAt: string | null
+      }
+    }
+  }
+}
+
+export const updateQuoteManageItem = async (
+  id: number,
+  payload: {
+    gameId: number
+    content: string
+    characterId: string
+    context: string
+  },
+) => {
+  const response = await api.patch(`/quote/${id}`, payload)
+  return response.data as {
+    data: {
+      updated: boolean
+      id: number
+    }
+  }
+}
+
+export const deleteQuoteManageItem = async (id: number) => {
+  const response = await api.delete(`/quote/${id}`)
+  return response.data as {
+    data: {
+      deleted: boolean
+      id: number
+    }
+  }
+}
+
+export const getGameQuotesByGameId = async (gameId: number) => {
+  const response = await api.get('/quote', {
+    params: {
+      gameId,
+    },
+  })
+  return (response.data as { data: { items: QuoteManageItem[] } }).data
+}
+
+export const getQuotesByCharacterId = async (characterId: string) => {
+  const response = await api.get('/quote', {
+    params: {
+      characterId,
+    },
+  })
+  return (response.data as { data: { items: QuoteManageItem[] } }).data
 }
