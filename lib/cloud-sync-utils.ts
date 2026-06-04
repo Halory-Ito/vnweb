@@ -17,7 +17,7 @@ export type ThirdPartyAccountItem = {
 }
 
 export const bindThirdPartyAccount = async (payload: {
-  provider: 'steam' | 'bangumi' | 'vndb'
+  provider: 'steam' | 'bangumi' | 'vndb' | 'ymgal'
   accessToken?: string
   accountId?: string
 }) => {
@@ -45,7 +45,7 @@ export const getThirdPartyAccounts = async () => {
 }
 
 export const unlinkThirdPartyAccount = async (
-  provider: 'steam' | 'bangumi' | 'vndb',
+  provider: 'steam' | 'bangumi' | 'vndb' | 'ymgal',
 ) => {
   const response = await api.delete('/settings/cloud-sync/accounts', {
     params: { provider },

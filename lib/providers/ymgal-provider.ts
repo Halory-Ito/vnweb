@@ -1,6 +1,10 @@
 import { api } from '@/lib/request-utils'
 
-import type { GameSearchResult, ProviderPlugin } from '@/lib/plugins/types'
+import type {
+  BulkImportResult,
+  GameSearchResult,
+  ProviderPlugin,
+} from '@/lib/plugins/types'
 import type { GameInfo } from '@/types/game-types'
 
 // ── YMGal 响应类型 ────────────────────────────────────────
@@ -147,6 +151,25 @@ const mapYMGalGameToGameInfo = (game: YMGalGame): GameInfo => {
   }
 }
 
+// ── YMGal 用户收藏相关类型 ─────────────────────────────────
+type YMGalUserGameItem = {
+  gid: number
+  name: string
+  chineseName?: string
+  mainImg?: string
+  releaseDate?: string
+  userJoinTime?: string
+  userRating?: number
+}
+
+type YMGalUserGameData = {
+  result: YMGalUserGameItem[]
+  total: number
+  hasNext: boolean
+  pageNum: number
+  pageSize: number
+}
+
 // ── 插件定义 ──────────────────────────────────────────────
 export const ymgalProvider: ProviderPlugin = {
   id: 'ymgal',
@@ -155,7 +178,8 @@ export const ymgalProvider: ProviderPlugin = {
   icon: 'Moon',
   version: '1.0.0',
   type: 'provider',
-  capabilities: ['manual-search'],
+  capabilities: ['manual-search', 'bulk-import', 'account-bind'],
+  accountProviderId: 'ymgal',
   defaultEnabled: true,
 
   searchByName: async (
@@ -238,5 +262,22 @@ export const ymgalProvider: ProviderPlugin = {
     }
 
     return mapYMGalGameToGameInfo(game)
+  },
+
+  searchCollection: async (): Promise<BulkImportResult> => {
+    const res = await api.request({
+      method: 'GET',
+      url: '/game/ymgal-import/search',
+      timeout: 10 * 60 * 1000,
+    })
+
+    const payload = res.data as {
+      data: { total: number; items: BulkImportResult['items'] }
+    }
+
+    return {
+      total: payload.data.total,
+      items: payload.data.items,
+    }
   },
 }

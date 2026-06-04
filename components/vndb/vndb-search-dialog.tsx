@@ -35,6 +35,7 @@ import {
   searchGameByNameApi,
   searchSteamOwnedGamesApi,
   searchVndbUserListApi,
+  searchYmgalUserGamesApi,
   type ThirdPartyLibraryGameItem,
   type SteamOwnedGameItem,
   type GameSearchItem,
@@ -871,7 +872,7 @@ export const SteamImportDialog = ({ children }: VNDBSearchDialogProps) => {
 
 type ProviderCollectionImportDialogProps = {
   children: ReactNode
-  provider: 'bangumi' | 'vndb'
+  provider: 'bangumi' | 'vndb' | 'ymgal'
   title: string
   description: string
 }
@@ -923,18 +924,26 @@ const ProviderCollectionImportDialog = ({
 
   const handleSearch = async () => {
     if (!account) {
-      toast.error(
-        `请先绑定${provider === 'bangumi' ? ' Bangumi ' : ' VNDB '}账号`,
-      )
+      const providerLabel =
+        provider === 'bangumi'
+          ? ' Bangumi '
+          : provider === 'ymgal'
+            ? ' YMGal '
+            : ' VNDB '
+      toast.error(`请先绑定${providerLabel}账号`)
       return
     }
 
     setIsSearching(true)
     try {
-      const result =
-        provider === 'bangumi'
-          ? await searchBangumiCollectedGamesApi()
-          : await searchVndbUserListApi()
+      let result
+      if (provider === 'bangumi') {
+        result = await searchBangumiCollectedGamesApi()
+      } else if (provider === 'ymgal') {
+        result = await searchYmgalUserGamesApi()
+      } else {
+        result = await searchVndbUserListApi()
+      }
 
       const rows = result.data.items.map((item) => ({
         ...item,
@@ -1098,7 +1107,12 @@ const ProviderCollectionImportDialog = ({
               ) : (
                 <div className="text-muted-foreground rounded-md border p-3 text-sm">
                   请先在设置页绑定
-                  {provider === 'bangumi' ? ' Bangumi ' : ' VNDB '}账号。
+                  {provider === 'bangumi'
+                    ? ' Bangumi '
+                    : provider === 'ymgal'
+                      ? ' YMGal '
+                      : ' VNDB '}
+                  账号。
                 </div>
               )}
               <div className="flex items-center gap-2">
@@ -1247,6 +1261,18 @@ export const VndbImportDialog = ({ children }: VNDBSearchDialogProps) => {
       provider="vndb"
       title="从 VNDB 导入"
       description="必须先绑定 VNDB 账号，然后从 My Visual Novel List 中导入。"
+    >
+      {children}
+    </ProviderCollectionImportDialog>
+  )
+}
+
+export const YmgalImportDialog = ({ children }: VNDBSearchDialogProps) => {
+  return (
+    <ProviderCollectionImportDialog
+      provider="ymgal"
+      title="从 YMGal 导入"
+      description="必须先绑定 YMGal 账号，然后从用户的游戏列表中导入。"
     >
       {children}
     </ProviderCollectionImportDialog>

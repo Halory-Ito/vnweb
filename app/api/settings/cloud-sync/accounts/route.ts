@@ -6,7 +6,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { ThirdPartyAccountTable } from '@/db/schema'
 import { db } from '@/lib/drizzle'
 
-type Provider = 'steam' | 'bangumi' | 'vndb'
+type Provider = 'steam' | 'bangumi' | 'vndb' | 'ymgal'
 
 type AccountProfile = {
   displayName: string
@@ -24,7 +24,7 @@ type SteamPlayerSummary = {
   realname?: string
 }
 
-const PROVIDER_SET = new Set<Provider>(['steam', 'bangumi', 'vndb'])
+const PROVIDER_SET = new Set<Provider>(['steam', 'bangumi', 'vndb', 'ymgal'])
 const STEAM_PLAYER_SUMMARIES_API =
   'https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/'
 
@@ -170,6 +170,48 @@ const validateVndbToken = async (accessToken: string) => {
   }
 }
 
+const validateYmgalUserId = async (userId: string) => {
+  const normalizedUid = userId.trim()
+  if (!normalizedUid) {
+    throw new Error('YMGal 用户 ID 不能为空')
+  }
+
+  try {
+    const response = await axios.get(
+      'https://www.ymgal.games/api/user/space',
+      {
+        timeout: 10_000,
+        params: { uid: normalizedUid },
+        headers: YMGAL_API_HEADERS,
+      },
+    )
+
+    const payload = response.data as {
+      success?: boolean
+      data?: { uid?: number }
+    }
+
+    if (payload.success === false) {
+      throw new Error('YMGal 用户不存在')
+    }
+
+    const accountId = payload.data?.uid
+      ? String(payload.data.uid)
+      : normalizedUid
+
+    return {
+      accountId,
+      expiresAt: '',
+    }
+  } catch {
+    // 如果验证接口不存在或失败，仍然允许绑定
+    return {
+      accountId: normalizedUid,
+      expiresAt: '',
+    }
+  }
+}
+
 const getBangumiProfile = async (
   accountId: string,
   accessToken: string,
@@ -277,6 +319,83 @@ const getVndbProfile = async (
   }
 }
 
+const YMGAL_AVATAR_BASE = 'https://store.ymgal.games/'
+
+const YMGAL_API_HEADERS = {
+  Accept: 'application/json, text/plain, */*',
+  'Access-Yuemoon-Origin': 'pc',
+  Origin: 'https://f.ymgal.games',
+  Referer: 'https://f.ymgal.games/',
+}
+
+const getYmgalProfile = async (
+  accountId: string,
+  _accessToken: string,
+): Promise<AccountProfile> => {
+  try {
+    const response = await axios.get(
+      'https://www.ymgal.games/api/user/space',
+      {
+        timeout: 10_000,
+        params: { uid: accountId },
+        headers: YMGAL_API_HEADERS,
+      },
+    )
+
+    const payload = response.data as {
+      success?: boolean
+      data?: {
+        uid?: number
+        username?: string
+        avatar?: string
+      }
+    }
+
+    if (payload.success === false) {
+      throw new Error('YMGal 用户不存在')
+    }
+
+    const data = payload.data ?? {}
+    const username = normalizeText(data.username)
+    const uid = data.uid ? String(data.uid) : accountId
+    const avatarRaw = normalizeText(data.avatar)
+    const avatar = avatarRaw
+      ? `${YMGAL_AVATAR_BASE}${avatarRaw}`
+      : ''
+
+    return {
+      displayName: username || accountId,
+      secondaryName: uid,
+      avatar,
+      profileUrl: uid ? `https://www.ymgal.games/user/${uid}` : '',
+    }
+  } catch {
+    return {
+      displayName: accountId,
+      secondaryName: '',
+      avatar: '',
+      profileUrl: `https://www.ymgal.games/user/${accountId}`,
+    }
+  }
+}
+
+const PROFILE_TIMEOUT_MS = 3_000
+
+const withTimeout = <T>(promise: Promise<T>, ms: number): Promise<T> =>
+  Promise.race([
+    promise,
+    new Promise<T>((_, reject) =>
+      setTimeout(() => reject(new Error('timeout')), ms),
+    ),
+  ])
+
+const fallbackProfile = (accountId: string): AccountProfile => ({
+  displayName: accountId,
+  secondaryName: '',
+  avatar: '',
+  profileUrl: '',
+})
+
 const listAccounts = async () => {
   try {
     const rows = await db
@@ -294,23 +413,33 @@ const listAccounts = async () => {
       rows.map(async (row) => {
         const provider = normalizeProvider(row.provider)
 
-        let profile: AccountProfile = {
-          displayName: row.accountId,
-          secondaryName: '',
-          avatar: '',
-          profileUrl: '',
-        }
-
-        if (provider === 'bangumi') {
-          profile = await getBangumiProfile(row.accountId, row.accessToken)
-        }
-
-        if (provider === 'steam') {
-          profile = await getSteamProfile(row.accountId)
-        }
-
-        if (provider === 'vndb') {
-          profile = await getVndbProfile(row.accountId, row.accessToken)
+        let profile: AccountProfile
+        try {
+          if (provider === 'bangumi') {
+            profile = await withTimeout(
+              getBangumiProfile(row.accountId, row.accessToken),
+              PROFILE_TIMEOUT_MS,
+            )
+          } else if (provider === 'steam') {
+            profile = await withTimeout(
+              getSteamProfile(row.accountId),
+              PROFILE_TIMEOUT_MS,
+            )
+          } else if (provider === 'vndb') {
+            profile = await withTimeout(
+              getVndbProfile(row.accountId, row.accessToken),
+              PROFILE_TIMEOUT_MS,
+            )
+          } else if (provider === 'ymgal') {
+            profile = await withTimeout(
+              getYmgalProfile(row.accountId, row.accessToken),
+              PROFILE_TIMEOUT_MS,
+            )
+          } else {
+            profile = fallbackProfile(row.accountId)
+          }
+        } catch {
+          profile = fallbackProfile(row.accountId)
         }
 
         return {
@@ -355,7 +484,7 @@ const loginByToken = async (req: NextRequest) => {
       return NextResponse.json({ error: 'provider 无效' }, { status: 400 })
     }
 
-    if (provider !== 'steam' && !accessToken) {
+    if (provider !== 'steam' && provider !== 'ymgal' && !accessToken) {
       return NextResponse.json(
         { error: 'accessToken 不能为空' },
         { status: 400 },
@@ -367,7 +496,9 @@ const loginByToken = async (req: NextRequest) => {
         ? await validateBangumiToken(accessToken)
         : provider === 'vndb'
           ? await validateVndbToken(accessToken)
-          : await validateSteamUid(accountIdInput || accessToken)
+          : provider === 'ymgal'
+            ? await validateYmgalUserId(accountIdInput || accessToken)
+            : await validateSteamUid(accountIdInput || accessToken)
 
     const now = dayjs().toISOString()
     const expiresAt = expiresAtFromPayload || validated.expiresAt || ''

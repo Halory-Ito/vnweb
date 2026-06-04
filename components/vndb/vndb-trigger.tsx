@@ -31,6 +31,7 @@ import {
   SteamImportDialog,
   VNDBSearchDialog,
   VndbImportDialog,
+  YmgalImportDialog,
 } from './vndb-search-dialog'
 
 export default function GameAddButton() {
@@ -46,7 +47,9 @@ export default function GameAddButton() {
   const steamEnabled = isPluginEnabled('steam', settings)
   const bangumiEnabled = isPluginEnabled('bangumi', settings)
   const vndbEnabled = isPluginEnabled('vndb', settings)
-  const hasBulkImport = steamEnabled || bangumiEnabled || vndbEnabled
+  const ymgalEnabled = isPluginEnabled('ymgal', settings)
+  const hasBulkImport =
+    steamEnabled || bangumiEnabled || vndbEnabled || ymgalEnabled
 
   return (
     <DropdownMenu>
@@ -95,6 +98,14 @@ export default function GameAddButton() {
                     从 VNDB 导入
                   </DropdownMenuItem>
                 </VndbImportDialog>
+              )}
+              {ymgalEnabled && (
+                <YmgalImportDialog>
+                  <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                    <Clapperboard className="mr-2 size-4" />
+                    从 YMGal 导入
+                  </DropdownMenuItem>
+                </YmgalImportDialog>
               )}
             </DropdownMenuSubContent>
           </DropdownMenuSub>

@@ -3,7 +3,7 @@ import { and, eq } from 'drizzle-orm'
 import { GameIdMapTable, ThirdPartyAccountTable } from '@/db/schema'
 import { db } from '@/lib/drizzle'
 
-export type ThirdPartyProvider = 'steam' | 'bangumi' | 'vndb'
+export type ThirdPartyProvider = 'steam' | 'bangumi' | 'vndb' | 'ymgal'
 
 export const getBoundThirdPartyAccount = async (
   provider: ThirdPartyProvider,

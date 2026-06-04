@@ -574,6 +574,21 @@ export const searchVndbUserListApi = async () => {
   }
 }
 
+export const searchYmgalUserGamesApi = async () => {
+  const res = await api.request({
+    method: 'GET',
+    url: '/game/ymgal-import/search',
+    timeout: 10 * 60 * 1000,
+  })
+
+  return res.data as {
+    data: {
+      total: number
+      items: ThirdPartyLibraryGameItem[]
+    }
+  }
+}
+
 export const importSteamGameApi = async (payload: {
   steamId: string
   appid: number

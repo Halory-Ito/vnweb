@@ -6,7 +6,7 @@ import { NextRequest } from 'next/server'
 import { ThirdPartyAccountTable } from '@/db/schema'
 import { db } from '@/lib/drizzle'
 
-export type OAuthProvider = 'bangumi' | 'vndb'
+export type OAuthProvider = 'bangumi' | 'vndb' | 'ymgal'
 
 export const getAppOrigin = (req: NextRequest) => {
   return req.nextUrl.origin
@@ -53,7 +53,7 @@ export const validateOAuthState = async (
 }
 
 export const saveThirdPartyAccount = async (
-  provider: 'steam' | 'bangumi' | 'vndb',
+  provider: 'steam' | 'bangumi' | 'vndb' | 'ymgal',
   accountId: string,
   accessToken: string,
   refreshToken: string,

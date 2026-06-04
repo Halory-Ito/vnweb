@@ -16,7 +16,7 @@ import {
 import { Separator } from '@/components/ui/separator'
 import { type ThirdPartyAccountItem } from '@/lib/cloud-sync-utils'
 
-export type CloudSyncProvider = 'steam' | 'bangumi' | 'vndb'
+export type CloudSyncProvider = 'steam' | 'bangumi' | 'vndb' | 'ymgal'
 
 interface CloudSyncAccountCardProps {
   provider: CloudSyncProvider

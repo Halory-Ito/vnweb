@@ -58,6 +58,16 @@ const providerConfig: Record<
     description: '通过 API Token 绑定账号',
     inputPlaceholder: '请输入 VNDB API Token',
   },
+  ymgal: {
+    label: 'YMGal',
+    icon: (
+      <svg viewBox="0 0 24 24" className="size-5" fill="currentColor">
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+      </svg>
+    ),
+    description: '通过用户 ID 绑定账号',
+    inputPlaceholder: '请输入 YMGal 用户 ID',
+  },
 }
 
 export default function CloudSync() {
@@ -67,6 +77,7 @@ export default function CloudSync() {
     useState<CloudSyncProvider | null>(null)
   const [vndbToken, setVndbToken] = useState('')
   const [steamUid, setSteamUid] = useState('')
+  const [ymgalUserId, setYmgalUserId] = useState('')
 
   const { data, isLoading, refetch } = useQuery({
     queryKey: ['third-party-accounts'],
@@ -82,10 +93,14 @@ export default function CloudSync() {
       steam: 'Steam',
       bangumi: 'Bangumi',
       vndb: 'VNDB',
+      ymgal: 'YMGal',
     }
 
     const providerLabel =
-      provider === 'steam' || provider === 'bangumi' || provider === 'vndb'
+      provider === 'steam' ||
+      provider === 'bangumi' ||
+      provider === 'vndb' ||
+      provider === 'ymgal'
         ? providerLabels[provider]
         : ''
 
@@ -111,7 +126,8 @@ export default function CloudSync() {
       if (
         provider === 'steam' ||
         provider === 'bangumi' ||
-        provider === 'vndb'
+        provider === 'vndb' ||
+        provider === 'ymgal'
       ) {
         map.set(provider, item)
       }
@@ -120,12 +136,12 @@ export default function CloudSync() {
     return map
   }, [data?.items])
 
-  const startOAuthLogin = (provider: 'bangumi') => {
+  const startOAuthLogin = (provider: 'bangumi' | 'ymgal') => {
     setProcessingProvider(provider)
     window.location.href = `/api/settings/cloud-sync/auth/${provider}/start`
   }
 
-  const handleBind = async (provider: 'steam' | 'vndb') => {
+  const handleBind = async (provider: 'steam' | 'vndb' | 'ymgal') => {
     setProcessingProvider(provider)
     try {
       if (provider === 'vndb') {
@@ -156,6 +172,20 @@ export default function CloudSync() {
         setSteamUid('')
       }
 
+      if (provider === 'ymgal') {
+        const userId = ymgalUserId.trim()
+        if (!userId) {
+          toast.error('请输入 YMGal 用户 ID')
+          return
+        }
+
+        await bindThirdPartyAccount({
+          provider,
+          accountId: userId,
+        })
+        setYmgalUserId('')
+      }
+
       await queryClient.invalidateQueries({
         queryKey: ['third-party-accounts'],
       })
@@ -176,10 +206,13 @@ export default function CloudSync() {
     setProcessingProvider(provider)
     try {
       await unlinkThirdPartyAccount(provider)
-      await queryClient.invalidateQueries({
-        queryKey: ['third-party-accounts'],
-      })
-      await refetch()
+      queryClient.setQueryData<{
+        items: ThirdPartyAccountItem[]
+      }>(['third-party-accounts'], (old) => ({
+        items: (old?.items ?? []).filter(
+          (item) => item.provider.toLowerCase() !== provider,
+        ),
+      }))
       toast.success(`${providerConfig[provider].label} 已解绑`)
     } catch (error) {
       const err = error as {
@@ -252,6 +285,17 @@ export default function CloudSync() {
         inputValue={vndbToken}
         onInputChange={setVndbToken}
         inputType="password"
+      />
+      <CloudSyncAccountCard
+        provider="ymgal"
+        config={providerConfig.ymgal}
+        account={accountMap.get('ymgal')}
+        isLoading={isLoading}
+        isProcessing={processingProvider === 'ymgal'}
+        onBind={() => void handleBind('ymgal')}
+        onUnlink={() => void handleUnlink('ymgal')}
+        inputValue={ymgalUserId}
+        onInputChange={setYmgalUserId}
       />
     </div>
   )

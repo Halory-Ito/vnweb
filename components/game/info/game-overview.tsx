@@ -14,9 +14,9 @@ type GameOverviewProps = {
   ) => void
 }
 
-const splitByDunhao = (value?: string) =>
+const splitBySeparator = (value?: string) =>
   (value || '')
-    .split('、')
+    .split(/[,，、/;；&]+/)
     .map((item) => item.trim())
     .filter(Boolean)
 
@@ -102,14 +102,14 @@ export default function GameOverview({
           <div className="space-y-1">
             <InfoRow
               label="开发商"
-              values={splitByDunhao(game.developer)}
+              values={splitBySeparator(game.developer)}
               onTagClick={(value) =>
                 onApplyTagFilter('developer', value, '开发商')
               }
             />
             <InfoRow
               label="发行商"
-              values={splitByDunhao(game.publisher)}
+              values={splitBySeparator(game.publisher)}
               onTagClick={(value) =>
                 onApplyTagFilter('publisher', value, '发行商')
               }
@@ -117,14 +117,14 @@ export default function GameOverview({
             <InfoRow label="发售日期" values={[game.date]} />
             <InfoRow
               label="游戏类型"
-              values={splitByDunhao(game.gameType)}
+              values={splitBySeparator(game.gameType)}
               onTagClick={(value) =>
                 onApplyTagFilter('category', value, '游戏类型')
               }
             />
             <InfoRow
               label="游戏引擎"
-              values={splitByDunhao(game.gameEngine)}
+              values={splitBySeparator(game.gameEngine)}
               onTagClick={(value) =>
                 onApplyTagFilter('engine', value, '游戏引擎')
               }
@@ -144,27 +144,27 @@ export default function GameOverview({
           <div className="space-y-1">
             <InfoRow
               label="音乐"
-              values={splitByDunhao(game.music)}
+              values={splitBySeparator(game.music)}
               onTagClick={(value) => onApplyTagFilter('music', value, '音乐')}
             />
             <InfoRow
               label="剧本"
-              values={splitByDunhao(game.script)}
+              values={splitBySeparator(game.script)}
               onTagClick={(value) => onApplyTagFilter('script', value, '剧本')}
             />
-            <InfoRow label="美术" values={splitByDunhao(game.graphic)} />
+            <InfoRow label="美术" values={splitBySeparator(game.graphic)} />
             <InfoRow
               label="原画"
-              values={splitByDunhao(game.originalPainter)}
+              values={splitBySeparator(game.originalPainter)}
               onTagClick={(value) =>
                 onApplyTagFilter('originalPainter', value, '原画')
               }
             />
             <InfoRow
               label="动画制作"
-              values={splitByDunhao(game.animationProduction)}
+              values={splitBySeparator(game.animationProduction)}
             />
-            <InfoRow label="程序" values={splitByDunhao(game.programmer)} />
+            <InfoRow label="程序" values={splitBySeparator(game.programmer)} />
           </div>
         </div>
 
