@@ -17,6 +17,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
+
 import type { QuoteManageItem } from '@/lib/game/game-utils'
 
 type QuoteManageContentProps = {
@@ -80,20 +81,34 @@ export function QuoteManageContent({
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-16">序号</TableHead>
-            <TableHead className="w-40">游戏名称</TableHead>
-            <TableHead>台词内容</TableHead>
-            <TableHead className="w-32">出自角色</TableHead>
-            <TableHead className="w-48">台词背景</TableHead>
-            <TableHead className="w-36">创建时间</TableHead>
-            <TableHead className="w-24 text-right">操作</TableHead>
+            <TableHead className="w-16 text-center">
+              序号
+            </TableHead>
+            <TableHead className="w-40 text-center">
+              游戏名称
+            </TableHead>
+            <TableHead className="text-center">台词内容</TableHead>
+            <TableHead className="w-32 text-center">
+              出自角色
+            </TableHead>
+            <TableHead className="w-48 text-center">
+              台词背景
+            </TableHead>
+            <TableHead className="w-36 text-center">
+              创建时间
+            </TableHead>
+            <TableHead className="w-24 text-center">
+              操作
+            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {items.map((item, index) => (
             <TableRow key={item.id}>
-              <TableCell className="text-muted-foreground">{index + 1}</TableCell>
-              <TableCell>
+              <TableCell className="text-center text-muted-foreground">
+                {index + 1}
+              </TableCell>
+              <TableCell className="text-center">
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <span className="line-clamp-1 cursor-default">
@@ -105,20 +120,24 @@ export function QuoteManageContent({
                   </TooltipContent>
                 </Tooltip>
               </TableCell>
-              <TableCell>
+              <TableCell className="text-center">
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <div className="line-clamp-2 max-w-md cursor-default">{item.content}</div>
+                    <div className="line-clamp-2 max-w-md cursor-default">
+                      {item.content}
+                    </div>
                   </TooltipTrigger>
                   <TooltipContent>
                     <p className="max-w-xs">{item.content}</p>
                   </TooltipContent>
                 </Tooltip>
               </TableCell>
-              <TableCell>
+              <TableCell className="text-center">
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <span className="cursor-default">{item.characterName || '-'}</span>
+                    <span className="cursor-default">
+                      {item.characterName || '-'}
+                    </span>
                   </TooltipTrigger>
                   {item.characterName && (
                     <TooltipContent>
@@ -127,10 +146,12 @@ export function QuoteManageContent({
                   )}
                 </Tooltip>
               </TableCell>
-              <TableCell>
+              <TableCell className="text-center">
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <div className="line-clamp-2 cursor-default">{item.context || '-'}</div>
+                    <div className="line-clamp-2 cursor-default">
+                      {item.context || '-'}
+                    </div>
                   </TooltipTrigger>
                   {item.context && (
                     <TooltipContent>
@@ -139,13 +160,13 @@ export function QuoteManageContent({
                   )}
                 </Tooltip>
               </TableCell>
-              <TableCell className="text-muted-foreground">
+              <TableCell className="text-center text-muted-foreground">
                 {item.createdAt
                   ? dayjs(item.createdAt).format('YYYY-MM-DD HH:mm')
                   : '-'}
               </TableCell>
-              <TableCell>
-                <div className="flex items-center justify-end gap-1">
+              <TableCell className="text-center">
+                <div className="flex items-center justify-center gap-1">
                   <Button
                     variant="ghost"
                     size="icon"

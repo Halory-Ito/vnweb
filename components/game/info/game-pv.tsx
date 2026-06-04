@@ -6,7 +6,6 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 
 import { isHlsUrl, isVideoFileUrl } from '@/app/pv/_ui/utils'
-import { callHook } from '@/lib/plugins'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -24,6 +23,7 @@ import {
   syncSteamPvsByGameId,
   type GameMediaLinkItem,
 } from '@/lib/game/game-utils'
+import { callHook } from '@/lib/plugins'
 
 type GamePVProps = {
   gameId: number
@@ -87,15 +87,25 @@ export default function GamePV({ gameId }: GamePVProps) {
     void callHook('pv:video-resolve', { url }).then((result) => {
       if (cancelled) return
       if (result?.embedUrl) {
-        setResolvedVideo({ mode: 'embed', embedUrl: result.embedUrl, playUrl: '' })
+        setResolvedVideo({
+          mode: 'embed',
+          embedUrl: result.embedUrl,
+          playUrl: '',
+        })
       } else if (result?.resolvedUrl) {
-        setResolvedVideo({ mode: 'direct', embedUrl: '', playUrl: result.resolvedUrl })
+        setResolvedVideo({
+          mode: 'direct',
+          embedUrl: '',
+          playUrl: result.resolvedUrl,
+        })
       } else {
         setResolvedVideo({ mode: 'none', embedUrl: '', playUrl: '' })
       }
     })
 
-    return () => { cancelled = true }
+    return () => {
+      cancelled = true
+    }
   }, [selectedItem?.url])
 
   const playingMode = resolvedVideo.mode
@@ -271,7 +281,7 @@ export default function GamePV({ gameId }: GamePVProps) {
   return (
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-[320px_minmax(0,1fr)]">
       <div className="space-y-3 rounded-md border p-3">
-        <div className="flex items-center justify-between">
+        {/* <div className="flex items-center justify-between">
           <Button
             type="button"
             variant="outline"
@@ -283,7 +293,7 @@ export default function GamePV({ gameId }: GamePVProps) {
           >
             刷新
           </Button>
-        </div>
+        </div> */}
 
         <div className="max-h-105 space-y-2 overflow-y-auto">
           {isLoading ? (

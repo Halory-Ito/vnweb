@@ -12,7 +12,7 @@ import { toast } from 'sonner'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import {
   Dialog,
   DialogContent,
@@ -540,19 +540,18 @@ export default function Scan() {
         </CardContent>
       </Card>
 
-      <Card variant="outline">
-        <CardHeader>
-          <CardTitle>扫描目录列表</CardTitle>
+      <div className="rounded-lg border">
+        <div className="flex items-center justify-between px-6 py-4">
+          <h3 className="text-lg font-semibold">扫描目录列表</h3>
           <Button
-            data-slot="card-action"
             type="button"
             variant="outline"
             onClick={handleOpenAddDialog}
           >
             添加扫描目录列表
           </Button>
-        </CardHeader>
-        <CardContent className="space-y-3">
+        </div>
+        <div className="space-y-3 px-6 pb-6">
           {scanDirectories.map((item) => (
             <ScanDirectoryRow
               key={item.id}
@@ -565,8 +564,8 @@ export default function Scan() {
               onDelete={(id) => void handleDeleteDirectory(id)}
             />
           ))}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       <Dialog open={failedDialogOpen} onOpenChange={setFailedDialogOpen}>
         <DialogContent>

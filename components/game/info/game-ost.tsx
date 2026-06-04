@@ -663,9 +663,9 @@ export default function GameOST({ gameId, cover, title }: GameOSTProps) {
                   <Button variant="ghost" size="icon" className="size-8">
                     <Palette
                       className="size-3.5"
-                      style={{
-                        color: hasCustomStyle ? playerColor : 'inherit',
-                      }}
+                      // style={{
+                      //   color: hasCustomStyle ? playerColor : 'inherit',
+                      // }}
                     />
                   </Button>
                 </PopoverTrigger>
@@ -872,7 +872,7 @@ export default function GameOST({ gameId, cover, title }: GameOSTProps) {
                   }}
                   className="group space-y-2"
                 >
-                  <div className="relative aspect-square overflow-hidden rounded-2xl shadow-md transition-transform group-hover:-translate-y-1">
+                  <div className="relative aspect-square cursor-pointer overflow-hidden rounded-2xl shadow-md transition-transform group-hover:scale-105">
                     <img
                       src={item.cover}
                       alt=""

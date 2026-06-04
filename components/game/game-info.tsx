@@ -377,39 +377,27 @@ export default function GameInfo({ game, initialTab }: GameInfoProps) {
                 <GameOverview game={game} onApplyTagFilter={applyTagFilter} />
               </TabsContent>
               <TabsContent value="characters">
-                <div className="rounded-md border p-4 text-sm">
-                  <GameCharacters gameId={game.id} />
-                </div>
+                <GameCharacters gameId={game.id} />
               </TabsContent>
 
               <TabsContent value="pv">
-                <div className="rounded-md border p-4 text-sm">
-                  <GamePV gameId={game.id} />
-                </div>
+                <GamePV gameId={game.id} />
               </TabsContent>
 
               <TabsContent value="ost">
-                <div className="rounded-md border p-4 text-sm">
-                  <GameOST gameId={game.id} cover={game.cover} title={title} />
-                </div>
+                <GameOST gameId={game.id} cover={game.cover} title={title} />
               </TabsContent>
 
               <TabsContent value="record">
-                <div className="rounded-md border p-4 text-sm">
-                  <GameRecord gameId={game.id} />
-                </div>
+                <GameRecord gameId={game.id} />
               </TabsContent>
 
               <TabsContent value="memory">
-                <div className="rounded-md border p-4 text-sm">
-                  <GameMemory gameId={game.id} />
-                </div>
+                <GameMemory gameId={game.id} />
               </TabsContent>
 
               <TabsContent value="quote">
-                <div className="rounded-md border p-4 text-sm">
-                  <GameQuote gameId={game.id} />
-                </div>
+                <GameQuote gameId={game.id} />
               </TabsContent>
             </Tabs>
           </div>

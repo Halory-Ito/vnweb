@@ -4,8 +4,10 @@ import { useQuery } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import { MessageSquareQuoteIcon, QuoteIcon } from 'lucide-react'
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { getGameQuotesByGameId, type QuoteManageItem } from '@/lib/game/game-utils'
+import {
+  getGameQuotesByGameId,
+  type QuoteManageItem,
+} from '@/lib/game/game-utils'
 
 type GameQuoteProps = {
   gameId: number
@@ -53,44 +55,36 @@ export default function GameQuote({ gameId }: GameQuoteProps) {
 
 function QuoteCard({ item }: { item: QuoteManageItem }) {
   return (
-    <Card variant="outline" className="relative overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
-      <CardHeader className="pb-2">
-        <div className="flex items-start gap-3">
-          {item.characterImage ? (
-            <img
-              src={item.characterImage}
-              alt={item.characterName}
-              className="size-10 shrink-0 rounded-full object-cover"
-            />
-          ) : (
-            <div className="bg-primary/10 flex size-10 shrink-0 items-center justify-center rounded-full">
-              <QuoteIcon className="text-primary size-5" />
-            </div>
-          )}
-          <div className="min-w-0 flex-1">
-            {item.characterName && (
-              <CardTitle className="text-sm font-medium">
-                {item.characterName}
-              </CardTitle>
-            )}
-            <p className="text-muted-foreground text-xs">
-              {item.createdAt
-                ? dayjs(item.createdAt).format('YYYY-MM-DD')
-                : ''}
-            </p>
+    <div className="group relative overflow-hidden rounded-lg border p-4 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md">
+      {/* 背景光效 */}
+      <div className="bg-primary/5 pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+      <div className="relative mb-3 flex items-start gap-3">
+        {item.characterImage ? (
+          <img
+            src={item.characterImage}
+            alt={item.characterName}
+            className="size-10 shrink-0 rounded-full object-cover"
+          />
+        ) : (
+          <div className="bg-primary/10 flex size-10 shrink-0 items-center justify-center rounded-full">
+            <QuoteIcon className="size-5" />
           </div>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <p className="text-foreground/90 text-sm">
-          {item.content}
-        </p>
-        {item.context && (
-          <p className="text-muted-foreground mt-2 text-xs">
-            📖 {item.context}
-          </p>
         )}
-      </CardContent>
-    </Card>
+        <div className="min-w-0 flex-1">
+          {item.characterName ? (
+            <div className="text-sm font-medium">{item.characterName}</div>
+          ) : (
+            <div className="text-sm font-medium">未知</div>
+          )}
+          <p className="text-muted-foreground text-xs">
+            {item.createdAt ? dayjs(item.createdAt).format('YYYY-MM-DD') : ''}
+          </p>
+        </div>
+      </div>
+      <p className="text-foreground/90 relative text-sm">{item.content}</p>
+      {item.context && (
+        <p className="text-muted-foreground relative mt-2 text-xs">📖 {item.context}</p>
+      )}
+    </div>
   )
 }

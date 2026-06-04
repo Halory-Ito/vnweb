@@ -169,16 +169,14 @@ export default function GameCharacters({ gameId }: GameCharactersProps) {
     if (sourceId === 'bangumi' && bgmSubjectId) return bgmSubjectId
     // 其次从 externalSourceIds 解析
     return (
-      parsedSourceIds.find(
-        (item) => item.provider.toLowerCase() === sourceId,
-      )?.externalId || ''
+      parsedSourceIds.find((item) => item.provider.toLowerCase() === sourceId)
+        ?.externalId || ''
     )
   }
 
   const openSettingsDialog = () => {
-    const source = characterProviders.length > 0
-      ? characterProviders[0].sourceId
-      : ''
+    const source =
+      characterProviders.length > 0 ? characterProviders[0].sourceId : ''
     setSelectedSource(source)
     setGameIdInput(getBoundIdForSource(source))
     setSaveImagesToLocal(true)
@@ -310,7 +308,7 @@ export default function GameCharacters({ gameId }: GameCharactersProps) {
 
   return (
     <>
-      <div className="space-y-3 rounded-md p-4">
+      <div className="space-y-3 rounded-md pb-4">
         <div className="flex items-center justify-start gap-2">
           <Button
             type="button"

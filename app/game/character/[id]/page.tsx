@@ -435,7 +435,7 @@ export default function CharacterDetailPage() {
 
           {/* 编辑表单 */}
           {editing ? (
-            <div className="rounded-md border p-4">
+            <div>
               <div className="mb-3 text-base font-medium">编辑角色信息</div>
               <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                 <Input
@@ -580,13 +580,13 @@ export default function CharacterDetailPage() {
           ) : null}
 
           {/* 基本信息 */}
-          <div className="rounded-md border p-4">
+          <div>
             <div className="mb-3 text-base font-medium">基本信息</div>
             <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
               {infoRows(data).map((row) => (
                 <div
                   key={row.label}
-                  className="space-y-1 rounded-md border p-3"
+                  className="space-y-1 rounded-lg border p-3 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md"
                 >
                   <div className="text-muted-foreground text-xs">
                     {row.label}
@@ -600,7 +600,7 @@ export default function CharacterDetailPage() {
       </div>
 
       {/* 第二部分：角色简介 */}
-      <div className="mb-6 rounded-md border p-4">
+      <div className="mb-6">
         <div className="mb-3 text-base font-medium">角色简介</div>
         <div className="text-muted-foreground text-sm leading-6 whitespace-pre-wrap">
           {data.description || '暂无简介'}
@@ -608,7 +608,7 @@ export default function CharacterDetailPage() {
       </div>
 
       {/* 第三部分：角色台词 */}
-      <div className="rounded-md border p-4">
+      <div>
         <div className="mb-3 text-base font-medium">角色台词</div>
         <CharacterQuotes characterId={data.id} />
       </div>

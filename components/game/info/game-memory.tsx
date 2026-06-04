@@ -9,13 +9,6 @@ import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
-import {
   Dialog,
   DialogContent,
   DialogFooter,
@@ -363,9 +356,8 @@ function MemoryCard({
     : '-'
 
   return (
-    <Card
-      variant="outline"
-      className="group relative mt-0 cursor-pointer overflow-hidden pt-0 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
+    <div
+      className="group relative mt-0 cursor-pointer overflow-hidden rounded-lg border bg-background transition-all duration-300 hover:-translate-y-1 hover:border-primary/50 hover:bg-accent hover:shadow-md"
       onClick={onClick}
       role="button"
       tabIndex={0}
@@ -391,8 +383,6 @@ function MemoryCard({
             <ImageIcon className="text-muted-foreground size-12" />
           </div>
         )}
-        {/* 悬停遮罩 */}
-        {/* <div className="absolute inset-0 bg-linear-to-t from-black/50 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" /> */}
       </div>
 
       {/* 卡片内容 */}
@@ -419,6 +409,6 @@ function MemoryCard({
           </p>
         </div>
       )}
-    </Card>
+    </div>
   )
 }
