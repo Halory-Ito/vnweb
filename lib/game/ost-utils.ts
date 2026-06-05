@@ -1,4 +1,5 @@
 import { NETEASE_API_BASE } from '@/app/config'
+import { api } from '@/lib/request-utils'
 
 // 获取网易云专辑歌曲信息
 export type NeteaseSongItem = {
@@ -13,12 +14,9 @@ export type NeteaseSongItem = {
 export async function getNeteaseAlbumSongs(
   albumId: string,
 ): Promise<NeteaseSongItem[]> {
-  const response = await fetch(`/api/ost/netease/${albumId}`)
-  if (!response.ok) {
-    throw new Error('获取专辑详情失败')
-  }
+  const response = await api.get(`/ost/netease/${albumId}`)
+  const albumData = response.data
 
-  const albumData = await response.json()
   return (
     albumData.data?.songs?.map((song: { id: number; name: string }) => ({
       id: song.id,

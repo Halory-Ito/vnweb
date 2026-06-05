@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 
+import { api } from '@/lib/request-utils'
+
 const KHINSIDER_BASE = 'https://downloads.khinsider.com'
 
 // 从歌曲详情页面获取实际下载链接
@@ -9,16 +11,17 @@ const getSongDownloadInfo = async (
   index: number,
 ): Promise<{ index: number; url: string } | null> => {
   try {
-    const res = await fetch(songPageUrl, {
+    const res = await api.get(songPageUrl, {
       headers: {
         'User-Agent':
           'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
         Referer: songPageUrl,
         Origin: KHINSIDER_BASE,
       },
+      responseType: 'text',
     })
 
-    const html = await res.text()
+    const html = res.data
 
     // 从 audio 标签提取下载链接
     const audioSrcPattern =
@@ -64,16 +67,17 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const res = await fetch(albumUrl, {
+    const res = await api.get(albumUrl, {
       headers: {
         'User-Agent':
           'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
         Referer: albumUrl,
         Origin: KHINSIDER_BASE,
       },
+      responseType: 'text',
     })
 
-    const html = await res.text()
+    const html = res.data
 
     const result: {
       name: string

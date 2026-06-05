@@ -6,6 +6,7 @@ import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Textarea } from '@/components/ui/textarea'
+import { api } from '@/lib/request-utils'
 
 type ThemeCssResponse = {
   data?: {
@@ -24,16 +25,8 @@ export default function ThemeContent() {
     const loadThemeCss = async () => {
       setIsLoading(true)
       try {
-        const response = await fetch('/api/settings/theme-css', {
-          method: 'GET',
-        })
-        const payload = (await response
-          .json()
-          .catch(() => ({}))) as ThemeCssResponse
-
-        if (!response.ok) {
-          throw new Error(payload.error || '读取主题文件失败')
-        }
+        const response = await api.get('/settings/theme-css')
+        const payload = response.data as ThemeCssResponse
 
         const nextContent = payload.data?.content ?? ''
         setContent(nextContent)
@@ -56,21 +49,8 @@ export default function ThemeContent() {
   const handleSave = async () => {
     setIsSaving(true)
     try {
-      const response = await fetch('/api/settings/theme-css', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ content }),
-      })
-
-      const payload = (await response
-        .json()
-        .catch(() => ({}))) as ThemeCssResponse
-
-      if (!response.ok) {
-        throw new Error(payload.error || '保存主题文件失败')
-      }
+      const response = await api.put('/settings/theme-css', { content })
+      const payload = response.data as ThemeCssResponse
 
       setSavedContent(content)
       toast.success('主题文件已保存')

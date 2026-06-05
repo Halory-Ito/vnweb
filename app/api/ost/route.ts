@@ -6,6 +6,7 @@ import path from 'node:path'
 import { NETEASE_API_BASE } from '@/app/config'
 import { GameInfoTable, GameOstTable, GameOstSongsTable } from '@/db/schema'
 import { db } from '@/lib/drizzle'
+import { api } from '@/lib/request-utils'
 
 const normalizeText = (value: unknown) => {
   if (typeof value !== 'string') {
@@ -120,14 +121,11 @@ const downloadCoverToLocal = async (
     const fullPath = path.join(ostDir, fileName)
 
     // 下载图片
-    const response = await fetch(coverUrl)
-    if (!response.ok) {
-      console.error('Failed to download cover:', response.statusText)
-      return null
-    }
+    const response = await api.get(coverUrl, {
+      responseType: 'arraybuffer',
+    })
 
-    const arrayBuffer = await response.arrayBuffer()
-    const buffer = Buffer.from(arrayBuffer)
+    const buffer = Buffer.from(response.data)
 
     // 保存到本地
     fs.writeFileSync(fullPath, buffer)
@@ -220,14 +218,12 @@ const createOst = async (req: NextRequest) => {
             if (match) {
               const songId = match[1]
               try {
-                const lyricResponse = await fetch(
-                  `${NETEASE_API_BASE}/lyric?id=${songId}`,
-                )
-                if (lyricResponse.ok) {
-                  const lyricData = await lyricResponse.json()
-                  if (lyricData.lrc?.lyric) {
-                    lyricsText = lyricData.lrc.lyric
-                  }
+                const lyricResponse = await api.get(`${NETEASE_API_BASE}/lyric`, {
+                  params: { id: songId },
+                })
+                const lyricData = lyricResponse.data
+                if (lyricData.lrc?.lyric) {
+                  lyricsText = lyricData.lrc.lyric
                 }
               } catch (err) {
                 console.error('Failed to fetch lyric for song:', song.name, err)

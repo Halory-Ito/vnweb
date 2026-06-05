@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 
+import { api } from '@/lib/request-utils'
+
 const KHINSIDER_BASE = 'https://downloads.khinsider.com'
 
 /**
@@ -17,18 +19,20 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const url = `${KHINSIDER_BASE}/search?search=${encodeURIComponent(kw)}`
+    const url = `${KHINSIDER_BASE}/search`
 
-    const res = await fetch(url, {
+    const res = await api.get(url, {
+      params: { search: kw },
       headers: {
         'User-Agent':
           'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
         Referer: KHINSIDER_BASE,
         Origin: KHINSIDER_BASE,
       },
+      responseType: 'text',
     })
 
-    const html = await res.text()
+    const html = res.data
 
     const results: Array<{
       name: string

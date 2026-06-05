@@ -21,6 +21,7 @@ import {
 } from '@/components/ui/select'
 import { Slider } from '@/components/ui/slider'
 import { Switch } from '@/components/ui/switch'
+import { api } from '@/lib/request-utils'
 import {
   BACKGROUND_TRANSITION_STYLE_OPTIONS,
   DEFAULT_BACKGROUND_SETTINGS,
@@ -210,20 +211,11 @@ export default function AppearanceContent() {
 
     setIsUploadingBackground(true)
     try {
-      const response = await fetch('/api/settings/background/upload', {
-        method: 'POST',
-        body: formData,
-      })
-
-      const payload = (await response.json().catch(() => ({}))) as {
-        error?: string
+      const response = await api.post('/settings/background/upload', formData)
+      const payload = response.data as {
         data?: {
           path?: string
         }
-      }
-
-      if (!response.ok) {
-        throw new Error(payload.error || '上传背景图片失败')
       }
 
       const uploadedPath = payload.data?.path?.trim()
@@ -244,16 +236,9 @@ export default function AppearanceContent() {
   const loadLocalFonts = async () => {
     setIsLoadingLocalFonts(true)
     try {
-      const response = await fetch('/api/settings/font/local-list', {
-        method: 'GET',
-      })
-      const payload = (await response.json().catch(() => ({}))) as {
-        error?: string
+      const response = await api.get('/settings/font/local-list')
+      const payload = response.data as {
         data?: LocalFontItem[]
-      }
-
-      if (!response.ok) {
-        throw new Error(payload.error || '读取本地字体失败')
       }
 
       setLocalFonts(payload.data || [])
@@ -280,13 +265,7 @@ export default function AppearanceContent() {
     }
 
     try {
-      await fetch('/api/settings/font/cleanup', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ paths }),
-      })
+      await api.post('/settings/font/cleanup', { paths })
     } catch {
       // Silent cleanup failure; stale files can be cleaned up in later operations.
     }
@@ -295,24 +274,12 @@ export default function AppearanceContent() {
   const handleImportAndPreviewFont = async (font: LocalFontItem) => {
     setIsImportingFontPath(font.path)
     try {
-      const response = await fetch('/api/settings/font/import', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ sourcePath: font.path }),
-      })
-
-      const payload = (await response.json().catch(() => ({}))) as {
-        error?: string
+      const response = await api.post('/settings/font/import', { sourcePath: font.path })
+      const payload = response.data as {
         data?: {
           path?: string
           name?: string
         }
-      }
-
-      if (!response.ok) {
-        throw new Error(payload.error || '导入字体失败')
       }
 
       const importedPath = payload.data?.path?.trim()

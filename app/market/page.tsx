@@ -31,6 +31,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { api } from '@/lib/request-utils'
 
 type Plugin = {
   id: string
@@ -112,27 +113,15 @@ export default function MarketPage() {
   } = useQuery<Plugin[]>({
     queryKey: ['plugins'],
     queryFn: async () => {
-      const response = await fetch('/api/market/plugins')
-      if (!response.ok) throw new Error('Failed to fetch plugins')
-      return response.json()
+      const response = await api.get('/market/plugins')
+      return response.data
     },
   })
 
   const installMutation = useMutation({
     mutationFn: async (id: string) => {
-      const response = await fetch('/api/market/plugins/install', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ id }),
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to install plugin')
-      }
-
-      return response.json()
+      const response = await api.post('/market/plugins/install', { id })
+      return response.data
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['plugins'] })
@@ -141,19 +130,8 @@ export default function MarketPage() {
 
   const uninstallMutation = useMutation({
     mutationFn: async (id: string) => {
-      const response = await fetch('/api/market/plugins/uninstall', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ id }),
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to uninstall plugin')
-      }
-
-      return response.json()
+      const response = await api.post('/market/plugins/uninstall', { id })
+      return response.data
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['plugins'] })
@@ -166,18 +144,8 @@ export default function MarketPage() {
       formData.append('action', 'preview')
       formData.append('file', file)
 
-      const response = await fetch('/api/market/plugins/import', {
-        method: 'POST',
-        body: formData,
-      })
-
-      if (!response.ok) {
-        throw new Error(await getErrorMessage(response, '解析插件压缩文件失败'))
-      }
-
-      const payload = (await response.json()) as ImportPreviewResponse
-
-      return payload
+      const response = await api.post('/market/plugins/import', formData)
+      return response.data as ImportPreviewResponse
     },
     onSuccess: (payload) => {
       setImportPreview(payload.plugin)
@@ -206,16 +174,8 @@ export default function MarketPage() {
       formData.append('file', file)
       formData.append('overwrite', String(overwrite))
 
-      const response = await fetch('/api/market/plugins/import', {
-        method: 'POST',
-        body: formData,
-      })
-
-      if (!response.ok) {
-        throw new Error(await getErrorMessage(response, '导入插件失败'))
-      }
-
-      return response.json()
+      const response = await api.post('/market/plugins/import', formData)
+      return response.data
     },
     onSuccess: async () => {
       toast.success('插件导入成功')

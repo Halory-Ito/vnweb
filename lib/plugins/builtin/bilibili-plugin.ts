@@ -1,3 +1,4 @@
+import { api } from '@/lib/request-utils'
 import type { FeaturePlugin, PvVideoResolveOutput } from '../types'
 
 // ═══════════════════════════════════════════════════════════
@@ -44,8 +45,12 @@ export function isBilibiliUrl(url: string): boolean {
 
 async function resolveB23ShortLink(shortUrl: string): Promise<string | null> {
   try {
-    const res = await fetch(shortUrl, { method: 'HEAD', redirect: 'follow' })
-    return res.url || null
+    const res = await api.get(shortUrl, {
+      maxRedirects: 5,
+      timeout: 5_000,
+    })
+    // axios 会跟随重定向，返回最终的 URL
+    return res.request?.responseURL || res.config?.url || null
   } catch {
     return null
   }

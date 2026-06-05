@@ -78,7 +78,7 @@ export default function GamePV({ gameId }: GamePVProps) {
       return
     }
 
-    if (isVideoFileUrl(url)) {
+    if (isVideoFileUrl(url) || isHlsUrl(url)) {
       setResolvedVideo({ mode: 'direct', embedUrl: '', playUrl: url })
       return
     }

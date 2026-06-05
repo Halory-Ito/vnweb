@@ -17,6 +17,7 @@ import {
   updateOstManageItem,
   type OstManageItem,
 } from '@/lib/game/game-utils'
+import { api } from '@/lib/request-utils'
 
 import type { OstItem } from './_ui/types'
 
@@ -64,7 +65,7 @@ export default function OSTPage() {
   useEffect(() => {
     const syncCovers = async () => {
       try {
-        await fetch('/api/ost', { method: 'PATCH' })
+        await api.patch('/ost')
       } catch {
         // 静默失败，不给用户提示
       }

@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import fs from 'node:fs'
 import path from 'node:path'
 
+import { api } from '@/lib/request-utils'
+
 /**
  * 下载图片到本地
  * POST /api/ost/download-image
@@ -43,16 +45,11 @@ export async function POST(request: NextRequest) {
     const fullPath = path.join(ostDir, fileName)
 
     // 下载图片
-    const response = await fetch(imageUrl)
-    if (!response.ok) {
-      return NextResponse.json(
-        { error: 'Failed to download image' },
-        { status: 500 },
-      )
-    }
+    const response = await api.get(imageUrl, {
+      responseType: 'arraybuffer',
+    })
 
-    const arrayBuffer = await response.arrayBuffer()
-    const buffer = Buffer.from(arrayBuffer)
+    const buffer = Buffer.from(response.data)
 
     // 保存到本地
     fs.writeFileSync(fullPath, buffer)

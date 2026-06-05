@@ -1,5 +1,6 @@
 import dayjs from 'dayjs'
 
+import { api } from '@/lib/request-utils'
 import type {
   MusicSource,
   NeteaseQuality,
@@ -22,16 +23,11 @@ export function toDisplayDate(date: string | null | undefined): string {
  * 搜索 khinsider 专辑 (通过 API 代理)
  */
 export async function searchKhinsiderAlbums(kw: string) {
-  const url = `/api/ost/khinsider?kw=${encodeURIComponent(kw)}`
+  const response = await api.get('/ost/khinsider', {
+    params: { kw },
+  })
 
-  const res = await fetch(url)
-
-  if (!res.ok) {
-    throw new Error(`Search failed: ${res.statusText}`)
-  }
-
-  const json = await res.json()
-  const data = json.data as Array<{
+  const data = response.data.data as Array<{
     name: string
     url: string
     type: 'album' | 'soundtrack'
@@ -55,16 +51,11 @@ export async function searchKhinsiderAlbums(kw: string) {
  * 获取 khinsider 专辑详情 (通过 API 代理)
  */
 export async function getKhinsiderAlbumDetails(albumUrl: string) {
-  const url = `/api/ost/khinsider/album?url=${encodeURIComponent(albumUrl)}`
+  const response = await api.get('/ost/khinsider/album', {
+    params: { url: albumUrl },
+  })
 
-  const res = await fetch(url)
-
-  if (!res.ok) {
-    throw new Error(`Get album details failed: ${res.statusText}`)
-  }
-
-  const json = await res.json()
-  const data = json.data as {
+  const data = response.data.data as {
     name: string
     covers: string[]
     songs: Array<{ name: string; url: string; duration?: string }>
@@ -89,16 +80,11 @@ export async function getKhinsiderAlbumDetails(albumUrl: string) {
  * 搜索网易云音乐专辑 (通过 API 代理)
  */
 export async function searchNeteaseAlbums(kw: string) {
-  const url = `/api/ost/netease?kw=${encodeURIComponent(kw)}`
+  const response = await api.get('/ost/netease', {
+    params: { kw },
+  })
 
-  const res = await fetch(url)
-
-  if (!res.ok) {
-    throw new Error(`Search failed: ${res.statusText}`)
-  }
-
-  const json = await res.json()
-  const data = json.data as Array<{
+  const data = response.data.data as Array<{
     id: number
     name: string
     artist: string
@@ -124,16 +110,9 @@ export async function searchNeteaseAlbums(kw: string) {
  * 获取网易云音乐专辑详情 (通过 API 代理)
  */
 export async function getNeteaseAlbumDetails(albumId: number) {
-  const url = `/api/ost/netease/${albumId}`
+  const response = await api.get(`/ost/netease/${albumId}`)
 
-  const res = await fetch(url)
-
-  if (!res.ok) {
-    throw new Error(`Get album details failed: ${res.statusText}`)
-  }
-
-  const json = await res.json()
-  const data = json.data as {
+  const data = response.data.data as {
     id: number
     name: string
     artist: string
@@ -213,16 +192,11 @@ export async function getNeteaseSongUrls(
   quality: NeteaseQuality = 'exhigh',
 ): Promise<Array<{ id: number; url: string; size: number; level: string }>> {
   const idParam = songIds.join(',')
-  const url = `/api/ost/netease/song/url?id=${encodeURIComponent(idParam)}&level=${quality}`
+  const response = await api.get('/ost/netease/song/url', {
+    params: { id: idParam, level: quality },
+  })
 
-  const res = await fetch(url)
-
-  if (!res.ok) {
-    throw new Error(`Get song urls failed: ${res.statusText}`)
-  }
-
-  const json = await res.json()
-  return json.data as Array<{
+  return response.data.data as Array<{
     id: number
     url: string
     size: number

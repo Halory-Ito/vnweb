@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 
+import { api } from '@/lib/request-utils'
+
 export async function GET(request: NextRequest) {
   const url = request.nextUrl.searchParams.get('url')
 
@@ -29,22 +31,16 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const response = await fetch(url, {
+    const response = await api.get(url, {
+      responseType: 'arraybuffer',
+      timeout: 10_000,
       headers: {
         'User-Agent': 'vnweb/1.0',
       },
-      signal: AbortSignal.timeout(10_000),
     })
 
-    if (!response.ok) {
-      return NextResponse.json(
-        { error: `Failed to fetch image: ${response.status}` },
-        { status: response.status },
-      )
-    }
-
-    const contentType = response.headers.get('content-type') || 'image/jpeg'
-    const buffer = await response.arrayBuffer()
+    const contentType = response.headers['content-type'] || 'image/jpeg'
+    const buffer = response.data
 
     return new NextResponse(buffer, {
       headers: {

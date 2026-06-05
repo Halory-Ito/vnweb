@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 import { NETEASE_API_BASE, NETEASE_COOKIE } from '@/app/config'
+import { api } from '@/lib/request-utils'
 /**
  * 获取网易云音乐歌曲真实 URL
  * 使用 /song/url/v1 接口
@@ -25,9 +26,14 @@ export async function GET(request: NextRequest) {
       .filter(Boolean)
 
     // 调用歌曲 URL API，单个 ID 直接传递，多个 ID 用逗号分隔
-    const apiUrl = `${NETEASE_API_BASE}/song/url/v1?id=${ids.join(',')}&level=${level}&cookie=${NETEASE_COOKIE}`
+    const apiUrl = `${NETEASE_API_BASE}/song/url/v1`
 
-    const res = await fetch(apiUrl, {
+    const res = await api.get(apiUrl, {
+      params: {
+        id: ids.join(','),
+        level,
+        cookie: NETEASE_COOKIE,
+      },
       headers: {
         'User-Agent':
           'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
@@ -36,37 +42,7 @@ export async function GET(request: NextRequest) {
       },
     })
 
-    // 先检查响应状态
-    if (!res.ok) {
-      let text = ''
-      try {
-        text = await res.text()
-      } catch {
-        text = 'Unable to read response'
-      }
-      console.error('API response not ok:', res.status, text)
-      return NextResponse.json(
-        {
-          error: `API error: ${res.status}`,
-          details: text,
-          status: res.status,
-        },
-        { status: 500 },
-      )
-    }
-
-    let data
-    try {
-      data = await res.json()
-    } catch {
-      // 尝试获取响应文本用于调试
-      const text = await res.text().catch(() => 'Unable to read')
-      console.error('Failed to parse JSON. Response text:', text)
-      return NextResponse.json(
-        { error: 'Invalid JSON response', debug: text.substring(0, 500) },
-        { status: 500 },
-      )
-    }
+    const data = res.data
 
     // 检查返回的 code
     if (data.code !== 200) {

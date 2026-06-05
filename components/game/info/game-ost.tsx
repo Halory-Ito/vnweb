@@ -362,12 +362,10 @@ export default function GameOST({ gameId, cover, title }: GameOSTProps) {
 
     const songId = match[1]
     try {
-      const response = await fetch(
-        `/api/ost/netease/song/url?id=${songId}&level=${level}`,
-      )
-      if (!response.ok) return songUrl
-
-      const data = await response.json()
+      const response = await api.get(`/ost/netease/song/url`, {
+        params: { id: songId, level },
+      })
+      const data = response.data
       if (data.data && data.data.length > 0 && data.data[0].url) {
         return data.data[0].url
       }
@@ -397,12 +395,8 @@ export default function GameOST({ gameId, cover, title }: GameOSTProps) {
         if (selectedSong.lyricsText) {
           setLyrics(parseLrc(selectedSong.lyricsText))
         } else if (selectedSong.lyricsPath) {
-          fetch(selectedSong.lyricsPath)
-            .then((res) => {
-              if (!res.ok) throw new Error('Failed to fetch lyrics')
-              return res.text()
-            })
-            .then((text) => setLyrics(parseLrc(text)))
+          api.get(selectedSong.lyricsPath)
+            .then((res) => setLyrics(parseLrc(res.data)))
             .catch((err) => console.warn('获取歌词文件失败:', err))
         }
 

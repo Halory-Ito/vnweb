@@ -11,6 +11,7 @@ import { useEffect, useRef, useState } from 'react'
 
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
+import { api } from '@/lib/request-utils'
 import {
   Table,
   TableBody,
@@ -62,12 +63,10 @@ export function SongManageContent({
 
     const songId = match[1]
     try {
-      const response = await fetch(
-        `/api/ost/netease/song/url?id=${songId}&level=${level}`,
-      )
-      if (!response.ok) return songUrl
-
-      const data = await response.json()
+      const response = await api.get('/ost/netease/song/url', {
+        params: { id: songId, level },
+      })
+      const data = response.data
       if (data.data && data.data.length > 0 && data.data[0].url) {
         return data.data[0].url
       }

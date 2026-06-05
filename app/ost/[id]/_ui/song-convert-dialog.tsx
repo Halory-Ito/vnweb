@@ -21,6 +21,7 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Spinner } from '@/components/ui/spinner'
 import { getNeteaseAlbumSongs } from '@/lib/game/ost-utils'
+import { api } from '@/lib/request-utils'
 
 type ConvertDirection = 'khinsider-to-netease' | 'netease-to-khinsider'
 
@@ -97,17 +98,11 @@ export function SongConvertDialog({
 
     setIsSearching(true)
     try {
-      const response = await fetch(
-        `/api/ost/search-convert?keyword=${encodeURIComponent(searchKeyword)}&direction=${direction}`,
-      )
-      const data = await response.json()
+      const response = await api.get('/ost/search-convert', {
+        params: { keyword: searchKeyword, direction },
+      })
 
-      if (data.error) {
-        toast.error(data.error)
-        return
-      }
-
-      setSearchResults(data.data?.items || [])
+      setSearchResults(response.data.data?.items || [])
     } catch {
       toast.error('搜索失败')
     } finally {
@@ -144,26 +139,17 @@ export function SongConvertDialog({
 
     setIsConverting(true)
     try {
-      const response = await fetch(`/api/ost/convert-songs`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          sourceOstId: currentOstId,
-          targetAlbumId: selectedAlbum.id,
-          direction,
-          songMapping: currentSongs.map((song, index) => ({
-            sourceSongId: song.id,
-            targetSongIndex: index,
-          })),
-        }),
+      const response = await api.post('/ost/convert-songs', {
+        sourceOstId: currentOstId,
+        targetAlbumId: selectedAlbum.id,
+        direction,
+        songMapping: currentSongs.map((song, index) => ({
+          sourceSongId: song.id,
+          targetSongIndex: index,
+        })),
       })
 
-      const data = await response.json()
-
-      if (data.error) {
-        toast.error(data.error)
-        return
-      }
+      const data = response.data
 
       toast.success(`成功转换 ${data.data?.convertedCount || 0} 首歌曲`)
       handleOpenChange(false)

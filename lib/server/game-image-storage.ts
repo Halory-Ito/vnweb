@@ -1,6 +1,8 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
 
+import { api } from '@/lib/request-utils'
+
 type ImageAssetType = 'cover' | 'bg' | 'icon' | 'logo'
 
 type LocalizeGameImageInput = {
@@ -195,18 +197,17 @@ const localizeGameImageInternal = async ({
     return normalizedUrl
   }
 
-  const response = await fetch(normalizedUrl)
-  if (!response.ok) {
-    throw new Error(`下载图片失败: ${response.status}`)
-  }
+  const response = await api.get(normalizedUrl, {
+    responseType: 'arraybuffer',
+  })
 
-  const buffer = Buffer.from(await response.arrayBuffer())
+  const buffer = Buffer.from(response.data)
   const target = toImageFileInfo({
     gameName,
     releaseDate,
     imageType,
     sourceUrl: normalizedUrl,
-    contentType: response.headers.get('content-type'),
+    contentType: response.headers['content-type'],
   })
   await writeBufferToTargets(buffer, target)
   return target.publicPath

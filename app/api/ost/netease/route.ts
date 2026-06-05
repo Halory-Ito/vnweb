@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 import { NETEASE_API_BASE } from '@/app/config'
+import { api } from '@/lib/request-utils'
 /**
  * 搜索网易云音乐专辑
  */
@@ -17,8 +18,9 @@ export async function GET(request: NextRequest) {
     }
 
     // 使用本地 API 搜索专辑
-    const searchUrl = `${NETEASE_API_BASE}/search?keywords=${encodeURIComponent(kw)}&type=10`
-    const res = await fetch(searchUrl, {
+    const searchUrl = `${NETEASE_API_BASE}/search`
+    const res = await api.get(searchUrl, {
+      params: { keywords: kw, type: 10 },
       headers: {
         'User-Agent':
           'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
@@ -27,7 +29,7 @@ export async function GET(request: NextRequest) {
       },
     })
 
-    const data = await res.json()
+    const data = res.data
 
     if (data.code !== 200) {
       return NextResponse.json(

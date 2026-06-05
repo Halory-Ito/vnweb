@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 import { NETEASE_API_BASE } from '@/app/config'
+import { api } from '@/lib/request-utils'
 /**
  * 获取网易云音乐专辑详情和歌曲列表
  * 使用第三方镜像 API
@@ -20,9 +21,10 @@ export async function GET(
     }
 
     // 使用镜像 API 获取专辑详情
-    const apiUrl = `${NETEASE_API_BASE}/album?id=${id}`
+    const apiUrl = `${NETEASE_API_BASE}/album`
 
-    const res = await fetch(apiUrl, {
+    const res = await api.get(apiUrl, {
+      params: { id },
       headers: {
         'User-Agent':
           'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
@@ -31,7 +33,7 @@ export async function GET(
       },
     })
 
-    const data = await res.json()
+    const data = res.data
 
     if (data.code !== 200 && data.code !== 220) {
       return NextResponse.json(

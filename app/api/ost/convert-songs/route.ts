@@ -4,16 +4,17 @@ import { NextRequest, NextResponse } from 'next/server'
 import { NETEASE_API_BASE } from '@/app/config'
 import { GameOstSongsTable } from '@/db/schema'
 import { db } from '@/lib/drizzle'
+import { api } from '@/lib/request-utils'
 
 // 获取网易云歌词
 async function fetchLyrics(songId: number): Promise<string> {
   try {
-    const lyricResponse = await fetch(`${NETEASE_API_BASE}/lyric?id=${songId}`)
-    if (lyricResponse.ok) {
-      const lyricData = await lyricResponse.json()
-      if (lyricData.lrc?.lyric) {
-        return lyricData.lrc.lyric
-      }
+    const lyricResponse = await api.get(`${NETEASE_API_BASE}/lyric`, {
+      params: { id: songId },
+    })
+    const lyricData = lyricResponse.data
+    if (lyricData.lrc?.lyric) {
+      return lyricData.lrc.lyric
     }
   } catch (err) {
     console.error('Failed to fetch lyric for song:', songId, err)
@@ -51,8 +52,9 @@ export async function POST(req: NextRequest) {
           typeof targetAlbumId === 'string'
             ? parseInt(targetAlbumId)
             : targetAlbumId
-        const apiUrl = `${NETEASE_API_BASE}/album?id=${albumId}`
-        const response = await fetch(apiUrl, {
+        const apiUrl = `${NETEASE_API_BASE}/album`
+        const response = await api.get(apiUrl, {
+          params: { id: albumId },
           headers: {
             'User-Agent':
               'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
@@ -60,14 +62,7 @@ export async function POST(req: NextRequest) {
           },
         })
 
-        if (!response.ok) {
-          return NextResponse.json(
-            { error: '获取目标专辑失败' },
-            { status: 400 },
-          )
-        }
-
-        const data = await response.json()
+        const data = response.data
         if (data.songs) {
           // 先收集所有歌曲信息
           const songsWithLyricPaths = data.songs.map(
@@ -87,15 +82,10 @@ export async function POST(req: NextRequest) {
           typeof targetAlbumId === 'string'
             ? targetAlbumId
             : String(targetAlbumId)
-        const searchUrl = `${req.nextUrl.origin}/api/ost/khinsider/album?url=${encodeURIComponent(albumUrl)}`
-        const response = await fetch(searchUrl)
-        if (!response.ok) {
-          return NextResponse.json(
-            { error: '获取目标专辑失败' },
-            { status: 400 },
-          )
-        }
-        const khinsiderData = await response.json()
+        const response = await api.get('/ost/khinsider/album', {
+          params: { url: albumUrl },
+        })
+        const khinsiderData = response.data
         targetSongs =
           (
             khinsiderData.data?.songs as Array<{ name: string; url: string }>

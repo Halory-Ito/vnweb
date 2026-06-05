@@ -4,6 +4,7 @@ import { useRef, useState } from 'react'
 import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
+import { api } from '@/lib/request-utils'
 
 export default function BackupSettingsContent() {
   const [isExporting, setIsExporting] = useState(false)
@@ -11,11 +12,12 @@ export default function BackupSettingsContent() {
   const [isImporting, setIsImporting] = useState(false)
   const importFileInputRef = useRef<HTMLInputElement>(null)
 
-  const downloadResponseFile = async (
-    response: Response,
+  const downloadBlobFile = (
+    blob: Blob,
+    headers: Record<string, string>,
     fallbackFileName: string,
   ) => {
-    const contentDisposition = response.headers.get('Content-Disposition')
+    const contentDisposition = headers['content-disposition'] || headers['Content-Disposition']
     let fileName = fallbackFileName
     if (contentDisposition) {
       const match = contentDisposition.match(
@@ -26,7 +28,6 @@ export default function BackupSettingsContent() {
       }
     }
 
-    const blob = await response.blob()
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
@@ -40,17 +41,11 @@ export default function BackupSettingsContent() {
   const handleExport = async () => {
     setIsExporting(true)
     try {
-      const response = await fetch('/api/settings/backup/export', {
-        method: 'POST',
+      const response = await api.post('/settings/backup/export', null, {
+        responseType: 'blob',
       })
 
-      if (!response.ok) {
-        const error = await response.json().catch(() => ({ error: '导出失败' }))
-        throw new Error(error.error || '导出失败')
-      }
-
-      await downloadResponseFile(response, 'vnweb-backup.zip')
-
+      downloadBlobFile(response.data, response.headers as Record<string, string>, 'vnweb-backup.zip')
       toast.success('备份导出成功')
     } catch (error) {
       toast.error((error as Error).message || '导出备份失败')
@@ -62,16 +57,11 @@ export default function BackupSettingsContent() {
   const handleExportXlsx = async () => {
     setIsExportingXlsx(true)
     try {
-      const response = await fetch('/api/settings/backup/export-xlsx', {
-        method: 'POST',
+      const response = await api.post('/settings/backup/export-xlsx', null, {
+        responseType: 'blob',
       })
 
-      if (!response.ok) {
-        const error = await response.json().catch(() => ({ error: '导出失败' }))
-        throw new Error(error.error || '导出失败')
-      }
-
-      await downloadResponseFile(response, 'vnweb-timer-records.xlsx')
+      downloadBlobFile(response.data, response.headers as Record<string, string>, 'vnweb-timer-records.xlsx')
       toast.success('计时记录导出成功')
     } catch (error) {
       toast.error((error as Error).message || '导出 xlsx 失败')
@@ -98,16 +88,7 @@ export default function BackupSettingsContent() {
 
     setIsImporting(true)
     try {
-      const response = await fetch('/api/settings/backup/import', {
-        method: 'POST',
-        body: formData,
-      })
-
-      const result = await response.json()
-
-      if (!response.ok) {
-        throw new Error(result.error || '导入失败')
-      }
+      await api.post('/settings/backup/import', formData)
 
       toast.success('备份导入成功，页面将重新加载')
       // 延迟刷新页面

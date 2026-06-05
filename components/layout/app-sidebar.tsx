@@ -26,6 +26,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar'
+import { api } from '@/lib/request-utils'
 import {
   Tooltip,
   TooltipContent,
@@ -121,12 +122,8 @@ export default function AppSideBar() {
   const { data: plugins = [] } = useQuery<PluginItem[]>({
     queryKey: ['plugins'],
     queryFn: async () => {
-      const response = await fetch('/api/market/plugins')
-      if (!response.ok) {
-        throw new Error('Failed to fetch plugins')
-      }
-
-      return response.json()
+      const response = await api.get('/market/plugins')
+      return response.data
     },
   })
 

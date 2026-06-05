@@ -1,3 +1,4 @@
+import { api } from '@/lib/request-utils'
 import type {
   CharacterProviderPlugin,
   NormalizedCharacterRow,
@@ -70,21 +71,19 @@ const getToken = async (): Promise<string> => {
   const { YMGAL_BASE_URL, YMGAL_CLIENT_ID, YMGAL_CLIENT_SECRET } =
     await import('@/app/config')
 
-  const res = await fetch(`${YMGAL_BASE_URL}/oauth/token`, {
-    method: 'POST',
+  const res = await api.post(`${YMGAL_BASE_URL}/oauth/token`, new URLSearchParams({
+    grant_type: 'client_credentials',
+    client_id: YMGAL_CLIENT_ID,
+    client_secret: YMGAL_CLIENT_SECRET,
+    scope: 'public',
+  }), {
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
       ...YMGAL_HEADERS,
     },
-    body: new URLSearchParams({
-      grant_type: 'client_credentials',
-      client_id: YMGAL_CLIENT_ID,
-      client_secret: YMGAL_CLIENT_SECRET,
-      scope: 'public',
-    }),
   })
 
-  const data = (await res.json()) as {
+  const data = res.data as {
     access_token?: string
     expires_in?: number
   }
@@ -110,7 +109,8 @@ const ymgalOpenRequest = async <T>(
     query.set(key, String(value))
   }
 
-  const res = await fetch(`${YMGAL_BASE_URL}${path}?${query.toString()}`, {
+  const res = await api.get(`${YMGAL_BASE_URL}${path}`, {
+    params: Object.fromEntries(query),
     headers: {
       Accept: 'application/json;charset=utf-8',
       Authorization: `Bearer ${token}`,
@@ -119,11 +119,7 @@ const ymgalOpenRequest = async <T>(
     },
   })
 
-  if (!res.ok) {
-    throw new Error(`YMGal API 请求失败: ${res.status} ${res.statusText}`)
-  }
-
-  return (await res.json()) as T
+  return res.data as T
 }
 
 // ── 工具函数 ──────────────────────────────────────────────

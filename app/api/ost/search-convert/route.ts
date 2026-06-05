@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 
+import { api } from '@/lib/request-utils'
+
 export async function GET(req: NextRequest) {
   try {
     const keyword = req.nextUrl.searchParams.get('keyword')
@@ -29,35 +31,30 @@ export async function GET(req: NextRequest) {
 
       if (targetResource === 'netease') {
         // 调用网易云专辑搜索 API
-        const neteaseResponse = await fetch(
-          `${req.nextUrl.origin}/api/ost/netease?kw=${encodeURIComponent(keyword)}`,
+        const neteaseResponse = await api.get('/ost/netease', {
+          params: { kw: keyword },
+        })
+        items = (neteaseResponse.data.data || []).map(
+          (album: { id: number; name: string; cover: string }) => ({
+            id: String(album.id),
+            name: album.name,
+            cover: album.cover,
+            songs: [],
+          }),
         )
-        if (neteaseResponse.ok) {
-          const neteaseData = await neteaseResponse.json()
-          items = (neteaseData.data || []).map(
-            (album: { id: number; name: string; cover: string }) => ({
-              id: String(album.id),
-              name: album.name,
-              cover: album.cover,
-              songs: [],
-            }),
-          )
-        }
       } else {
         // 调用 Khinsider 搜索
-        const khinsiderUrl = `${req.nextUrl.origin}/api/ost/khinsider?kw=${encodeURIComponent(keyword)}`
-        const khinsiderResponse = await fetch(khinsiderUrl)
-        if (khinsiderResponse.ok) {
-          const khinsiderData = await khinsiderResponse.json()
-          items = (khinsiderData.data || []).map(
-            (album: { name: string; url: string; cover: string }) => ({
-              id: album.url,
-              name: album.name,
-              cover: album.cover,
-              songs: [],
-            }),
-          )
-        }
+        const khinsiderResponse = await api.get('/ost/khinsider', {
+          params: { kw: keyword },
+        })
+        items = (khinsiderResponse.data.data || []).map(
+          (album: { name: string; url: string; cover: string }) => ({
+            id: album.url,
+            name: album.name,
+            cover: album.cover,
+            songs: [],
+          }),
+        )
       }
 
       return NextResponse.json({
