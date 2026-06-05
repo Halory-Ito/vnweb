@@ -8,12 +8,16 @@ import {
   validateOAuthState,
 } from '../../_shared'
 import {
+  NEXT_PUBLIC_BANGUMI_API_URL,
+  NEXT_PUBLIC_BANGUMI_BASE_URL,
+} from '@/app/config'
+import {
   BANGUMI_OAUTH_CLIENT_ID,
   BANGUMI_OAUTH_CLIENT_SECRET,
 } from '@/app/config'
 
-const TOKEN_URL = 'https://bgm.tv/oauth/access_token'
-const PROFILE_URL = 'https://api.bgm.tv/v0/me'
+const TOKEN_URL = `${NEXT_PUBLIC_BANGUMI_BASE_URL}/oauth/access_token`
+const PROFILE_URL = `${NEXT_PUBLIC_BANGUMI_API_URL}/v0/me`
 
 const toSettingsUrl = (
   req: NextRequest,

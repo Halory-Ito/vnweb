@@ -6,6 +6,8 @@ export type ThirdPartyAccountItem = {
   id: number
   provider: string
   accountId: string
+  username: string
+  avatar: string
   expiresAt: string
   updatedAt: string | null
   profile?: {
@@ -27,6 +29,8 @@ export const bindThirdPartyAccount = async (payload: {
       data: {
         provider: string
         accountId: string
+        username: string
+        avatar: string
         updatedAt: string
       }
     }

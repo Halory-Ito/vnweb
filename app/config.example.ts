@@ -5,7 +5,7 @@ export const NEXT_PUBLIC_STEAMGRIDDB_BASE_URL =
   'https://www.steamgriddb.com/api/v2'
 
 export const NEXT_PUBLIC_BANGUMI_API_KEY = ''
-export const NEXT_PUBLIC_BANGUMI_BASE_URL = 'https://api.bgm.tv'
+export const NEXT_PUBLIC_BANGUMI_API_URL = 'https://api.bgm.tv'
 
 export const BANGUMI_OAUTH_CLIENT_ID = ''
 export const BANGUMI_OAUTH_CLIENT_SECRET = ''

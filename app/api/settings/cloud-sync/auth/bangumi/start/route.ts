@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 import { getAppOrigin, issueOAuthState } from '../../_shared'
-import { BANGUMI_OAUTH_CLIENT_ID } from '@/app/config'
+import {
+  BANGUMI_OAUTH_CLIENT_ID,
+  NEXT_PUBLIC_BANGUMI_BASE_URL,
+} from '@/app/config'
 
-const AUTHORIZE_URL = 'https://bgm.tv/oauth/authorize'
+const AUTHORIZE_URL = `${NEXT_PUBLIC_BANGUMI_BASE_URL}/oauth/authorize`
 
 const startBangumiLogin = async (req: NextRequest) => {
   const clientId =

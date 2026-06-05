@@ -3,6 +3,7 @@
 import { ExternalLink } from 'lucide-react'
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { getProxyImageUrl } from '@/lib/proxy-image'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -194,9 +195,10 @@ export function CloudSyncAccountCard({
 }
 
 function AccountInfo({ account }: { account: ThirdPartyAccountItem }) {
-  const displayName = account.profile?.displayName || account.accountId
+  const displayName = account.username || account.profile?.displayName || account.accountId
   const secondaryName = account.profile?.secondaryName || ''
-  const avatar = account.profile?.avatar || ''
+  const avatarUrl = account.avatar || account.profile?.avatar || ''
+  const avatar = getProxyImageUrl(avatarUrl)
 
   return (
     <div className="flex items-start gap-4">

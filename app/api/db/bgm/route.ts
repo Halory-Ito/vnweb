@@ -12,7 +12,6 @@ const searchSubjects = async (req: NextRequest) => {
   const params = req.nextUrl.searchParams
   const offset = params.get('offset') || '0'
   const limit = params.get('limit') || '10'
-  console.log('formData', JSON.stringify(formData))
   const res = await BGMClient.request({
     method: 'POST',
     url: '/v0/search/subjects',
@@ -28,7 +27,6 @@ const searchSubjects = async (req: NextRequest) => {
 const getSubjectById = async (req: NextRequest) => {
   const params = req.nextUrl.searchParams
   let id = params.get('id')
-  console.log('id', id)
   if (!id) {
     return NextResponse.json({ error: 'Missing id parameter' }, { status: 400 })
   }

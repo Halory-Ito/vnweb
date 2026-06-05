@@ -5,6 +5,7 @@ import {
   getBoundThirdPartyAccount,
   getImportedExternalIdSet,
 } from '../../third-party-import/_shared'
+import { NEXT_PUBLIC_BANGUMI_API_URL } from '@/app/config'
 
 type BangumiMeResponse = {
   id?: number
@@ -46,7 +47,7 @@ const MAX_ITEMS = 500
 
 const getCurrentBangumiUsername = async (accessToken: string) => {
   const response = await axios.get<BangumiMeResponse>(
-    'https://api.bgm.tv/v0/me',
+    `${NEXT_PUBLIC_BANGUMI_API_URL}/v0/me`,
     {
       timeout: 10_000,
       headers: {
@@ -80,7 +81,7 @@ const fetchBangumiCollections = async (
 
   for (let offset = 0; offset < MAX_ITEMS; offset += PAGE_SIZE) {
     const response = await axios.get<BangumiCollectionResponse>(
-      `https://api.bgm.tv/v0/users/${encodeURIComponent(username)}/collections`,
+      `${NEXT_PUBLIC_BANGUMI_API_URL}/v0/users/${encodeURIComponent(username)}/collections`,
       {
         timeout: 10_000,
         params: {

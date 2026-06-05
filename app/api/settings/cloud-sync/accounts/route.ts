@@ -3,6 +3,10 @@ import dayjs from 'dayjs'
 import { eq } from 'drizzle-orm'
 import { NextRequest, NextResponse } from 'next/server'
 
+import {
+  NEXT_PUBLIC_BANGUMI_API_URL,
+  NEXT_PUBLIC_BANGUMI_BASE_URL,
+} from '@/app/config'
 import { ThirdPartyAccountTable } from '@/db/schema'
 import { db } from '@/lib/drizzle'
 
@@ -98,7 +102,7 @@ const fetchSteamPlayerSummary = async (steamId: string) => {
 }
 
 const validateBangumiToken = async (accessToken: string) => {
-  const response = await axios.get('https://api.bgm.tv/v0/me', {
+  const response = await axios.get(`${NEXT_PUBLIC_BANGUMI_API_URL}/v0/me`, {
     timeout: 10_000,
     headers: {
       Authorization: `Bearer ${accessToken}`,
@@ -177,14 +181,11 @@ const validateYmgalUserId = async (userId: string) => {
   }
 
   try {
-    const response = await axios.get(
-      'https://www.ymgal.games/api/user/space',
-      {
-        timeout: 10_000,
-        params: { uid: normalizedUid },
-        headers: YMGAL_API_HEADERS,
-      },
-    )
+    const response = await axios.get('https://www.ymgal.games/api/user/space', {
+      timeout: 10_000,
+      params: { uid: normalizedUid },
+      headers: YMGAL_API_HEADERS,
+    })
 
     const payload = response.data as {
       success?: boolean
@@ -217,7 +218,7 @@ const getBangumiProfile = async (
   accessToken: string,
 ): Promise<AccountProfile> => {
   try {
-    const response = await axios.get('https://api.bgm.tv/v0/me', {
+    const response = await axios.get(`${NEXT_PUBLIC_BANGUMI_API_URL}/v0/me`, {
       timeout: 10_000,
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -241,9 +242,9 @@ const getBangumiProfile = async (
       secondaryName: username && username !== nickname ? `@${username}` : id,
       avatar: normalizeAvatarUrl(payload.avatar),
       profileUrl: username
-        ? `https://bgm.tv/user/${username}`
+        ? `${NEXT_PUBLIC_BANGUMI_BASE_URL}/user/${username}`
         : id
-          ? `https://bgm.tv/user/${id}`
+          ? `${NEXT_PUBLIC_BANGUMI_BASE_URL}/user/${id}`
           : '',
     }
   } catch {
@@ -333,14 +334,11 @@ const getYmgalProfile = async (
   _accessToken: string,
 ): Promise<AccountProfile> => {
   try {
-    const response = await axios.get(
-      'https://www.ymgal.games/api/user/space',
-      {
-        timeout: 10_000,
-        params: { uid: accountId },
-        headers: YMGAL_API_HEADERS,
-      },
-    )
+    const response = await axios.get('https://www.ymgal.games/api/user/space', {
+      timeout: 10_000,
+      params: { uid: accountId },
+      headers: YMGAL_API_HEADERS,
+    })
 
     const payload = response.data as {
       success?: boolean
@@ -358,10 +356,8 @@ const getYmgalProfile = async (
     const data = payload.data ?? {}
     const username = normalizeText(data.username)
     const uid = data.uid ? String(data.uid) : accountId
-    const avatarRaw = normalizeText(data.avatar)
-    const avatar = avatarRaw
-      ? `${YMGAL_AVATAR_BASE}${avatarRaw}`
-      : ''
+    const avatarRaw = normalizeAvatarUrl(data.avatar)
+    const avatar = avatarRaw ? `${YMGAL_AVATAR_BASE}${avatarRaw}` : ''
 
     return {
       displayName: username || accountId,
@@ -379,7 +375,7 @@ const getYmgalProfile = async (
   }
 }
 
-const PROFILE_TIMEOUT_MS = 3_000
+const PROFILE_TIMEOUT_MS = 10_000
 
 const withTimeout = <T>(promise: Promise<T>, ms: number): Promise<T> =>
   Promise.race([
@@ -404,6 +400,8 @@ const listAccounts = async () => {
         provider: ThirdPartyAccountTable.provider,
         accountId: ThirdPartyAccountTable.accountId,
         accessToken: ThirdPartyAccountTable.accessToken,
+        username: ThirdPartyAccountTable.username,
+        avatar: ThirdPartyAccountTable.avatar,
         expiresAt: ThirdPartyAccountTable.expiresAt,
         updatedAt: ThirdPartyAccountTable.updatedAt,
       })
@@ -442,10 +440,27 @@ const listAccounts = async () => {
           profile = fallbackProfile(row.accountId)
         }
 
+        // 如果 profile 中的 username/avatar 与数据库中的不同，则更新数据库
+        if (
+          profile.displayName !== row.username ||
+          profile.avatar !== row.avatar
+        ) {
+          await db
+            .update(ThirdPartyAccountTable)
+            .set({
+              username: profile.displayName,
+              avatar: profile.avatar,
+              updatedAt: dayjs().toISOString(),
+            })
+            .where(eq(ThirdPartyAccountTable.id, row.id))
+        }
+
         return {
           id: row.id,
           provider: row.provider,
           accountId: row.accountId,
+          username: row.username,
+          avatar: row.avatar,
           expiresAt: row.expiresAt,
           updatedAt: row.updatedAt,
           profile,
@@ -503,6 +518,36 @@ const loginByToken = async (req: NextRequest) => {
     const now = dayjs().toISOString()
     const expiresAt = expiresAtFromPayload || validated.expiresAt || ''
 
+    // 获取 profile 信息
+    let profile: AccountProfile
+    try {
+      if (provider === 'bangumi') {
+        profile = await withTimeout(
+          getBangumiProfile(validated.accountId, accessToken),
+          PROFILE_TIMEOUT_MS,
+        )
+      } else if (provider === 'steam') {
+        profile = await withTimeout(
+          getSteamProfile(validated.accountId),
+          PROFILE_TIMEOUT_MS,
+        )
+      } else if (provider === 'vndb') {
+        profile = await withTimeout(
+          getVndbProfile(validated.accountId, accessToken),
+          PROFILE_TIMEOUT_MS,
+        )
+      } else if (provider === 'ymgal') {
+        profile = await withTimeout(
+          getYmgalProfile(validated.accountId, accessToken),
+          PROFILE_TIMEOUT_MS,
+        )
+      } else {
+        profile = fallbackProfile(validated.accountId)
+      }
+    } catch {
+      profile = fallbackProfile(validated.accountId)
+    }
+
     await db.transaction(async (tx) => {
       await tx
         .delete(ThirdPartyAccountTable)
@@ -513,6 +558,8 @@ const loginByToken = async (req: NextRequest) => {
         accountId: validated.accountId,
         accessToken: provider === 'steam' ? '' : accessToken,
         refreshToken,
+        username: profile.displayName,
+        avatar: profile.avatar,
         expiresAt,
         createdAt: now,
         updatedAt: now,
@@ -523,6 +570,8 @@ const loginByToken = async (req: NextRequest) => {
       data: {
         provider,
         accountId: validated.accountId,
+        username: profile.displayName,
+        avatar: profile.avatar,
         updatedAt: now,
       },
     })

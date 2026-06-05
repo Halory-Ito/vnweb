@@ -152,6 +152,8 @@ export const ThirdPartyAccountTable = sqliteTable('third_party_account', {
   accountId: text().notNull(), // 第三方账号的唯一标识
   accessToken: text().notNull(), // 第三方账号的访问令牌
   refreshToken: text().default(''), // 第三方账号的刷新令牌
+  username: text().default(''), // 第三方账号的用户名
+  avatar: text().default(''), // 第三方账号的头像链接
   expiresAt: text().notNull(), // 访问令牌过期时间
   createdAt: text().default(dayjs().toString()), // 创建时间
   updatedAt: text().default(dayjs().toString()), // 更新时间

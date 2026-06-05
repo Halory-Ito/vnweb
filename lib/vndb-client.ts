@@ -3,7 +3,7 @@ import SGDB from 'steamgriddb'
 
 import {
   NEXT_PUBLIC_BANGUMI_API_KEY,
-  NEXT_PUBLIC_BANGUMI_BASE_URL,
+  NEXT_PUBLIC_BANGUMI_API_URL,
   NEXT_PUBLIC_STEAMGRIDDB_API_KEY,
   NEXT_PUBLIC_STEAMGRIDDB_BASE_URL,
 } from '@/app/config'
@@ -33,8 +33,7 @@ const getPublicEnv = (key: string): string | undefined => {
 // bgm client
 export const BGMClient = axios.create({
   baseURL:
-    getPublicEnv('NEXT_PUBLIC_BANGUMI_BASE_URL') ||
-    NEXT_PUBLIC_BANGUMI_BASE_URL,
+    getPublicEnv('NEXT_PUBLIC_BANGUMI_API_URL') || NEXT_PUBLIC_BANGUMI_API_URL,
   timeout: undefined,
   headers: {
     'User-Agent':
