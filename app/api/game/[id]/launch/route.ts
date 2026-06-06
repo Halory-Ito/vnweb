@@ -133,6 +133,7 @@ const launchGame = async (
 
     // 启动游戏
     const child = spawn(finalExePath, [], {
+      cwd: path.dirname(finalExePath),
       detached: true,
       stdio: 'ignore',
       windowsHide: false,

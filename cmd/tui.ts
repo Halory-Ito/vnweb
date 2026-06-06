@@ -257,6 +257,7 @@ const startGame = async (gameIdText: string) => {
   } else {
     console.log(`正在启动游戏: ${gameTitle}`)
     const child = spawn(finalExePath, [], {
+      cwd: path.dirname(finalExePath),
       detached: true,
       stdio: 'ignore',
       windowsHide: false,
