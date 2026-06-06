@@ -57,10 +57,14 @@ const formatDateOnly = (value: string) => {
   return date.toISOString().slice(0, 10)
 }
 
-const renderGameTable = (rows: GameRow[]) => {
+const renderGameTable = (rows: GameRow[], title?: string) => {
   if (rows.length === 0) {
     console.log('暂无游戏')
     return
+  }
+
+  if (title) {
+    console.log(`\n${title}`)
   }
 
   const data = rows.map((item) => ({
@@ -72,6 +76,26 @@ const renderGameTable = (rows: GameRow[]) => {
   }))
 
   console.table(data)
+}
+
+const renderPaginatedGameTable = (
+  rows: GameRow[],
+  page: number,
+  pageSize: number,
+  title?: string,
+) => {
+  if (rows.length === 0) {
+    console.log('暂无游戏')
+    return
+  }
+
+  const totalPages = Math.ceil(rows.length / pageSize)
+  const safePage = Math.max(1, Math.min(page, totalPages))
+  const start = (safePage - 1) * pageSize
+  const pageRows = rows.slice(start, start + pageSize)
+
+  const pageLabel = `${title ?? '游戏列表'} (${safePage}/${totalPages}，共 ${rows.length} 条)`
+  renderGameTable(pageRows, pageLabel)
 }
 
 const getGames = async (keyword?: string) => {
@@ -121,9 +145,9 @@ const getGames = async (keyword?: string) => {
   }))
 }
 
-const listGames = async () => {
+const listGames = async (page: number, pageSize: number) => {
   const rows = await getGames()
-  renderGameTable(rows)
+  renderPaginatedGameTable(rows, page, pageSize, '所有游戏')
 }
 
 const listCollections = async () => {
@@ -140,7 +164,11 @@ const listCollections = async () => {
   console.table(rows)
 }
 
-const searchGames = async (keyword: string) => {
+const searchGames = async (
+  keyword: string,
+  page: number,
+  pageSize: number,
+) => {
   const text = keyword.trim()
   if (!text) {
     console.log('请提供关键字，例如: vnweb search 白色相簿')
@@ -148,10 +176,14 @@ const searchGames = async (keyword: string) => {
   }
 
   const rows = await getGames(text)
-  renderGameTable(rows)
+  renderPaginatedGameTable(rows, page, pageSize, `搜索: ${text}`)
 }
 
-const openCollection = async (collectionInput: string) => {
+const openCollection = async (
+  collectionInput: string,
+  page: number,
+  pageSize: number,
+) => {
   const input = collectionInput.trim()
   if (!input) {
     console.log('请提供收藏夹名称，例如: vnweb open 我的收藏')
@@ -197,8 +229,7 @@ const openCollection = async (collectionInput: string) => {
       desc(GameInfoTable.id),
     )
 
-  console.log(`收藏夹: ${collection.name}`)
-  renderGameTable(
+  renderPaginatedGameTable(
     rows.map((item) => ({
       id: item.id,
       name: item.name,
@@ -208,16 +239,13 @@ const openCollection = async (collectionInput: string) => {
       totalPlayTime: item.totalPlayTime ?? 0,
       lastLaunchedAt: item.lastLaunchedAt ?? '',
     })),
+    page,
+    pageSize,
+    `收藏夹: ${collection.name}`,
   )
 }
 
-const startGame = async (gameIdText: string) => {
-  const gameId = Number(gameIdText)
-  if (!Number.isInteger(gameId) || gameId <= 0) {
-    console.log('无效的游戏 ID，例如: vnweb start 12')
-    return
-  }
-
+const startGame = async (gameIdText?: string) => {
   const rows = await db
     .select({
       id: GameInfoTable.id,
@@ -226,18 +254,49 @@ const startGame = async (gameIdText: string) => {
       exePath: GamePlayTable.exePath,
       playId: GamePlayTable.id,
       isRunning: GamePlayTable.isRunning,
+      lastLaunchedAt: GamePlayTable.lastLaunchedAt,
     })
     .from(GameInfoTable)
     .leftJoin(GamePlayTable, eq(GameInfoTable.id, GamePlayTable.gameId))
-    .where(eq(GameInfoTable.id, gameId))
-    .limit(1)
 
-  const game = rows[0]
-  if (!game) {
-    console.log('游戏不存在')
+  if (gameIdText) {
+    const gameId = Number(gameIdText)
+    if (!Number.isInteger(gameId) || gameId <= 0) {
+      console.log('无效的游戏 ID，例如: vnweb start 12')
+      return
+    }
+    const game = rows.find((r) => r.id === gameId)
+    if (game) {
+      await launchGameRow(game)
+    } else {
+      console.log('游戏不存在')
+    }
     return
   }
 
+  const launchedRows = rows.filter((r) => r.lastLaunchedAt)
+  if (launchedRows.length === 0) {
+    console.log('没有最近启动过的游戏，请指定游戏 ID。')
+    return
+  }
+
+  const latestGame = launchedRows.sort(
+    (a, b) =>
+      new Date(b.lastLaunchedAt!).getTime() -
+      new Date(a.lastLaunchedAt!).getTime(),
+  )[0]
+  console.log(`快速启动最近游戏: ${latestGame.nameCn || latestGame.name}`)
+  await launchGameRow(latestGame)
+}
+
+const launchGameRow = async (game: {
+  id: number
+  name: string
+  nameCn: string
+  exePath: string | null
+  playId: number | null
+  isRunning: number | null
+}) => {
   const gameTitle = game.nameCn || game.name
   const finalExePath = normalizeWindowsPathInput(game.exePath ?? '')
   if (!finalExePath) {
@@ -371,19 +430,28 @@ const startGame = async (gameIdText: string) => {
 const main = async () => {
   const program = new Command()
 
-  program.name('vnweb').description('vnweb 命令行工具')
+  program
+    .name('vnweb')
+    .description('vnweb 游戏库命令行管理工具')
+    .version('1.0.0')
 
-  const listCmd = program.command('list').description('列出资源')
+  const listCmd = program
+    .command('list')
+    .description('列出游戏或收藏夹资源')
 
   listCmd
     .command('game')
-    .description('列出所有游戏')
-    .action(async () => {
-      await listGames()
+    .alias('g')
+    .description('列出所有游戏（支持分页）')
+    .option('-p, --page <page>', '页码，默认 1', '1')
+    .option('-s, --size <size>', '每页条数，默认 20', '20')
+    .action(async (opts: { page: string; size: string }) => {
+      await listGames(Number(opts.page), Number(opts.size))
     })
 
   listCmd
     .command('collection')
+    .alias('c')
     .description('列出所有收藏夹')
     .action(async () => {
       await listCollections()
@@ -391,27 +459,59 @@ const main = async () => {
 
   program
     .command('search')
-    .description('根据关键字搜索游戏')
-    .argument('<keyword...>', '关键字')
-    .action(async (keywordParts: string[]) => {
-      await searchGames(keywordParts.join(' '))
-    })
+    .description('根据名称关键字搜索游戏（支持分页）')
+    .argument('<keyword...>', '搜索关键字，支持空格分隔')
+    .option('-p, --page <page>', '页码，默认 1', '1')
+    .option('-s, --size <size>', '每页条数，默认 20', '20')
+    .action(
+      async (keywordParts: string[], opts: { page: string; size: string }) => {
+        await searchGames(keywordParts.join(' '), Number(opts.page), Number(opts.size))
+      },
+    )
 
   program
     .command('open')
-    .description('列出指定收藏夹中的游戏')
-    .argument('<collection_name...>', '收藏夹名称')
-    .action(async (nameParts: string[]) => {
-      await openCollection(nameParts.join(' '))
-    })
+    .description('列出指定收藏夹中的游戏（支持分页）')
+    .argument('<collection_name...>', '收藏夹名称或 ID')
+    .option('-p, --page <page>', '页码，默认 1', '1')
+    .option('-s, --size <size>', '每页条数，默认 20', '20')
+    .action(
+      async (
+        nameParts: string[],
+        opts: { page: string; size: string },
+      ) => {
+        await openCollection(
+          nameParts.join(' '),
+          Number(opts.page),
+          Number(opts.size),
+        )
+      },
+    )
 
   program
     .command('start')
+    .alias('s')
     .description('启动游戏并进行计时')
-    .argument('<game_id>', '游戏 ID')
-    .action(async (gameId: string) => {
+    .argument('[game_id]', '游戏 ID，省略则启动最近一次的游戏')
+    .action(async (gameId?: string) => {
       await startGame(gameId)
     })
+
+  program.addHelpText(
+    'after',
+    `
+示例:
+  vnweb list game                列出所有游戏
+  vnweb list g -p 2 -s 10       列出游戏第2页，每页10条
+  vnweb list c                   列出所有收藏夹
+  vnweb search 白色相簿          搜索游戏
+  vnweb search 纯白 -p 1 -s 5   搜索游戏，第1页，每页5条
+  vnweb open 我的收藏            列出收藏夹中的游戏
+  vnweb start 12                 启动游戏 ID=12
+  vnweb start                    启动最近一次的游戏
+  vnweb s 12                     同上（简写）
+`,
+  )
 
   await program.parseAsync(process.argv)
 }
