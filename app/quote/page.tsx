@@ -8,7 +8,9 @@ import { QuoteDeleteDialog } from './_ui/quote-delete-dialog'
 import { QuoteFormDialog } from './_ui/quote-form-dialog'
 import { QuoteManageContent } from './_ui/quote-manage-content'
 import { QuotePageHeader } from './_ui/quote-page-header'
+import { QuotePagination } from './_ui/quote-pagination'
 import { QuoteSearchToolbar } from './_ui/quote-search-toolbar'
+import { useDebounce } from '@/hooks/use-debounce'
 import {
   createQuoteManageItem,
   deleteQuoteManageItem,
@@ -30,9 +32,10 @@ const defaultForm: QuoteFormState = {
 export default function QuotePage() {
   const queryClient = useQueryClient()
   const [keywordInput, setKeywordInput] = useState('')
-  const [keyword, setKeyword] = useState('')
   const [dateFrom, setDateFrom] = useState('')
   const [dateTo, setDateTo] = useState('')
+  const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(10)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [pendingDelete, setPendingDelete] = useState<QuoteManageItem | null>(
     null,
@@ -40,6 +43,8 @@ export default function QuotePage() {
   const [editingItem, setEditingItem] = useState<QuoteManageItem | null>(null)
   const [form, setForm] = useState<QuoteFormState>(defaultForm)
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const debouncedKeyword = useDebounce(keywordInput.trim(), 300)
 
   const { data: gameCards = [] } = useQuery({
     queryKey: ['game-cards'],
@@ -52,16 +57,19 @@ export default function QuotePage() {
     isRefetching,
     refetch,
   } = useQuery({
-    queryKey: ['quote-manage', keyword, dateFrom, dateTo],
+    queryKey: ['quote-manage', debouncedKeyword, dateFrom, dateTo, page, pageSize],
     queryFn: () =>
       getQuoteManageList({
-        keyword,
+        keyword: debouncedKeyword,
         dateFrom: dateFrom || undefined,
         dateTo: dateTo || undefined,
+        page,
+        pageSize,
       }),
   })
 
   const items = quoteData?.items ?? []
+  const pagination = quoteData?.pagination
 
   const gameOptions = useMemo<GameOption[]>(
     () =>
@@ -176,15 +184,23 @@ export default function QuotePage() {
         keywordInput={keywordInput}
         dateFrom={dateFrom}
         dateTo={dateTo}
-        onKeywordInputChange={setKeywordInput}
-        onDateFromChange={setDateFrom}
-        onDateToChange={setDateTo}
-        onSearch={() => setKeyword(keywordInput.trim())}
+        onKeywordInputChange={(value) => {
+          setKeywordInput(value)
+          setPage(1)
+        }}
+        onDateFromChange={(value) => {
+          setDateFrom(value)
+          setPage(1)
+        }}
+        onDateToChange={(value) => {
+          setDateTo(value)
+          setPage(1)
+        }}
         onReset={() => {
           setKeywordInput('')
-          setKeyword('')
           setDateFrom('')
           setDateTo('')
+          setPage(1)
           void refetch()
         }}
       />
@@ -195,6 +211,18 @@ export default function QuotePage() {
         isRefetching={isRefetching}
         onEdit={openEditDialog}
         onDelete={setPendingDelete}
+      />
+
+      <QuotePagination
+        page={pagination?.page ?? 1}
+        pageSize={pagination?.pageSize ?? pageSize}
+        total={pagination?.total ?? 0}
+        totalPages={pagination?.totalPages ?? 1}
+        onPageChange={setPage}
+        onPageSizeChange={(newSize) => {
+          setPageSize(newSize)
+          setPage(1)
+        }}
       />
 
       <QuoteFormDialog

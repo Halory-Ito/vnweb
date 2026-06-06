@@ -1,4 +1,4 @@
-import { and, desc, eq, like, or, between } from 'drizzle-orm'
+import { and, eq, like, or, between, sql } from 'drizzle-orm'
 import { NextRequest, NextResponse } from 'next/server'
 
 import { CharacterTable, GameInfoTable, GameQuoteTable } from '@/db/schema'
@@ -18,6 +18,8 @@ const getQuoteList = async (req: NextRequest) => {
     const characterId = normalizeText(req.nextUrl.searchParams.get('characterId'))
     const dateFrom = normalizeText(req.nextUrl.searchParams.get('dateFrom'))
     const dateTo = normalizeText(req.nextUrl.searchParams.get('dateTo'))
+    const page = Math.max(1, Number(req.nextUrl.searchParams.get('page')) || 1)
+    const pageSize = Math.min(100, Math.max(1, Number(req.nextUrl.searchParams.get('pageSize')) || 10))
 
     const conditions = []
 
@@ -40,6 +42,7 @@ const getQuoteList = async (req: NextRequest) => {
           like(GameQuoteTable.context, keywordPattern),
           like(GameInfoTable.name, keywordPattern),
           like(GameInfoTable.nameCn, keywordPattern),
+          like(CharacterTable.name, keywordPattern),
         ),
       )
     }
@@ -58,6 +61,20 @@ const getQuoteList = async (req: NextRequest) => {
       )
     }
 
+    const whereClause = conditions.length > 0 ? and(...conditions) : undefined
+
+    // 获取总数
+    const countResult = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(GameQuoteTable)
+      .innerJoin(GameInfoTable, eq(GameQuoteTable.gameId, GameInfoTable.id))
+      .leftJoin(CharacterTable, eq(GameQuoteTable.characterId, CharacterTable.vndbId))
+      .where(whereClause)
+
+    const total = countResult[0]?.count ?? 0
+    const totalPages = Math.ceil(total / pageSize)
+
+    // 获取分页数据
     const rows = await db
       .select({
         id: GameQuoteTable.id,
@@ -70,37 +87,32 @@ const getQuoteList = async (req: NextRequest) => {
         gameName: GameInfoTable.name,
         gameNameCn: GameInfoTable.nameCn,
         gameCover: GameInfoTable.cover,
+        characterName: CharacterTable.name,
+        characterImage: CharacterTable.imageUrl,
       })
       .from(GameQuoteTable)
       .innerJoin(GameInfoTable, eq(GameQuoteTable.gameId, GameInfoTable.id))
-      .where(conditions.length > 0 ? and(...conditions) : undefined)
-      .orderBy(desc(GameQuoteTable.id))
+      .leftJoin(CharacterTable, eq(GameQuoteTable.characterId, CharacterTable.vndbId))
+      .where(whereClause)
+      .orderBy(GameQuoteTable.id)
+      .limit(pageSize)
+      .offset((page - 1) * pageSize)
 
-    // 获取角色名称和图片
-    const items = await Promise.all(
-      rows.map(async (row) => {
-        let characterName = ''
-        let characterImage = ''
-        if (row.characterId) {
-          const character = await db
-            .select({ name: CharacterTable.name, imageUrl: CharacterTable.imageUrl })
-            .from(CharacterTable)
-            .where(eq(CharacterTable.vndbId, row.characterId))
-            .limit(1)
-          characterName = character[0]?.name || ''
-          characterImage = character[0]?.imageUrl || ''
-        }
-        return {
-          ...row,
-          characterName,
-          characterImage,
-        }
-      }),
-    )
+    const items = rows.map((row) => ({
+      ...row,
+      characterName: row.characterName || '',
+      characterImage: row.characterImage || '',
+    }))
 
     return NextResponse.json({
       data: {
         items,
+        pagination: {
+          page,
+          pageSize,
+          total,
+          totalPages,
+        },
       },
     })
   } catch (error) {

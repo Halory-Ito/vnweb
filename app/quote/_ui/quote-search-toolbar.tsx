@@ -1,6 +1,6 @@
 'use client'
 
-import { CalendarIcon, SearchIcon } from 'lucide-react'
+import { CalendarIcon } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
@@ -20,7 +20,6 @@ type QuoteSearchToolbarProps = {
   onKeywordInputChange: (value: string) => void
   onDateFromChange: (value: string) => void
   onDateToChange: (value: string) => void
-  onSearch: () => void
   onReset: () => void
 }
 
@@ -31,23 +30,15 @@ export function QuoteSearchToolbar({
   onKeywordInputChange,
   onDateFromChange,
   onDateToChange,
-  onSearch,
   onReset,
 }: QuoteSearchToolbarProps) {
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
       <div className="relative flex-1 sm:max-w-md">
-        <SearchIcon className="text-muted-foreground absolute top-1/2 left-3.5 size-4 -translate-y-1/2" />
         <Input
-          className="pl-10"
           placeholder="搜索游戏名称 / 台词内容 / 角色"
           value={keywordInput}
           onChange={(event) => onKeywordInputChange(event.target.value)}
-          onKeyDown={(event) => {
-            if (event.key === 'Enter') {
-              onSearch()
-            }
-          }}
         />
       </div>
 
@@ -107,14 +98,6 @@ export function QuoteSearchToolbar({
         </div>
 
         <div className="flex items-center gap-2">
-          <Button
-            type="button"
-            variant="secondary"
-            className="h-10"
-            onClick={onSearch}
-          >
-            搜索
-          </Button>
           <Button
             type="button"
             variant="ghost"

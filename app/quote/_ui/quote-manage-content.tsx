@@ -78,7 +78,7 @@ export function QuoteManageContent({
           <Loader2Icon className="text-muted-foreground size-6 animate-spin" />
         </div>
       )}
-      <Table>
+      <Table className="table-fixed">
         <TableHeader>
           <TableRow>
             <TableHead className="w-16 text-center">
@@ -87,7 +87,9 @@ export function QuoteManageContent({
             <TableHead className="w-40 text-center">
               游戏名称
             </TableHead>
-            <TableHead className="text-center">台词内容</TableHead>
+            <TableHead className="w-64 text-center">
+              台词内容
+            </TableHead>
             <TableHead className="w-32 text-center">
               出自角色
             </TableHead>
@@ -111,7 +113,7 @@ export function QuoteManageContent({
               <TableCell className="text-center">
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <span className="line-clamp-1 cursor-default">
+                    <span className="block truncate cursor-default">
                       {item.gameNameCn || item.gameName}
                     </span>
                   </TooltipTrigger>
@@ -123,7 +125,7 @@ export function QuoteManageContent({
               <TableCell className="text-center">
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <div className="line-clamp-2 max-w-md cursor-default">
+                    <div className="line-clamp-2 cursor-default">
                       {item.content}
                     </div>
                   </TooltipTrigger>
@@ -135,7 +137,7 @@ export function QuoteManageContent({
               <TableCell className="text-center">
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <span className="cursor-default">
+                    <span className="block truncate cursor-default">
                       {item.characterName || '-'}
                     </span>
                   </TooltipTrigger>
@@ -161,9 +163,11 @@ export function QuoteManageContent({
                 </Tooltip>
               </TableCell>
               <TableCell className="text-center text-muted-foreground">
-                {item.createdAt
-                  ? dayjs(item.createdAt).format('YYYY-MM-DD HH:mm')
-                  : '-'}
+                <span className="block truncate">
+                  {item.createdAt
+                    ? dayjs(item.createdAt).format('YYYY-MM-DD HH:mm')
+                    : '-'}
+                </span>
               </TableCell>
               <TableCell className="text-center">
                 <div className="flex items-center justify-center gap-1">

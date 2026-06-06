@@ -1144,15 +1144,19 @@ export const getQuoteManageList = async (params?: {
   keyword?: string
   dateFrom?: string
   dateTo?: string
+  page?: number
+  pageSize?: number
 }) => {
   const response = await api.get('/quote', {
     params: {
       keyword: params?.keyword ?? '',
       dateFrom: params?.dateFrom ?? '',
       dateTo: params?.dateTo ?? '',
+      page: params?.page ?? 1,
+      pageSize: params?.pageSize ?? 10,
     },
   })
-  return (response.data as { data: { items: QuoteManageItem[] } }).data
+  return (response.data as { data: { items: QuoteManageItem[]; pagination: { page: number; pageSize: number; total: number; totalPages: number } } }).data
 }
 
 export const createQuoteManageItem = async (payload: {
