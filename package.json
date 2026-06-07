@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
+    "start": "next start -p 8999",
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
     "lint:output": "oxlint --format=unix >> oxlint-report.txt",
