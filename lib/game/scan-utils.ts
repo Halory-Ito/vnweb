@@ -76,3 +76,8 @@ export const getScanErrors = async () => {
   const response = await api.get('/scan/error')
   return (response.data as { data: ScanErrorItem[] }).data
 }
+
+export const selectDirectory = async () => {
+  const response = await api.post('/system/select-directory')
+  return (response.data as { data: { directory: string } }).data.directory
+}

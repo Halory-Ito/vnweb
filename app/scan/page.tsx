@@ -2,6 +2,8 @@
 
 import {
   FolderIcon,
+  FolderOpenIcon,
+  PauseIcon,
   PencilIcon,
   PlayIcon,
   Trash2Icon,
@@ -37,6 +39,7 @@ import {
   getScanErrors,
   getScannerList,
   type ScanErrorItem,
+  selectDirectory,
   startScannerById,
   updateScannerById,
 } from '@/lib/game/scan-utils'
@@ -91,7 +94,7 @@ const ScanDirectoryRow = ({
         variant="outline"
         className="hover:bg-accent hover:text-accent-foreground px-3 py-1 text-sm"
       >
-        {item.status}
+        {isScanning ? '扫描中' : item.status}
       </Badge>
       <Button
         type="button"
@@ -101,7 +104,11 @@ const ScanDirectoryRow = ({
         onClick={() => onStart(item.id)}
         aria-label="开始扫描"
       >
-        <PlayIcon className="size-4" />
+        {isScanning ? (
+          <PauseIcon className="size-4 text-red-500" />
+        ) : (
+          <PlayIcon className="size-4" />
+        )}
       </Button>
       <Button
         type="button"
@@ -360,6 +367,21 @@ export default function Scan() {
     setDirectoryScanModeInput('0')
     setDirectoryScanLevelInput('0')
     setAddDirectoryOpen(true)
+  }
+
+  const handleSelectDirectory = async () => {
+    try {
+      const directory = await selectDirectory()
+      if (directory) {
+        setDirectoryPathInput(directory)
+      }
+    } catch (error) {
+      const err = error as {
+        response?: { data?: { error?: string } }
+        message?: string
+      }
+      toast.error(err.response?.data?.error || err.message || '选择目录失败')
+    }
   }
 
   const handleAddDirectory = async () => {
@@ -671,11 +693,22 @@ export default function Scan() {
             <DialogTitle>添加扫描目录列表</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
-            <Input
-              value={directoryPathInput}
-              onChange={(e) => setDirectoryPathInput(e.target.value)}
-              placeholder="扫描目录"
-            />
+            <div className="flex gap-2">
+              <Input
+                value={directoryPathInput}
+                onChange={(e) => setDirectoryPathInput(e.target.value)}
+                placeholder="扫描目录"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                onClick={() => void handleSelectDirectory()}
+                aria-label="选择目录"
+              >
+                <FolderOpenIcon className="size-4" />
+              </Button>
+            </div>
             <Select
               value={directoryProviderInput}
               onValueChange={setDirectoryProviderInput}
@@ -746,11 +779,22 @@ export default function Scan() {
             <DialogTitle>修改扫描目录</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
-            <Input
-              value={directoryPathInput}
-              onChange={(e) => setDirectoryPathInput(e.target.value)}
-              placeholder="扫描目录"
-            />
+            <div className="flex gap-2">
+              <Input
+                value={directoryPathInput}
+                onChange={(e) => setDirectoryPathInput(e.target.value)}
+                placeholder="扫描目录"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                onClick={() => void handleSelectDirectory()}
+                aria-label="选择目录"
+              >
+                <FolderOpenIcon className="size-4" />
+              </Button>
+            </div>
             <Select
               value={directoryProviderInput}
               onValueChange={setDirectoryProviderInput}

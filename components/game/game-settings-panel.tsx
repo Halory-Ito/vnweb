@@ -6,6 +6,7 @@ import {
   ClipboardPasteIcon,
   CircleCheckIcon,
   EyeIcon,
+  FolderOpenIcon,
   FolderUpIcon,
   Loader2Icon,
   Link2Icon,
@@ -61,6 +62,7 @@ import {
   type GameSearchImageItem,
   getGameById,
   searchGameImages,
+  selectExeFile,
   updateGameSettingsById,
 } from '@/lib/game/game-utils'
 
@@ -530,6 +532,21 @@ export default function GameSettingsPanel({
     setLocalizingMap((prev) => ({ ...prev, [field]: false }))
   }
 
+  const handleSelectExeFile = async () => {
+    try {
+      const filePath = await selectExeFile()
+      if (filePath) {
+        setExePath(filePath)
+      }
+    } catch (error) {
+      const err = error as {
+        response?: { data?: { error?: string } }
+        message?: string
+      }
+      toast.error(err.response?.data?.error || err.message || '选择文件失败')
+    }
+  }
+
   const saveSettings = async () => {
     const hasPendingLocalization = Object.values(localizingMap).some(Boolean)
     if (hasPendingLocalization) {
@@ -649,11 +666,22 @@ export default function GameSettingsPanel({
         <div className="space-y-6 px-4 pb-4">
           <section className="space-y-2">
             <div className="text-sm font-medium">可执行路径</div>
-            <Input
-              value={exePath}
-              onChange={(event) => setExePath(event.target.value)}
-              placeholder="请输入可执行文件路径，例如 E:\\Games\\Sample\\game.exe"
-            />
+            <div className="flex gap-2">
+              <Input
+                value={exePath}
+                onChange={(event) => setExePath(event.target.value)}
+                placeholder="请输入可执行文件路径，例如 E:\\Games\\Sample\\game.exe"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                onClick={() => void handleSelectExeFile()}
+                aria-label="选择可执行文件"
+              >
+                <FolderOpenIcon className="size-4" />
+              </Button>
+            </div>
           </section>
 
           {imageFieldList.map((field) => (
