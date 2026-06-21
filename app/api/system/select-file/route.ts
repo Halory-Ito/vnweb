@@ -12,6 +12,8 @@ const selectFile = async (filter?: string, title?: string) => {
     const titleParam = title || '选择文件'
 
     const script = `
+      $OutputEncoding = [System.Text.Encoding]::UTF8
+      [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
       Add-Type -AssemblyName System.Windows.Forms
       $dialog = New-Object System.Windows.Forms.OpenFileDialog
       $dialog.Title = "${titleParam}"

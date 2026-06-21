@@ -4,6 +4,8 @@ import { spawn } from 'node:child_process'
 const selectDirectory = async () => {
   return new Promise<string | null>((resolve) => {
     const script = `
+      $OutputEncoding = [System.Text.Encoding]::UTF8
+      [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
       Add-Type -AssemblyName System.Windows.Forms
       $dialog = New-Object System.Windows.Forms.FolderBrowserDialog
       $dialog.Description = "选择扫描目录"
