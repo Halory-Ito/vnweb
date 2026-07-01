@@ -13,12 +13,12 @@ import { useEffect, useState } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Switch } from '@/components/ui/switch'
+import { getAllProviders } from '@/lib/providers'
 import {
   PROVIDER_SETTINGS_EVENT,
   readProviderSettings,
   setProviderEnabled,
 } from '@/lib/settings/provider-settings'
-import { getAllProviders } from '@/lib/providers'
 
 import type { GameProviderPlugin, ProviderCapability } from '@/lib/providers'
 

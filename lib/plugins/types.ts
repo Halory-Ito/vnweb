@@ -79,7 +79,10 @@ export interface GameEnrichMetadataOutput {
 export interface HookTypeMap {
   'pv:resolve-url': { input: PvResolveUrlInput; output: PvResolveUrlOutput }
   'pv:parse-url': { input: PvParseUrlInput; output: PvParseUrlOutput }
-  'pv:video-resolve': { input: PvVideoResolveInput; output: PvVideoResolveOutput }
+  'pv:video-resolve': {
+    input: PvVideoResolveInput
+    output: PvVideoResolveOutput
+  }
   'game:enrich-metadata': {
     input: GameEnrichMetadataInput
     output: GameEnrichMetadataOutput
@@ -107,7 +110,10 @@ export interface FeaturePlugin extends PluginManifest {
 //  数据源插件（兼容现有 Provider 接口）
 // ═══════════════════════════════════════════════════════════
 
-export type ProviderCapability = 'manual-search' | 'bulk-import' | 'account-bind'
+export type ProviderCapability =
+  | 'manual-search'
+  | 'bulk-import'
+  | 'account-bind'
 
 export type GameSearchItem = {
   id: string

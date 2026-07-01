@@ -15,11 +15,16 @@ const getQuoteList = async (req: NextRequest) => {
   try {
     const keyword = normalizeText(req.nextUrl.searchParams.get('keyword'))
     const gameId = req.nextUrl.searchParams.get('gameId')
-    const characterId = normalizeText(req.nextUrl.searchParams.get('characterId'))
+    const characterId = normalizeText(
+      req.nextUrl.searchParams.get('characterId'),
+    )
     const dateFrom = normalizeText(req.nextUrl.searchParams.get('dateFrom'))
     const dateTo = normalizeText(req.nextUrl.searchParams.get('dateTo'))
     const page = Math.max(1, Number(req.nextUrl.searchParams.get('page')) || 1)
-    const pageSize = Math.min(100, Math.max(1, Number(req.nextUrl.searchParams.get('pageSize')) || 10))
+    const pageSize = Math.min(
+      100,
+      Math.max(1, Number(req.nextUrl.searchParams.get('pageSize')) || 10),
+    )
 
     const conditions = []
 
@@ -48,17 +53,11 @@ const getQuoteList = async (req: NextRequest) => {
     }
 
     if (dateFrom && dateTo) {
-      conditions.push(
-        between(GameQuoteTable.createdAt, dateFrom, dateTo),
-      )
+      conditions.push(between(GameQuoteTable.createdAt, dateFrom, dateTo))
     } else if (dateFrom) {
-      conditions.push(
-        like(GameQuoteTable.createdAt, `${dateFrom}%`),
-      )
+      conditions.push(like(GameQuoteTable.createdAt, `${dateFrom}%`))
     } else if (dateTo) {
-      conditions.push(
-        like(GameQuoteTable.createdAt, `${dateTo}%`),
-      )
+      conditions.push(like(GameQuoteTable.createdAt, `${dateTo}%`))
     }
 
     const whereClause = conditions.length > 0 ? and(...conditions) : undefined
@@ -68,7 +67,10 @@ const getQuoteList = async (req: NextRequest) => {
       .select({ count: sql<number>`count(*)` })
       .from(GameQuoteTable)
       .innerJoin(GameInfoTable, eq(GameQuoteTable.gameId, GameInfoTable.id))
-      .leftJoin(CharacterTable, eq(GameQuoteTable.characterId, CharacterTable.vndbId))
+      .leftJoin(
+        CharacterTable,
+        eq(GameQuoteTable.characterId, CharacterTable.vndbId),
+      )
       .where(whereClause)
 
     const total = countResult[0]?.count ?? 0
@@ -92,7 +94,10 @@ const getQuoteList = async (req: NextRequest) => {
       })
       .from(GameQuoteTable)
       .innerJoin(GameInfoTable, eq(GameQuoteTable.gameId, GameInfoTable.id))
-      .leftJoin(CharacterTable, eq(GameQuoteTable.characterId, CharacterTable.vndbId))
+      .leftJoin(
+        CharacterTable,
+        eq(GameQuoteTable.characterId, CharacterTable.vndbId),
+      )
       .where(whereClause)
       .orderBy(GameQuoteTable.id)
       .limit(pageSize)
@@ -143,10 +148,7 @@ const createQuote = async (req: NextRequest) => {
     }
 
     if (!content) {
-      return NextResponse.json(
-        { error: '台词内容不能为空' },
-        { status: 400 },
-      )
+      return NextResponse.json({ error: '台词内容不能为空' }, { status: 400 })
     }
 
     const game = await db

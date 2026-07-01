@@ -81,39 +81,25 @@ export function QuoteManageContent({
       <Table className="table-fixed">
         <TableHeader>
           <TableRow>
-            <TableHead className="w-16 text-center">
-              序号
-            </TableHead>
-            <TableHead className="w-40 text-center">
-              游戏名称
-            </TableHead>
-            <TableHead className="w-64 text-center">
-              台词内容
-            </TableHead>
-            <TableHead className="w-32 text-center">
-              出自角色
-            </TableHead>
-            <TableHead className="w-48 text-center">
-              台词背景
-            </TableHead>
-            <TableHead className="w-36 text-center">
-              创建时间
-            </TableHead>
-            <TableHead className="w-24 text-center">
-              操作
-            </TableHead>
+            <TableHead className="w-16 text-center">序号</TableHead>
+            <TableHead className="w-40 text-center">游戏名称</TableHead>
+            <TableHead className="w-64 text-center">台词内容</TableHead>
+            <TableHead className="w-32 text-center">出自角色</TableHead>
+            <TableHead className="w-48 text-center">台词背景</TableHead>
+            <TableHead className="w-36 text-center">创建时间</TableHead>
+            <TableHead className="w-24 text-center">操作</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {items.map((item, index) => (
             <TableRow key={item.id}>
-              <TableCell className="text-center text-muted-foreground">
+              <TableCell className="text-muted-foreground text-center">
                 {index + 1}
               </TableCell>
               <TableCell className="text-center">
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <span className="block truncate cursor-default">
+                    <span className="block cursor-default truncate">
                       {item.gameNameCn || item.gameName}
                     </span>
                   </TooltipTrigger>
@@ -137,7 +123,7 @@ export function QuoteManageContent({
               <TableCell className="text-center">
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <span className="block truncate cursor-default">
+                    <span className="block cursor-default truncate">
                       {item.characterName || '-'}
                     </span>
                   </TooltipTrigger>
@@ -162,7 +148,7 @@ export function QuoteManageContent({
                   )}
                 </Tooltip>
               </TableCell>
-              <TableCell className="text-center text-muted-foreground">
+              <TableCell className="text-muted-foreground text-center">
                 <span className="block truncate">
                   {item.createdAt
                     ? dayjs(item.createdAt).format('YYYY-MM-DD HH:mm')

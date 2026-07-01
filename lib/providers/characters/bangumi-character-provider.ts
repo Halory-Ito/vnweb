@@ -448,8 +448,7 @@ export const bangumiCharacterProvider: CharacterProviderPlugin = {
           vndbId: rowId,
           name: detailMapped?.name || character?.name_cn || item.name || '',
           original: detailMapped?.original || character?.name || '',
-          description:
-            detailMapped?.description || character?.summary || '',
+          description: detailMapped?.description || character?.summary || '',
           imageUrl: finalImageUrl,
           bloodType: detailMapped?.bloodType || '',
           height: detailMapped?.height ?? null,

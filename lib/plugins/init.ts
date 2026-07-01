@@ -1,12 +1,11 @@
+import { bilibiliPlugin } from './builtin/bilibili-plugin'
+import { youtubePlugin } from './builtin/youtube-plugin'
+import { initializePlugins, registerPlugin } from './registry'
 import { bangumiProvider } from '@/lib/providers/bangumi-provider'
 import { steamProvider } from '@/lib/providers/steam-provider'
 import { steamgriddbProvider } from '@/lib/providers/steamgriddb-provider'
 import { vndbProvider } from '@/lib/providers/vndb-provider'
 import { ymgalProvider } from '@/lib/providers/ymgal-provider'
-
-import { bilibiliPlugin } from './builtin/bilibili-plugin'
-import { youtubePlugin } from './builtin/youtube-plugin'
-import { initializePlugins, registerPlugin } from './registry'
 
 // ── 同步注册所有内置插件（模块加载时立即执行） ──────────
 registerPlugin(bangumiProvider)

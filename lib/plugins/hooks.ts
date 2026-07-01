@@ -31,10 +31,7 @@ export async function callHook<K extends HookId>(
         return result as HookTypeMap[K]['output']
       }
     } catch (error) {
-      console.error(
-        `Plugin "${plugin.id}" hook "${hookId}" error:`,
-        error,
-      )
+      console.error(`Plugin "${plugin.id}" hook "${hookId}" error:`, error)
     }
   }
   return null
@@ -61,10 +58,7 @@ export async function callAllHooks<K extends HookId>(
         results.push(result as HookTypeMap[K]['output'])
       }
     } catch (error) {
-      console.error(
-        `Plugin "${plugin.id}" hook "${hookId}" error:`,
-        error,
-      )
+      console.error(`Plugin "${plugin.id}" hook "${hookId}" error:`, error)
     }
   }
   return results
@@ -86,10 +80,7 @@ export async function notifyHook<K extends HookId>(
     try {
       await handler(input)
     } catch (error) {
-      console.error(
-        `Plugin "${plugin.id}" hook "${hookId}" error:`,
-        error,
-      )
+      console.error(`Plugin "${plugin.id}" hook "${hookId}" error:`, error)
     }
   }
 }

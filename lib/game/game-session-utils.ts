@@ -1,7 +1,8 @@
 import { eq, sql } from 'drizzle-orm'
 
-import { GamePlayTable, GameRecordTable } from '@/db/schema'
+import { GameInfoTable, GamePlayTable, GameRecordTable } from '@/db/schema'
 import { db } from '@/lib/drizzle'
+import { backupGameSave } from '@/lib/server/game-save-backup'
 
 const safeDiffSeconds = (start: string, end: Date) => {
   const startDate = new Date(start)
@@ -48,6 +49,24 @@ export const finalizeGameSession = async (gameId: number) => {
     playTime: elapsedSeconds,
     playDate: play.lastLaunchedAt || endedAtIso,
   })
+
+  // 游戏结束时备份存档
+  try {
+    const gameInfo = await db
+      .select({
+        name: GameInfoTable.name,
+        saveDir: GameInfoTable.saveDir,
+      })
+      .from(GameInfoTable)
+      .where(eq(GameInfoTable.id, gameId))
+      .limit(1)
+
+    if (gameInfo[0]?.saveDir) {
+      await backupGameSave(gameInfo[0].name, gameInfo[0].saveDir)
+    }
+  } catch (error) {
+    console.error('[GameSession] Save backup failed:', error)
+  }
 
   return {
     finalized: true,

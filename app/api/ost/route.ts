@@ -218,9 +218,12 @@ const createOst = async (req: NextRequest) => {
             if (match) {
               const songId = match[1]
               try {
-                const lyricResponse = await api.get(`${NETEASE_API_BASE}/lyric`, {
-                  params: { id: songId },
-                })
+                const lyricResponse = await api.get(
+                  `${NETEASE_API_BASE}/lyric`,
+                  {
+                    params: { id: songId },
+                  },
+                )
                 const lyricData = lyricResponse.data
                 if (lyricData.lrc?.lyric) {
                   lyricsText = lyricData.lrc.lyric

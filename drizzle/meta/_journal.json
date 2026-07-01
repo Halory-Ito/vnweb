@@ -57,6 +57,13 @@
       "when": 1780623686499,
       "tag": "0007_add_3pt_username_and_avatar",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1782911667357,
+      "tag": "0008_add_game_savedir",
+      "breakpoints": true
     }
   ]
 }

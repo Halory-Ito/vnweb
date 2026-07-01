@@ -1,9 +1,9 @@
+import { setActiveFeaturePlugins } from './hooks'
 import {
   isPluginEnabled,
   readPluginSettings,
   setPluginEnabled,
 } from './settings'
-import { setActiveFeaturePlugins } from './hooks'
 
 import type {
   AnyPlugin,

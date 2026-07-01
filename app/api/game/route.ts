@@ -9,8 +9,8 @@ import {
   relateWebsiteTable,
 } from '@/db/schema'
 import { db } from '@/lib/drizzle'
-import { getEnabledProxySettings } from '@/lib/settings/proxy-settings'
 import { syncVndbCharactersByGameId } from '@/lib/server/vndb-character-sync'
+import { getEnabledProxySettings } from '@/lib/settings/proxy-settings'
 import { GameInfo } from '@/types/game-types'
 
 const normalizeText = (value: unknown): string => {

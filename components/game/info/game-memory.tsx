@@ -357,7 +357,7 @@ function MemoryCard({
 
   return (
     <div
-      className="group relative mt-0 cursor-pointer overflow-hidden rounded-lg border bg-background transition-all duration-300 hover:-translate-y-1 hover:border-primary/50 hover:bg-accent hover:shadow-md"
+      className="group bg-background hover:border-primary/50 hover:bg-accent relative mt-0 cursor-pointer overflow-hidden rounded-lg border transition-all duration-300 hover:-translate-y-1 hover:shadow-md"
       onClick={onClick}
       role="button"
       tabIndex={0}

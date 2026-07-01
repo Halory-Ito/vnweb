@@ -26,12 +26,12 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar'
-import { api } from '@/lib/request-utils'
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
+import { api } from '@/lib/request-utils'
 
 type SidebarItem = {
   title: string

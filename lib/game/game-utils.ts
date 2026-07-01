@@ -26,6 +26,7 @@ export type GameDetail = {
   developer: string
   publisher: string
   programmer: string
+  saveDir: string
   createdAt: string | null
   updatedAt: string | null
   exePath: string
@@ -683,6 +684,7 @@ export const updateGameSettingsById = async (
   id: number,
   payload: {
     exePath: string
+    saveDir?: string
     cover: string
     bg: string
     icon: string
@@ -1156,7 +1158,19 @@ export const getQuoteManageList = async (params?: {
       pageSize: params?.pageSize ?? 10,
     },
   })
-  return (response.data as { data: { items: QuoteManageItem[]; pagination: { page: number; pageSize: number; total: number; totalPages: number } } }).data
+  return (
+    response.data as {
+      data: {
+        items: QuoteManageItem[]
+        pagination: {
+          page: number
+          pageSize: number
+          total: number
+          totalPages: number
+        }
+      }
+    }
+  ).data
 }
 
 export const createQuoteManageItem = async (payload: {
@@ -1233,4 +1247,33 @@ export const selectExeFile = async () => {
     title: '选择可执行文件',
   })
   return (response.data as { data: { filePath: string } }).data.filePath
+}
+
+// 批量标记 NSFW
+export const batchMarkNsfw = async (gameIds: string[], nsfw: boolean) => {
+  const response = await api.post('/game/batch-nsfw', {
+    gameIds,
+    nsfw,
+  })
+  return response.data as {
+    data: {
+      success: boolean
+      updatedCount: number
+    }
+  }
+}
+
+// 合并游戏
+export const mergeGames = async (sourceIds: string[], targetId: string) => {
+  const response = await api.post('/game/merge', {
+    sourceIds,
+    targetId,
+  })
+  return response.data as {
+    data: {
+      success: boolean
+      mergedCount: number
+      targetId: number
+    }
+  }
 }

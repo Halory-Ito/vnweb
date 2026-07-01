@@ -22,7 +22,11 @@ function getAssetsPath() {
 async function extractZip(
   buffer: Buffer,
   targetDir: string,
-): Promise<{ dbPath: string | null; assetsDir: string | null }> {
+): Promise<{
+  dbPath: string | null
+  assetsDir: string | null
+  gameSavesDir: string | null
+}> {
   // 动态导入 adm-zip
   const AdmZip = (await import('adm-zip')).default
   const zip = new AdmZip(buffer)
@@ -55,12 +59,49 @@ async function extractZip(
       await fs.promises.mkdir(targetDirPath, { recursive: true })
       await fs.promises.writeFile(targetPath, entry.getData())
     }
+
+    // 处理游戏存档文件
+    if (entryPath.startsWith('game-saves/')) {
+      const targetPath = path.join(targetDir, entryPath)
+      const targetDirPath = path.dirname(targetPath)
+      await fs.promises.mkdir(targetDirPath, { recursive: true })
+      await fs.promises.writeFile(targetPath, entry.getData())
+    }
   }
 
   return {
     dbPath,
     assetsDir: path.join(targetDir, 'assets'),
+    gameSavesDir: path.join(targetDir, 'game-saves'),
   }
+}
+
+// 获取游戏存档配置
+async function getGameSaveConfig(): Promise<{
+  enabled: boolean
+  directory: string
+}> {
+  try {
+    const configFile = path.join(process.cwd(), 'app', 'config.json')
+    if (fs.existsSync(configFile)) {
+      const content = await fs.promises.readFile(configFile, 'utf-8')
+      const config = JSON.parse(content)
+      const gameSave = (config['game-save-config'] || {}) as Record<
+        string,
+        unknown
+      >
+      return {
+        enabled: Boolean(gameSave.open_save_dir),
+        directory:
+          typeof gameSave.save_dir_path === 'string'
+            ? gameSave.save_dir_path
+            : '',
+      }
+    }
+  } catch {
+    // ignore
+  }
+  return { enabled: false, directory: '' }
 }
 
 export async function POST(req: NextRequest) {
@@ -89,7 +130,8 @@ export async function POST(req: NextRequest) {
 
     try {
       // 解压文件
-      const { dbPath: extractedDbPath } = await extractZip(buffer, tempDir)
+      const { dbPath: extractedDbPath, gameSavesDir: extractedGameSavesDir } =
+        await extractZip(buffer, tempDir)
 
       // 替换数据库文件
       const currentDbPath = getDbPath()
@@ -119,6 +161,27 @@ export async function POST(req: NextRequest) {
         await fs.promises.cp(extractedAssetsPath, currentAssetsPath, {
           recursive: true,
         })
+      }
+
+      // 恢复游戏存档目录
+      if (extractedGameSavesDir && fs.existsSync(extractedGameSavesDir)) {
+        const gameSaveConfig = await getGameSaveConfig()
+        if (gameSaveConfig.enabled && gameSaveConfig.directory) {
+          const currentSaveDir = gameSaveConfig.directory.trim()
+          if (currentSaveDir) {
+            // 备份当前存档目录
+            if (fs.existsSync(currentSaveDir)) {
+              const backupSaveDir = currentSaveDir + '.bak'
+              await fs.promises.rm(backupSaveDir, { force: true })
+              await fs.promises.rename(currentSaveDir, backupSaveDir)
+            }
+
+            // 复制新存档
+            await fs.promises.cp(extractedGameSavesDir, currentSaveDir, {
+              recursive: true,
+            })
+          }
+        }
       }
 
       return NextResponse.json({

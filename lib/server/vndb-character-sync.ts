@@ -161,16 +161,33 @@ export const syncVndbCharactersByGameId = async (
       : ''
 
     if (!vnId && !bgmSubjectId) {
-      return { gameId, vnId: '', bgmSubjectId: '', total: 0, inserted: 0, updated: 0 }
+      return {
+        gameId,
+        vnId: '',
+        bgmSubjectId: '',
+        total: 0,
+        inserted: 0,
+        updated: 0,
+      }
     }
 
     const vndbRows =
       vndbProvider && vnId
-        ? await vndbProvider.fetchCharacters({ gameId, externalId: vnId, saveImagesToLocal, now })
+        ? await vndbProvider.fetchCharacters({
+            gameId,
+            externalId: vnId,
+            saveImagesToLocal,
+            now,
+          })
         : []
     const bgmRows =
       bangumiProvider && bgmSubjectId
-        ? await bangumiProvider.fetchCharacters({ gameId, externalId: bgmSubjectId, saveImagesToLocal, now })
+        ? await bangumiProvider.fetchCharacters({
+            gameId,
+            externalId: bgmSubjectId,
+            saveImagesToLocal,
+            now,
+          })
         : []
 
     const rows = mergeCharacterRows(vndbRows, bgmRows, mergeStrategy)
@@ -181,15 +198,34 @@ export const syncVndbCharactersByGameId = async (
   // 单源模式：通过插件注册表动态查找
   const provider = getCharacterProvider(source)
   if (!provider) {
-    return { gameId, vnId: '', bgmSubjectId: '', total: 0, inserted: 0, updated: 0 }
+    return {
+      gameId,
+      vnId: '',
+      bgmSubjectId: '',
+      total: 0,
+      inserted: 0,
+      updated: 0,
+    }
   }
 
   const externalId = (await provider.resolveExternalId(gameId)) ?? ''
   if (!externalId) {
-    return { gameId, vnId: '', bgmSubjectId: '', total: 0, inserted: 0, updated: 0 }
+    return {
+      gameId,
+      vnId: '',
+      bgmSubjectId: '',
+      total: 0,
+      inserted: 0,
+      updated: 0,
+    }
   }
 
-  const rows = await provider.fetchCharacters({ gameId, externalId, saveImagesToLocal, now })
+  const rows = await provider.fetchCharacters({
+    gameId,
+    externalId,
+    saveImagesToLocal,
+    now,
+  })
   const result = await upsertCharacters(gameId, rows, now)
 
   // 兼容返回格式：根据 source 填充 vnId 或 bgmSubjectId
@@ -257,5 +293,9 @@ const upsertCharacters = async (
     }
   })
 
-  return { total: rows.length, inserted: insertRows.length, updated: updateRows.length }
+  return {
+    total: rows.length,
+    inserted: insertRows.length,
+    updated: updateRows.length,
+  }
 }

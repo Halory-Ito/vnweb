@@ -51,7 +51,9 @@ export const steamProvider: ProviderPlugin = {
       data: { steamId: uid },
     })
 
-    return (res.data as { data: { total: number; items: SteamOwnedGameItem[] } }).data
+    return (
+      res.data as { data: { total: number; items: SteamOwnedGameItem[] } }
+    ).data
   },
 
   importOneByUid: async (payload) => {
@@ -70,9 +72,11 @@ export const steamProvider: ProviderPlugin = {
       },
     })
 
-    const data = (res.data as {
-      data: { status: 'imported' | 'skipped'; reason?: string }
-    }).data
+    const data = (
+      res.data as {
+        data: { status: 'imported' | 'skipped'; reason?: string }
+      }
+    ).data
 
     return { status: data.status, reason: data.reason }
   },

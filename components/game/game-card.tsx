@@ -196,7 +196,7 @@ export default function GameCard(props: GameCardProps) {
           )}
 
           {/* 主图片 */}
-          <div className="relative aspect-3/4 w-full overflow-hidden rounded-2xl shadow-lg transition-all duration-300 group-hover:shadow-2xl">
+          <div className="relative aspect-3/4 w-full overflow-hidden rounded-lg shadow-lg transition-all duration-300 group-hover:shadow-2xl">
             {/* 背景光晕效果 */}
             <div className="bg-primary/20 pointer-events-none absolute -inset-4 opacity-0 blur-3xl transition-opacity duration-500 group-hover:opacity-60" />
 
@@ -212,23 +212,19 @@ export default function GameCard(props: GameCardProps) {
             {/* 悬停遮罩 */}
             {!selectionMode && (
               <div className="absolute inset-0 flex flex-col items-center justify-center bg-linear-to-t from-black/90 via-black/50 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-                {/* 播放按钮 */}
-                <Button
-                  type="button"
-                  variant="secondary"
-                  size="icon"
-                  className="mb-5 size-14 rounded-full text-white shadow-xl backdrop-blur-sm transition-all duration-300 hover:scale-110 hover:bg-white/25 hover:shadow-2xl"
-                  onClick={(event) => void handleLaunchAndOpen(event)}
-                  disabled={isLaunching}
-                >
-                  <svg
-                    viewBox="0 0 24 24"
-                    className="ml-0.5 size-6"
-                    fill="currentColor"
+                {/* 播放按钮 - 收藏卡片不显示 */}
+                {!props.href && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="mb-5 size-14 rounded-full bg-white/20 shadow-lg transition-all duration-300 hover:scale-105 hover:bg-white/60 hover:shadow-xl dark:bg-black/20 dark:hover:bg-black/60"
+                    onClick={(event) => void handleLaunchAndOpen(event)}
+                    disabled={isLaunching}
                   >
-                    <polygon points="5 3 19 12 5 21 5 3" />
-                  </svg>
-                </Button>
+                    <PlayIcon size={24} />
+                  </Button>
+                )}
 
                 {/* 游戏信息 - 两行显示 */}
                 <div className="absolute right-3 bottom-3 left-3 space-y-1.5">
@@ -251,7 +247,7 @@ export default function GameCard(props: GameCardProps) {
             )}
 
             {/* 边框光效 */}
-            <div className="pointer-events-none absolute inset-0 rounded-2xl ring-1 ring-white/10 transition-all duration-300 group-hover:ring-2 group-hover:ring-white/20" />
+            <div className="pointer-events-none absolute inset-0 rounded-lg ring-1 ring-white/10 transition-all duration-300 group-hover:ring-2 group-hover:ring-white/20" />
           </div>
         </div>
 

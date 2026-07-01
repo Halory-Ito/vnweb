@@ -53,11 +53,6 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import {
-  DEFAULT_LAST_GAME_BACKGROUND_IMAGE,
-  readBackgroundSettings,
-  updateLastGameBackground,
-} from '@/lib/settings/background-settings'
-import {
   enqueueGameImageLocalizationById,
   type GameSearchImageItem,
   getGameById,
@@ -65,6 +60,12 @@ import {
   selectExeFile,
   updateGameSettingsById,
 } from '@/lib/game/game-utils'
+import { selectDirectory } from '@/lib/game/scan-utils'
+import {
+  DEFAULT_LAST_GAME_BACKGROUND_IMAGE,
+  readBackgroundSettings,
+  updateLastGameBackground,
+} from '@/lib/settings/background-settings'
 
 type ImageField = 'cover' | 'bg' | 'icon' | 'logo'
 
@@ -149,6 +150,7 @@ export default function GameSettingsPanel({
   const setGlobalBg = useSetAtom(bgAtom)
 
   const [exePath, setExePath] = useState('')
+  const [saveDir, setSaveDir] = useState('')
   const [cover, setCover] = useState('')
   const [bg, setBg] = useState('')
   const [icon, setIcon] = useState('')
@@ -213,6 +215,7 @@ export default function GameSettingsPanel({
     }
 
     setExePath(data.exePath || '')
+    setSaveDir(data.saveDir || '')
     setCover(data.cover || '')
     setBg(data.bg || '')
     setIcon(data.icon || '')
@@ -547,6 +550,21 @@ export default function GameSettingsPanel({
     }
   }
 
+  const handleSelectSaveDir = async () => {
+    try {
+      const directory = await selectDirectory()
+      if (directory) {
+        setSaveDir(directory)
+      }
+    } catch (error) {
+      const err = error as {
+        response?: { data?: { error?: string } }
+        message?: string
+      }
+      toast.error(err.response?.data?.error || err.message || '选择目录失败')
+    }
+  }
+
   const saveSettings = async () => {
     const hasPendingLocalization = Object.values(localizingMap).some(Boolean)
     if (hasPendingLocalization) {
@@ -597,6 +615,7 @@ export default function GameSettingsPanel({
 
       await updateGameSettingsById(gameId, {
         exePath,
+        saveDir,
         cover: nextCover,
         bg: nextBg,
         icon: nextIcon,
@@ -613,6 +632,7 @@ export default function GameSettingsPanel({
           icon?: string
           logo?: string
           exePath?: string
+          saveDir?: string
         }
         return {
           ...prevGame,
@@ -621,6 +641,7 @@ export default function GameSettingsPanel({
           icon: nextIcon,
           logo: nextLogo,
           exePath,
+          saveDir,
         }
       })
 
@@ -678,6 +699,26 @@ export default function GameSettingsPanel({
                 size="icon"
                 onClick={() => void handleSelectExeFile()}
                 aria-label="选择可执行文件"
+              >
+                <FolderOpenIcon className="size-4" />
+              </Button>
+            </div>
+          </section>
+
+          <section className="space-y-2">
+            <div className="text-sm font-medium">存档路径</div>
+            <div className="flex gap-2">
+              <Input
+                value={saveDir}
+                onChange={(event) => setSaveDir(event.target.value)}
+                placeholder="请输入游戏存档目录路径，例如 C:\\Users\\...\\Saves"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                onClick={() => void handleSelectSaveDir()}
+                aria-label="选择存档目录"
               >
                 <FolderOpenIcon className="size-4" />
               </Button>

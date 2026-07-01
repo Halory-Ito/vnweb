@@ -115,11 +115,7 @@ const mapYMGalGameToGameInfo = (game: YMGalGame): GameInfo => {
     .map((w) => ({ [w.title!]: w.link! }))
 
   const platforms = Array.from(
-    new Set(
-      (game.releases ?? [])
-        .map((r) => r.platform ?? '')
-        .filter(Boolean),
-    ),
+    new Set((game.releases ?? []).map((r) => r.platform ?? '').filter(Boolean)),
   )
 
   const aliases = (game.extensionName ?? [])

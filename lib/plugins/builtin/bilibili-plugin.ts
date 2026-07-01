@@ -1,4 +1,5 @@
 import { api } from '@/lib/request-utils'
+
 import type { FeaturePlugin, PvVideoResolveOutput } from '../types'
 
 // ═══════════════════════════════════════════════════════════
@@ -105,7 +106,10 @@ export const bilibiliPlugin: FeaturePlugin = {
       if (!url?.includes('b23.tv/')) return null
 
       const resolved = await resolveB23ShortLink(url)
-      if (resolved && (resolved.includes('bilibili.com') || resolved.includes('b23.tv'))) {
+      if (
+        resolved &&
+        (resolved.includes('bilibili.com') || resolved.includes('b23.tv'))
+      ) {
         return { resolvedUrl: resolved }
       }
       return null

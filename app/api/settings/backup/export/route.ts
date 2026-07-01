@@ -22,6 +22,34 @@ function getAssetsPath() {
 // 需要包含的 assets 子目录
 const ASSET_DIRS = ['cover', 'bg', 'icon', 'logo', 'ost', 'characters', 'pv']
 
+// 获取游戏存档配置
+async function getGameSaveConfig(): Promise<{
+  enabled: boolean
+  directory: string
+}> {
+  try {
+    const configFile = path.join(process.cwd(), 'app', 'config.json')
+    if (fs.existsSync(configFile)) {
+      const content = await fs.promises.readFile(configFile, 'utf-8')
+      const config = JSON.parse(content)
+      const gameSave = (config['game-save-config'] || {}) as Record<
+        string,
+        unknown
+      >
+      return {
+        enabled: Boolean(gameSave.open_save_dir),
+        directory:
+          typeof gameSave.save_dir_path === 'string'
+            ? gameSave.save_dir_path
+            : '',
+      }
+    }
+  } catch {
+    // ignore
+  }
+  return { enabled: false, directory: '' }
+}
+
 export async function POST(_req: NextRequest) {
   try {
     // 创建归档
@@ -57,7 +85,16 @@ export async function POST(_req: NextRequest) {
       }
     }
 
-    // 3. 添加备份元信息
+    // 3. 导出游戏存档目录
+    const gameSaveConfig = await getGameSaveConfig()
+    if (gameSaveConfig.enabled && gameSaveConfig.directory) {
+      const saveDir = gameSaveConfig.directory.trim()
+      if (saveDir && fs.existsSync(saveDir)) {
+        archive.directory(saveDir, 'game-saves')
+      }
+    }
+
+    // 4. 添加备份元信息
     const backupInfo = {
       version: '1.0.0',
       createdAt: new Date().toISOString(),

@@ -84,18 +84,21 @@ Follow this standard academic paper structure:
 Apply these writing conventions from scholarly research:
 
 **Tone and Voice:**
+
 - Formal, objective, and precise language
 - Third-person perspective (avoid "I" or "we" unless describing specific contributions)
 - Present tense for established facts, past tense for specific studies
 - Clear, direct statements without unnecessary complexity
 
 **Technical Precision:**
+
 - Define all acronyms on first use: "Context-Aware Systems (C-AS)"
 - Use domain-specific terminology correctly and consistently
 - Quantify claims with specific metrics or evidence
 - Avoid vague terms like "very", "many", "significant" without data
 
 **Argumentation:**
+
 - State claims clearly, then support with evidence
 - Use logical progression: motivation → problem → solution → validation
 - Compare and contrast with related work explicitly
@@ -103,26 +106,30 @@ Apply these writing conventions from scholarly research:
 
 **Section-Specific Guidelines:**
 
-*Abstract:*
+_Abstract:_
+
 - First sentence: broad context and motivation
 - Second/third: specific problem and gap
 - Middle: approach and methodology
 - End: key results and contributions
 - Self-contained (readable without the full paper)
 
-*Introduction:*
+_Introduction:_
+
 - Start with real-world motivation or compelling problem
 - Build from general to specific (inverted pyramid)
 - End with clear contribution list and paper roadmap
 - Use examples to illustrate the problem
 
-*Related Work:*
+_Related Work:_
+
 - Group related work by theme or approach
 - Compare explicitly: "Unlike [X] which focuses on Y, our approach..."
 - Identify gaps: "However, these approaches do not address..."
 - Position your work clearly
 
-*Results:*
+_Results:_
+
 - Present data clearly in tables/figures
 - Describe trends and patterns objectively
 - Compare with baselines quantitatively
@@ -131,6 +138,7 @@ Apply these writing conventions from scholarly research:
 ### 4. Formatting Guidelines
 
 **IEEE Format (default):**
+
 - Page size: A4 (210mm × 297mm)
 - Margins: Top 19mm, Bottom 43mm, Left/Right 14.32mm
 - Two-column layout with 4.22mm column separation
@@ -146,6 +154,7 @@ Apply these writing conventions from scholarly research:
 - Tables: Centered, with captions above
 
 **ACM Format (alternative):**
+
 - Standard ACM conference proceedings format
 - Single-column abstract, two-column body
 - Include CCS Concepts and Keywords sections after abstract
@@ -154,11 +163,13 @@ Apply these writing conventions from scholarly research:
 ### 5. Citations and References
 
 **In-text citations:**
+
 - Use numbered citations: "Recent work [1, 2] has shown..."
 - Multiple citations in chronological order: [3, 7, 12]
 - Reference specific sections: "As demonstrated in [5, Section 3]..."
 
 **Reference formatting (IEEE style):**
+
 ```
 [1] A. Author, B. Author, and C. Author, "Title of paper," in Proc. Conference Name, Year, pp. 123-456.
 [2] D. Author, "Title of journal article," Journal Name, vol. X, no. Y, pp. 123-456, Month Year.
@@ -166,6 +177,7 @@ Apply these writing conventions from scholarly research:
 ```
 
 **Reference list requirements:**
+
 - Alphabetically ordered by first author's last name (or numbered by citation order)
 - Include DOI or URL when available
 - Minimum 15-20 references for a full paper
@@ -203,6 +215,7 @@ Apply these writing conventions from scholarly research:
 ## Examples
 
 **Example 1: User asks for a survey paper**
+
 ```
 User: "Write a research paper surveying recent advances in context-aware systems"
 
@@ -224,6 +237,7 @@ Response:
 ```
 
 **Example 2: User asks for an experimental paper**
+
 ```
 User: "Write a paper about my new algorithm for detecting hallucinations in vision-language models"
 
@@ -249,11 +263,13 @@ Response:
 ## Resources
 
 ### references/
+
 - `writing_style_guide.md`: Detailed academic writing conventions extracted from example papers
 - `ieee_formatting_specs.md`: Complete IEEE formatting specifications
 - `acm_formatting_specs.md`: Complete ACM formatting specifications
 
 ### assets/
+
 - `full_paper_template.pdf`: IEEE paper template with formatting examples
 - `interim-layout.pdf`: ACM paper template
 - Reference these templates when discussing formatting requirements with users

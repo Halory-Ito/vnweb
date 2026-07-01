@@ -274,7 +274,9 @@ export default function AppearanceContent() {
   const handleImportAndPreviewFont = async (font: LocalFontItem) => {
     setIsImportingFontPath(font.path)
     try {
-      const response = await api.post('/settings/font/import', { sourcePath: font.path })
+      const response = await api.post('/settings/font/import', {
+        sourcePath: font.path,
+      })
       const payload = response.data as {
         data?: {
           path?: string

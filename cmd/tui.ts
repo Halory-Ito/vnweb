@@ -164,11 +164,7 @@ const listCollections = async () => {
   console.table(rows)
 }
 
-const searchGames = async (
-  keyword: string,
-  page: number,
-  pageSize: number,
-) => {
+const searchGames = async (keyword: string, page: number, pageSize: number) => {
   const text = keyword.trim()
   if (!text) {
     console.log('请提供关键字，例如: vnweb search 白色相簿')
@@ -435,9 +431,7 @@ const main = async () => {
     .description('vnweb 游戏库命令行管理工具')
     .version('1.0.0')
 
-  const listCmd = program
-    .command('list')
-    .description('列出游戏或收藏夹资源')
+  const listCmd = program.command('list').description('列出游戏或收藏夹资源')
 
   listCmd
     .command('game')
@@ -465,7 +459,11 @@ const main = async () => {
     .option('-s, --size <size>', '每页条数，默认 20', '20')
     .action(
       async (keywordParts: string[], opts: { page: string; size: string }) => {
-        await searchGames(keywordParts.join(' '), Number(opts.page), Number(opts.size))
+        await searchGames(
+          keywordParts.join(' '),
+          Number(opts.page),
+          Number(opts.size),
+        )
       },
     )
 
@@ -476,10 +474,7 @@ const main = async () => {
     .option('-p, --page <page>', '页码，默认 1', '1')
     .option('-s, --size <size>', '每页条数，默认 20', '20')
     .action(
-      async (
-        nameParts: string[],
-        opts: { page: string; size: string },
-      ) => {
+      async (nameParts: string[], opts: { page: string; size: string }) => {
         await openCollection(
           nameParts.join(' '),
           Number(opts.page),

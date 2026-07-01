@@ -7,12 +7,15 @@ import { useParams, useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
+import CharacterQuotes from '@/components/game/character-quotes'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Textarea } from '@/components/ui/textarea'
-import CharacterQuotes from '@/components/game/character-quotes'
-import { getVndbCharacterById, updateVndbCharacterById } from '@/lib/game/game-utils'
+import {
+  getVndbCharacterById,
+  updateVndbCharacterById,
+} from '@/lib/game/game-utils'
 
 const formatBirthday = (birthday: [number, number] | null) => {
   if (!birthday) {

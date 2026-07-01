@@ -83,7 +83,9 @@ function QuoteCard({ item }: { item: QuoteManageItem }) {
       </div>
       <p className="text-foreground/90 relative text-sm">{item.content}</p>
       {item.context && (
-        <p className="text-muted-foreground relative mt-2 text-xs">📖 {item.context}</p>
+        <p className="text-muted-foreground relative mt-2 text-xs">
+          📖 {item.context}
+        </p>
       )}
     </div>
   )

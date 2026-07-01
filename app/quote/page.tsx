@@ -57,7 +57,14 @@ export default function QuotePage() {
     isRefetching,
     refetch,
   } = useQuery({
-    queryKey: ['quote-manage', debouncedKeyword, dateFrom, dateTo, page, pageSize],
+    queryKey: [
+      'quote-manage',
+      debouncedKeyword,
+      dateFrom,
+      dateTo,
+      page,
+      pageSize,
+    ],
     queryFn: () =>
       getQuoteManageList({
         keyword: debouncedKeyword,
@@ -143,9 +150,7 @@ export default function QuotePage() {
         response?: { data?: { error?: string } }
         message?: string
       }
-      toast.error(
-        err.response?.data?.error || err.message || '保存摘录失败',
-      )
+      toast.error(err.response?.data?.error || err.message || '保存摘录失败')
     } finally {
       setIsSubmitting(false)
     }
@@ -168,9 +173,7 @@ export default function QuotePage() {
         response?: { data?: { error?: string } }
         message?: string
       }
-      toast.error(
-        err.response?.data?.error || err.message || '删除摘录失败',
-      )
+      toast.error(err.response?.data?.error || err.message || '删除摘录失败')
     } finally {
       setIsSubmitting(false)
     }

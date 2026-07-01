@@ -20,11 +20,7 @@ import {
 import { Textarea } from '@/components/ui/textarea'
 import { getVndbCharactersByGameId } from '@/lib/game/game-utils'
 
-import type {
-  CharacterOption,
-  GameOption,
-  QuoteFormState,
-} from './types'
+import type { CharacterOption, GameOption, QuoteFormState } from './types'
 
 type QuoteFormDialogProps = {
   open: boolean
@@ -144,13 +140,9 @@ export function QuoteFormDialog({
           <div className="space-y-2">
             <div className="text-sm font-medium">出自角色</div>
             {!form.gameId ? (
-              <div className="text-muted-foreground text-sm">
-                请先选择游戏
-              </div>
+              <div className="text-muted-foreground text-sm">请先选择游戏</div>
             ) : isLoadingCharacters ? (
-              <div className="text-muted-foreground text-sm">
-                加载角色中...
-              </div>
+              <div className="text-muted-foreground text-sm">加载角色中...</div>
             ) : noCharactersWarning ? (
               <div className="text-destructive text-sm">
                 {noCharactersWarning}
@@ -159,7 +151,10 @@ export function QuoteFormDialog({
               <Select
                 value={form.characterId || 'none'}
                 onValueChange={(value) =>
-                  onFormChange({ ...form, characterId: value === 'none' ? '' : value })
+                  onFormChange({
+                    ...form,
+                    characterId: value === 'none' ? '' : value,
+                  })
                 }
               >
                 <SelectTrigger className="w-full">

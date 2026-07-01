@@ -5,12 +5,14 @@ This guide extracts writing conventions from high-quality academic papers on con
 ## Voice and Tone
 
 ### Formal Academic Voice
+
 - Use third-person perspective when possible
 - Maintain objectivity and avoid emotional language
 - Be precise and concise
 - Example: "This paper presents..." rather than "We excitedly present..."
 
 ### Tense Usage
+
 - **Present tense**: For established facts, general truths, and paper structure
   - "Context-aware systems adapt to user environments"
   - "This paper surveys recent advances in..."
@@ -23,7 +25,9 @@ This guide extracts writing conventions from high-quality academic papers on con
 ## Structural Patterns
 
 ### Abstract Writing
+
 Pattern observed in successful papers:
+
 1. **Opening sentence**: Broad context establishing importance
    - "Context-aware systems have become increasingly important in ubiquitous computing environments."
 2. **Problem identification**: Specific gap or challenge
@@ -36,7 +40,9 @@ Pattern observed in successful papers:
    - "Our findings provide guidance for practitioners in selecting appropriate engineering methods."
 
 ### Introduction Structure
+
 Observed effective pattern (inverted pyramid):
+
 1. **Motivation paragraph**: Real-world context and importance
    - Start with broad domain relevance
    - Use concrete examples or scenarios
@@ -59,7 +65,9 @@ Observed effective pattern (inverted pyramid):
    - "The rest of this paper is organized as follows. Section 2..."
 
 ### Related Work Section
+
 Effective patterns:
+
 - **Thematic grouping**: Organize by approach type, not chronologically
   - "Requirements Engineering Approaches"
   - "Runtime Adaptation Techniques"
@@ -75,20 +83,25 @@ Effective patterns:
   - "To the best of our knowledge, no prior work has..."
 
 ### Methodology/Approach Section
+
 Observed structure:
+
 1. **Overview**: High-level description with diagrams
 2. **Components**: Break down into subsystems/phases
 3. **Details**: Algorithms, procedures, design decisions
 4. **Rationale**: Justify choices made
 
 Use subsections liberally:
+
 - 4.1 System Architecture
 - 4.2 Context Acquisition Module
 - 4.3 Reasoning Engine
 - 4.4 Adaptation Mechanism
 
 ### Results Section
+
 Patterns from strong papers:
+
 - **Lead with data**: Start with tables/figures
 - **Describe objectively**: "Figure 3 shows that accuracy increases..."
 - **Quantify everything**: Specific numbers, percentages, statistical significance
@@ -96,14 +109,18 @@ Patterns from strong papers:
 - **Explain unexpected results**: Don't hide negative findings
 
 ### Discussion Section
+
 Purpose: Interpret results, not just report them
+
 - **Implications**: What do results mean?
 - **Limitations**: Acknowledge threats to validity
 - **Design choices**: Reflect on decisions made
 - **Generalizability**: Where else does this apply?
 
 ### Conclusion Section
+
 Effective pattern:
+
 1. Restate the problem (1 sentence)
 2. Summarize approach (1-2 sentences)
 3. Key findings/contributions (2-3 sentences)
@@ -117,17 +134,20 @@ Keep it concise (typically 1/2 to 3/4 page).
 ### Technical Precision
 
 **Acronyms and Abbreviations:**
+
 - Define on first use: "Context-Aware Systems (C-AS)"
 - Use consistently throughout
 - Common in field: LLM, API, ML, NLP, etc.
 
 **Terminology Consistency:**
+
 - Choose one term and stick with it
   - "user" vs "end-user" vs "actor"
   - "approach" vs "method" vs "technique"
 - Create a terminology table if needed
 
 **Quantification:**
+
 - Avoid vague quantifiers without data
   - Bad: "significantly improved"
   - Good: "improved accuracy by 12.3% (p < 0.05)"
@@ -136,17 +156,20 @@ Keep it concise (typically 1/2 to 3/4 page).
 ### Sentence Structure
 
 **Complexity Balance:**
+
 - Mix simple and complex sentences
 - Use subordinate clauses for nuance
 - Break up long sentences (>30 words typically too long)
 
 **Active vs Passive Voice:**
+
 - Prefer active for clarity: "We implemented..."
 - Use passive when actor is unimportant: "Data was collected from..."
 - Passive for objectivity: "The system was evaluated..."
 
 **Transition Words:**
 Observed frequent usage:
+
 - Contrast: however, nevertheless, in contrast, conversely
 - Addition: furthermore, moreover, additionally, similarly
 - Causation: therefore, consequently, as a result, thus
@@ -156,33 +179,39 @@ Observed frequent usage:
 ### Common Phrases in Academic Writing
 
 **Introducing work:**
+
 - "This paper presents/proposes/introduces..."
 - "We describe/investigate/analyze..."
 - "Our work focuses on/addresses/tackles..."
 
 **Stating problems:**
+
 - "A key challenge is..."
 - "However, this approach suffers from..."
 - "Existing methods fail to..."
 
 **Describing contributions:**
+
 - "The main contribution of this work is..."
 - "We make the following contributions:"
 - "Our approach offers several advantages..."
 
 **Referencing literature:**
+
 - "Recent work has shown..." [1, 2]
 - "Smith et al. demonstrated..." [3]
 - "As noted by Jones [4]..."
 - "Prior studies [5, 6, 7] have explored..."
 
 **Presenting results:**
+
 - "Our experiments demonstrate that..."
 - "As shown in Table 2..."
 - "Figure 4 illustrates..."
 - "The results indicate that..."
 
 **Expressing limitations:**
+
 - "One limitation of our approach is..."
 - "While our method shows promise, it..."
 - "A potential threat to validity is..."
@@ -190,16 +219,19 @@ Observed frequent usage:
 ## Paragraph Construction
 
 ### Topic Sentences
+
 - Start each paragraph with a clear topic sentence
 - Make the main point immediately clear
 - Use topic sentences to show logical flow
 
 ### Paragraph Length
+
 - Typically 4-8 sentences
 - One main idea per paragraph
 - Use white space for readability
 
 ### Paragraph Transitions
+
 - Link paragraphs logically
 - Use transition sentences or phrases
 - Create narrative flow
@@ -207,6 +239,7 @@ Observed frequent usage:
 ## Citation Practices
 
 ### When to Cite
+
 - Any prior work that relates to yours
 - Background information not common knowledge
 - Methods or datasets from others
@@ -214,7 +247,9 @@ Observed frequent usage:
 - Direct quotes (rare in technical papers)
 
 ### Citation Density
+
 Observed patterns:
+
 - Introduction: 5-10 citations
 - Related Work: Heavy (30-50% of content)
 - Methodology: Moderate (cite tools, algorithms used)
@@ -222,6 +257,7 @@ Observed patterns:
 - Discussion: Moderate (compare with literature)
 
 ### Citation Integration
+
 - **Parenthetical**: "Context awareness improves usability [1, 2]."
 - **Narrative**: "Smith et al. [3] demonstrated that..."
 - **Multiple**: Group related citations [4, 5, 6]
@@ -229,15 +265,18 @@ Observed patterns:
 ## Figures and Tables
 
 ### Purpose
+
 - Figures: Show architecture, workflows, trends, comparisons
 - Tables: Present structured data, results, comparisons
 
 ### Captions
+
 - Self-contained: Readable without reading text
 - Specific: "Accuracy comparison across three datasets" not "Results"
 - Context: Explain abbreviations in caption
 
 ### In-text References
+
 - Always reference: "as shown in Figure 3"
 - Describe what to notice: "Figure 3 shows that accuracy increases with training data"
 - Don't just state "see Figure 3" without context
@@ -245,12 +284,14 @@ Observed patterns:
 ## Domain-Specific Conventions
 
 ### Context-Aware Systems Literature
+
 - Emphasize adaptability and personalization
 - Discuss context acquisition, modeling, reasoning
 - Address privacy and user trust
 - Consider deployment challenges
 
 ### Machine Learning/AI Papers
+
 - Report multiple metrics (accuracy, precision, recall, F1)
 - Include ablation studies
 - Discuss computational complexity
@@ -260,6 +301,7 @@ Observed patterns:
 ## Quality Indicators
 
 Strong academic papers demonstrate:
+
 1. **Clarity**: Ideas presented logically and understandably
 2. **Rigor**: Thorough methodology and evaluation
 3. **Originality**: Novel contribution clearly stated

@@ -111,7 +111,9 @@ npm run build
 ```
 
 ### 5. 环境变量
+
 这里推荐将根目录下的`vnweb.bat`添加至环境变量中，然后你就可以在任意的位置执行系统的命令行工具：
+
 ```sh
 # 1. 启动 web ui
 vnweb
@@ -128,8 +130,6 @@ vnweb search game_name
 # 5. 根据id启动游戏
 vnweb start game_id
 ```
-
-
 
 ## 常用脚本
 
@@ -208,4 +208,3 @@ npm run db:studio
 
 界面截图：
 ![alt text](image.png)
-

@@ -11,7 +11,6 @@ import { useEffect, useRef, useState } from 'react'
 
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
-import { api } from '@/lib/request-utils'
 import {
   Table,
   TableBody,
@@ -20,6 +19,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { api } from '@/lib/request-utils'
 
 import type { OstSongItem } from '@/lib/game/game-utils'
 

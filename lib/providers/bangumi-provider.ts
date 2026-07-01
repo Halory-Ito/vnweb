@@ -154,8 +154,14 @@ export const bangumiProvider: ProviderPlugin = {
           }
         })
         .filter(
-          (item): item is { id: string; name: string; developer: string; date: string } =>
-            item !== null,
+          (
+            item,
+          ): item is {
+            id: string
+            name: string
+            developer: string
+            date: string
+          } => item !== null,
         ),
     }
   },

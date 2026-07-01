@@ -4,7 +4,10 @@ import { useQuery } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import { MessageSquareQuoteIcon } from 'lucide-react'
 
-import { getQuotesByCharacterId, type QuoteManageItem } from '@/lib/game/game-utils'
+import {
+  getQuotesByCharacterId,
+  type QuoteManageItem,
+} from '@/lib/game/game-utils'
 
 type CharacterQuotesProps = {
   characterId: string
@@ -47,7 +50,7 @@ export default function CharacterQuotes({ characterId }: CharacterQuotesProps) {
 
 function QuoteItem({ item }: { item: QuoteManageItem }) {
   return (
-    <div className="rounded-lg border p-4 transition-colors hover:bg-muted/50">
+    <div className="hover:bg-muted/50 rounded-lg border p-4 transition-colors">
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1">
           <p className="text-sm">{item.content}</p>

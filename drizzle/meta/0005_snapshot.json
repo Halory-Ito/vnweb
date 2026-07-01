@@ -159,10 +159,7 @@
       "indexes": {
         "character_game_vndb_unique": {
           "name": "character_game_vndb_unique",
-          "columns": [
-            "gameId",
-            "vndbId"
-          ],
+          "columns": ["gameId", "vndbId"],
           "isUnique": true
         }
       },
@@ -277,11 +274,7 @@
       "indexes": {
         "game_id_map_game_provider_external_unique": {
           "name": "game_id_map_game_provider_external_unique",
-          "columns": [
-            "gameId",
-            "provider",
-            "externalId"
-          ],
+          "columns": ["gameId", "provider", "externalId"],
           "isUnique": true
         }
       },

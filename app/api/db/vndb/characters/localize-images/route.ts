@@ -67,7 +67,10 @@ const localizeCharacterImages = async (req: NextRequest) => {
 
         localized++
       } catch (error) {
-        console.error(`Failed to localize image for character ${character.vndbId}:`, error)
+        console.error(
+          `Failed to localize image for character ${character.vndbId}:`,
+          error,
+        )
         failed++
       }
     }

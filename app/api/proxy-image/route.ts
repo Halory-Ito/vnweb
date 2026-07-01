@@ -6,14 +6,20 @@ export async function GET(request: NextRequest) {
   const url = request.nextUrl.searchParams.get('url')
 
   if (!url) {
-    return NextResponse.json({ error: 'Missing url parameter' }, { status: 400 })
+    return NextResponse.json(
+      { error: 'Missing url parameter' },
+      { status: 400 },
+    )
   }
 
   // 验证 URL 格式
   try {
     new URL(url)
   } catch {
-    return NextResponse.json({ error: 'Invalid url parameter' }, { status: 400 })
+    return NextResponse.json(
+      { error: 'Invalid url parameter' },
+      { status: 400 },
+    )
   }
 
   // 只允许特定域名的图片代理

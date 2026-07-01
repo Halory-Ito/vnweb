@@ -106,15 +106,25 @@ export default function PVPage() {
     void callHook('pv:video-resolve', { url }).then((result) => {
       if (cancelled) return
       if (result?.embedUrl) {
-        setResolvedVideo({ mode: 'embed', embedUrl: result.embedUrl, playUrl: '' })
+        setResolvedVideo({
+          mode: 'embed',
+          embedUrl: result.embedUrl,
+          playUrl: '',
+        })
       } else if (result?.resolvedUrl) {
-        setResolvedVideo({ mode: 'direct', embedUrl: '', playUrl: result.resolvedUrl })
+        setResolvedVideo({
+          mode: 'direct',
+          embedUrl: '',
+          playUrl: result.resolvedUrl,
+        })
       } else {
         setResolvedVideo({ mode: 'none', embedUrl: '', playUrl: '' })
       }
     })
 
-    return () => { cancelled = true }
+    return () => {
+      cancelled = true
+    }
   }, [playingItem?.url])
 
   const playingMode = resolvedVideo.mode

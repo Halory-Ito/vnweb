@@ -26,6 +26,7 @@ export const GameInfoTable = sqliteTable('game_info', {
   developer: text().notNull(), // 开发商
   publisher: text().notNull(), // 发行商
   programmer: text().notNull(), // 程序制作
+  saveDir: text().default(''), // 游戏存档目录
   createdAt: text().default(dayjs().toString()), // 创建时间
   updatedAt: text().default(dayjs().toString()), // 更新时间
 })

@@ -1,4 +1,5 @@
 import { api } from '@/lib/request-utils'
+
 import type {
   CharacterProviderPlugin,
   NormalizedCharacterRow,
@@ -71,17 +72,21 @@ const getToken = async (): Promise<string> => {
   const { YMGAL_BASE_URL, YMGAL_CLIENT_ID, YMGAL_CLIENT_SECRET } =
     await import('@/app/config')
 
-  const res = await api.post(`${YMGAL_BASE_URL}/oauth/token`, new URLSearchParams({
-    grant_type: 'client_credentials',
-    client_id: YMGAL_CLIENT_ID,
-    client_secret: YMGAL_CLIENT_SECRET,
-    scope: 'public',
-  }), {
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-      ...YMGAL_HEADERS,
+  const res = await api.post(
+    `${YMGAL_BASE_URL}/oauth/token`,
+    new URLSearchParams({
+      grant_type: 'client_credentials',
+      client_id: YMGAL_CLIENT_ID,
+      client_secret: YMGAL_CLIENT_SECRET,
+      scope: 'public',
+    }),
+    {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        ...YMGAL_HEADERS,
+      },
     },
-  })
+  )
 
   const data = res.data as {
     access_token?: string
@@ -225,11 +230,10 @@ export const ymgalCharacterProvider: CharacterProviderPlugin = {
         // 获取角色详情
         let detail: YMGalCharacterDetail | undefined
         try {
-          const charRes =
-            await ymgalOpenRequest<YMGalCharacterDetailResponse>(
-              '/open/archive',
-              { cid, type: 'character' },
-            )
+          const charRes = await ymgalOpenRequest<YMGalCharacterDetailResponse>(
+            '/open/archive',
+            { cid, type: 'character' },
+          )
           detail = charRes.data?.character
         } catch (error) {
           console.warn('YMGal: 获取角色详情失败', { gameId, cid, error })

@@ -45,10 +45,7 @@ const updateQuote = async (
     }
 
     if (!content) {
-      return NextResponse.json(
-        { error: '台词内容不能为空' },
-        { status: 400 },
-      )
+      return NextResponse.json({ error: '台词内容不能为空' }, { status: 400 })
     }
 
     const game = await db

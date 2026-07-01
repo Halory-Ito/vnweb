@@ -22,6 +22,7 @@ import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 
 import GameBulkUpdateMetadataDialog from './dialog/game-bulk-update-metadata-dialog'
+import GameMergeDialog from './dialog/game-merge-dialog'
 import GameCard from './game-card'
 import { SortSelect } from './sort-select'
 import { selectedGameIdsAtom, showNsfwAtom } from '@/atom/global'
@@ -53,6 +54,7 @@ import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
   addGameToCollection,
+  batchMarkNsfw,
   createCollection,
   deleteCollectionById,
   deleteGameById,
@@ -196,6 +198,8 @@ export default function GameHome() {
   const [deleteCollectionsConfirmOpen, setDeleteCollectionsConfirmOpen] =
     useState(false)
   const [metadataDialogOpen, setMetadataDialogOpen] = useState(false)
+  const [mergeDialogOpen, setMergeDialogOpen] = useState(false)
+  const [isMarkingNsfw, setIsMarkingNsfw] = useState(false)
   const [createCollectionOpen, setCreateCollectionOpen] = useState(false)
   const [newCollectionName, setNewCollectionName] = useState('')
 
@@ -390,6 +394,37 @@ export default function GameHome() {
     }
   }
 
+  const handleBatchNsfw = async (nsfw: boolean) => {
+    if (selectedGameIds.length === 0) {
+      return
+    }
+
+    setIsMarkingNsfw(true)
+    try {
+      await batchMarkNsfw(selectedGameIds, nsfw)
+      await queryClient.invalidateQueries({ queryKey: ['game-cards'] })
+      await queryClient.invalidateQueries({ queryKey: ['game-sidebar'] })
+      router.refresh()
+      toast.success(
+        `已${nsfw ? '标记' : '取消标记'} ${selectedGameIds.length} 个游戏为 NSFW`,
+      )
+    } catch (error) {
+      const err = error as {
+        response?: {
+          data?: {
+            error?: string
+          }
+        }
+        message?: string
+      }
+      toast.error(
+        err.response?.data?.error || err.message || '更新 NSFW 状态失败',
+      )
+    } finally {
+      setIsMarkingNsfw(false)
+    }
+  }
+
   const handleToggleCollectionSelect = (id: string) => {
     setSelectedCollectionIds((prev) =>
       prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
@@ -520,6 +555,29 @@ export default function GameHome() {
               <RefreshCcwIcon className="size-4" />
               更新元数据
             </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" disabled={isMarkingNsfw}>
+                  NSFW
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => void handleBatchNsfw(true)}>
+                  标记为 NSFW
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => void handleBatchNsfw(false)}>
+                  取消 NSFW 标记
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={selectedGameIds.length < 2}
+              onClick={() => setMergeDialogOpen(true)}
+            >
+              合并
+            </Button>
             <Button
               variant="destructive"
               size="sm"
@@ -587,6 +645,22 @@ export default function GameHome() {
         open={metadataDialogOpen}
         onOpenChange={setMetadataDialogOpen}
         gameIds={selectedGameIds}
+      />
+
+      <GameMergeDialog
+        open={mergeDialogOpen}
+        onOpenChange={setMergeDialogOpen}
+        gameIds={selectedGameIds}
+        gameNames={Object.fromEntries(
+          gameCards.map((item) => [item.id, item.title]),
+        )}
+        onMergeComplete={() => {
+          void queryClient.invalidateQueries({ queryKey: ['game-cards'] })
+          void queryClient.invalidateQueries({ queryKey: ['game-sidebar'] })
+          void queryClient.invalidateQueries({ queryKey: ['collections'] })
+          setSelectedGameIds([])
+          router.refresh()
+        }}
       />
 
       <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>

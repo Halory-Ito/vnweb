@@ -3,7 +3,6 @@
 import { ExternalLink } from 'lucide-react'
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { getProxyImageUrl } from '@/lib/proxy-image'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -16,6 +15,7 @@ import {
 } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { type ThirdPartyAccountItem } from '@/lib/cloud-sync-utils'
+import { getProxyImageUrl } from '@/lib/proxy-image'
 
 export type CloudSyncProvider = 'steam' | 'bangumi' | 'vndb' | 'ymgal'
 
@@ -195,7 +195,8 @@ export function CloudSyncAccountCard({
 }
 
 function AccountInfo({ account }: { account: ThirdPartyAccountItem }) {
-  const displayName = account.username || account.profile?.displayName || account.accountId
+  const displayName =
+    account.username || account.profile?.displayName || account.accountId
   const secondaryName = account.profile?.secondaryName || ''
   const avatarUrl = account.avatar || account.profile?.avatar || ''
   const avatar = getProxyImageUrl(avatarUrl)

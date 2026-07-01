@@ -1,13 +1,15 @@
 'use client'
 
-import {
-  Clapperboard,
-  Gamepad2,
-  Import,
-  PlusCircleIcon,
-} from 'lucide-react'
+import { Clapperboard, Gamepad2, Import, PlusCircleIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
+import {
+  BangumiImportDialog,
+  SteamImportDialog,
+  VNDBSearchDialog,
+  VndbImportDialog,
+  YmgalImportDialog,
+} from './vndb-search-dialog'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -25,14 +27,6 @@ import {
   isPluginEnabled,
   readPluginSettings,
 } from '@/lib/plugins'
-
-import {
-  BangumiImportDialog,
-  SteamImportDialog,
-  VNDBSearchDialog,
-  VndbImportDialog,
-  YmgalImportDialog,
-} from './vndb-search-dialog'
 
 export default function GameAddButton() {
   const [, setTick] = useState(0)
@@ -78,32 +72,28 @@ export default function GameAddButton() {
               {steamEnabled && (
                 <SteamImportDialog>
                   <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                    <Gamepad2 className="mr-2 size-4" />
-                    从 Steam 导入
+                    <Gamepad2 className="mr-2 size-4" />从 Steam 导入
                   </DropdownMenuItem>
                 </SteamImportDialog>
               )}
               {bangumiEnabled && (
                 <BangumiImportDialog>
                   <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                    <Clapperboard className="mr-2 size-4" />
-                    从 bangumi 导入
+                    <Clapperboard className="mr-2 size-4" />从 bangumi 导入
                   </DropdownMenuItem>
                 </BangumiImportDialog>
               )}
               {vndbEnabled && (
                 <VndbImportDialog>
                   <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                    <Clapperboard className="mr-2 size-4" />
-                    从 VNDB 导入
+                    <Clapperboard className="mr-2 size-4" />从 VNDB 导入
                   </DropdownMenuItem>
                 </VndbImportDialog>
               )}
               {ymgalEnabled && (
                 <YmgalImportDialog>
                   <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                    <Clapperboard className="mr-2 size-4" />
-                    从 YMGal 导入
+                    <Clapperboard className="mr-2 size-4" />从 YMGal 导入
                   </DropdownMenuItem>
                 </YmgalImportDialog>
               )}

@@ -44,18 +44,12 @@ export async function POST() {
     const directory = await selectDirectory()
 
     if (!directory) {
-      return NextResponse.json(
-        { error: '未选择目录' },
-        { status: 400 },
-      )
+      return NextResponse.json({ error: '未选择目录' }, { status: 400 })
     }
 
     return NextResponse.json({ data: { directory } })
   } catch (error) {
     console.error('Select directory failed:', error)
-    return NextResponse.json(
-      { error: '选择目录失败' },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: '选择目录失败' }, { status: 500 })
   }
 }

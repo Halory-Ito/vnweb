@@ -395,7 +395,8 @@ export default function GameOST({ gameId, cover, title }: GameOSTProps) {
         if (selectedSong.lyricsText) {
           setLyrics(parseLrc(selectedSong.lyricsText))
         } else if (selectedSong.lyricsPath) {
-          api.get(selectedSong.lyricsPath)
+          api
+            .get(selectedSong.lyricsPath)
             .then((res) => setLyrics(parseLrc(res.data)))
             .catch((err) => console.warn('获取歌词文件失败:', err))
         }

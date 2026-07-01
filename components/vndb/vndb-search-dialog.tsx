@@ -74,7 +74,8 @@ export const VNDBSearchDialog = ({
   const [gameName, setGameName] = useState<string>('')
   const [gameId, setGameId] = useState<string>('')
   const providerOptions = getManualSearchProviderOptions()
-  const defaultProvider = initialProvider ?? providerOptions[0]?.value ?? 'bangumi'
+  const defaultProvider =
+    initialProvider ?? providerOptions[0]?.value ?? 'bangumi'
   const [provider, setProvider] = useState<string>(defaultProvider)
   const [searchDialogOpen, setSearchDialogOpen] = useState<boolean>(false)
   const [searchResultDialogOpen, setSearchResultDialogOpen] =
@@ -245,9 +246,8 @@ export const VNDBSearchDialog = ({
               <div className="min-w-16">数据来源</div>
               {lockProvider ? (
                 <div className="text-sm font-medium">
-                  {providerOptions.find(
-                    (option) => option.value === provider,
-                  )?.label ?? provider}
+                  {providerOptions.find((option) => option.value === provider)
+                    ?.label ?? provider}
                 </div>
               ) : (
                 <Select value={provider} onValueChange={setProvider}>
@@ -257,10 +257,7 @@ export const VNDBSearchDialog = ({
                   <SelectContent>
                     <SelectGroup>
                       {providerOptions.map((option) => (
-                        <SelectItem
-                          key={option.value}
-                          value={option.value}
-                        >
+                        <SelectItem key={option.value} value={option.value}>
                           {option.label}
                         </SelectItem>
                       ))}
@@ -399,7 +396,10 @@ export const VNDBSearchDialog = ({
           </DialogHeader>
 
           {editableGameInfo !== null && (
-            <form className="flex min-h-0 flex-1 flex-col overflow-hidden" onSubmit={handleConfirm}>
+            <form
+              className="flex min-h-0 flex-1 flex-col overflow-hidden"
+              onSubmit={handleConfirm}
+            >
               <div className="min-h-0 flex-1 space-y-4 overflow-y-auto pr-1">
                 <div className="space-y-2">
                   <div className="text-sm">游戏名称</div>

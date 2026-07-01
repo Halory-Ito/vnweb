@@ -3,15 +3,18 @@
 import {
   FolderIcon,
   FolderOpenIcon,
+  ListIcon,
   PauseIcon,
   PencilIcon,
   PlayIcon,
+  RefreshCcwIcon,
   Trash2Icon,
   XIcon,
 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 
+import SubdirSelectDialog from '@/components/scan/subdir-select-dialog'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -32,7 +35,6 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { getGameCardList } from '@/lib/game/game-utils'
-import { getAllProviders } from '@/lib/providers'
 import {
   createScanner,
   deleteScannerById,
@@ -43,6 +45,8 @@ import {
   startScannerById,
   updateScannerById,
 } from '@/lib/game/scan-utils'
+import { getAllProviders } from '@/lib/providers'
+import { api } from '@/lib/request-utils'
 
 type ScanDirectoryItem = {
   id: number
@@ -58,14 +62,18 @@ type ScanDirectoryItem = {
 const ScanDirectoryRow = ({
   item,
   onStart,
+  onStop,
   onEdit,
   onDelete,
+  onSubdirs,
   isScanning,
 }: {
   item: ScanDirectoryItem
   onStart: (id: number) => void
+  onStop: (id: number) => void
   onEdit: (id: number) => void
   onDelete: (id: number) => void
+  onSubdirs: (id: number) => void
   isScanning: boolean
 }) => (
   <div className="flex flex-col gap-3 rounded-lg border p-3 md:flex-row md:items-center md:justify-between">
@@ -100,15 +108,24 @@ const ScanDirectoryRow = ({
         type="button"
         variant="outline"
         size="icon"
-        disabled={isScanning}
-        onClick={() => onStart(item.id)}
-        aria-label="开始扫描"
+        onClick={() => (isScanning ? onStop(item.id) : onStart(item.id))}
+        aria-label={isScanning ? '停止扫描' : '开始扫描'}
       >
         {isScanning ? (
           <PauseIcon className="size-4 text-red-500" />
         ) : (
           <PlayIcon className="size-4" />
         )}
+      </Button>
+      <Button
+        type="button"
+        variant="outline"
+        size="icon"
+        disabled={isScanning}
+        onClick={() => onSubdirs(item.id)}
+        aria-label="选择子目录"
+      >
+        <ListIcon className="size-4" />
       </Button>
       <Button
         type="button"
@@ -146,6 +163,10 @@ export default function Scan() {
   const [globalSettingOpen, setGlobalSettingOpen] = useState(false)
   const [addDirectoryOpen, setAddDirectoryOpen] = useState(false)
   const [editDirectoryId, setEditDirectoryId] = useState<number | null>(null)
+  const [subdirSelectOpen, setSubdirSelectOpen] = useState(false)
+  const [subdirSelectScannerId, setSubdirSelectScannerId] = useState<
+    number | null
+  >(null)
 
   const [excludePathInput, setExcludePathInput] = useState('')
   const [excludePaths, setExcludePaths] = useState<string[]>([])
@@ -153,9 +174,8 @@ export default function Scan() {
   const [directoryPathInput, setDirectoryPathInput] = useState('')
   const allProviders = getAllProviders()
   const defaultProviderId = allProviders[0]?.id ?? 'bangumi'
-  const [directoryProviderInput, setDirectoryProviderInput] = useState(
-    defaultProviderId,
-  )
+  const [directoryProviderInput, setDirectoryProviderInput] =
+    useState(defaultProviderId)
   const [directoryScanModeInput, setDirectoryScanModeInput] = useState('0')
   const [directoryScanLevelInput, setDirectoryScanLevelInput] = useState('0')
   const [isSavingDirectory, setIsSavingDirectory] = useState(false)
@@ -358,6 +378,77 @@ export default function Scan() {
         message?: string
       }
       toast.error(err.response?.data?.error || err.message || '删除失败')
+    }
+  }
+
+  const handleStopScan = async (id: number) => {
+    try {
+      await api.post(`/scan/scanner/${id}/stop`)
+      setScanningDirectoryIds((prev) => prev.filter((item) => item !== id))
+      toast.success('扫描已中断')
+    } catch (error) {
+      const err = error as {
+        response?: { data?: { error?: string } }
+        message?: string
+      }
+      toast.error(err.response?.data?.error || err.message || '中断扫描失败')
+    }
+  }
+
+  const handleRetryFailed = async () => {
+    if (failedItems.length === 0) {
+      toast.error('没有失败项需要重试')
+      return
+    }
+
+    // 重试所有失败的扫描
+    const scannerIds = [...new Set(failedItems.map((item) => item.id))]
+    for (const scannerId of scannerIds) {
+      try {
+        await startScannerById(scannerId)
+      } catch {
+        // ignore individual errors
+      }
+    }
+
+    await loadScanners()
+    await loadScanErrors()
+    toast.success('重试完成')
+  }
+
+  const handleSubdirSelect = (scannerId: number) => {
+    setSubdirSelectScannerId(scannerId)
+    setSubdirSelectOpen(true)
+  }
+
+  const handleSubdirConfirm = async (selectedPaths: string[]) => {
+    if (!subdirSelectScannerId || selectedPaths.length === 0) return
+
+    // 对选中的子目录执行扫描
+    setScanningDirectoryIds((prev) => [...prev, subdirSelectScannerId])
+    const timer = window.setInterval(() => {
+      void loadScanners()
+    }, 800)
+
+    try {
+      // 这里可以扩展为只扫描选中的子目录
+      // 目前先调用原有的扫描逻辑
+      await startScannerById(subdirSelectScannerId)
+      await loadScanners()
+      await loadScanErrors()
+      await loadGameCount()
+      toast.success(`扫描完成，共扫描 ${selectedPaths.length} 个子目录`)
+    } catch (error) {
+      const err = error as {
+        response?: { data?: { error?: string } }
+        message?: string
+      }
+      toast.error(err.response?.data?.error || err.message || '扫描失败')
+    } finally {
+      window.clearInterval(timer)
+      setScanningDirectoryIds((prev) =>
+        prev.filter((item) => item !== subdirSelectScannerId),
+      )
     }
   }
 
@@ -565,11 +656,7 @@ export default function Scan() {
       <div className="rounded-lg border">
         <div className="flex items-center justify-between px-6 py-4">
           <h3 className="text-lg font-semibold">扫描目录列表</h3>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={handleOpenAddDialog}
-          >
+          <Button type="button" variant="outline" onClick={handleOpenAddDialog}>
             添加扫描目录列表
           </Button>
         </div>
@@ -582,8 +669,10 @@ export default function Scan() {
                 isScanningAll || scanningDirectoryIds.includes(item.id)
               }
               onStart={(id) => void handleStartScan(id)}
+              onStop={(id) => void handleStopScan(id)}
               onEdit={handleOpenEditDialog}
               onDelete={(id) => void handleDeleteDirectory(id)}
+              onSubdirs={handleSubdirSelect}
             />
           ))}
         </div>
@@ -614,6 +703,14 @@ export default function Scan() {
             )}
           </div>
           <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => void handleRetryFailed()}
+            >
+              <RefreshCcwIcon className="mr-2 size-4" />
+              重试全部
+            </Button>
             <Button
               type="button"
               variant="outline"
@@ -857,6 +954,15 @@ export default function Scan() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {subdirSelectScannerId ? (
+        <SubdirSelectDialog
+          open={subdirSelectOpen}
+          onOpenChange={setSubdirSelectOpen}
+          scannerId={subdirSelectScannerId}
+          onConfirm={(paths) => void handleSubdirConfirm(paths)}
+        />
+      ) : null}
     </div>
   )
 }

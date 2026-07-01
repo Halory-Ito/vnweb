@@ -11,8 +11,8 @@ import { bgAtom } from '@/atom/global'
 import GameInfo from '@/components/game/game-info'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
-import { updateLastGameBackground } from '@/lib/settings/background-settings'
 import { getGameById } from '@/lib/game/game-utils'
+import { updateLastGameBackground } from '@/lib/settings/background-settings'
 
 function GameInfoSkeleton() {
   return (

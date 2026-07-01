@@ -185,6 +185,7 @@ const getGameById = async (
         developer: game.developer,
         publisher: game.publisher,
         programmer: game.programmer,
+        saveDir: game.saveDir,
         createdAt: game.createdAt,
         updatedAt: game.updatedAt,
         websites,
@@ -226,6 +227,7 @@ const updateGame = async (
       status?: number
       rating?: number
       exePath?: string
+      saveDir?: string
       cover?: string
       bg?: string
       icon?: string
@@ -272,6 +274,7 @@ const updateGame = async (
 
     const hasSettingsPayload =
       payload.exePath !== undefined ||
+      payload.saveDir !== undefined ||
       payload.cover !== undefined ||
       payload.bg !== undefined ||
       payload.icon !== undefined ||
@@ -374,6 +377,7 @@ const updateGame = async (
         developer: string
         publisher: string
         programmer: string
+        saveDir: string
         bg: string
         icon: string
         logo: string
@@ -440,6 +444,9 @@ const updateGame = async (
       }
       if (payload.programmer !== undefined) {
         gamePatch.programmer = normalizeText(payload.programmer)
+      }
+      if (payload.saveDir !== undefined) {
+        gamePatch.saveDir = normalizeWindowsPathInput(payload.saveDir)
       }
       if (bgChanged) {
         gamePatch.bg = localizedImages.bg || nextBg || ''

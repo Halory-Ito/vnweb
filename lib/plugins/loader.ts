@@ -53,7 +53,11 @@ export async function loadExternalPlugins(): Promise<string[]> {
       const plugin: AnyPlugin | undefined =
         module.default ?? module.plugin ?? undefined
 
-      if (!plugin || typeof plugin !== 'object' || plugin.id !== rawManifest.id) {
+      if (
+        !plugin ||
+        typeof plugin !== 'object' ||
+        plugin.id !== rawManifest.id
+      ) {
         console.warn(
           `Plugin "${entry.name}": entry module does not export a valid plugin, skipping`,
         )

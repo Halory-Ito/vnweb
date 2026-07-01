@@ -9,6 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+
 import type { QuoteManageItem } from '@/lib/game/game-utils'
 
 type QuoteDeleteDialogProps = {
