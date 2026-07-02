@@ -6,8 +6,6 @@ import { useAtom } from 'jotai'
 import {
   AlertCircle,
   ArrowDownIcon,
-  ArrowLeftIcon,
-  ArrowRightIcon,
   ArrowUpIcon,
   CheckIcon,
   FolderPlusIcon,
@@ -18,7 +16,7 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
 import GameBulkUpdateMetadataDialog from './dialog/game-bulk-update-metadata-dialog'
@@ -510,8 +508,8 @@ export default function GameHome() {
       />
 
       {selectionMode ? (
-        <div className="bg-background/95 fixed bottom-4 left-1/2 z-50 -translate-x-1/2 rounded-lg border p-2 shadow-lg backdrop-blur">
-          <div className="flex items-center gap-2">
+        <div className="bg-background/95 fixed bottom-4 left-1/2 z-50 w-[calc(100vw-2rem)] max-w-3xl -translate-x-1/2 rounded-lg border p-2 shadow-lg backdrop-blur">
+          <div className="flex flex-wrap items-center justify-center gap-2">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
@@ -520,7 +518,7 @@ export default function GameHome() {
                   disabled={isAddingToCollection}
                 >
                   <FolderPlusIcon className="size-4" />
-                  添加到合集
+                  <span className="hidden sm:inline">添加到合集</span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent>
@@ -553,7 +551,7 @@ export default function GameHome() {
               onClick={() => setMetadataDialogOpen(true)}
             >
               <RefreshCcwIcon className="size-4" />
-              更新元数据
+              <span className="hidden sm:inline">更新元数据</span>
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -585,11 +583,11 @@ export default function GameHome() {
               onClick={() => setDeleteConfirmOpen(true)}
             >
               <Trash2Icon className="size-4" />
-              删除
+              <span className="hidden sm:inline">删除</span>
             </Button>
             <Button variant="outline" size="sm" onClick={handleCancelSelection}>
               <XIcon className="size-4" />
-              取消
+              <span className="hidden sm:inline">取消</span>
             </Button>
             <Button
               variant="outline"
@@ -598,9 +596,11 @@ export default function GameHome() {
               onClick={handleSelectAll}
             >
               <CheckIcon className="size-4" />
-              全选
+              <span className="hidden sm:inline">全选</span>
             </Button>
-            <div className="text-sm font-medium">已选择 {selectedCount} 项</div>
+            <span className="text-muted-foreground w-full text-center text-xs sm:w-auto sm:text-sm">
+              已选择 {selectedCount} 项
+            </span>
           </div>
         </div>
       ) : null}
@@ -728,23 +728,18 @@ const RecentGame = ({
   selectionMode,
   onToggleSelect,
 }: RecentGameProps) => {
-  const scrollRef = useRef<HTMLDivElement>(null)
-
-  const scrollCards = (direction: 'left' | 'right') => {
-    const offset = 320
-    scrollRef.current?.scrollBy({
-      left: direction === 'left' ? -offset : offset,
-      behavior: 'smooth',
-    })
-  }
-
   const items: GameCardProps[] = gameCards
     .filter((item) => item.lastRunAt)
     .sort(
       (a, b) =>
         new Date(b.lastRunAt).getTime() - new Date(a.lastRunAt).getTime(),
     )
-    .slice(0, 20)
+    .slice(0, 5)
+
+  if (items.length === 0) {
+    return null
+  }
+
   return (
     <div className="h-full w-full">
       <div className="bg-background/60 mb-4 flex items-center justify-between rounded-xl border p-3">
@@ -754,41 +749,17 @@ const RecentGame = ({
             共 {items.length} 项
           </span>
         </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="icon"
-            className="shrink-0"
-            aria-label="向左滚动最近游戏列表"
-            onClick={() => scrollCards('left')}
-          >
-            <ArrowLeftIcon className="size-4" />
-          </Button>
-          <Button
-            variant="outline"
-            size="icon"
-            className="shrink-0"
-            aria-label="向右滚动最近游戏列表"
-            onClick={() => scrollCards('right')}
-          >
-            <ArrowRightIcon className="size-4" />
-          </Button>
-        </div>
       </div>
-      <div
-        ref={scrollRef}
-        className="no-scrollbar flex space-x-4 overflow-x-auto"
-      >
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
         {items.map((item) => (
-          <div key={item.id} className="shrink-0">
-            <GameCard
-              {...item}
-              isSelected={selectedGameIds.includes(item.id)}
-              showSelection
-              selectionMode={selectionMode}
-              onToggleSelect={onToggleSelect}
-            />
-          </div>
+          <GameCard
+            key={item.id}
+            {...item}
+            isSelected={selectedGameIds.includes(item.id)}
+            showSelection
+            selectionMode={selectionMode}
+            onToggleSelect={onToggleSelect}
+          />
         ))}
       </div>
     </div>
@@ -804,16 +775,6 @@ const MyColletion = ({
   onSelectAllCollections,
   onOpenDeleteCollections,
 }: MyCollectionProps) => {
-  const scrollRef = useRef<HTMLDivElement>(null)
-
-  const scrollCards = (direction: 'left' | 'right') => {
-    const offset = 320
-    scrollRef.current?.scrollBy({
-      left: direction === 'left' ? -offset : offset,
-      behavior: 'smooth',
-    })
-  }
-
   const items: GameCardProps[] = collections.map((collection) => {
     const firstGame = collection.games[0]
     return {
@@ -830,6 +791,10 @@ const MyColletion = ({
   })
 
   const collectionSelectionMode = selectedCollectionIds.length > 0
+
+  if (items.length === 0) {
+    return null
+  }
 
   return (
     <div className="h-full w-full">
@@ -878,41 +843,20 @@ const MyColletion = ({
               可按住 Ctrl 或 ⌘ 点击选择收藏夹
             </div>
           )}
-          <Button
-            variant="outline"
-            size="icon"
-            className="shrink-0"
-            aria-label="向左滚动收藏列表"
-            onClick={() => scrollCards('left')}
-          >
-            <ArrowLeftIcon className="size-4" />
-          </Button>
-          <Button
-            variant="outline"
-            size="icon"
-            className="shrink-0"
-            aria-label="向右滚动收藏列表"
-            onClick={() => scrollCards('right')}
-          >
-            <ArrowRightIcon className="size-4" />
-          </Button>
         </div>
       </div>
-      <div
-        ref={scrollRef}
-        className="no-scrollbar flex space-x-4 overflow-x-auto"
-      >
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
         {items.map((item) => (
-          <div key={item.id} className="shrink-0">
-            <GameCard
-              {...item}
-              isSelected={selectedCollectionIds.includes(item.id)}
-              showSelection
-              selectionMode={collectionSelectionMode}
-              modifierSelectEnabled
-              onToggleSelect={onToggleSelectCollection}
-            />
-          </div>
+          <GameCard
+            key={item.id}
+            {...item}
+            isSelected={selectedCollectionIds.includes(item.id)}
+            showSelection
+            selectionMode={collectionSelectionMode}
+            modifierSelectEnabled
+            showPlayInfo={false}
+            onToggleSelect={onToggleSelectCollection}
+          />
         ))}
       </div>
     </div>
@@ -966,10 +910,10 @@ const AllGame = ({
           </span>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 sm:justify-end">
-          <div className="text-muted-foreground text-sm font-medium">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-muted-foreground text-sm font-medium">
             排序依据
-          </div>
+          </span>
           <SortSelect orderBy={orderBy} setOrderBy={setOrderBy} />
           <Button
             variant="outline"

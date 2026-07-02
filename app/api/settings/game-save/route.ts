@@ -33,7 +33,8 @@ async function readGameSaveConfig(): Promise<GameSaveConfig> {
   >
   return {
     enabled: Boolean(gameSave.open_save_dir),
-    directory: typeof gameSave.save_dir_path === 'string' ? gameSave.save_dir_path : '',
+    directory:
+      typeof gameSave.save_dir_path === 'string' ? gameSave.save_dir_path : '',
   }
 }
 
@@ -44,10 +45,7 @@ async function writeGameSaveConfig(config: GameSaveConfig) {
     open_save_dir: config.enabled,
     save_dir_path: config.directory,
   }
-  await fs.promises.writeFile(
-    CONFIG_FILE,
-    JSON.stringify(fullConfig, null, 4),
-  )
+  await fs.promises.writeFile(CONFIG_FILE, JSON.stringify(fullConfig, null, 4))
 }
 
 // 获取游戏存档配置

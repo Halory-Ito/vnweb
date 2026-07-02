@@ -1,13 +1,7 @@
 'use client'
 
 import { useQueryClient } from '@tanstack/react-query'
-import {
-  CalendarDaysIcon,
-  CheckIcon,
-  Clock3Icon,
-  PlayIcon,
-  StarIcon,
-} from 'lucide-react'
+import { CalendarDaysIcon, CheckIcon, Clock3Icon, PlayIcon } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -36,6 +30,7 @@ export default function GameCard(props: GameCardProps) {
   const isSelected = Boolean(props.isSelected)
   const selectionMode = Boolean(props.selectionMode)
   const modifierSelectEnabled = Boolean(props.modifierSelectEnabled)
+  const showPlayInfo = props.showPlayInfo !== false
 
   const gameHref = props.href || `/game/info/${props.id}`
 
@@ -146,26 +141,11 @@ export default function GameCard(props: GameCardProps) {
     props.onToggleSelect?.(props.id)
   }
 
-  const rating = Number(props.rating) || 0
-  const renderStars = () => {
-    const stars = []
-    for (let i = 1; i <= 5; i++) {
-      const isFilled = i <= Math.ceil(rating / 2)
-      stars.push(
-        <StarIcon
-          key={i}
-          className={`size-3 ${isFilled ? 'fill-amber-400 text-amber-400' : 'text-gray-600'}`}
-        />,
-      )
-    }
-    return stars
-  }
-
   return (
     <>
       <Link
         href={gameHref}
-        className="group relative flex w-44 shrink-0 flex-col items-center p-1 transition-all duration-300 hover:-translate-y-1"
+        className="group relative flex w-full flex-col items-center p-1 transition-all duration-300 hover:-translate-y-1"
         onClick={handleCardClick}
       >
         {showSelection ? (
@@ -185,16 +165,6 @@ export default function GameCard(props: GameCardProps) {
 
         {/* 封面图片 */}
         <div className="relative w-full">
-          {/* 评分星星 */}
-          {rating > 0 && (
-            <div className="absolute top-2 left-2 z-10 flex items-center gap-0.5 rounded-full bg-black/70 px-2.5 py-1.5 backdrop-blur-md">
-              {renderStars()}
-              <span className="ml-1 text-xs font-medium text-amber-400">
-                {rating.toFixed(1)}
-              </span>
-            </div>
-          )}
-
           {/* 主图片 */}
           <div className="relative aspect-3/4 w-full overflow-hidden rounded-lg shadow-lg transition-all duration-300 group-hover:shadow-2xl">
             {/* 背景光晕效果 */}
@@ -226,23 +196,25 @@ export default function GameCard(props: GameCardProps) {
                   </Button>
                 )}
 
-                {/* 游戏信息 - 两行显示 */}
-                <div className="absolute right-3 bottom-3 left-3 space-y-1.5">
-                  {/* 游戏时长 */}
-                  <div className="flex items-center gap-1.5 rounded-md px-2 py-1">
-                    <Clock3Icon className="size-3 text-white/80" />
-                    <span className="text-xs font-medium text-white">
-                      {formatPlayTime(props.playTime)}
-                    </span>
+                {/* 游戏信息 */}
+                {showPlayInfo && (
+                  <div className="absolute right-3 bottom-3 left-3 space-y-1.5">
+                    {/* 游戏时长 */}
+                    <div className="flex items-center gap-1.5 rounded-md px-2 py-1">
+                      <Clock3Icon className="size-3 text-white/80" />
+                      <span className="text-xs font-medium text-white">
+                        {formatPlayTime(props.playTime)}
+                      </span>
+                    </div>
+                    {/* 上次游玩 */}
+                    <div className="flex items-center gap-1.5 rounded-md px-2 py-1">
+                      <CalendarDaysIcon className="size-3 text-white/80" />
+                      <span className="text-xs text-white/90">
+                        {formatLastRunDate(props.lastRunAt)}
+                      </span>
+                    </div>
                   </div>
-                  {/* 上次游玩 */}
-                  <div className="flex items-center gap-1.5 rounded-md px-2 py-1">
-                    <CalendarDaysIcon className="size-3 text-white/80" />
-                    <span className="text-xs text-white/90">
-                      {formatLastRunDate(props.lastRunAt)}
-                    </span>
-                  </div>
-                </div>
+                )}
               </div>
             )}
 
