@@ -734,7 +734,7 @@ const RecentGame = ({
       (a, b) =>
         new Date(b.lastRunAt).getTime() - new Date(a.lastRunAt).getTime(),
     )
-    .slice(0, 5)
+    .slice(0, 6)
 
   if (items.length === 0) {
     return null
@@ -750,7 +750,7 @@ const RecentGame = ({
           </span>
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
         {items.map((item) => (
           <GameCard
             key={item.id}
