@@ -1,4 +1,11 @@
+import { Metadata } from 'next'
+
 import GameHome from '@/components/game/game-home'
+
+export const metadata: Metadata = {
+  title: '游戏库',
+  description: '游戏主页',
+}
 
 export default function Home() {
   return <GameHome />

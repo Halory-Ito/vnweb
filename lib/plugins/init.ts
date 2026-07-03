@@ -1,4 +1,5 @@
 import { bilibiliPlugin } from './builtin/bilibili-plugin'
+import { genericVideoPlugin } from './builtin/generic-video-plugin'
 import { youtubePlugin } from './builtin/youtube-plugin'
 import { initializePlugins, registerPlugin } from './registry'
 import { bangumiProvider } from '@/lib/providers/bangumi-provider'
@@ -16,6 +17,7 @@ registerPlugin(ymgalProvider)
 
 registerPlugin(bilibiliPlugin)
 registerPlugin(youtubePlugin)
+registerPlugin(genericVideoPlugin)
 
 /**
  * 初始化插件系统：

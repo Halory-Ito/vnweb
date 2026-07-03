@@ -18,14 +18,14 @@ export function toBilibiliEmbedUrl(url: string): string {
     /(?:bilibili\.com\/video\/|player\.bilibili\.com\/player\.html\?.*(?:bvid|bv)=)(BV[a-zA-Z0-9]+)/i,
   )
   if (bvMatch?.[1]) {
-    return `https://api.injahow.cn/bparse/?bv=${bvMatch[1]}&p=${p}&q=80&otype=dplayer`
+    return `https://player.bilibili.com/player.html?bvid=${bvMatch[1]}&p=${p}&high_quality=1&danmaku=0`
   }
 
   const avMatch = url.match(
     /(?:bilibili\.com\/video\/av|player\.bilibili\.com\/player\.html\?.*aid=)(\d+)/i,
   )
   if (avMatch?.[1]) {
-    return `https://api.injahow.cn/bparse/?av=${avMatch[1]}&p=${p}&q=80&otype=dplayer`
+    return `https://player.bilibili.com/player.html?aid=${avMatch[1]}&p=${p}&high_quality=1&danmaku=0`
   }
 
   return ''

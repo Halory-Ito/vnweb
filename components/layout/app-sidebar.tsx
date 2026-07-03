@@ -32,6 +32,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { api } from '@/lib/request-utils'
+import { cn } from '@/lib/utils'
 
 type SidebarItem = {
   title: string
@@ -68,6 +69,8 @@ const isActivePath = (pathname: string, href: string) => {
   return pathname === href || pathname.startsWith(`${href}/`)
 }
 
+const SIDEBAR_BUTTON_SIZE = 'h-10 w-10'
+
 function SidebarIconButton({
   item,
   pathname,
@@ -76,6 +79,7 @@ function SidebarIconButton({
   pathname: string
 }) {
   const Icon = item.icon
+  const isActive = isActivePath(pathname, item.href)
 
   return (
     <SidebarMenuItem>
@@ -83,7 +87,14 @@ function SidebarIconButton({
         <TooltipTrigger asChild>
           <SidebarMenuButton
             asChild
-            isActive={isActivePath(pathname, item.href)}
+            isActive={isActive}
+            className={cn(
+              SIDEBAR_BUTTON_SIZE,
+              'transition-colors duration-200',
+              isActive
+                ? 'relative bg-primary/10 text-primary before:absolute before:top-1/2 before:left-0 before:h-5 before:w-0.75 before:-translate-y-1/2 before:rounded-r-full before:bg-primary before:content-[""] dark:bg-primary/20'
+                : 'hover:bg-sidebar-accent/60',
+            )}
           >
             <Link
               href={item.href}
@@ -156,8 +167,8 @@ export default function AppSideBar() {
         </Link>
       </SidebarHeader>
 
-      <SidebarContent className="items-center p-2">
-        <SidebarMenu className="gap-4 p-4">
+      <SidebarContent className="p-4">
+        <SidebarMenu className="flex flex-col items-center justify-center">
           {contentItems.map((item) => (
             <SidebarIconButton
               key={item.title}

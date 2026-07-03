@@ -176,19 +176,27 @@ export default function GamePV({ gameId }: GamePVProps) {
     const url = resolvedVideo.playUrl
 
     if (!video || !url || playingMode !== 'direct') {
+      // 暂停视频并清理
+      if (video) {
+        video.pause()
+        video.removeAttribute('src')
+      }
       disposeHls()
       return
     }
 
+    // 先暂停当前视频
+    video.pause()
     disposeHls()
+
+    // Steam 视频需要跨域支持
+    const needsCors =
+      url.includes('steamstatic.com') ||
+      url.includes('steamcdn-a.akamaihd.net')
 
     if (!isHlsUrl(url)) {
       if (video.src !== url) {
-        if (url.includes('steamstatic.com')) {
-          video.crossOrigin = 'anonymous'
-        } else {
-          video.crossOrigin = null
-        }
+        video.crossOrigin = needsCors ? 'anonymous' : null
         video.src = url
         video.load()
         void video.play().catch(() => {})
@@ -198,7 +206,7 @@ export default function GamePV({ gameId }: GamePVProps) {
 
     if (video.canPlayType('application/vnd.apple.mpegurl')) {
       if (video.src !== url) {
-        video.crossOrigin = null
+        video.crossOrigin = needsCors ? 'anonymous' : null
         video.src = url
         video.load()
         void video.play().catch(() => {})
@@ -207,7 +215,13 @@ export default function GamePV({ gameId }: GamePVProps) {
     }
 
     if (Hls.isSupported()) {
-      const hls = new Hls()
+      const hls = new Hls({
+        xhrSetup: (xhr) => {
+          if (needsCors) {
+            xhr.withCredentials = false
+          }
+        },
+      })
       hlsRef.current = hls
       hls.loadSource(url)
       hls.attachMedia(video)
@@ -232,6 +246,11 @@ export default function GamePV({ gameId }: GamePVProps) {
 
   useEffect(() => {
     return () => {
+      // 组件卸载时暂停视频并清理资源
+      if (videoRef.current) {
+        videoRef.current.pause()
+        videoRef.current.removeAttribute('src')
+      }
       disposeHls()
     }
   }, [])

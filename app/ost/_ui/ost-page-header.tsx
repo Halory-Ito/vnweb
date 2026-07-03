@@ -1,6 +1,6 @@
 'use client'
 
-import { SearchIcon } from 'lucide-react'
+import { PlusIcon } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 
@@ -17,8 +17,8 @@ export function OstPageHeader({ onCreate }: OstPageHeaderProps) {
 
       <div className="flex flex-wrap items-center gap-3 sm:justify-end">
         <Button type="button" onClick={onCreate} variant="outline">
-          <SearchIcon className="size-4" />
-          添加 OST
+          <PlusIcon />
+          新增 OST
         </Button>
       </div>
     </div>

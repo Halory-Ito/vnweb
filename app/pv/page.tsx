@@ -11,7 +11,13 @@ import { PvManageContent } from './_ui/pv-manage-content'
 import { PvPageHeader } from './_ui/pv-page-header'
 import { PvPlayerDialog } from './_ui/pv-player-dialog'
 import { PvSearchToolbar } from './_ui/pv-search-toolbar'
-import { getHostname, isHlsUrl, isVideoFileUrl } from './_ui/utils'
+import {
+  getHostname,
+  isHlsUrl,
+  isSteamVideoUrl,
+  isVideoFileUrl,
+  isVideoStreamUrl,
+} from './_ui/utils'
 import {
   createPvManageItem,
   deletePvManageItem,
@@ -101,7 +107,19 @@ export default function PVPage() {
       return
     }
 
-    // 2. 调用插件 Hook 解析
+    // 2. 视频流（m3u8、mpd等）→ 直接播放
+    if (isVideoStreamUrl(url)) {
+      setResolvedVideo({ mode: 'direct', embedUrl: '', playUrl: url })
+      return
+    }
+
+    // 3. Steam 视频链接 → 直接播放
+    if (isSteamVideoUrl(url)) {
+      setResolvedVideo({ mode: 'direct', embedUrl: '', playUrl: url })
+      return
+    }
+
+    // 4. 调用插件 Hook 解析（YouTube、Bilibili 等）
     let cancelled = false
     void callHook('pv:video-resolve', { url }).then((result) => {
       if (cancelled) return
@@ -134,63 +152,74 @@ export default function PVPage() {
     const video = videoEl
     const url = resolvedVideo.playUrl
 
-    if (!video || !url || playingMode !== 'direct') {
+    // playingItem 为 null 时说明对话框已关闭，不应再初始化视频播放
+    if (!playingItem || !video || !url || playingMode !== 'direct') {
       disposeHls()
       return
     }
 
     disposeHls()
 
-    if (!isHlsUrl(url)) {
-      if (video.src !== url) {
-        // Handle steam movie URLs that might need crossOrigin
-        if (url.includes('steamstatic.com')) {
-          video.crossOrigin = 'anonymous'
-        } else {
-          video.crossOrigin = null
+    // Steam 视频需要跨域支持
+    const needsCors =
+      url.includes('steamstatic.com') ||
+      url.includes('steamcdn-a.akamaihd.net') ||
+      url.includes('valvesoftware.com')
+
+    // HLS 流（m3u8）
+    if (isHlsUrl(url)) {
+      // Safari 原生支持 HLS
+      if (video.canPlayType('application/vnd.apple.mpegurl')) {
+        if (video.src !== url) {
+          video.crossOrigin = needsCors ? 'anonymous' : null
+          video.src = url
+          video.load()
+          void video.play().catch(() => {})
         }
-        video.src = url
-        video.load()
-        void video.play().catch(() => {
-          // Playback might be blocked by browser until user interacts
+        return
+      }
+
+      // 其他浏览器使用 hls.js
+      if (Hls.isSupported()) {
+        const hls = new Hls({
+          xhrSetup: (xhr) => {
+            if (needsCors) {
+              xhr.withCredentials = false
+            }
+          },
         })
-      }
-      return
-    }
+        hlsRef.current = hls
+        hls.loadSource(url)
+        hls.attachMedia(video)
 
-    if (video.canPlayType('application/vnd.apple.mpegurl')) {
-      if (video.src !== url) {
-        video.crossOrigin = null
-        video.src = url
-        video.load()
-        void video.play().catch(() => {})
-      }
-      return
-    }
+        hls.on(Hls.Events.MANIFEST_PARSED, () => {
+          void video.play().catch(() => {})
+        })
 
-    if (Hls.isSupported()) {
-      const hls = new Hls()
-      hlsRef.current = hls
-      hls.loadSource(url)
-      hls.attachMedia(video)
+        hls.on(Hls.Events.ERROR, (_event, data) => {
+          if (data.fatal && video.isConnected) {
+            toast.error('HLS 视频播放失败，请稍后重试')
+          }
+        })
 
-      hls.on(Hls.Events.MANIFEST_PARSED, () => {
-        void video.play().catch(() => {})
-      })
-
-      hls.on(Hls.Events.ERROR, (_event, data) => {
-        // Ignore lifecycle-related aborts when dialog/source is switched quickly.
-        if (data.fatal && video.isConnected) {
-          toast.error('HLS 视频播放失败，请稍后重试')
+        return () => {
+          disposeHls()
         }
-      })
-
-      return () => {
-        disposeHls()
       }
+
+      toast.error('当前浏览器不支持 HLS 播放')
+      return
     }
 
-    toast.error('当前浏览器不支持 HLS 播放')
+    // 普通视频文件
+    if (video.src !== url) {
+      video.crossOrigin = needsCors ? 'anonymous' : null
+      video.src = url
+      video.load()
+      void video.play().catch(() => {
+        // Playback might be blocked by browser until user interact
+      })
+    }
   }, [playingItem, playingMode, videoEl])
 
   useEffect(() => {
@@ -229,10 +258,10 @@ export default function PVPage() {
     setDialogOpen(true)
   }
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (uploadedUrl?: string) => {
     const gameId = Number(form.gameId)
     const name = form.name.trim()
-    const url = form.url.trim()
+    const url = uploadedUrl || form.url.trim()
 
     if (!Number.isInteger(gameId) || gameId <= 0) {
       toast.error('请选择游戏')
@@ -304,7 +333,7 @@ export default function PVPage() {
   }
 
   return (
-    <div className="max-h-[calc(100vh-70px)] w-full space-y-4 overflow-x-hidden overflow-y-scroll p-4">
+    <div className="max-h-[calc(100vh-70px)] w-full space-y-6 overflow-x-hidden overflow-y-scroll p-6">
       <PvPageHeader
         viewMode={viewMode}
         onViewModeChange={setViewMode}
@@ -345,8 +374,11 @@ export default function PVPage() {
         onOpenChange={(open) => {
           setDialogOpen(open)
           if (!open) {
-            setEditingItem(null)
-            setForm(defaultForm)
+            // 延迟清除表单，避免对话框关闭动画期间内容闪烁
+            setTimeout(() => {
+              setEditingItem(null)
+              setForm(defaultForm)
+            }, 200)
           }
         }}
         onGameIdChange={(value) =>
@@ -367,7 +399,7 @@ export default function PVPage() {
             }
           }
         }}
-        onSubmit={() => void handleSubmit()}
+        onSubmit={(uploadedUrl) => void handleSubmit(uploadedUrl)}
       />
 
       <PvDeleteDialog
@@ -388,6 +420,12 @@ export default function PVPage() {
         videoRef={setVideoEl}
         onOpenChange={(open) => {
           if (!open) {
+            // 暂停视频并清理资源
+            if (videoEl) {
+              videoEl.pause()
+              videoEl.src = ''
+            }
+            disposeHls()
             setPlayingItem(null)
           }
         }}

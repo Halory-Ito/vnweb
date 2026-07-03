@@ -215,7 +215,7 @@ export default function OSTPage() {
   }))
 
   return (
-    <div className="max-h-[calc(100vh-70px)] w-full space-y-4 overflow-x-hidden overflow-y-scroll p-4">
+    <div className="max-h-[calc(100vh-70px)] w-full space-y-6 overflow-x-hidden overflow-y-scroll p-6">
       <OstPageHeader onCreate={openCreateDialog} />
 
       <OstSearchToolbar

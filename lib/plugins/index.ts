@@ -58,6 +58,10 @@ export {
   getYouTubeCover,
   isYouTubeUrl,
 } from './builtin/youtube-plugin'
+export {
+  isSteamVideoUrl,
+  isVideoStreamUrl,
+} from './builtin/generic-video-plugin'
 
 // ── 设置 ──────────────────────────────────────────────────
 export {

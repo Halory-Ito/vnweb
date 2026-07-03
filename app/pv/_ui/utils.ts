@@ -34,3 +34,4 @@ export const isVideoFileUrl = (url: string): boolean => {
 // 以下函数已迁移到 lib/plugins/builtin/，通过插件系统重新导出
 export { toYouTubeEmbedUrl, getYouTubeCover } from '@/lib/plugins'
 export { toBilibiliEmbedUrl } from '@/lib/plugins'
+export { isSteamVideoUrl, isVideoStreamUrl } from '@/lib/plugins'

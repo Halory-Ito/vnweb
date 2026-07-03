@@ -20,8 +20,8 @@ import { LXGWWenKai } from '@/fonts'
 export const metadata: Metadata = {
   // %s 会被子页面的 title 替换
   title: {
-    template: '%s',
-    default: '我的网站', // 如果没有子页面 title，则显示这个
+    template: '%s - vnweb',
+    default: 'vnweb', // 如果没有子页面 title，则显示这个
   },
   description: '网站描述',
 }

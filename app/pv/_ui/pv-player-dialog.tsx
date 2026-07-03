@@ -8,6 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { isHlsUrl } from './utils'
 
 import type { PvItem, PvPlayerMode } from './types'
 
@@ -49,9 +50,6 @@ export function PvPlayerDialog({
               }
               className="h-full w-full"
             >
-              {item?.url && !item.url.includes('.m3u8') && (
-                <source src={item.url} type="video/mp4" />
-              )}
               您的浏览器不支持 HTML5 视频播放。
             </video>
           </div>

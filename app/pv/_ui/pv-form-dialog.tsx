@@ -1,5 +1,8 @@
 'use client'
 
+import { UploadIcon } from 'lucide-react'
+import { useRef, useState } from 'react'
+
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -16,6 +19,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { Label } from '@/components/ui/label'
+import { Switch } from '@/components/ui/switch'
+import { api } from '@/lib/request-utils'
 
 import type { GameOption, PvFormState, PvItem } from './types'
 
@@ -29,7 +35,7 @@ type PvFormDialogProps = {
   onGameIdChange: (value: string) => void
   onNameChange: (value: string) => void
   onUrlChange: (value: string) => void | Promise<void>
-  onSubmit: () => void
+  onSubmit: (uploadedUrl?: string) => void
 }
 
 export function PvFormDialog({
@@ -44,6 +50,57 @@ export function PvFormDialog({
   onUrlChange,
   onSubmit,
 }: PvFormDialogProps) {
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [isUploading, setIsUploading] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState(0)
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [useUpload, setUseUpload] = useState(false)
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      setSelectedFile(file)
+    }
+  }
+
+  const handleUpload = async () => {
+    if (!selectedFile || !form.gameId) return
+
+    setIsUploading(true)
+    setUploadProgress(0)
+
+    try {
+      const formData = new FormData()
+      formData.append('file', selectedFile)
+      formData.append('gameId', form.gameId)
+
+      const response = await api.post('/pv/upload', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+        onUploadProgress: (progressEvent) => {
+          if (progressEvent.total) {
+            const progress = Math.round(
+              (progressEvent.loaded * 100) / progressEvent.total,
+            )
+            setUploadProgress(progress)
+          }
+        },
+      })
+
+      const uploadedUrl = response.data?.data?.url
+      if (uploadedUrl) {
+        onSubmit(uploadedUrl)
+        setSelectedFile(null)
+      }
+    } catch (error) {
+      console.error('Upload failed:', error)
+    } finally {
+      setIsUploading(false)
+      setUploadProgress(0)
+    }
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-xl">
@@ -77,14 +134,67 @@ export function PvFormDialog({
             />
           </div>
 
-          <div className="space-y-2">
-            <div className="text-sm font-medium">PV 链接</div>
-            <Input
-              value={form.url}
-              onChange={(event) => onUrlChange(event.target.value)}
-              placeholder="请输入可访问链接"
-            />
-          </div>
+          {!editingItem && (
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="upload-mode"
+                checked={useUpload}
+                onCheckedChange={setUseUpload}
+              />
+              <Label htmlFor="upload-mode">上传本地视频</Label>
+            </div>
+          )}
+
+          {useUpload && !editingItem ? (
+            <div className="space-y-2">
+              <div className="text-sm font-medium">视频文件</div>
+              <div className="flex items-center gap-2">
+                <Input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="video/mp4,video/webm,video/ogg,video/quicktime,video/x-msvideo,video/x-matroska,.mp4,.webm,.ogg,.mov,.avi,.mkv,.m4v"
+                  onChange={handleFileSelect}
+                  className="hidden"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isSubmitting || isUploading}
+                  className="flex-1"
+                >
+                  <UploadIcon className="mr-2 size-4" />
+                  {selectedFile ? selectedFile.name : '选择视频文件'}
+                </Button>
+                {selectedFile && (
+                  <Button
+                    type="button"
+                    onClick={handleUpload}
+                    disabled={isSubmitting || isUploading || !form.gameId}
+                  >
+                    {isUploading ? `上传中 ${uploadProgress}%` : '上传'}
+                  </Button>
+                )}
+              </div>
+              {isUploading && (
+                <div className="h-2 w-full overflow-hidden rounded-full bg-secondary">
+                  <div
+                    className="h-full bg-primary transition-all duration-300"
+                    style={{ width: `${uploadProgress}%` }}
+                  />
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <div className="text-sm font-medium">PV 链接</div>
+              <Input
+                value={form.url}
+                onChange={(event) => onUrlChange(event.target.value)}
+                placeholder="请输入可访问链接"
+              />
+            </div>
+          )}
         </div>
 
         <DialogFooter>
@@ -92,11 +202,19 @@ export function PvFormDialog({
             type="button"
             variant="outline"
             onClick={() => onOpenChange(false)}
-            disabled={isSubmitting}
+            disabled={isSubmitting || isUploading}
           >
             取消
           </Button>
-          <Button type="button" onClick={onSubmit} disabled={isSubmitting}>
+          <Button
+            type="button"
+            onClick={() => onSubmit()}
+            disabled={
+              isSubmitting ||
+              isUploading ||
+              (useUpload && !editingItem ? !selectedFile : !form.url)
+            }
+          >
             {isSubmitting ? '提交中...' : editingItem ? '保存修改' : '创建'}
           </Button>
         </DialogFooter>

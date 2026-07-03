@@ -181,10 +181,10 @@ export function PvManageContent({
           </Table>
         </div>
       ) : isLoading ? (
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
           {Array.from({ length: 12 }).map((_, i) => (
             <div key={i} className="flex flex-col gap-2 p-1">
-              <Skeleton className="aspect-video w-full rounded-2xl" />
+              <Skeleton className="aspect-video w-full rounded-lg" />
               <div className="px-1 py-1">
                 <Skeleton className="mx-auto h-4 w-full" />
                 <Skeleton className="mx-auto mt-2 h-3 w-2/3" />
@@ -197,7 +197,7 @@ export function PvManageContent({
           暂无数据
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
           {items.map((item) => {
             const videoHost = getHostname(item.url)
             const coverUrl = getYouTubeCover(item.url)
@@ -211,7 +211,7 @@ export function PvManageContent({
               >
                 <div className="relative w-full">
                   <div
-                    className="relative aspect-video w-full cursor-pointer overflow-hidden rounded-2xl shadow-lg transition-all duration-300 group-hover:shadow-2xl"
+                    className="relative aspect-video w-full cursor-pointer overflow-hidden rounded-lg shadow-lg transition-all duration-300 group-hover:shadow-2xl"
                     onClick={() => onPlay(item)}
                     role="button"
                     tabIndex={0}
@@ -251,7 +251,7 @@ export function PvManageContent({
                       </div>
                     </div>
 
-                    <div className="pointer-events-none absolute inset-0 rounded-2xl ring-1 ring-white/10 transition-all duration-300 group-hover:ring-2 group-hover:ring-white/20" />
+                    <div className="pointer-events-none absolute inset-0 rounded-lg ring-1 ring-white/10 transition-all duration-300 group-hover:ring-2 group-hover:ring-white/20" />
                   </div>
                 </div>
 

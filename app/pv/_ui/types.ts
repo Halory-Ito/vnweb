@@ -6,6 +6,7 @@ export type PvFormState = {
   gameId: string
   name: string
   url: string
+  uploadingFile?: File | null
 }
 
 export type GameOption = {

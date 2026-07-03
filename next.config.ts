@@ -30,6 +30,15 @@ const nextConfig: NextConfig = {
   },
   transpilePackages: ['next-mdx-remote'],
   devIndicators: false,
+  async redirects() {
+    return [
+      {
+        source: '/game',
+        destination: '/game/home',
+        permanent: false,
+      },
+    ]
+  },
 }
 
 export default nextConfig
