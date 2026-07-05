@@ -39,6 +39,7 @@ yarn-error.log*
 
 
 /app/config.ts
+/app/config.json
 
 /outer-docs
 
@@ -61,3 +62,7 @@ next-env.d.ts
 /assets/**
 /local.db
 
+
+# vitepress
+docs/.vitepress/dist
+docs/.vitepress/cache
