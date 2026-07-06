@@ -2,3 +2,5 @@
 
 - https://ui.jln.dev/
 - https://tweakcn.com/
+
+可以直接修改`app/custom.css`文件，也可以在 Web UI 中的【设置】-【主题】中填写 CSS 变量

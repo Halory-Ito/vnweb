@@ -42,57 +42,16 @@ export default defineConfig({
           ],
         },
       ],
-      '/features/': [
-        {
-          text: '功能模块',
-          items: [
-            { text: '游戏库管理', link: '/features/game-library' },
-            { text: '游戏详情', link: '/features/game-detail' },
-            { text: '扫描与导入', link: '/features/scan' },
-            { text: 'PV 与 OST 管理', link: '/features/media' },
-            { text: '台词摘录', link: '/features/quote' },
-            { text: '收藏夹', link: '/features/collection' },
-            { text: '统计与记录', link: '/features/statistics' },
-            { text: '第三方联动', link: '/features/third-party' },
-            { text: '外观定制', link: '/features/appearance' },
-          ],
-        },
-      ],
-      '/api/': [
-        {
-          text: 'API 参考',
-          items: [
-            { text: '概览', link: '/api/overview' },
-            { text: '游戏管理', link: '/api/game' },
-            { text: '媒体管理', link: '/api/media' },
-            { text: '记录与统计', link: '/api/record' },
-            { text: '收藏夹', link: '/api/collection' },
-            { text: '扫描', link: '/api/scan' },
-            { text: '设置', link: '/api/settings' },
-            { text: '台词摘录', link: '/api/quote' },
-          ],
-        },
-      ],
-      '/dev/': [
-        {
-          text: '开发指南',
-          items: [
-            { text: '数据模型', link: '/dev/database' },
-            { text: '项目结构', link: '/dev/project-structure' },
-            { text: '参与开发', link: '/dev/contributing' },
-          ],
-        },
-      ],
     },
 
-    socialLinks: [{ icon: 'github', link: '#' }],
+    socialLinks: [{ icon: 'github', link: 'https://github.com/Halory-Ito/vnweb' }],
 
     search: {
       provider: 'local',
     },
 
     editLink: {
-      pattern: '#',
+      pattern: 'https://github.com/Halory-Ito/vnweb/edit/main/docs/:path',
       text: '在 GitHub 上编辑此页',
     },
 
