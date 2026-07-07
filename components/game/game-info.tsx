@@ -2,12 +2,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useAtom } from 'jotai'
 import { Play, Settings, Square } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import {
-  type ChangeEvent,
-  type KeyboardEvent,
-  useEffect,
-  useState,
-} from 'react'
+import { type ChangeEvent, type KeyboardEvent, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
 import { Button } from '../ui/button'
@@ -45,7 +40,6 @@ import GameRecord from './info/game-record'
 import GameStats from './info/game-stats'
 import { gameFilterAtom } from '@/atom/global'
 import GameOSTDialog from '@/components/game/dialog/game-ost-dialog'
-import GamePVDialog from '@/components/game/dialog/game-pv-dialog'
 import GameCharacters from '@/components/game/info/game-characters'
 import GameMemory from '@/components/game/info/game-memory'
 import GameOST from '@/components/game/info/game-ost'
@@ -65,15 +59,7 @@ type GameInfoProps = {
   initialTab?: string
 }
 
-const GAME_INFO_TABS = [
-  'overview',
-  'characters',
-  'pv',
-  'ost',
-  'record',
-  'memory',
-  'quote',
-] as const
+const GAME_INFO_TABS = ['overview', 'characters', 'pv', 'ost', 'record', 'memory', 'quote'] as const
 
 type GameInfoTab = (typeof GAME_INFO_TABS)[number]
 
@@ -93,7 +79,6 @@ export default function GameInfo({ game, initialTab }: GameInfoProps) {
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [playTimeOpen, setPlayTimeOpen] = useState(false)
   const [ratingOpen, setRatingOpen] = useState(false)
-  const [pvDialogOpen, setPvDialogOpen] = useState(false)
   const [ostDialogOpen, setOstDialogOpen] = useState(false)
   const [playStatusDialogOpen, setPlayStatusDialogOpen] = useState(false)
   const [isLaunching, setIsLaunching] = useState(false)
@@ -104,22 +89,14 @@ export default function GameInfo({ game, initialTab }: GameInfoProps) {
   const [isRunning, setIsRunning] = useState(game.isRunning)
   const [playStatus, setPlayStatus] = useState(game.playStatus)
   const [rating, setRating] = useState(game.rating ?? 0)
-  const [sessionSeconds, setSessionSeconds] = useState(
-    game.currentSessionSeconds,
-  )
+  const [sessionSeconds, setSessionSeconds] = useState(game.currentSessionSeconds)
   const queryClient = useQueryClient()
   const router = useRouter()
   const [, setGameFilter] = useAtom(gameFilterAtom)
   const currentTab =
-    typeof initialTab === 'string' && isGameInfoTab(initialTab)
-      ? initialTab
-      : 'overview'
+    typeof initialTab === 'string' && isGameInfoTab(initialTab) ? initialTab : 'overview'
 
-  const applyTagFilter = (
-    field: keyof GameFilterState,
-    value: string,
-    fieldLabel: string,
-  ) => {
+  const applyTagFilter = (field: keyof GameFilterState, value: string, fieldLabel: string) => {
     if (!value || value === '-') {
       return
     }
@@ -137,13 +114,7 @@ export default function GameInfo({ game, initialTab }: GameInfoProps) {
     setPlayStatus(game.playStatus)
     setRating(game.rating ?? 0)
     setSessionSeconds(game.currentSessionSeconds)
-  }, [
-    game.id,
-    game.isRunning,
-    game.playStatus,
-    game.rating,
-    game.currentSessionSeconds,
-  ])
+  }, [game.id, game.isRunning, game.playStatus, game.rating, game.currentSessionSeconds])
 
   useEffect(() => {
     if (!isRunning) {
@@ -159,9 +130,7 @@ export default function GameInfo({ game, initialTab }: GameInfoProps) {
     }
   }, [isRunning])
 
-  const totalPlayTimeText = formatHours(
-    game.totalPlayTime + (isRunning ? sessionSeconds : 0),
-  )
+  const totalPlayTimeText = formatHours(game.totalPlayTime + (isRunning ? sessionSeconds : 0))
 
   const handleLaunchWithExePath = async () => {
     const nextExePath = exePathInput.trim()
@@ -265,14 +234,6 @@ export default function GameInfo({ game, initialTab }: GameInfoProps) {
     }
   }
 
-  const handleEditGamePV = () => {
-    setPvDialogOpen(true)
-  }
-
-  const handleEditGameOST = () => {
-    setOstDialogOpen(true)
-  }
-
   const handleTabChange = (value: string) => {
     if (!isGameInfoTab(value) || value === currentTab) {
       return
@@ -318,10 +279,7 @@ export default function GameInfo({ game, initialTab }: GameInfoProps) {
                       {isLaunching ? '启动中...' : '开始游戏'}
                     </Button>
                   )}
-                  <Button
-                    variant="outline"
-                    onClick={() => setSettingsOpen(true)}
-                  >
+                  <Button variant="outline" onClick={() => setSettingsOpen(true)}>
                     <Settings className="size-4" />
                     设置
                   </Button>
@@ -358,11 +316,7 @@ export default function GameInfo({ game, initialTab }: GameInfoProps) {
           />
 
           <div>
-            <Tabs
-              value={currentTab}
-              onValueChange={handleTabChange}
-              className="mx-auto w-full"
-            >
+            <Tabs value={currentTab} onValueChange={handleTabChange} className="mx-auto w-full">
               <TabsList className="mx-auto dark:bg-transparent">
                 <TabsTrigger value="overview">概览</TabsTrigger>
                 <TabsTrigger value="characters">相关人物</TabsTrigger>
@@ -412,50 +366,25 @@ export default function GameInfo({ game, initialTab }: GameInfoProps) {
       </ContextMenuTrigger>
 
       <ContextMenuContent className="w-52">
-        <ContextMenuItem onClick={() => setBasicInfoOpen(true)}>
-          修改基本信息
-        </ContextMenuItem>
-        <ContextMenuItem onClick={() => setUpdateDataOpen(true)}>
-          更新资料数据
-        </ContextMenuItem>
-        {/* <ContextMenuItem onClick={handleEditGamePV}>修改游戏PV</ContextMenuItem>
-        <ContextMenuItem onClick={handleEditGameOST}>
-          修改游戏OST
-        </ContextMenuItem> */}
+        <ContextMenuItem onClick={() => setBasicInfoOpen(true)}>修改基本信息</ContextMenuItem>
+        <ContextMenuItem onClick={() => setUpdateDataOpen(true)}>更新资料数据</ContextMenuItem>
       </ContextMenuContent>
 
-      <GameBasicInfoDialog
-        game={game}
-        open={basicInfoOpen}
-        onOpenChange={setBasicInfoOpen}
-      />
+      <GameBasicInfoDialog game={game} open={basicInfoOpen} onOpenChange={setBasicInfoOpen} />
       <GameUpdateDataDialog
         gameId={game.id}
         initialKeyword={title}
         open={updateDataOpen}
         onOpenChange={setUpdateDataOpen}
       />
-      <GamePlayTimeDialog
-        gameId={game.id}
-        open={playTimeOpen}
-        onOpenChange={setPlayTimeOpen}
-      />
+      <GamePlayTimeDialog gameId={game.id} open={playTimeOpen} onOpenChange={setPlayTimeOpen} />
       <GameRatingDialog
         gameId={game.id}
         rating={rating}
         open={ratingOpen}
         onOpenChange={setRatingOpen}
       />
-      <GamePVDialog
-        gameId={game.id}
-        open={pvDialogOpen}
-        onOpenChange={setPvDialogOpen}
-      />
-      <GameOSTDialog
-        gameId={game.id}
-        open={ostDialogOpen}
-        onOpenChange={setOstDialogOpen}
-      />
+      <GameOSTDialog gameId={game.id} open={ostDialogOpen} onOpenChange={setOstDialogOpen} />
       <GamePlayStatusDialog
         gameId={game.id}
         gameTitle={title}
@@ -470,16 +399,12 @@ export default function GameInfo({ game, initialTab }: GameInfoProps) {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>填写游戏可执行文件路径</DialogTitle>
-            <DialogDescription>
-              当前游戏缺少可执行文件路径，请补充后再启动。
-            </DialogDescription>
+            <DialogDescription>当前游戏缺少可执行文件路径，请补充后再启动。</DialogDescription>
           </DialogHeader>
 
           <Input
             value={exePathInput}
-            onChange={(event: ChangeEvent<HTMLInputElement>) =>
-              setExePathInput(event.target.value)
-            }
+            onChange={(event: ChangeEvent<HTMLInputElement>) => setExePathInput(event.target.value)}
             placeholder="例如: C:\\Games\\MyGame\\game.exe"
             disabled={isLaunching}
             onKeyDown={(event: KeyboardEvent<HTMLInputElement>) => {

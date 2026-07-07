@@ -670,12 +670,15 @@ export const deleteGameById = async (id: number) => {
   }
 }
 
-export const browseLocalFileByGameId = async (id: number) => {
-  const response = await api.post(`/game/${id}/browse-local`)
+export const browseLocalFileByGameId = async (
+  id: number,
+  mode: 'game' | 'save' = 'game',
+) => {
+  const response = await api.post(`/game/${id}/browse-local`, { mode })
   return response.data as {
     data: {
       opened: boolean
-      exePath: string
+      path: string
     }
   }
 }

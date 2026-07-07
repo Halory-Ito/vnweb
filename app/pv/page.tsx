@@ -11,13 +11,7 @@ import { PvManageContent } from './_ui/pv-manage-content'
 import { PvPageHeader } from './_ui/pv-page-header'
 import { PvPlayerDialog } from './_ui/pv-player-dialog'
 import { PvSearchToolbar } from './_ui/pv-search-toolbar'
-import {
-  getHostname,
-  isHlsUrl,
-  isSteamVideoUrl,
-  isVideoFileUrl,
-  isVideoStreamUrl,
-} from './_ui/utils'
+import { isHlsUrl, isSteamVideoUrl, isVideoFileUrl, isVideoStreamUrl } from './_ui/utils'
 import {
   createPvManageItem,
   deletePvManageItem,
@@ -381,9 +375,7 @@ export default function PVPage() {
             }, 200)
           }
         }}
-        onGameIdChange={(value) =>
-          setForm((prev) => ({ ...prev, gameId: value }))
-        }
+        onGameIdChange={(value) => setForm((prev) => ({ ...prev, gameId: value }))}
         onNameChange={(value) => setForm((prev) => ({ ...prev, name: value }))}
         onUrlChange={async (value) => {
           setForm((prev) => ({ ...prev, url: value }))

@@ -52,7 +52,7 @@ export {
 } from './registry'
 
 // ── 内置插件工具函数 ──────────────────────────────────────
-export { toBilibiliEmbedUrl, isBilibiliUrl } from './builtin/bilibili-plugin'
+export { isBilibiliUrl } from './builtin/bilibili-plugin'
 export {
   toYouTubeEmbedUrl,
   getYouTubeCover,

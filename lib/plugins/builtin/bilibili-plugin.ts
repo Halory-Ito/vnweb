@@ -1,35 +1,8 @@
-import { api } from '@/lib/request-utils'
-
 import type { FeaturePlugin, PvVideoResolveOutput } from '../types'
 
 // ═══════════════════════════════════════════════════════════
 //  同步工具函数（供 PV 播放等场景直接调用）
 // ═══════════════════════════════════════════════════════════
-
-/**
- * 将 Bilibili URL 转换为嵌入播放地址。
- * 支持 bilibili.com/video/BV...、av... 和 player.bilibili.com 格式。
- * 非 Bilibili URL 返回空字符串。
- */
-export function toBilibiliEmbedUrl(url: string): string {
-  const p = url.match(/p=(\d+)/i)?.[1] || '1'
-
-  const bvMatch = url.match(
-    /(?:bilibili\.com\/video\/|player\.bilibili\.com\/player\.html\?.*(?:bvid|bv)=)(BV[a-zA-Z0-9]+)/i,
-  )
-  if (bvMatch?.[1]) {
-    return `https://player.bilibili.com/player.html?bvid=${bvMatch[1]}&p=${p}&high_quality=1&danmaku=0`
-  }
-
-  const avMatch = url.match(
-    /(?:bilibili\.com\/video\/av|player\.bilibili\.com\/player\.html\?.*aid=)(\d+)/i,
-  )
-  if (avMatch?.[1]) {
-    return `https://player.bilibili.com/player.html?aid=${avMatch[1]}&p=${p}&high_quality=1&danmaku=0`
-  }
-
-  return ''
-}
 
 /** 判断 URL 是否为 B 站链接（含 b23.tv 短链） */
 export function isBilibiliUrl(url: string): boolean {
@@ -44,14 +17,61 @@ export function isBilibiliUrl(url: string): boolean {
 //  内部工具
 // ═══════════════════════════════════════════════════════════
 
+/** 从 URL 中提取 BV 号或 AV 号 */
+function extractBiliId(url: string): { type: 'bv' | 'av'; id: string; p: string } | null {
+  const p = url.match(/[?&]p=(\d+)/i)?.[1] || '1'
+
+  // BV 号
+  const bvMatch = url.match(
+    /(?:bilibili\.com\/video\/|player\.bilibili\.com\/player\.html\?.*(?:bvid|bv)=)(BV[a-zA-Z0-9]+)/i,
+  )
+  if (bvMatch?.[1]) {
+    return { type: 'bv', id: bvMatch[1], p }
+  }
+
+  // AV 号
+  const avMatch = url.match(
+    /(?:bilibili\.com\/video\/av|player\.bilibili\.com\/player\.html\?.*aid=)(\d+)/i,
+  )
+  if (avMatch?.[1]) {
+    return { type: 'av', id: avMatch[1], p }
+  }
+
+  return null
+}
+
+/** 通过 bilibili-parse API 解析视频真实地址 */
+async function resolveBilibiliVideo(
+  biliId: { type: 'bv' | 'av'; id: string; p: string },
+): Promise<string | null> {
+  try {
+    const params = new URLSearchParams({
+      [biliId.type]: biliId.id,
+      p: biliId.p,
+      q: '64',
+      format: 'mp4',
+      otype: 'json',
+    })
+
+    const res = await fetch(`https://api.injahow.cn/bparse/?${params.toString()}`)
+    if (!res.ok) return null
+
+    const data = await res.json()
+    // API 返回的 url 字段就是视频真实地址
+    return data?.url || null
+  } catch {
+    return null
+  }
+}
+
+/** 解析 b23.tv 短链为完整 URL */
 async function resolveB23ShortLink(shortUrl: string): Promise<string | null> {
   try {
-    const res = await api.get(shortUrl, {
-      maxRedirects: 5,
-      timeout: 5_000,
+    const res = await fetch(shortUrl, {
+      redirect: 'follow',
+      signal: AbortSignal.timeout(5_000),
     })
-    // axios 会跟随重定向，返回最终的 URL
-    return res.request?.responseURL || res.config?.url || null
+    return res.url || null
   } catch {
     return null
   }
@@ -64,15 +84,15 @@ async function resolveB23ShortLink(shortUrl: string): Promise<string | null> {
 export const bilibiliPlugin: FeaturePlugin = {
   id: 'bilibili',
   name: 'Bilibili 播放支持',
-  description: '解析 B 站视频链接（含 b23.tv 短链），生成嵌入播放地址',
+  description: '解析 B 站视频链接（含 b23.tv 短链），通过 bilibili-parse 获取真实播放地址',
   icon: 'Tv',
-  version: '1.0.0',
+  version: '2.0.0',
   type: 'feature',
   hooks: ['pv:video-resolve', 'pv:resolve-url'],
   defaultEnabled: true,
 
   handlers: {
-    // ── 视频解析：判断是否能处理 + 解析为可播放地址 ──────
+    // ── 视频解析：解析为可播放的直链地址 ──────────────────
     'pv:video-resolve': async (ctx): Promise<PvVideoResolveOutput | null> => {
       const { url } = ctx
       if (!url) return null
@@ -86,15 +106,14 @@ export const bilibiliPlugin: FeaturePlugin = {
         }
       }
 
-      // 判断是否为 B 站链接
-      if (
-        targetUrl.includes('bilibili.com/video/') ||
-        targetUrl.includes('player.bilibili.com/')
-      ) {
-        const embedUrl = toBilibiliEmbedUrl(targetUrl)
-        if (embedUrl) {
-          return { embedUrl, resolvedUrl: targetUrl }
-        }
+      // 提取 BV/AV 号
+      const biliId = extractBiliId(targetUrl)
+      if (!biliId) return null
+
+      // 通过 bilibili-parse API 解析真实播放地址
+      const videoUrl = await resolveBilibiliVideo(biliId)
+      if (videoUrl) {
+        return { resolvedUrl: videoUrl }
       }
 
       return null

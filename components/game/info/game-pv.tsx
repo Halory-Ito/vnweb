@@ -199,7 +199,6 @@ export default function GamePV({ gameId }: GamePVProps) {
         video.crossOrigin = needsCors ? 'anonymous' : null
         video.src = url
         video.load()
-        void video.play().catch(() => {})
       }
       return
     }
@@ -209,7 +208,6 @@ export default function GamePV({ gameId }: GamePVProps) {
         video.crossOrigin = needsCors ? 'anonymous' : null
         video.src = url
         video.load()
-        void video.play().catch(() => {})
       }
       return
     }
@@ -227,7 +225,7 @@ export default function GamePV({ gameId }: GamePVProps) {
       hls.attachMedia(video)
 
       hls.on(Hls.Events.MANIFEST_PARSED, () => {
-        void video.play().catch(() => {})
+        // 视频加载完成，等待用户手动播放
       })
 
       hls.on(Hls.Events.ERROR, (_event, data) => {
