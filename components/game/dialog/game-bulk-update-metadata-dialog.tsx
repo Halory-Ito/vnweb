@@ -138,7 +138,7 @@ export default function GameBulkUpdateMetadataDialog({
     setSelectedFields((prev) => {
       const next = { ...prev }
       fieldConfigs.forEach((field) => {
-        next[field.key] = !Boolean(prev[field.key])
+        next[field.key] = !prev[field.key]
       })
       return next
     })

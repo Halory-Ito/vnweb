@@ -195,8 +195,7 @@ export function CloudSyncAccountCard({
 }
 
 function AccountInfo({ account }: { account: ThirdPartyAccountItem }) {
-  const displayName =
-    account.username || account.profile?.displayName || account.accountId
+  const displayName = account.username || account.profile?.displayName || account.accountId
   const secondaryName = account.profile?.secondaryName || ''
   const avatarUrl = account.avatar || account.profile?.avatar || ''
   const avatar = getProxyImageUrl(avatarUrl)
@@ -212,9 +211,7 @@ function AccountInfo({ account }: { account: ThirdPartyAccountItem }) {
       <div className="min-w-0 flex-1 space-y-2">
         <div className="leading-tight font-medium">{displayName}</div>
         {secondaryName && (
-          <div className="text-muted-foreground text-sm leading-tight">
-            {secondaryName}
-          </div>
+          <div className="text-muted-foreground text-sm leading-tight">{secondaryName}</div>
         )}
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
           <div className="text-muted-foreground inline-flex items-center gap-1.5 text-xs">
@@ -271,7 +268,6 @@ function AccountBindForm({
   isProcessing,
   onBind,
   onOAuthLogin,
-  onBindDisabled,
 }: {
   provider: CloudSyncProvider
   inputValue: string
@@ -299,12 +295,7 @@ function AccountBindForm({
           </svg>
           <span className="text-muted-foreground text-sm">OAuth 授权登录</span>
         </div>
-        <Button
-          type="button"
-          variant="outline"
-          disabled={isProcessing}
-          onClick={onOAuthLogin}
-        >
+        <Button type="button" variant="outline" disabled={isProcessing} onClick={onOAuthLogin}>
           {isProcessing ? (
             <>
               <svg
@@ -350,12 +341,7 @@ function AccountBindForm({
           className="border-input bg-background text-foreground placeholder:text-muted-foreground focus-visible:ring-ring flex h-9 w-full rounded-md border px-3 py-1 text-sm shadow-xs transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
         />
       </div>
-      <Button
-        type="button"
-        variant="outline"
-        disabled={isProcessing}
-        onClick={onBind}
-      >
+      <Button type="button" variant="outline" disabled={isProcessing} onClick={onBind}>
         {isProcessing ? (
           <>
             <svg

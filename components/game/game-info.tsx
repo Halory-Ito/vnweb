@@ -20,13 +20,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '../ui/dialog'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuShortcut,
-  DropdownMenuTrigger,
-} from '../ui/dropdown-menu'
 import { Input } from '../ui/input'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs'
 import GameBasicInfoDialog from './dialog/game-basic-info-dialog'

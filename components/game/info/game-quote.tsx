@@ -2,12 +2,9 @@
 
 import { useQuery } from '@tanstack/react-query'
 import dayjs from 'dayjs'
-import { MessageSquareQuoteIcon, QuoteIcon } from 'lucide-react'
+import { TextQuoteIcon, QuoteIcon } from 'lucide-react'
 
-import {
-  getGameQuotesByGameId,
-  type QuoteManageItem,
-} from '@/lib/game/game-utils'
+import { getGameQuotesByGameId, type QuoteManageItem } from '@/lib/game/game-utils'
 
 type GameQuoteProps = {
   gameId: number
@@ -34,7 +31,7 @@ export default function GameQuote({ gameId }: GameQuoteProps) {
     return (
       <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed p-12 text-center">
         <div className="bg-muted mb-4 flex size-16 items-center justify-center rounded-full">
-          <MessageSquareQuoteIcon className="text-muted-foreground size-8" />
+          <TextQuoteIcon className="text-muted-foreground size-8" />
         </div>
         <h3 className="mb-2 text-lg font-semibold">暂无台词摘录</h3>
         <p className="text-muted-foreground max-w-sm text-sm">
@@ -83,9 +80,7 @@ function QuoteCard({ item }: { item: QuoteManageItem }) {
       </div>
       <p className="text-foreground/90 relative text-sm">{item.content}</p>
       {item.context && (
-        <p className="text-muted-foreground relative mt-2 text-xs">
-          📖 {item.context}
-        </p>
+        <p className="text-muted-foreground relative mt-2 text-xs">📖 {item.context}</p>
       )}
     </div>
   )

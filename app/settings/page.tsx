@@ -8,38 +8,63 @@ import CloudSync from '@/components/settings/cloud-sync'
 import PluginSettings from '@/components/settings/plugin-settings'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
+type SettingsPropsItem = {
+  value: string
+  name: string
+  comp: React.ReactNode
+}
+
+type SettingsProps = SettingsPropsItem[]
+
+const settingsItems: SettingsProps = [
+  {
+    value: 'appearance',
+    name: '外观',
+    comp: <AppearanceContent />,
+  },
+  {
+    value: 'theme',
+    name: '主题',
+    comp: <ThemeContent />,
+  },
+  {
+    value: 'backup',
+    name: '备份',
+    comp: <BackupSettingsContent />,
+  },
+  {
+    value: 'sync',
+    name: '云同步',
+    comp: <CloudSync />,
+  },
+  {
+    value: 'proxy',
+    name: '代理',
+    comp: <ProxyPage />,
+  },
+  {
+    value: 'plugins',
+    name: '插件',
+    comp: <PluginSettings />,
+  },
+]
+
 export default function Settings() {
   return (
     <Tabs
-      defaultValue="appearance"
+      defaultValue={settingsItems[0].value}
       className="max-h-[calc(100vh-144px)] w-full overflow-y-scroll"
     >
       <TabsList className="dark:bg-transparent">
-        <TabsTrigger value="appearance">外观</TabsTrigger>
-        <TabsTrigger value="theme">主题</TabsTrigger>
-        <TabsTrigger value="backup">备份</TabsTrigger>
-        <TabsTrigger value="sync">云同步</TabsTrigger>
-        <TabsTrigger value="proxy">代理</TabsTrigger>
-        <TabsTrigger value="plugins">插件</TabsTrigger>
+        {settingsItems.map((item) => (
+          <TabsTrigger value={item.value}>{item.name}</TabsTrigger>
+        ))}
       </TabsList>
-      <TabsContent value="appearance">
-        <AppearanceContent />
-      </TabsContent>
-      <TabsContent value="theme">
-        <ThemeContent />
-      </TabsContent>
-      <TabsContent value="backup">
-        <BackupSettingsContent />
-      </TabsContent>
-      <TabsContent value="sync">
-        <CloudSync />
-      </TabsContent>
-      <TabsContent value="proxy">
-        <ProxyPage />
-      </TabsContent>
-      <TabsContent value="plugins">
-        <PluginSettings />
-      </TabsContent>
+      {settingsItems.map((item) => (
+        <TabsContent value={item.value} className="pb-4">
+          {item.comp}
+        </TabsContent>
+      ))}
     </Tabs>
   )
 }

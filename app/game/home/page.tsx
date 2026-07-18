@@ -1,6 +1,6 @@
 import { Metadata } from 'next'
 
-import GameHome from '@/components/game/game-home'
+import GameHome from '@/components/home/game-home'
 
 export const metadata: Metadata = {
   title: '游戏库',

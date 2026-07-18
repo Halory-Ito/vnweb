@@ -2,12 +2,9 @@
 
 import { useQuery } from '@tanstack/react-query'
 import dayjs from 'dayjs'
-import { MessageSquareQuoteIcon } from 'lucide-react'
+import { TextQuoteIcon } from 'lucide-react'
 
-import {
-  getQuotesByCharacterId,
-  type QuoteManageItem,
-} from '@/lib/game/game-utils'
+import { getQuotesByCharacterId, type QuoteManageItem } from '@/lib/game/game-utils'
 
 type CharacterQuotesProps = {
   characterId: string
@@ -33,7 +30,7 @@ export default function CharacterQuotes({ characterId }: CharacterQuotesProps) {
   if (items.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed p-8 text-center">
-        <MessageSquareQuoteIcon className="text-muted-foreground mb-2 size-8" />
+        <TextQuoteIcon className="text-muted-foreground mb-2 size-8" />
         <p className="text-muted-foreground text-sm">暂无该角色的台词摘录</p>
       </div>
     )
@@ -54,11 +51,7 @@ function QuoteItem({ item }: { item: QuoteManageItem }) {
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1">
           <p className="text-sm">{item.content}</p>
-          {item.context && (
-            <p className="text-muted-foreground mt-2 text-xs">
-              📖 {item.context}
-            </p>
-          )}
+          {item.context && <p className="text-muted-foreground mt-2 text-xs">📖 {item.context}</p>}
         </div>
         <div className="text-muted-foreground shrink-0 text-xs">
           {item.gameNameCn || item.gameName}

@@ -2,13 +2,7 @@
 
 import { ExternalLinkIcon } from 'lucide-react'
 
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
-import { isHlsUrl } from './utils'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 
 import type { PvItem, PvPlayerMode } from './types'
 
@@ -45,9 +39,7 @@ export function PvPlayerDialog({
               autoPlay
               preload="auto"
               onError={onVideoError}
-              poster={
-                item ? item.gameBg || item.gameCover || undefined : undefined
-              }
+              poster={item ? item.gameBg || item.gameCover || undefined : undefined}
               className="h-full w-full"
             >
               您的浏览器不支持 HTML5 视频播放。

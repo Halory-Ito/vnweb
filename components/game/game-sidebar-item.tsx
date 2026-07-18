@@ -57,12 +57,7 @@ type SidebarItemProps = GameSidebarItemProps & {
   ctrlPressed?: boolean
 }
 
-export const GameSidebarItem = ({
-  title,
-  icon,
-  id,
-  ctrlPressed = false,
-}: SidebarItemProps) => {
+export const GameSidebarItem = ({ title, icon, id, ctrlPressed = false }: SidebarItemProps) => {
   const pathname = usePathname()
   const router = useRouter()
   const queryClient = useQueryClient()
@@ -82,8 +77,7 @@ export const GameSidebarItem = ({
   const gameId = Number(id)
   const normalizedPathname = pathname.replace(/\/+$/, '')
   const isActive =
-    normalizedPathname === `/game/info/${id}` ||
-    normalizedPathname.startsWith(`/game/info/${id}/`)
+    normalizedPathname === `/game/info/${id}` || normalizedPathname.startsWith(`/game/info/${id}/`)
   const isSelected = selectedGameIds.includes(id)
 
   const handleItemClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
@@ -216,9 +210,7 @@ export const GameSidebarItem = ({
         return
       }
 
-      toast.error(
-        err.response?.data?.error || err.message || '打开本地文件失败',
-      )
+      toast.error(err.response?.data?.error || err.message || '打开本地文件失败')
     }
   }
 
@@ -260,7 +252,7 @@ export const GameSidebarItem = ({
       <ContextMenuTrigger asChild>
         <Link
           className={cn(
-            'flex w-full min-w-0 items-center gap-2 overflow-hidden bg-background px-1 py-0.5 transition-colors hover:bg-accent hover:text-accent-foreground dark:bg-transparent dark:hover:bg-accent/80',
+            'flex w-full min-w-0 items-center gap-2 overflow-hidden bg-background rounded-sm px-1 py-0.5 transition-colors hover:bg-accent hover:text-accent-foreground dark:bg-transparent dark:hover:bg-accent/80',
             isSelected &&
               'bg-accent/70 text-accent-foreground dark:bg-accent/60 dark:text-accent-foreground',
             isActive &&
@@ -286,9 +278,7 @@ export const GameSidebarItem = ({
         </Link>
       </ContextMenuTrigger>
       <ContextMenuContent className="w-52">
-        <ContextMenuItem onClick={() => void handleLaunchGame()}>
-          开始游戏
-        </ContextMenuItem>
+        <ContextMenuItem onClick={() => void handleLaunchGame()}>开始游戏</ContextMenuItem>
         <ContextMenuSub>
           <ContextMenuSubTrigger>添加至</ContextMenuSubTrigger>
           <ContextMenuSubContent>
@@ -320,19 +310,14 @@ export const GameSidebarItem = ({
             <ContextMenuItem onClick={() => void handleBrowseLocalFile()}>
               浏览本地文件
             </ContextMenuItem>
-            <ContextMenuItem
-              variant="destructive"
-              onClick={() => setDeleteOpen(true)}
-            >
+            <ContextMenuItem variant="destructive" onClick={() => setDeleteOpen(true)}>
               删除
             </ContextMenuItem>
           </ContextMenuSubContent>
         </ContextMenuSub>
         <ContextMenuSeparator />
         <ContextMenuGroup>
-          <ContextMenuItem onClick={() => setSettingsOpen(true)}>
-            属性
-          </ContextMenuItem>
+          <ContextMenuItem onClick={() => setSettingsOpen(true)}>属性</ContextMenuItem>
         </ContextMenuGroup>
       </ContextMenuContent>
 
@@ -372,9 +357,7 @@ export const GameSidebarItem = ({
         <DialogContent>
           <DialogHeader>
             <DialogTitle>填写游戏可执行文件路径</DialogTitle>
-            <DialogDescription>
-              当前游戏缺少可执行文件路径，请补充后再启动。
-            </DialogDescription>
+            <DialogDescription>当前游戏缺少可执行文件路径，请补充后再启动。</DialogDescription>
           </DialogHeader>
 
           <Input
@@ -438,17 +421,10 @@ export const GameSidebarItem = ({
           />
 
           <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setCollectionDialogOpen(false)}
-            >
+            <Button type="button" variant="outline" onClick={() => setCollectionDialogOpen(false)}>
               取消
             </Button>
-            <Button
-              type="button"
-              onClick={() => void handleCreateCollectionAndAddGame()}
-            >
+            <Button type="button" onClick={() => void handleCreateCollectionAndAddGame()}>
               确定
             </Button>
           </DialogFooter>

@@ -1,6 +1,6 @@
 'use client'
 
-import { MessageSquareQuoteIcon, PlusIcon } from 'lucide-react'
+import { TextQuoteIcon, PlusIcon } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 
@@ -13,13 +13,11 @@ export function QuotePageHeader({ onCreate }: QuotePageHeaderProps) {
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-3">
         <div className="bg-primary/10 flex size-10 items-center justify-center rounded-lg">
-          <MessageSquareQuoteIcon className="text-primary size-5" />
+          <TextQuoteIcon className="text-primary size-5" />
         </div>
         <div>
           <h1 className="text-2xl font-bold">台词摘录</h1>
-          <p className="text-muted-foreground text-sm">
-            记录和管理游戏中的经典台词
-          </p>
+          <p className="text-muted-foreground text-sm">记录和管理游戏中的经典台词</p>
         </div>
       </div>
 

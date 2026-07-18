@@ -2,18 +2,11 @@
 
 import { useQuery } from '@tanstack/react-query'
 import dayjs from 'dayjs'
-import {
-  ArrowLeftIcon,
-  Clock3Icon,
-  ImageIcon,
-  PencilIcon,
-  Trash2Icon,
-} from 'lucide-react'
+import { ArrowLeftIcon, Clock3Icon, ImageIcon, PencilIcon, Trash2Icon } from 'lucide-react'
 import { MDXRemote, type MDXRemoteSerializeResult } from 'next-mdx-remote'
 import { serialize } from 'next-mdx-remote/serialize'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
-import 'highlight.js/styles/atom-one-dark.css'
 import {
   isValidElement,
   type ReactNode,
@@ -30,13 +23,7 @@ import remarkGfm from 'remark-gfm'
 import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Dialog,
   DialogContent,
@@ -83,7 +70,6 @@ const normalizeHeadingText = (value: string) =>
 const extractTocItems = (markdown: string): TocItem[] => {
   const lines = markdown.split(/\r?\n/)
   const tocItems: TocItem[] = []
-  const usedIds = new Map<string, number>()
   let inCodeFence = false
 
   for (const line of lines) {
@@ -151,18 +137,11 @@ export default function GameMemoryDetailPage() {
   const { data, isLoading, isRefetching, refetch, error } = useQuery({
     queryKey: ['game-memory-detail', gameId, memoryId],
     queryFn: () => getGameMemoryById(gameId, memoryId),
-    enabled:
-      Number.isInteger(gameId) &&
-      gameId > 0 &&
-      Number.isInteger(memoryId) &&
-      memoryId > 0,
+    enabled: Number.isInteger(gameId) && gameId > 0 && Number.isInteger(memoryId) && memoryId > 0,
   })
 
   const item = data?.item
-  const tocItems = useMemo(
-    () => extractTocItems(item?.description || ''),
-    [item?.description],
-  )
+  const tocItems = useMemo(() => extractTocItems(item?.description || ''), [item?.description])
   const hasToc = tocItems.length > 0
 
   const handleContentRendered = useCallback(() => {
@@ -210,15 +189,11 @@ export default function GameMemoryDetailPage() {
         }
       }
 
-      setActiveHeadingId((previous) =>
-        previous === currentId ? previous : currentId,
-      )
+      setActiveHeadingId((previous) => (previous === currentId ? previous : currentId))
     }
 
     const frame = window.requestAnimationFrame(() => {
-      const hashValue = decodeURIComponent(
-        window.location.hash.replace(/^#/, ''),
-      )
+      const hashValue = decodeURIComponent(window.location.hash.replace(/^#/, ''))
       if (hashValue) {
         const hashTarget = document.getElementById(hashValue)
         if (hashTarget) {
@@ -296,9 +271,7 @@ export default function GameMemoryDetailPage() {
       return file
     }
 
-    const safeName =
-      file.name.replace(/\.[^.]+$/, '').replace(/[^a-zA-Z0-9_-]/g, '_') ||
-      'memory'
+    const safeName = file.name.replace(/\.[^.]+$/, '').replace(/[^a-zA-Z0-9_-]/g, '_') || 'memory'
 
     return new File([blob], `${safeName}.webp`, {
       type: 'image/webp',
@@ -313,9 +286,7 @@ export default function GameMemoryDetailPage() {
 
     setIsSaving(true)
     try {
-      const optimizedImage = imageFile
-        ? await compressImageForUpload(imageFile)
-        : undefined
+      const optimizedImage = imageFile ? await compressImageForUpload(imageFile) : undefined
 
       await updateGameMemoryById(gameId, item.id, {
         title: title.trim(),
@@ -345,8 +316,6 @@ export default function GameMemoryDetailPage() {
       className="mx-auto max-h-[calc(100vh-70px)] w-full overflow-y-auto"
     >
       <div className="relative mx-auto w-full max-w-7xl px-4 pt-4 pb-12 md:px-6">
-        {/* <div className="via-background to-background pointer-events-none absolute inset-x-0 top-0 -z-10 h-56 bg-linear-to-b from-amber-300/20" /> */}
-
         <div
           className={`grid gap-6 ${hasToc ? 'lg:grid-cols-[minmax(0,1fr)_280px]' : 'lg:grid-cols-1'}`}
         >
@@ -371,10 +340,7 @@ export default function GameMemoryDetailPage() {
             </div>
 
             {isLoading ? (
-              <DetailStateCard
-                title="加载中..."
-                description="正在获取回忆详情，请稍候。"
-              />
+              <DetailStateCard title="加载中..." description="正在获取回忆详情，请稍候。" />
             ) : error || !item ? (
               <DetailStateCard
                 title="未找到回忆"
@@ -382,10 +348,7 @@ export default function GameMemoryDetailPage() {
               />
             ) : (
               <>
-                <Card
-                  variant="outline"
-                  className="overflow-hidden pt-0 shadow-sm"
-                >
+                <Card variant="outline" className="overflow-hidden pt-0 shadow-sm">
                   <div className="bg-muted relative aspect-16/7 w-full">
                     {item.imageUrl ? (
                       <img
@@ -409,8 +372,7 @@ export default function GameMemoryDetailPage() {
                     <CardDescription className="flex flex-wrap items-center gap-4 text-xs tracking-wide uppercase">
                       <span className="inline-flex items-center gap-1.5">
                         <Clock3Icon className="size-3" />
-                        更新于{' '}
-                        {dayjs(item.updatedAt).format('YYYY-MM-DD HH:mm')}
+                        更新于 {dayjs(item.updatedAt).format('YYYY-MM-DD HH:mm')}
                       </span>
                     </CardDescription>
                   </CardHeader>
@@ -448,9 +410,7 @@ export default function GameMemoryDetailPage() {
                           href={`#${tocItem.id}`}
                           onClick={(event) => {
                             event.preventDefault()
-                            const targetElement = document.getElementById(
-                              tocItem.id,
-                            )
+                            const targetElement = document.getElementById(tocItem.id)
                             if (!targetElement) {
                               return
                             }
@@ -459,11 +419,7 @@ export default function GameMemoryDetailPage() {
                               behavior: 'smooth',
                               block: 'start',
                             })
-                            window.history.replaceState(
-                              null,
-                              '',
-                              `#${tocItem.id}`,
-                            )
+                            window.history.replaceState(null, '', `#${tocItem.id}`)
                             setActiveHeadingId(tocItem.id)
                           }}
                           className={`group relative block rounded-lg border px-3 py-2 text-sm transition-all ${
@@ -482,9 +438,7 @@ export default function GameMemoryDetailPage() {
                                 : 'bg-amber-400/40 opacity-0 group-hover:opacity-100'
                             }`}
                           />
-                          <span className="line-clamp-2 block pr-1">
-                            {tocItem.text}
-                          </span>
+                          <span className="line-clamp-2 block pr-1">{tocItem.text}</span>
                         </a>
                       )
                     })}
@@ -512,9 +466,7 @@ export default function GameMemoryDetailPage() {
 
           <div className="space-y-5">
             <div className="space-y-3">
-              <div className="text-sm font-medium">
-                截图（不上传则保留原图）
-              </div>
+              <div className="text-sm font-medium">截图（不上传则保留原图）</div>
 
               {editableImageUrl ? (
                 <div className="group relative overflow-hidden rounded-xl border">
@@ -542,9 +494,7 @@ export default function GameMemoryDetailPage() {
                 <div className="border-border hover:border-primary/50 rounded-xl border-2 border-dashed transition-colors duration-200">
                   <label className="flex cursor-pointer flex-col items-center justify-center p-8">
                     <ImageIcon className="text-muted-foreground mb-2 size-10" />
-                    <span className="text-muted-foreground text-sm">
-                      点击上传截图
-                    </span>
+                    <span className="text-muted-foreground text-sm">点击上传截图</span>
                     <input
                       type="file"
                       accept="image/*"
@@ -569,9 +519,7 @@ export default function GameMemoryDetailPage() {
             </div>
 
             <div className="space-y-2">
-              <div className="text-sm font-medium">
-                文本内容（支持 Markdown）
-              </div>
+              <div className="text-sm font-medium">文本内容（支持 Markdown）</div>
               <Textarea
                 value={description}
                 onChange={(event) => setDescription(event.target.value)}
@@ -582,11 +530,7 @@ export default function GameMemoryDetailPage() {
           </div>
 
           <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setEditOpen(false)}
-            >
+            <Button type="button" variant="outline" onClick={() => setEditOpen(false)}>
               取消
             </Button>
             <Button type="button" disabled={isSaving} onClick={handleSave}>
@@ -599,13 +543,7 @@ export default function GameMemoryDetailPage() {
   )
 }
 
-function DetailStateCard({
-  title,
-  description,
-}: {
-  title: string
-  description: string
-}) {
+function DetailStateCard({ title, description }: { title: string; description: string }) {
   return (
     <Card variant="outline">
       <CardContent className="flex flex-col items-center justify-center gap-2 py-12 text-center">
@@ -713,10 +651,7 @@ const Heading = ({
 
 const mdxComponents = {
   h1: ({ children }: any) => (
-    <Heading
-      tag="h1"
-      className="mt-10 mb-4 text-3xl font-semibold first:mt-0 md:text-4xl"
-    >
+    <Heading tag="h1" className="mt-10 mb-4 text-3xl font-semibold first:mt-0 md:text-4xl">
       {children}
     </Heading>
   ),
@@ -736,16 +671,10 @@ const mdxComponents = {
     </Heading>
   ),
   p: ({ children }: any) => (
-    <p className="text-foreground mb-5 text-[1.05rem] leading-8 md:text-[1.1rem]">
-      {children}
-    </p>
+    <p className="text-foreground mb-5 text-[1.05rem] leading-8 md:text-[1.1rem]">{children}</p>
   ),
-  ul: ({ children }: any) => (
-    <ul className="mb-4 list-disc space-y-1.5 pl-6">{children}</ul>
-  ),
-  ol: ({ children }: any) => (
-    <ol className="mb-4 list-decimal space-y-1.5 pl-6">{children}</ol>
-  ),
+  ul: ({ children }: any) => <ul className="mb-4 list-disc space-y-1.5 pl-6">{children}</ul>,
+  ol: ({ children }: any) => <ol className="mb-4 list-decimal space-y-1.5 pl-6">{children}</ol>,
   li: ({ children }: any) => (
     <li className="text-[1.02rem] leading-8 md:text-[1.08rem]">{children}</li>
   ),
@@ -766,15 +695,13 @@ const mdxComponents = {
       )
     }
     return (
-      <code
-        className={`${className} bg-transparent p-0 font-mono text-sm leading-relaxed`}
-      >
+      <code className={`${className} bg-transparent p-0 font-mono text-sm leading-relaxed`}>
         {children}
       </code>
     )
   },
   pre: ({ children }: any) => (
-    <pre className="mb-4 overflow-x-auto rounded-xl border border-slate-700/50 !bg-[#282c34] p-4 shadow-sm">
+    <pre className="mb-4 overflow-x-auto rounded-xl border border-slate-700/50 bg-[#282c34]! p-4 shadow-sm">
       {children}
     </pre>
   ),
@@ -794,12 +721,8 @@ const mdxComponents = {
       {children}
     </a>
   ),
-  strong: ({ children }: any) => (
-    <strong className="font-semibold">{children}</strong>
-  ),
-  em: ({ children }: any) => (
-    <em className="text-muted-foreground italic">{children}</em>
-  ),
+  strong: ({ children }: any) => <strong className="font-semibold">{children}</strong>,
+  em: ({ children }: any) => <em className="text-muted-foreground italic">{children}</em>,
   span: ({ children, style, className, ...props }: any) => (
     <span style={style} className={className} {...props}>
       {children}
@@ -811,15 +734,12 @@ const mdxComponents = {
     </mark>
   ),
   del: ({ children }: any) => (
-    <del className="text-muted-foreground line-through opacity-70">
-      {children}
-    </del>
+    <del className="text-muted-foreground line-through opacity-70">{children}</del>
   ),
 }
 
 function MdxRemoteContent({
   markdown,
-  tocItems,
   onRendered,
 }: {
   markdown: string
@@ -874,9 +794,7 @@ function MdxRemoteContent({
 
   if (errorText) {
     return (
-      <div className="bg-destructive/10 text-destructive rounded-lg p-3 text-sm">
-        {errorText}
-      </div>
+      <div className="bg-destructive/10 text-destructive rounded-lg p-3 text-sm">{errorText}</div>
     )
   }
 

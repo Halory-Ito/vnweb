@@ -98,9 +98,7 @@ export default function GameCard(props: GameCardProps) {
     }
   }
 
-  const handleLaunchAndOpen = async (
-    event: React.MouseEvent<HTMLButtonElement>,
-  ) => {
+  const handleLaunchAndOpen = async (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault()
     event.stopPropagation()
     await launchAndOpen()
@@ -118,11 +116,7 @@ export default function GameCard(props: GameCardProps) {
   }
 
   const handleCardClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
-    if (
-      modifierSelectEnabled &&
-      props.onToggleSelect &&
-      (event.ctrlKey || event.metaKey)
-    ) {
+    if (modifierSelectEnabled && props.onToggleSelect && (event.ctrlKey || event.metaKey)) {
       event.preventDefault()
       props.onToggleSelect(props.id)
       return
@@ -151,7 +145,7 @@ export default function GameCard(props: GameCardProps) {
         {showSelection ? (
           <button
             type="button"
-            className={`border-border bg-background/90 absolute top-4 left-4 z-20 flex size-7 items-center justify-center rounded-full border-2 backdrop-blur-sm transition-all ${
+            className={`bg-background/60 absolute top-4 left-4 z-20 flex size-7 items-center justify-center rounded-full border-2 transition-all ${
               isSelected
                 ? 'border-primary bg-primary text-primary-foreground scale-100 opacity-100'
                 : 'scale-90 opacity-0 group-hover:scale-100 group-hover:opacity-100'
@@ -219,14 +213,14 @@ export default function GameCard(props: GameCardProps) {
             )}
 
             {/* 边框光效 */}
-            <div className="pointer-events-none absolute inset-0 rounded-lg ring-1 ring-white/10 transition-all duration-300 group-hover:ring-2 group-hover:ring-white/20" />
+            {/* <div className="pointer-events-none absolute inset-0 rounded-lg ring-1 ring-white/10 transition-all duration-300 group-hover:ring-2 group-hover:ring-white/20" /> */}
           </div>
         </div>
 
         {/* 标题 */}
         <div className="mt-2.5 w-full px-1">
           <h3
-            className="group-hover:text-primary truncate text-center text-sm leading-tight font-medium tracking-wide transition-colors"
+            className="group-hover:text-primary truncate text-center text-sm leading-5 font-medium tracking-wide transition-colors"
             title={props.title}
           >
             {props.title}
@@ -238,9 +232,7 @@ export default function GameCard(props: GameCardProps) {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>填写游戏可执行文件路径</DialogTitle>
-            <DialogDescription>
-              当前游戏缺少可执行文件路径，请补充后再启动。
-            </DialogDescription>
+            <DialogDescription>当前游戏缺少可执行文件路径，请补充后再启动。</DialogDescription>
           </DialogHeader>
 
           <Input

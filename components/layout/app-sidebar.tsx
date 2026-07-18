@@ -5,7 +5,7 @@ import {
   BoxIcon,
   HomeIcon,
   MapIcon,
-  MessageSquareQuoteIcon,
+  TextQuoteIcon,
   MusicIcon,
   PuzzleIcon,
   ScanIcon,
@@ -26,11 +26,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@/components/ui/tooltip'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { api } from '@/lib/request-utils'
 import { cn } from '@/lib/utils'
 
@@ -55,7 +51,7 @@ const contentItems: SidebarItem[] = [
   // { title: '攻略', href: '/guide', icon: MapIcon },
   { title: 'PV', href: '/pv', icon: VideoIcon },
   { title: 'OST', href: '/ost', icon: MusicIcon },
-  { title: '摘录', href: '/quote', icon: MessageSquareQuoteIcon },
+  { title: '摘录', href: '/quote', icon: TextQuoteIcon },
 ]
 
 const footerItems: SidebarItem[] = [
@@ -71,13 +67,7 @@ const isActivePath = (pathname: string, href: string) => {
 
 const SIDEBAR_BUTTON_SIZE = 'h-10 w-10'
 
-function SidebarIconButton({
-  item,
-  pathname,
-}: {
-  item: SidebarItem
-  pathname: string
-}) {
+function SidebarIconButton({ item, pathname }: { item: SidebarItem; pathname: string }) {
   const Icon = item.icon
   const isActive = isActivePath(pathname, item.href)
 
@@ -96,11 +86,7 @@ function SidebarIconButton({
                 : 'hover:bg-sidebar-accent/60',
             )}
           >
-            <Link
-              href={item.href}
-              aria-label={item.title}
-              className="justify-center"
-            >
+            <Link href={item.href} aria-label={item.title} className="justify-center">
               {item.iconSrc ? (
                 <div className="bg-muted relative size-4 overflow-hidden rounded-xs">
                   <Image
@@ -170,22 +156,14 @@ export default function AppSideBar() {
       <SidebarContent className="p-4">
         <SidebarMenu className="flex flex-col items-center justify-center">
           {contentItems.map((item) => (
-            <SidebarIconButton
-              key={item.title}
-              item={item}
-              pathname={pathname}
-            />
+            <SidebarIconButton key={item.title} item={item} pathname={pathname} />
           ))}
         </SidebarMenu>
 
         {installedPluginItems.length > 0 && (
           <SidebarMenu className="gap-3 p-4 pt-2">
             {installedPluginItems.map((item) => (
-              <SidebarIconButton
-                key={item.href}
-                item={item}
-                pathname={pathname}
-              />
+              <SidebarIconButton key={item.href} item={item} pathname={pathname} />
             ))}
           </SidebarMenu>
         )}
@@ -194,11 +172,7 @@ export default function AppSideBar() {
       <SidebarFooter className="items-center pb-4">
         <SidebarMenu className="gap-4 p-4">
           {footerItems.map((item) => (
-            <SidebarIconButton
-              key={item.title}
-              item={item}
-              pathname={pathname}
-            />
+            <SidebarIconButton key={item.title} item={item} pathname={pathname} />
           ))}
         </SidebarMenu>
       </SidebarFooter>

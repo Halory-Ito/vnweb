@@ -1,8 +1,12 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
   "plugins": null,
-  "categories": {},
-  "rules": {},
+  "categories": {
+    "correctness": "warn"
+  },
+  "rules": {
+    "eslint/no-unused-vars": "error"
+  },
   "settings": {
     "jsx-a11y": {
       "polymorphicPropName": null,
@@ -37,7 +41,7 @@
   },
   "globals": {},
   "ignorePatterns": [
-    "**/components/**",
+    "**/components/ui/**",
     "**/node_modules/**",
     "**/dist/**",
     "**/build/**",

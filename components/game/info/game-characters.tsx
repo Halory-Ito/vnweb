@@ -49,13 +49,7 @@ type GameCharactersProps = {
   gameId: number
 }
 
-const CharacterCard = ({
-  item,
-  onClick,
-}: {
-  item: VndbCharacterListItem
-  onClick: () => void
-}) => {
+const CharacterCard = ({ item, onClick }: { item: VndbCharacterListItem; onClick: () => void }) => {
   const displayName = item.name || item.original || item.id
 
   return (
@@ -77,9 +71,7 @@ const CharacterCard = ({
         </div>
       )}
       <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-linear-to-t from-black/70 via-black/40 to-transparent p-2">
-        <div className="truncate text-sm font-medium text-white">
-          {displayName}
-        </div>
+        <div className="truncate text-sm font-medium text-white">{displayName}</div>
         {item.original && item.original !== item.name ? (
           <div className="truncate text-xs text-white/85">{item.original}</div>
         ) : null}
@@ -96,7 +88,7 @@ export default function GameCharacters({ gameId }: GameCharactersProps) {
   const [isSavingSettings, setIsSavingSettings] = useState(false)
   const [isClearing, setIsClearing] = useState(false)
   const [isSyncing, setIsSyncing] = useState(false)
-  const [syncSource, setSyncSource] = useState<CharacterSyncSource>('bangumi')
+  const [_syncSource, setSyncSource] = useState<CharacterSyncSource>('bangumi')
   const [selectedSource, setSelectedSource] = useState('')
   const [gameIdInput, setGameIdInput] = useState('')
   const [saveImagesToLocal, setSaveImagesToLocal] = useState(true)
@@ -139,10 +131,7 @@ export default function GameCharacters({ gameId }: GameCharactersProps) {
             externalId: item.slice(divider + 1).trim(),
           }
         })
-        .filter(
-          (item): item is { provider: string; externalId: string } =>
-            item !== null,
-        ),
+        .filter((item): item is { provider: string; externalId: string } => item !== null),
     [externalSourceIds],
   )
 
@@ -169,14 +158,12 @@ export default function GameCharacters({ gameId }: GameCharactersProps) {
     if (sourceId === 'bangumi' && bgmSubjectId) return bgmSubjectId
     // 其次从 externalSourceIds 解析
     return (
-      parsedSourceIds.find((item) => item.provider.toLowerCase() === sourceId)
-        ?.externalId || ''
+      parsedSourceIds.find((item) => item.provider.toLowerCase() === sourceId)?.externalId || ''
     )
   }
 
   const openSettingsDialog = () => {
-    const source =
-      characterProviders.length > 0 ? characterProviders[0].sourceId : ''
+    const source = characterProviders.length > 0 ? characterProviders[0].sourceId : ''
     setSelectedSource(source)
     setGameIdInput(getBoundIdForSource(source))
     setSaveImagesToLocal(true)
@@ -214,9 +201,7 @@ export default function GameCharacters({ gameId }: GameCharactersProps) {
         response?: { data?: { error?: string } }
         message?: string
       }
-      toast.error(
-        err.response?.data?.error || err.message || '清空角色信息失败',
-      )
+      toast.error(err.response?.data?.error || err.message || '清空角色信息失败')
     } finally {
       setIsClearing(false)
       setClearDialogOpen(false)
@@ -224,9 +209,7 @@ export default function GameCharacters({ gameId }: GameCharactersProps) {
   }
 
   const saveSettingsAndSync = async () => {
-    const provider = characterProviders.find(
-      (p) => p.sourceId === selectedSource,
-    )
+    const provider = characterProviders.find((p) => p.sourceId === selectedSource)
     if (!provider) {
       toast.error('请先选择角色数据来源')
       return
@@ -245,13 +228,9 @@ export default function GameCharacters({ gameId }: GameCharactersProps) {
     }
 
     // 构建 externalSourceIds：保留非角色数据源的绑定，更新当前选中的角色数据源
-    const characterSourceIds = new Set(
-      characterProviders.map((p) => p.sourceId),
-    )
+    const characterSourceIds = new Set(characterProviders.map((p) => p.sourceId))
     const nextSourceIds = [
-      ...parsedSourceIds.filter(
-        (item) => !characterSourceIds.has(item.provider.toLowerCase()),
-      ),
+      ...parsedSourceIds.filter((item) => !characterSourceIds.has(item.provider.toLowerCase())),
       { provider: provider.sourceId, externalId: normalized },
     ]
 
@@ -328,9 +307,7 @@ export default function GameCharacters({ gameId }: GameCharactersProps) {
             disabled={isFetching || isSyncing || isSavingSettings || isClearing}
             onClick={() => void refreshCharacters()}
           >
-            <RefreshCw
-              className={`size-4 ${isFetching ? 'animate-spin' : ''}`}
-            />
+            <RefreshCw className={`size-4 ${isFetching ? 'animate-spin' : ''}`} />
           </Button>
           <Button
             type="button"
@@ -391,10 +368,7 @@ export default function GameCharacters({ gameId }: GameCharactersProps) {
                 </SelectTrigger>
                 <SelectContent>
                   {characterProviders.map((provider) => (
-                    <SelectItem
-                      key={provider.sourceId}
-                      value={provider.sourceId}
-                    >
+                    <SelectItem key={provider.sourceId} value={provider.sourceId}>
                       {provider.name}
                     </SelectItem>
                   ))}
@@ -408,8 +382,8 @@ export default function GameCharacters({ gameId }: GameCharactersProps) {
                 value={gameIdInput}
                 onChange={(event) => setGameIdInput(event.target.value)}
                 placeholder={
-                  characterProviders.find((p) => p.sourceId === selectedSource)
-                    ?.description || '请输入游戏 ID'
+                  characterProviders.find((p) => p.sourceId === selectedSource)?.description ||
+                  '请输入游戏 ID'
                 }
               />
             </div>
@@ -417,9 +391,7 @@ export default function GameCharacters({ gameId }: GameCharactersProps) {
             <label className="flex items-center gap-2 text-sm">
               <Checkbox
                 checked={saveImagesToLocal}
-                onCheckedChange={(checked) =>
-                  setSaveImagesToLocal(checked === true)
-                }
+                onCheckedChange={(checked) => setSaveImagesToLocal(checked === true)}
               />
               <span>将角色图片保存到本地</span>
             </label>
@@ -457,9 +429,7 @@ export default function GameCharacters({ gameId }: GameCharactersProps) {
               key={item.id}
               item={item}
               onClick={() => {
-                router.push(
-                  `/game/character/${encodeURIComponent(item.id)}?gameId=${gameId}`,
-                )
+                router.push(`/game/character/${encodeURIComponent(item.id)}?gameId=${gameId}`)
               }}
             />
           ))}

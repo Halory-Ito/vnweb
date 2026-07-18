@@ -1,9 +1,5 @@
 import { api } from '@/lib/request-utils'
 
-const BASE_URL = 'https://music.163.com/#/album'
-
-const example_id = '493782'
-
 /**
  * 网易云音乐专辑搜索
  */

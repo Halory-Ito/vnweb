@@ -26,15 +26,13 @@ const normalizeWindowsPathInput = (value: string) => {
 const sanitizeFileName = (value: string) =>
   value
     .trim()
+    // oxlint-disable-next-line no-control-regex
     .replace(/[<>:"/\\|?*\x00-\x1F]/g, '_')
     .replace(/\s+/g, '_')
     .replace(/_+/g, '_')
     .replace(/^_+|_+$/g, '') || 'game'
 
-const launchGame = async (
-  req: NextRequest,
-  context: { params: Promise<{ id: string }> },
-) => {
+const launchGame = async (req: NextRequest, context: { params: Promise<{ id: string }> }) => {
   try {
     const { id } = await context.params
     const gameId = Number(id)
@@ -115,10 +113,7 @@ const launchGame = async (
     const finalExtractedPath = path.resolve(extractedPath)
     const finalIconName = path.basename(finalExtractedPath)
 
-    await fs.promises.copyFile(
-      finalExtractedPath,
-      path.join(publicIconDir, finalIconName),
-    )
+    await fs.promises.copyFile(finalExtractedPath, path.join(publicIconDir, finalIconName))
 
     const iconPublicPath = `/assets/icon/${finalIconName}`
     const now = dayjs().toISOString()
@@ -168,10 +163,7 @@ const launchGame = async (
     })
   } catch (error) {
     console.error('Launch game failed:', error)
-    return NextResponse.json(
-      { error: (error as Error).message || '启动游戏失败' },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: (error as Error).message || '启动游戏失败' }, { status: 500 })
   }
 }
 
