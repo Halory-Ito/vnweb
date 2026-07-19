@@ -57,26 +57,25 @@ export default function QuotePage() {
     isRefetching,
     refetch,
   } = useQuery({
-    queryKey: [
-      'quote-manage',
-      debouncedKeyword,
-      dateFrom,
-      dateTo,
-      page,
-      pageSize,
-    ],
+    queryKey: ['quote-manage', debouncedKeyword, dateFrom, dateTo],
     queryFn: () =>
       getQuoteManageList({
         keyword: debouncedKeyword,
         dateFrom: dateFrom || undefined,
         dateTo: dateTo || undefined,
-        page,
-        pageSize,
+        page: 1,
+        pageSize: 9999,
       }),
   })
 
-  const items = quoteData?.items ?? []
-  const pagination = quoteData?.pagination
+  const allItems = quoteData?.items ?? []
+  const total = allItems.length
+  const totalPages = Math.max(1, Math.ceil(total / pageSize))
+  const currentPage = Math.min(page, totalPages)
+  const items = useMemo(
+    () => allItems.slice((currentPage - 1) * pageSize, currentPage * pageSize),
+    [allItems, currentPage, pageSize],
+  )
 
   const gameOptions = useMemo<GameOption[]>(
     () =>
@@ -217,10 +216,10 @@ export default function QuotePage() {
       />
 
       <QuotePagination
-        page={pagination?.page ?? 1}
-        pageSize={pagination?.pageSize ?? pageSize}
-        total={pagination?.total ?? 0}
-        totalPages={pagination?.totalPages ?? 1}
+        page={currentPage}
+        pageSize={pageSize}
+        total={total}
+        totalPages={totalPages}
         onPageChange={setPage}
         onPageSizeChange={(newSize) => {
           setPageSize(newSize)

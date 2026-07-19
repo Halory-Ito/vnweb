@@ -1,6 +1,6 @@
 'use client'
 
-import AppearanceContent from './appearance/appearance-content'
+import AppearancePage from './appearance/page'
 import BackupSettingsContent from './backup/backup-settings-content'
 import ProxyPage from './proxy/page'
 import ThemeContent from './theme/theme-content'
@@ -20,7 +20,7 @@ const settingsItems: SettingsProps = [
   {
     value: 'appearance',
     name: '外观',
-    comp: <AppearanceContent />,
+    comp: <AppearancePage />,
   },
   {
     value: 'theme',
@@ -57,11 +57,13 @@ export default function Settings() {
     >
       <TabsList className="dark:bg-transparent">
         {settingsItems.map((item) => (
-          <TabsTrigger value={item.value}>{item.name}</TabsTrigger>
+          <TabsTrigger key={item.value} value={item.value}>
+            {item.name}
+          </TabsTrigger>
         ))}
       </TabsList>
       {settingsItems.map((item) => (
-        <TabsContent value={item.value} className="pb-4">
+        <TabsContent key={item.value} value={item.value} className="pb-4">
           {item.comp}
         </TabsContent>
       ))}

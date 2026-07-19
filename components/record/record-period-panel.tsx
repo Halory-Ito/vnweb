@@ -44,6 +44,7 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from '@/components/ui/chart'
+import { useChartSettings } from '@/features/appearance/hooks/use-chart-settings'
 
 type RecordChartType = 'line' | 'bar'
 type DistributionMode = 'type' | 'publisher'
@@ -52,38 +53,6 @@ type RecordPeriodPanelProps = {
   range: RecordTimelineRange
   title: string
 }
-
-const chartConfig = {
-  hours: {
-    label: '游戏时长(小时)',
-    color: 'var(--chart-1)',
-  },
-} satisfies ChartConfig
-
-const monthlyDaysChartConfig = {
-  activeDays: {
-    label: '活跃天数',
-    color: 'var(--chart-2)',
-  },
-} satisfies ChartConfig
-
-const monthlyFrequencyChartConfig = {
-  count: {
-    label: '游玩频率',
-    color: 'var(--chart-4)',
-  },
-} satisfies ChartConfig
-
-const pieColors = [
-  '#2563eb',
-  '#16a34a',
-  '#f59e0b',
-  '#dc2626',
-  '#0ea5e9',
-  '#7c3aed',
-  '#ea580c',
-  '#db2777',
-]
 
 const formatDurationText = (seconds: number) => {
   const safeSeconds = Math.max(0, Math.floor(Number(seconds) || 0))
@@ -106,6 +75,43 @@ export default function RecordPeriodPanel({
     useState<RecordChartType>('bar')
   const [distributionMode, setDistributionMode] =
     useState<DistributionMode>('type')
+  const { color, opacity } = useChartSettings()
+
+  const colorWithOpacity = `${color}${Math.round((opacity / 100) * 255)
+    .toString(16)
+    .padStart(2, '0')}`
+
+  const chartConfig = {
+    hours: {
+      label: '游戏时长(小时)',
+      color: colorWithOpacity,
+    },
+  } satisfies ChartConfig
+
+  const monthlyDaysChartConfig = {
+    activeDays: {
+      label: '活跃天数',
+      color: colorWithOpacity,
+    },
+  } satisfies ChartConfig
+
+  const monthlyFrequencyChartConfig = {
+    count: {
+      label: '游玩频率',
+      color: colorWithOpacity,
+    },
+  } satisfies ChartConfig
+
+  const pieColors = [
+    colorWithOpacity,
+    '#16a34a',
+    '#f59e0b',
+    '#dc2626',
+    '#0ea5e9',
+    '#7c3aed',
+    '#ea580c',
+    '#db2777',
+  ]
 
   const { data, isLoading, isRefetching } = useQuery({
     queryKey: ['record-timeline', range, offset],

@@ -1,5 +1,19 @@
-import AppearanceContent from './appearance-content'
+import {
+  BackgroundSection,
+  ChartSection,
+  FontSection,
+  GlassSection,
+} from '@/features/appearance'
 
 export default function AppearancePage() {
-  return <AppearanceContent />
+  return (
+    <>
+      <div className="space-y-6">
+        <FontSection />
+        <BackgroundSection />
+        <GlassSection />
+        <ChartSection />
+      </div>
+    </>
+  )
 }

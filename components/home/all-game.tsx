@@ -3,8 +3,8 @@ import { useState } from 'react'
 
 import GameCard from '../game/game-card'
 import { SortSelect } from '../game/sort-select'
-import { Badge } from '../ui/badge'
 import { Button } from '../ui/button'
+import AreaHeader from './area-header'
 import { GameCardsData, SelectableGameProps } from './game-home'
 
 type AllGameProps = SelectableGameProps & {
@@ -44,11 +44,7 @@ const AllGame = ({ gameCards, selectedGameIds, selectionMode, onToggleSelect }: 
   return (
     <div className="h-full w-full">
       <div className="bg-background/30 mb-4 flex flex-col gap-3 rounded-xl p-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-3">
-          <Gamepad2Icon size={24} />
-          <div className="text-xl font-bold tracking-tight">所有游戏</div>
-          <Badge variant={'outline'}>共 {items.length} 项</Badge>
-        </div>
+        <AreaHeader icon={Gamepad2Icon} title="所有游戏" count={items.length} />
 
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-muted-foreground text-sm font-medium">排序依据</span>

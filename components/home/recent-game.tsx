@@ -1,8 +1,8 @@
 import { HistoryIcon } from 'lucide-react'
 
 import GameCard from '../game/game-card'
+import AreaHeader from './area-header'
 import { GameCardsData, SelectableGameProps } from './game-home'
-import { Badge } from '@/components/ui/badge'
 type RecentGameProps = SelectableGameProps & {
   gameCards: GameCardsData
 }
@@ -25,11 +25,7 @@ const RecentGame = ({
   return (
     <div className="h-full w-full">
       <div className="bg-background/30 mb-4 flex items-center justify-between rounded-xl p-3">
-        <div className="flex items-center gap-3">
-          <HistoryIcon size={24} />
-          <div className="text-xl font-bold">最近游戏</div>
-          <Badge variant={'outline'}>共 {items.length} 项</Badge>
-        </div>
+        <AreaHeader icon={HistoryIcon} title="最近游戏" count={items.length} />
       </div>
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
         {items.map((item) => (

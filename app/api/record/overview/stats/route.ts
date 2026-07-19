@@ -1,12 +1,26 @@
 import dayjs from 'dayjs'
 import { NextResponse } from 'next/server'
 
-import { GameInfoTable, GamePlayTable, GameRecordTable } from '@/db/schema'
+import {
+  CharacterTable,
+  GameInfoTable,
+  GameOstTable,
+  GamePlayTable,
+  GamePvTable,
+  GameQuoteTable,
+  GameRecordTable,
+} from '@/db/schema'
 import { db } from '@/lib/drizzle'
 
 const getOverviewStats = async () => {
   try {
     const games = await db.select({ id: GameInfoTable.id }).from(GameInfoTable)
+    const [characters, osts, pvs, quotes] = await Promise.all([
+      db.select({ id: CharacterTable.id }).from(CharacterTable),
+      db.select({ id: GameOstTable.id }).from(GameOstTable),
+      db.select({ id: GamePvTable.id }).from(GamePvTable),
+      db.select({ id: GameQuoteTable.id }).from(GameQuoteTable),
+    ])
     const plays = await db
       .select({
         gameId: GamePlayTable.gameId,
@@ -161,6 +175,10 @@ const getOverviewStats = async () => {
         totalPlayTime,
         totalDays: daySet.size,
         totalPlayCount,
+        totalCharacters: characters.length,
+        totalOsts: osts.length,
+        totalPvs: pvs.length,
+        totalQuotes: quotes.length,
         monthlyDurationDistribution,
         hourlyTimeDistribution,
         peakHourLabel,

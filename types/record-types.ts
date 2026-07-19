@@ -3,6 +3,10 @@ export type RecordOverviewStats = {
   totalPlayTime: number
   totalDays: number
   totalPlayCount: number
+  totalCharacters: number
+  totalOsts: number
+  totalPvs: number
+  totalQuotes: number
   monthlyDurationDistribution: Array<{
     label: string
     hours: number

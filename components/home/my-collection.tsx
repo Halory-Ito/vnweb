@@ -1,8 +1,8 @@
 import { BookMarkedIcon, CheckIcon, Trash2Icon, XIcon } from 'lucide-react'
 
 import GameCard from '../game/game-card'
-import { Badge } from '../ui/badge'
-import { Button } from '../ui/button'
+import AreaHeader from './area-header'
+import { Button } from '@/components/ui/button'
 import { getCollections } from '@/lib/game/game-utils'
 
 type CollectionsData = Awaited<ReturnType<typeof getCollections>>
@@ -48,11 +48,7 @@ const MyColletion = ({
   return (
     <div className="h-full w-full">
       <div className="bg-background/30 mb-4 flex flex-col gap-3 rounded-xl p-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-3">
-          <BookMarkedIcon size={24} />
-          <div className="text-xl font-bold tracking-tight">我的收藏</div>
-          <Badge variant={'outline'}>共 {items.length} 项</Badge>
-        </div>
+        <AreaHeader icon={BookMarkedIcon} title="我的收藏" count={items.length} />
         <div className="flex flex-wrap items-center gap-2 sm:justify-end">
           {collectionSelectionMode ? (
             <>

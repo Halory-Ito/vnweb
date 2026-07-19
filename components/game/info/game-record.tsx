@@ -29,6 +29,7 @@ import {
   type ChartConfig,
 } from '@/components/ui/chart'
 import { Skeleton } from '@/components/ui/skeleton'
+import { useChartSettings } from '@/features/appearance/hooks/use-chart-settings'
 import { getGameTimerRecordsById } from '@/lib/game/game-utils'
 
 type GameRecordProps = {
@@ -45,13 +46,6 @@ type ChartPoint = {
   hours: number
 }
 
-const chartConfig = {
-  hours: {
-    label: '游戏时长(小时)',
-    color: 'var(--chart-1)',
-  },
-} satisfies ChartConfig
-
 const formatHours = (seconds: number) => {
   const safe = Math.max(0, Number(seconds) || 0)
   return Number((safe / 3600).toFixed(2))
@@ -61,6 +55,18 @@ export default function GameRecord({ gameId }: GameRecordProps) {
   const [range, setRange] = useState<RecordRange>('week')
   const [chartType, setChartType] = useState<RecordChartType>('line')
   const [periodOffset, setPeriodOffset] = useState(0)
+  const { color, opacity } = useChartSettings()
+
+  const colorWithOpacity = `${color}${Math.round((opacity / 100) * 255)
+    .toString(16)
+    .padStart(2, '0')}`
+
+  const chartConfig = {
+    hours: {
+      label: '游戏时长(小时)',
+      color: colorWithOpacity,
+    },
+  } satisfies ChartConfig
 
   const { data, isLoading, isRefetching } = useQuery({
     queryKey: ['game-records', gameId],
