@@ -1,17 +1,15 @@
 'use client'
 
-import { useQuery } from '@tanstack/react-query'
 import {
   BoxIcon,
   HomeIcon,
-  MapIcon,
   TextQuoteIcon,
   MusicIcon,
   PuzzleIcon,
   ScanIcon,
   SettingsIcon,
-  ShoppingBasketIcon,
   VideoIcon,
+  MapIcon,
 } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -27,7 +25,6 @@ import {
   SidebarMenuItem,
 } from '@/components/ui/sidebar'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { api } from '@/lib/request-utils'
 import { cn } from '@/lib/utils'
 
 type SidebarItem = {
@@ -37,18 +34,11 @@ type SidebarItem = {
   iconSrc?: string
 }
 
-type PluginItem = {
-  id: string
-  name: string
-  icon: string
-  installed?: boolean
-}
-
 const contentItems: SidebarItem[] = [
   { title: '主页', href: '/game', icon: HomeIcon },
   { title: '记录', href: '/record', icon: BoxIcon },
   { title: '扫描', href: '/scan', icon: ScanIcon },
-  // { title: '攻略', href: '/guide', icon: MapIcon },
+  { title: '攻略', href: '/guide', icon: MapIcon },
   { title: 'PV', href: '/pv', icon: VideoIcon },
   { title: 'OST', href: '/ost', icon: MusicIcon },
   { title: '摘录', href: '/quote', icon: TextQuoteIcon },
@@ -116,22 +106,6 @@ function SidebarIconButton({ item, pathname }: { item: SidebarItem; pathname: st
 export default function AppSideBar() {
   const pathname = usePathname()
 
-  const { data: plugins = [] } = useQuery<PluginItem[]>({
-    queryKey: ['plugins'],
-    queryFn: async () => {
-      const response = await api.get('/market/plugins')
-      return response.data
-    },
-  })
-
-  const installedPluginItems: SidebarItem[] = plugins
-    .filter((plugin) => plugin.installed)
-    .map((plugin) => ({
-      title: plugin.name,
-      href: `/addOns/${plugin.id}/home`,
-      iconSrc: plugin.icon,
-    }))
-
   return (
     <Sidebar
       collapsible="none"
@@ -159,14 +133,6 @@ export default function AppSideBar() {
             <SidebarIconButton key={item.title} item={item} pathname={pathname} />
           ))}
         </SidebarMenu>
-
-        {installedPluginItems.length > 0 && (
-          <SidebarMenu className="gap-3 p-4 pt-2">
-            {installedPluginItems.map((item) => (
-              <SidebarIconButton key={item.href} item={item} pathname={pathname} />
-            ))}
-          </SidebarMenu>
-        )}
       </SidebarContent>
 
       <SidebarFooter className="items-center pb-4">

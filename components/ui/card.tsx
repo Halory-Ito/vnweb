@@ -9,8 +9,7 @@ const cardVariants = cva(
     variants: {
       variant: {
         default: '',
-        outline:
-          'border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50',
+        outline: 'border bg-background shadow-xs dark:bg-input/30 dark:border-input ',
       },
     },
     defaultVariants: {
@@ -24,13 +23,7 @@ function Card({
   variant = 'default',
   ...props
 }: React.ComponentProps<'div'> & { variant: 'default' | 'outline' }) {
-  return (
-    <div
-      data-slot="card"
-      className={cn(cardVariants({ variant }), className)}
-      {...props}
-    />
-  )
+  return <div data-slot="card" className={cn(cardVariants({ variant }), className)} {...props} />
 }
 
 function CardHeader({ className, ...props }: React.ComponentProps<'div'>) {
@@ -70,23 +63,14 @@ function CardAction({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
       data-slot="card-action"
-      className={cn(
-        'col-start-2 row-span-2 row-start-1 self-start justify-self-end',
-        className,
-      )}
+      className={cn('col-start-2 row-span-2 row-start-1 self-start justify-self-end', className)}
       {...props}
     />
   )
 }
 
 function CardContent({ className, ...props }: React.ComponentProps<'div'>) {
-  return (
-    <div
-      data-slot="card-content"
-      className={cn('px-6', className)}
-      {...props}
-    />
-  )
+  return <div data-slot="card-content" className={cn('px-6', className)} {...props} />
 }
 
 function CardFooter({ className, ...props }: React.ComponentProps<'div'>) {
@@ -99,12 +83,4 @@ function CardFooter({ className, ...props }: React.ComponentProps<'div'>) {
   )
 }
 
-export {
-  Card,
-  CardHeader,
-  CardFooter,
-  CardTitle,
-  CardAction,
-  CardDescription,
-  CardContent,
-}
+export { Card, CardHeader, CardFooter, CardTitle, CardAction, CardDescription, CardContent }

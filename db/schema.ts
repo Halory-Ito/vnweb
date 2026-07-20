@@ -130,9 +130,7 @@ export const CharacterTable = sqliteTable(
     createdAt: text().default(dayjs().toString()), // 创建时间
     updatedAt: text().default(dayjs().toString()), // 更新时间
   },
-  (table) => [
-    uniqueIndex('character_game_vndb_unique').on(table.gameId, table.vndbId),
-  ],
+  (table) => [uniqueIndex('character_game_vndb_unique').on(table.gameId, table.vndbId)],
 )
 
 // 游戏回忆表
@@ -228,6 +226,63 @@ export const GameQuoteTable = sqliteTable('game_quote', {
   content: text().notNull(), // 台词内容
   characterId: text().default(''), // 说台词的角色id，关联 CharacterTable 的 id
   context: text().default(''), // 台词上下文信息
+  createdAt: text().default(dayjs().toString()), // 创建时间
+  updatedAt: text().default(dayjs().toString()), // 更新时间
+})
+
+/**
+ * 攻略相关
+ */
+
+// 攻略主表 - 关联游戏
+export const GameGuideTable = sqliteTable('game_guide', {
+  id: int().primaryKey({ autoIncrement: true }),
+  gameId: int().notNull(), // 关联 GameInfoTable
+  name: text().notNull(), // 攻略名称（游戏名称）
+  cover: text().default(''), // 封面图片
+  level: int().default(0), // 难度等级
+  tips: text().default(''), // 提示信息，JSON 数组
+  finished: int().default(0), // 是否完成，0否1是
+  createdAt: text().default(dayjs().toString()), // 创建时间
+  updatedAt: text().default(dayjs().toString()), // 更新时间
+})
+
+// 攻略路线表
+export const GuideRouteTable = sqliteTable('guide_route', {
+  id: int().primaryKey({ autoIncrement: true }),
+  guideId: int().notNull(), // 关联 GameGuideTable
+  name: text().notNull(), // 路线名称
+  finished: int().default(0), // 是否完成，0否1是
+  sortOrder: int().default(0), // 排序顺序
+  createdAt: text().default(dayjs().toString()), // 创建时间
+  updatedAt: text().default(dayjs().toString()), // 更新时间
+})
+
+// 攻略结局表
+export const GuideEndingTable = sqliteTable('guide_ending', {
+  id: int().primaryKey({ autoIncrement: true }),
+  routeId: int().notNull(), // 关联 GuideRouteTable
+  name: text().notNull(), // 结局名称
+  type: text().default('normal'), // 结局类型：normal/bad/true
+  cover: text().default(''), // 结局封面图片
+  requirements: text().default(''), // 开启条件
+  finished: int().default(0), // 是否完成，0否1是
+  sortOrder: int().default(0), // 排序顺序
+  createdAt: text().default(dayjs().toString()), // 创建时间
+  updatedAt: text().default(dayjs().toString()), // 更新时间
+})
+
+// 攻略步骤表
+export const GuideStepTable = sqliteTable('guide_step', {
+  id: int().primaryKey({ autoIncrement: true }),
+  endingId: int().notNull(), // 关联 GuideEndingTable
+  type: text().default('choice'), // 步骤类型：choice/save/load/note
+  content: text().notNull(), // 步骤内容
+  group: text().default(''), // 日期分组（如"7月25日"）
+  prefix: text().default(''), // 前缀标记（如★）
+  subfix: text().default(''), // 后缀说明
+  finished: int().default(0), // 是否完成，0否1是
+  sortOrder: int().default(0), // 排序顺序
   createdAt: text().default(dayjs().toString()), // 创建时间
   updatedAt: text().default(dayjs().toString()), // 更新时间
 })

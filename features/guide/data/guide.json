@@ -1,0 +1,494 @@
+{
+    "0": {
+        "uid": "67c05353c30f2660f590abf2",
+        "vndb_id": "v3144",
+        "seoName": "素晴日",
+        "cover": "https://t.vndb.org/cv/17/90017.jpg",
+        "romaji": "subarashiki-hibi-furenzoku-sonzai",
+        "name": {
+            "zh-cn": "美好的每一天～不连续存在～",
+            "en-us": "Wonderful Everyday ~Diskontinuierliches Dasein~",
+            "ja-jp": "素晴らしき日々～不連続存在～"
+        },
+        "developer": "KeroQ",
+        "releaseDate": "2010-03-26",
+        "tags": [
+            "女学生",
+            "学园",
+            "恋爱",
+            "神器",
+            "电波",
+            "扶她"
+        ],
+        "level": 2,
+        "tips": [
+            "★为二周目会出现的选项"
+        ],
+        "show": true,
+        "nsfw_content": false,
+        "views": 0,
+        "routes": [
+            {
+                "id": "route_1755092953130",
+                "name": "序章",
+                "endings": [
+                    {
+                        "id": "ending_1755092962860",
+                        "name": "镜END",
+                        "type": "normal",
+                        "steps": [
+                            {
+                                "id": "step_1755092976193",
+                                "type": "choice",
+                                "content": "接吻",
+                                "group": "7月15日"
+                            },
+                            {
+                                "id": "step_1755092998957",
+                                "type": "save",
+                                "content": "SAVE 1"
+                            },
+                            {
+                                "id": "step_1755093023564",
+                                "type": "choice",
+                                "content": "选1号",
+                                "subfix": ""
+                            }
+                        ]
+                    },
+                    {
+                        "id": "ending_1755094041332",
+                        "name": "司END",
+                        "type": "normal",
+                        "steps": [
+                            {
+                                "id": "step_1755094160019",
+                                "type": "load",
+                                "content": "LOAD 1"
+                            },
+                            {
+                                "id": "step_1755094160538",
+                                "type": "choice",
+                                "content": "选2号"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "ending_1755094171317",
+                        "name": "岐视点END1",
+                        "type": "normal",
+                        "steps": [
+                            {
+                                "id": "step_1755094196308",
+                                "type": "load",
+                                "content": "LOAD 1"
+                            },
+                            {
+                                "id": "step_1755094197802",
+                                "type": "choice",
+                                "content": "选3号"
+                            },
+                            {
+                                "id": "step_1755094226688",
+                                "type": "note",
+                                "content": "接吻选择我做不到一样进入由岐END1"
+                            },
+                            {
+                                "id": "step_1755094247432",
+                                "type": "choice",
+                                "content": "Down the Rabbit - Hole 开始"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "route_1755093856732",
+                "name": "由岐视点",
+                "endings": [
+                    {
+                        "id": "ending_1755093862452",
+                        "name": "由岐视点 END2",
+                        "type": "normal",
+                        "steps": [
+                            {
+                                "id": "step_1755094106942",
+                                "type": "choice",
+                                "content": "去散步好了/海事快去做自己该做的事情吧……",
+                                "prefix": "★",
+                                "group": "7月12日"
+                            },
+                            {
+                                "id": "step_1755094107769",
+                                "type": "choice",
+                                "content": "向镜询问今天的安排",
+                                "group": "7月13日"
+                            },
+                            {
+                                "id": "step_1755094108848",
+                                "type": "choice",
+                                "content": "去楼顶",
+                                "group": "7月13日"
+                            },
+                            {
+                                "id": "step_1755094548606",
+                                "type": "choice",
+                                "content": "去教室",
+                                "group": "7月13日"
+                            },
+                            {
+                                "id": "step_1755094549579",
+                                "type": "choice",
+                                "content": "办公室",
+                                "group": "7月13日"
+                            },
+                            {
+                                "id": "step_1755094559629",
+                                "type": "choice",
+                                "content": "具体解释一下？",
+                                "group": "7月14日"
+                            },
+                            {
+                                "id": "step_1755094581428",
+                                "type": "choice",
+                                "content": "10秒x6",
+                                "group": "7月14日"
+                            },
+                            {
+                                "id": "step_1755094581572",
+                                "type": "choice",
+                                "content": "10天/不用解释",
+                                "group": "7月14日"
+                            },
+                            {
+                                "id": "step_1755094581746",
+                                "type": "choice",
+                                "content": "脑子里一直在想司的事",
+                                "group": "7月14日"
+                            },
+                            {
+                                "id": "step_1755094581980",
+                                "type": "choice",
+                                "content": "回自己的教室",
+                                "group": "7月16日"
+                            },
+                            {
+                                "id": "step_1755094582226",
+                                "type": "choice",
+                                "content": "去屋顶",
+                                "group": "7月16日"
+                            },
+                            {
+                                "id": "step_1755094701246",
+                                "type": "note",
+                                "content": "由岐视点 END2后 选择It's my own Invention开始"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "route_1755094745819",
+                "name": "卓司视点",
+                "endings": [
+                    {
+                        "id": "ending_1755094747845",
+                        "name": "希实香 END1",
+                        "type": "normal",
+                        "steps": [
+                            {
+                                "id": "step_1755094810796",
+                                "type": "save",
+                                "content": "SAVE 2",
+                                "group": "7月2日"
+                            },
+                            {
+                                "id": "step_1755094819716",
+                                "type": "choice",
+                                "content": "这是我的妄想吧……",
+                                "group": "7月2日"
+                            },
+                            {
+                                "id": "step_1755094821655",
+                                "type": "choice",
+                                "content": "仰制黑波动的源头",
+                                "group": "7月16日"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "ending_1755094834318",
+                        "name": "卓司视点 END",
+                        "type": "normal",
+                        "steps": [
+                            {
+                                "id": "step_1755094837953",
+                                "type": "load",
+                                "content": "LOAD 2"
+                            },
+                            {
+                                "id": "step_1755094844616",
+                                "type": "choice",
+                                "content": "绝对行得通！",
+                                "group": "7月2日"
+                            },
+                            {
+                                "id": "step_1755094844751",
+                                "type": "choice",
+                                "content": "现实比想象中来的简单呢",
+                                "group": "7月2日"
+                            },
+                            {
+                                "id": "step_1755094856266",
+                                "type": "choice",
+                                "content": "这种现实是我一直期待的",
+                                "group": "7月2日"
+                            },
+                            {
+                                "id": "step_1755094856400",
+                                "type": "choice",
+                                "content": "仰制黑波动的源头",
+                                "group": "7月16日"
+                            },
+                            {
+                                "id": "step_1755094856478",
+                                "type": "save",
+                                "content": "SAVE 3",
+                                "group": "7月18日"
+                            },
+                            {
+                                "id": "step_1755094856611",
+                                "type": "choice",
+                                "content": " 从前面插入？",
+                                "group": "7月18日"
+                            },
+                            {
+                                "id": "step_1755094878335",
+                                "type": "load",
+                                "content": "LOAD 3",
+                                "group": "7月18日"
+                            },
+                            {
+                                "id": "step_1755094915914",
+                                "type": "choice",
+                                "content": "从身后插入?",
+                                "group": "7月18日"
+                            },
+                            {
+                                "id": "step_1755094922066",
+                                "type": "note",
+                                "content": "CG回收"
+                            },
+                            {
+                                "id": "step_1755094947498",
+                                "type": "note",
+                                "content": "卓司视点 END后，选择Looking-glass Insects开始"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "route_1755094961655",
+                "name": "柘榴视点",
+                "endings": [
+                    {
+                        "id": "ending_1755094968698",
+                        "name": "希实香 END2",
+                        "type": "normal",
+                        "steps": [
+                            {
+                                "id": "step_1755094971430",
+                                "type": "save",
+                                "content": "SAVE 4",
+                                "group": "柘榴视点"
+                            },
+                            {
+                                "id": "step_1755094981399",
+                                "type": "choice",
+                                "content": "该如何是好啊……"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "ending_1755094996144",
+                        "name": "柘榴视点 END",
+                        "type": "normal",
+                        "steps": [
+                            {
+                                "id": "step_1755094998440",
+                                "type": "load",
+                                "content": "LOAD 4"
+                            },
+                            {
+                                "id": "step_1755095003132",
+                                "type": "choice",
+                                "content": "返回自己的教室",
+                                "group": "7月7日"
+                            },
+                            {
+                                "id": "step_1755095003249",
+                                "type": "note",
+                                "content": " 柘榴视角END后，选择Jabberwocky开始"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "route_1755095027974",
+                "name": "皆守视点",
+                "endings": [
+                    {
+                        "id": "ending_1755095040655",
+                        "name": "皆守视点 END1",
+                        "type": "normal",
+                        "steps": [
+                            {
+                                "id": "step_1755095052985",
+                                "type": "save",
+                                "content": "SAVE 5",
+                                "group": "7月6日"
+                            },
+                            {
+                                "id": "step_1755095067861",
+                                "type": "choice",
+                                "content": "那是当然的咯",
+                                "group": "7月6日"
+                            },
+                            {
+                                "id": "step_1755095077019",
+                                "type": "note",
+                                "content": "皆守视点END1后，选择Which Dreamed it开始"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "route_1755095082634",
+                "name": "羽咲视点",
+                "endings": [
+                    {
+                        "id": "ending_1755095090122",
+                        "name": "羽咲视点 END",
+                        "type": "normal",
+                        "steps": [
+                            {
+                                "id": "step_1755095094076",
+                                "type": "choice",
+                                "content": "无选项"
+                            },
+                            {
+                                "id": "step_1755095107862",
+                                "type": "note",
+                                "content": "羽咲视点 ENDor皆守视点END1后，选择JabberwockyⅡ开始"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "route_1755095166167",
+                "name": "皆守视点 再次",
+                "endings": [
+                    {
+                        "id": "ending_1755095186552",
+                        "name": "美好的每一天 END",
+                        "type": "normal",
+                        "steps": [
+                            {
+                                "id": "step_1755095207583",
+                                "type": "choice",
+                                "content": "无选项"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "ending_1755095224443",
+                        "name": "皆守视点 END2",
+                        "type": "normal",
+                        "steps": [
+                            {
+                                "id": "step_1755095228823",
+                                "type": "load",
+                                "content": "LOAD 5"
+                            },
+                            {
+                                "id": "step_1755095234453",
+                                "type": "choice",
+                                "content": "不只是妹妹",
+                                "group": "7月6日"
+                            },
+                            {
+                                "id": "step_1755095252245",
+                                "type": "note",
+                                "content": "羽咲视点 ENDor皆守视点END2后，选择JabberwockyⅡ开始"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "ending_1755095301227",
+                        "name": "向日葵的坡道 END",
+                        "type": "normal",
+                        "steps": [
+                            {
+                                "id": "step_1755095307267",
+                                "type": "choice",
+                                "content": "无选项"
+                            },
+                            {
+                                "id": "step_1755095316317",
+                                "type": "note",
+                                "content": "美好的每一天ENDor向日葵的坡道END后，选择Jabberwocky开始"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "ending_1755095323565",
+                        "name": "皆守视点END3",
+                        "type": "normal",
+                        "steps": [
+                            {
+                                "id": "step_1755095330211",
+                                "type": "choice",
+                                "content": "怎样回答都一样吧",
+                                "group": "7月6日"
+                            },
+                            {
+                                "id": "step_1755095337565",
+                                "type": "note",
+                                "content": "皆守视点END3后，选择JabberwockyⅡ开始"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "route_1755095356915",
+                "name": "由岐视点 再次",
+                "endings": [
+                    {
+                        "id": "ending_1755095368893",
+                        "name": "终之空ⅡEND",
+                        "type": "normal",
+                        "steps": [
+                            {
+                                "id": "step_1755095380071",
+                                "type": "choice",
+                                "content": "无选项"
+                            },
+                            {
+                                "id": "step_1755095383670",
+                                "type": "note",
+                                "content": "终之空ⅡEND后，选择JabberwockyⅡ可以选择进入美好的每一天END，向日葵的坡道END,终之空ⅡEND，序章"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "updated_at": "2026-02-27T09:18:43.090Z",
+        "created_at": "2025-07-10T11:43:24.474Z"
+    }
+}

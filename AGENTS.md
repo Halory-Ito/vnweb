@@ -28,6 +28,17 @@
 - 所有 API 请求通过 `app/api`下的模块发起
 - 使用项目封装的 `api`实例发起请求（`lib/request-utils.ts`）
 - 不要组件中直接调用 `fetch`
+- 请在`features`目录下的`xxx-api.ts`文件中封装请求的细节，在`route.ts`中调用
+- 使用`axios`示例发送请求的时候，一律采用类似格式：
+
+```ts
+export function actionObjectApi() {
+  return api.request({
+    method: 'method',
+    url: 'url',
+  })
+}
+```
 
 # 项目目录
 

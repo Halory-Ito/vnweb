@@ -1,7 +1,7 @@
 'use client'
 
 import { useQueryClient } from '@tanstack/react-query'
-import { CalendarDaysIcon, CheckIcon, Clock3Icon, PlayIcon } from 'lucide-react'
+import { CalendarDaysIcon, CheckIcon, Clock3Icon, ImageOffIcon, PlayIcon } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -26,6 +26,7 @@ export default function GameCard(props: GameCardProps) {
   const [isLaunching, setIsLaunching] = useState(false)
   const [exePathDialogOpen, setExePathDialogOpen] = useState(false)
   const [exePathInput, setExePathInput] = useState('')
+  const [imageError, setImageError] = useState(false)
   const showSelection = Boolean(props.showSelection)
   const isSelected = Boolean(props.isSelected)
   const selectionMode = Boolean(props.selectionMode)
@@ -164,14 +165,27 @@ export default function GameCard(props: GameCardProps) {
             {/* 背景光晕效果 */}
             <div className="bg-primary/20 pointer-events-none absolute -inset-4 opacity-0 blur-3xl transition-opacity duration-500 group-hover:opacity-60" />
 
-            <Image
-              className="h-full w-full cursor-pointer object-cover transition-transform duration-500 group-hover:scale-110"
-              src={props.cover}
-              alt={props.title}
-              fill
-              sizes="176px"
-              fetchPriority="high"
-            />
+            {imageError ? (
+              <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-muted">
+                <ImageOffIcon className="size-8 text-muted-foreground" />
+                <span className="text-xs text-muted-foreground">封面加载失败</span>
+              </div>
+            ) : (
+              <Image
+                className="h-full w-full cursor-pointer object-cover transition-transform duration-500 group-hover:scale-110"
+                src={props.cover}
+                alt={props.title}
+                fill
+                sizes="176px"
+                fetchPriority="high"
+                onError={() => {
+                  setImageError(true)
+                  toast.error(`"${props.title}" 封面加载失败`, {
+                    description: '外部图片链接可能已失效或网络不稳定',
+                  })
+                }}
+              />
+            )}
 
             {/* 悬停遮罩 */}
             {!selectionMode && (

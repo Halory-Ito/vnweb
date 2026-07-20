@@ -1,0 +1,1116 @@
+{
+    "0": {
+        "uid": "67c05353c30f2660f590abf2",
+        "vndb_id": "v184",
+        "seoName": "",
+        "cover": "https://t.vndb.org/cv/68/98568.jpg",
+        "romaji": "kizuato",
+        "name": {
+            "zh-cn": "痕 -きずあと-",
+            "en-us": "",
+            "ja-jp": "痕"
+        },
+        "developer": "Leaf",
+        "releaseDate": "1996-07-26",
+        "tags": [
+            "田园",
+            "姐妹",
+            "惊悚"
+        ],
+        "level": 2,
+        "tips": [
+            " 攻略为痕 ～きずあと～复刻版及09版（六花线）的攻略",
+            "攻略顺序为千鹤，梓，枫，柳川，初音的顺序"
+        ],
+        "show": true,
+        "nsfw_content": false,
+        "views": 0,
+        "routes": [
+            {
+                "id": "route_chizuru",
+                "name": "千鹤",
+                "endings": [
+                    {
+                        "id": "ending_chizuru_end1",
+                        "name": "千鹤 END1",
+                        "type": "bad",
+                        "steps": [
+                            {
+                                "id": "step_chizuru_end1_01",
+                                "type": "choice",
+                                "content": "是出现了千鹤小姐的梦……这样开玩笑。"
+                            },
+                            {
+                                "id": "step_chizuru_end1_02",
+                                "type": "choice",
+                                "content": "不要管被子了，这样对她说。"
+                            },
+                            {
+                                "id": "step_chizuru_end1_03",
+                                "type": "choice",
+                                "content": "对于让千鹤小姐看见了的糟糕的事态而发怒。"
+                            },
+                            {
+                                "id": "step_chizuru_end1_04",
+                                "type": "choice",
+                                "content": "我不觉得千鹤小姐胖啊。"
+                            },
+                            {
+                                "id": "step_chizuru_end1_05",
+                                "type": "choice",
+                                "content": "就一句话，好吃！"
+                            },
+                            {
+                                "id": "step_chizuru_end1_06",
+                                "type": "choice",
+                                "content": "知道了，我会跟小枫聊天的。"
+                            },
+                            {
+                                "id": "step_chizuru_end1_07",
+                                "type": "choice",
+                                "content": "若无其事的走在她身边送送她。"
+                            },
+                            {
+                                "id": "step_chizuru_end1_08",
+                                "type": "choice",
+                                "content": "聊了有关以前玩耍的事。"
+                            },
+                            {
+                                "id": "step_chizuru_end1_09",
+                                "type": "choice",
+                                "content": "不会，按道理绝对是丢了！"
+                            },
+                            {
+                                "id": "step_chizuru_end1_10",
+                                "type": "choice",
+                                "content": "忘不了父亲吗。"
+                            },
+                            {
+                                "id": "step_chizuru_end1_11",
+                                "type": "choice",
+                                "content": "在自己的房间里？"
+                            },
+                            {
+                                "id": "step_chizuru_end1_12",
+                                "type": "choice",
+                                "content": "那个，是警方的人吗？这么问道。"
+                            },
+                            {
+                                "id": "step_chizuru_end1_13",
+                                "type": "choice",
+                                "content": "很冷静。"
+                            },
+                            {
+                                "id": "step_chizuru_end1_14",
+                                "type": "choice",
+                                "content": "泳装系的色情杂志。"
+                            },
+                            {
+                                "id": "step_chizuru_end1_15",
+                                "type": "choice",
+                                "content": "去鹤来屋看看。"
+                            },
+                            {
+                                "id": "step_chizuru_end1_16",
+                                "type": "choice",
+                                "content": "离开这里。"
+                            },
+                            {
+                                "id": "step_chizuru_end1_17",
+                                "type": "choice",
+                                "content": "本来，是你那边的错吧！那样反击。"
+                            },
+                            {
+                                "id": "step_chizuru_end1_18",
+                                "type": "choice",
+                                "content": "回家。"
+                            },
+                            {
+                                "id": "step_chizuru_end1_19",
+                                "type": "save",
+                                "content": "SAVE 1"
+                            },
+                            {
+                                "id": "step_chizuru_end1_20",
+                                "type": "choice",
+                                "content": "全力反抗。"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "ending_chizuru_end2",
+                        "name": "千鹤 END2",
+                        "type": "bad",
+                        "steps": [
+                            {
+                                "id": "step_chizuru_end2_01",
+                                "type": "load",
+                                "content": "LOAD 1"
+                            },
+                            {
+                                "id": "step_chizuru_end2_02",
+                                "type": "choice",
+                                "content": "只是祈祷着她平安无事。"
+                            },
+                            {
+                                "id": "step_chizuru_end2_03",
+                                "type": "choice",
+                                "content": "犯人不是我。"
+                            },
+                            {
+                                "id": "step_chizuru_end2_04",
+                                "type": "choice",
+                                "content": "总觉得你很奇怪啊……"
+                            },
+                            {
+                                "id": "step_chizuru_end2_05",
+                                "type": "choice",
+                                "content": "拭去脸颊的眼泪。"
+                            },
+                            {
+                                "id": "step_chizuru_end2_06",
+                                "type": "choice",
+                                "content": "感觉她似乎隐藏着什么内疚的事。"
+                            },
+                            {
+                                "id": "step_chizuru_end2_07",
+                                "type": "save",
+                                "content": "SAVE 2"
+                            },
+                            {
+                                "id": "step_chizuru_end2_08",
+                                "type": "choice",
+                                "content": "用力地抱紧千鹤小姐。"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "ending_chizuru_end3",
+                        "name": "千鹤 END3",
+                        "type": "bad",
+                        "steps": [
+                            {
+                                "id": "step_chizuru_end3_01",
+                                "type": "load",
+                                "content": "LOAD 2"
+                            },
+                            {
+                                "id": "step_chizuru_end3_02",
+                                "type": "choice",
+                                "content": "转过身逃走。"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "ending_chizuru_end4",
+                        "name": "千鹤 END4",
+                        "type": "normal",
+                        "steps": [
+                            {
+                                "id": "step_chizuru_end4_01",
+                                "type": "load",
+                                "content": "LOAD 2"
+                            },
+                            {
+                                "id": "step_chizuru_end4_02",
+                                "type": "choice",
+                                "content": "拯救千鹤小姐。"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "route_azusa",
+                "name": "梓",
+                "endings": [
+                    {
+                        "id": "ending_azusa_end1",
+                        "name": "梓 END1",
+                        "type": "bad",
+                        "steps": [
+                            {
+                                "id": "step_azusa_end1_01",
+                                "type": "choice",
+                                "content": "老实地说出来。"
+                            },
+                            {
+                                "id": "step_azusa_end1_02",
+                                "type": "choice",
+                                "content": "不要管被子了，这样对她说。"
+                            },
+                            {
+                                "id": "step_azusa_end1_03",
+                                "type": "choice",
+                                "content": "对于梓粗暴的行为而发怒。"
+                            },
+                            {
+                                "id": "step_azusa_end1_04",
+                                "type": "choice",
+                                "content": "不吃早饭不好。"
+                            },
+                            {
+                                "id": "step_azusa_end1_05",
+                                "type": "choice",
+                                "content": "就一句话，好吃！"
+                            },
+                            {
+                                "id": "step_azusa_end1_06",
+                                "type": "choice",
+                                "content": "知道了，我会跟小枫聊天的。"
+                            },
+                            {
+                                "id": "step_azusa_end1_07",
+                                "type": "choice",
+                                "content": "若无其事的走在她身边送送她。"
+                            },
+                            {
+                                "id": "step_azusa_end1_08",
+                                "type": "choice",
+                                "content": "聊了有关以前玩耍的事。"
+                            },
+                            {
+                                "id": "step_azusa_end1_09",
+                                "type": "choice",
+                                "content": "试着想出什么。"
+                            },
+                            {
+                                "id": "step_azusa_end1_10",
+                                "type": "choice",
+                                "content": "忘不了父亲吗。"
+                            },
+                            {
+                                "id": "step_azusa_end1_11",
+                                "type": "choice",
+                                "content": "在客厅里？"
+                            },
+                            {
+                                "id": "step_azusa_end1_12",
+                                "type": "choice",
+                                "content": "思考鹤来屋集团的事。"
+                            },
+                            {
+                                "id": "step_azusa_end1_13",
+                                "type": "choice",
+                                "content": "那个，是警方的人吗？这么问道。"
+                            },
+                            {
+                                "id": "step_azusa_end1_14",
+                                "type": "choice",
+                                "content": "很冷静。"
+                            },
+                            {
+                                "id": "step_azusa_end1_15",
+                                "type": "choice",
+                                "content": "平时看的漫画杂志。"
+                            },
+                            {
+                                "id": "step_azusa_end1_16",
+                                "type": "choice",
+                                "content": "去打小钢珠。"
+                            },
+                            {
+                                "id": "step_azusa_end1_17",
+                                "type": "choice",
+                                "content": "明确地对香央里说。"
+                            },
+                            {
+                                "id": "step_azusa_end1_18",
+                                "type": "choice",
+                                "content": "说出来。"
+                            },
+                            {
+                                "id": "step_azusa_end1_19",
+                                "type": "choice",
+                                "content": "不是的！"
+                            },
+                            {
+                                "id": "step_azusa_end1_20",
+                                "type": "save",
+                                "content": "SAVE 3"
+                            },
+                            {
+                                "id": "step_azusa_end1_21",
+                                "type": "choice",
+                                "content": "先去看一次事件的现场。"
+                            },
+                            {
+                                "id": "step_azusa_end1_22",
+                                "type": "choice",
+                                "content": "联络警察吧。"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "ending_azusa_end2",
+                        "name": "梓 END2",
+                        "type": "bad",
+                        "steps": [
+                            {
+                                "id": "step_azusa_end2_01",
+                                "type": "load",
+                                "content": "LOAD 3"
+                            },
+                            {
+                                "id": "step_azusa_end2_02",
+                                "type": "choice",
+                                "content": "尽早地找到gui zhi。"
+                            },
+                            {
+                                "id": "step_azusa_end2_03",
+                                "type": "save",
+                                "content": "SAVE 4"
+                            },
+                            {
+                                "id": "step_azusa_end2_04",
+                                "type": "choice",
+                                "content": "拿着什么武器吧。"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "ending_azusa_end3",
+                        "name": "梓 END3",
+                        "type": "bad",
+                        "steps": [
+                            {
+                                "id": "step_azusa_end3_01",
+                                "type": "load",
+                                "content": "LOAD 4"
+                            },
+                            {
+                                "id": "step_azusa_end3_02",
+                                "type": "choice",
+                                "content": "联络警察吧。"
+                            },
+                            {
+                                "id": "step_azusa_end3_03",
+                                "type": "save",
+                                "content": "SAVE 5"
+                            },
+                            {
+                                "id": "step_azusa_end3_04",
+                                "type": "choice",
+                                "content": "老实地沉默着。"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "ending_azusa_end4",
+                        "name": "梓 END4",
+                        "type": "normal",
+                        "steps": [
+                            {
+                                "id": "step_azusa_end4_01",
+                                "type": "load",
+                                "content": "LOAD 5"
+                            },
+                            {
+                                "id": "step_azusa_end4_02",
+                                "type": "choice",
+                                "content": "大声求救。"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "route_kaede",
+                "name": "枫",
+                "endings": [
+                    {
+                        "id": "ending_kaede_end1",
+                        "name": "枫 END1",
+                        "type": "bad",
+                        "steps": [
+                            {
+                                "id": "step_kaede_end1_01",
+                                "type": "note",
+                                "prefix": "※",
+                                "content": "从最初开始"
+                            },
+                            {
+                                "id": "step_kaede_end1_02",
+                                "type": "choice",
+                                "content": "老实地说出来。"
+                            },
+                            {
+                                "id": "step_kaede_end1_03",
+                                "type": "choice",
+                                "content": "强行突破。"
+                            },
+                            {
+                                "id": "step_kaede_end1_04",
+                                "type": "choice",
+                                "content": "那种减肥方式不对！"
+                            },
+                            {
+                                "id": "step_kaede_end1_05",
+                                "type": "choice",
+                                "content": "唔，还好。"
+                            },
+                            {
+                                "id": "step_kaede_end1_06",
+                                "type": "choice",
+                                "content": "知道了，我会跟小枫聊天的。"
+                            },
+                            {
+                                "id": "step_kaede_end1_07",
+                                "type": "choice",
+                                "content": "想要我送你吗，这样坏心眼地说道。"
+                            },
+                            {
+                                "id": "step_kaede_end1_08",
+                                "type": "choice",
+                                "content": "等一下！那样强硬地说。"
+                            },
+                            {
+                                "id": "step_kaede_end1_09",
+                                "type": "choice",
+                                "content": "在客厅里？"
+                            },
+                            {
+                                "id": "step_kaede_end1_10",
+                                "type": "choice",
+                                "content": "嘛，算了。"
+                            },
+                            {
+                                "id": "step_kaede_end1_11",
+                                "type": "choice",
+                                "content": "那个，是警方的人吗？这么问道。"
+                            },
+                            {
+                                "id": "step_kaede_end1_12",
+                                "type": "choice",
+                                "content": "稍微有些动摇了。"
+                            },
+                            {
+                                "id": "step_kaede_end1_13",
+                                "type": "choice",
+                                "content": "讨论政治经济的评论杂志。"
+                            },
+                            {
+                                "id": "step_kaede_end1_14",
+                                "type": "choice",
+                                "content": "再在这附近逛一会。"
+                            },
+                            {
+                                "id": "step_kaede_end1_15",
+                                "type": "choice",
+                                "content": "因为我喜欢听由美子同学讲故事。"
+                            },
+                            {
+                                "id": "step_kaede_end1_16",
+                                "type": "choice",
+                                "content": "初音盖浇饭！"
+                            },
+                            {
+                                "id": "step_kaede_end1_17",
+                                "type": "choice",
+                                "content": "说实话。"
+                            },
+                            {
+                                "id": "step_kaede_end1_18",
+                                "type": "choice",
+                                "content": "你们知道那个故事的爱情故事版本吗？"
+                            },
+                            {
+                                "id": "step_kaede_end1_19",
+                                "type": "choice",
+                                "content": "要一起洗澡吗？"
+                            },
+                            {
+                                "id": "step_kaede_end1_20",
+                                "type": "choice",
+                                "content": "就这样，在小枫体内射出来。"
+                            },
+                            {
+                                "id": "step_kaede_end1_21",
+                                "type": "choice",
+                                "content": "慌慌张张地拔出来。",
+                                "subfix": "CG回收"
+                            },
+                            {
+                                "id": "step_kaede_end1_22",
+                                "type": "save",
+                                "content": "SAVE 6"
+                            },
+                            {
+                                "id": "step_kaede_end1_23",
+                                "type": "choice",
+                                "content": "迎击千鹤。"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "ending_kaede_end2",
+                        "name": "枫 END2",
+                        "type": "normal",
+                        "steps": [
+                            {
+                                "id": "step_kaede_end2_01",
+                                "type": "load",
+                                "content": "LOAD 6"
+                            },
+                            {
+                                "id": "step_kaede_end2_02",
+                                "type": "choice",
+                                "content": "呆呆地凝视着那。"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "route_yanagawa",
+                "name": "柳川",
+                "endings": [
+                    {
+                        "id": "ending_yanagawa_end",
+                        "name": "柳川 END",
+                        "type": "normal",
+                        "steps": [
+                            {
+                                "id": "step_yanagawa_end_01",
+                                "type": "choice",
+                                "content": "就这样继续做梦。"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "route_hatsune",
+                "name": "初音",
+                "endings": [
+                    {
+                        "id": "ending_hatsune_end1",
+                        "name": "初音 END1",
+                        "type": "bad",
+                        "steps": [
+                            {
+                                "id": "step_hatsune_end1_01",
+                                "type": "note",
+                                "prefix": "※",
+                                "content": "从最初开始"
+                            },
+                            {
+                                "id": "step_hatsune_end1_02",
+                                "type": "choice",
+                                "content": "睁开眼睛。"
+                            },
+                            {
+                                "id": "step_hatsune_end1_03",
+                                "type": "choice",
+                                "content": "笑着敷衍她。"
+                            },
+                            {
+                                "id": "step_hatsune_end1_04",
+                                "type": "choice",
+                                "content": "我只穿着一条内裤，这样对她说。"
+                            },
+                            {
+                                "id": "step_hatsune_end1_05",
+                                "type": "choice",
+                                "content": "那种减肥方式不对！"
+                            },
+                            {
+                                "id": "step_hatsune_end1_06",
+                                "type": "choice",
+                                "content": "就一句话，好吃！"
+                            },
+                            {
+                                "id": "step_hatsune_end1_07",
+                                "type": "choice",
+                                "content": "小初音，意外的像大人啊。"
+                            },
+                            {
+                                "id": "step_hatsune_end1_08",
+                                "type": "choice",
+                                "content": "若无其事的走在她身边送送她。"
+                            },
+                            {
+                                "id": "step_hatsune_end1_09",
+                                "type": "choice",
+                                "content": "聊了有关小枫的事。"
+                            },
+                            {
+                                "id": "step_hatsune_end1_10",
+                                "type": "choice",
+                                "content": "初中时代的那个事件。"
+                            },
+                            {
+                                "id": "step_hatsune_end1_11",
+                                "type": "choice",
+                                "content": "就算那样也还是不好的。"
+                            },
+                            {
+                                "id": "step_hatsune_end1_12",
+                                "type": "choice",
+                                "content": "在客厅里？"
+                            },
+                            {
+                                "id": "step_hatsune_end1_13",
+                                "type": "choice",
+                                "content": "嘛，算了。"
+                            },
+                            {
+                                "id": "step_hatsune_end1_14",
+                                "type": "choice",
+                                "content": "是他儿子，这么回答道。"
+                            },
+                            {
+                                "id": "step_hatsune_end1_15",
+                                "type": "save",
+                                "content": "SAVE 8"
+                            },
+                            {
+                                "id": "step_hatsune_end1_16",
+                                "type": "choice",
+                                "content": "稍微有些动摇了。"
+                            },
+                            {
+                                "id": "step_hatsune_end1_17",
+                                "type": "choice",
+                                "content": "泳装系的色情杂志。"
+                            },
+                            {
+                                "id": "step_hatsune_end1_18",
+                                "type": "choice",
+                                "content": "去特产店逛一下。"
+                            },
+                            {
+                                "id": "step_hatsune_end1_19",
+                                "type": "choice",
+                                "content": "虽然很对不起梓……。"
+                            },
+                            {
+                                "id": "step_hatsune_end1_20",
+                                "type": "choice",
+                                "content": "色情录像。"
+                            },
+                            {
+                                "id": "step_hatsune_end1_21",
+                                "type": "choice",
+                                "content": "果然还是放火箭烟花吧！"
+                            },
+                            {
+                                "id": "step_hatsune_end1_22",
+                                "type": "choice",
+                                "content": "算了，不要了吧。"
+                            },
+                            {
+                                "id": "step_hatsune_end1_23",
+                                "type": "choice",
+                                "content": "一起调查岩石表面。"
+                            },
+                            {
+                                "id": "step_hatsune_end1_24",
+                                "type": "choice",
+                                "content": "让小初音拿着。"
+                            },
+                            {
+                                "id": "step_hatsune_end1_25",
+                                "type": "choice",
+                                "content": "抵抗。"
+                            },
+                            {
+                                "id": "step_hatsune_end1_26",
+                                "type": "save",
+                                "content": "SAVE 9"
+                            },
+                            {
+                                "id": "step_hatsune_end1_27",
+                                "type": "choice",
+                                "content": "往小初音体内注入进去。"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "ending_hatsune_end2",
+                        "name": "初音 END2",
+                        "type": "normal",
+                        "steps": [
+                            {
+                                "id": "step_hatsune_end2_01",
+                                "type": "load",
+                                "content": "LOAD 9"
+                            },
+                            {
+                                "id": "step_hatsune_end2_02",
+                                "type": "choice",
+                                "content": "一直抵抗到最后。"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "route_bonus",
+                "name": "附赠",
+                "endings": [
+                    {
+                        "id": "ending_bonus_end1",
+                        "name": "过去 END",
+                        "type": "normal",
+                        "steps": [
+                            {
+                                "id": "step_bonus_end1_01",
+                                "type": "note",
+                                "prefix": "※",
+                                "content": "从最初开始"
+                            },
+                            {
+                                "id": "step_bonus_end1_02",
+                                "type": "choice",
+                                "content": "睁开眼睛后，还在半夜。"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "ending_bonus_end2",
+                        "name": "附赠 END1",
+                        "type": "normal",
+                        "steps": [
+                            {
+                                "id": "step_bonus_end2_01",
+                                "type": "load",
+                                "content": "LOAD 8"
+                            },
+                            {
+                                "id": "step_bonus_end2_02",
+                                "type": "choice",
+                                "content": "稍微有些动摇了。"
+                            },
+                            {
+                                "id": "step_bonus_end2_03",
+                                "type": "save",
+                                "content": "SAVE 10"
+                            },
+                            {
+                                "id": "step_bonus_end2_04",
+                                "type": "choice",
+                                "content": "预约小剧场1  柏木家的餐桌。"
+                            },
+                            {
+                                "id": "step_bonus_end2_05",
+                                "type": "choice",
+                                "content": "よーし、食うぞ！"
+                            },
+                            {
+                                "id": "step_bonus_end2_06",
+                                "type": "note",
+                                "content": "初音ちゃんシナリオの後日"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "ending_bonus_end3",
+                        "name": "附赠 END2",
+                        "type": "normal",
+                        "steps": [
+                            {
+                                "id": "step_bonus_end3_01",
+                                "type": "load",
+                                "content": "LOAD 10"
+                            },
+                            {
+                                "id": "step_bonus_end3_02",
+                                "type": "choice",
+                                "content": "预约小剧场2  柏木家的夜晚。"
+                            },
+                            {
+                                "id": "step_bonus_end3_03",
+                                "type": "choice",
+                                "content": "だったら、こっちだって！"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "ending_bonus_end4",
+                        "name": "附赠 END3",
+                        "type": "normal",
+                        "steps": [
+                            {
+                                "id": "step_bonus_end4_01",
+                                "type": "load",
+                                "content": "LOAD 10"
+                            },
+                            {
+                                "id": "step_bonus_end4_02",
+                                "type": "choice",
+                                "content": "预约小剧场3  续・柏木家的餐桌。"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "ending_bonus_end5",
+                        "name": "附赠 END4",
+                        "type": "normal",
+                        "steps": [
+                            {
+                                "id": "step_bonus_end5_01",
+                                "type": "load",
+                                "content": "LOAD 10"
+                            },
+                            {
+                                "id": "step_bonus_end5_02",
+                                "type": "choice",
+                                "content": "生活顾问耕一。"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "route_rikka",
+                "name": "六花",
+                "endings": [
+                    {
+                        "id": "ending_rikka_end1",
+                        "name": "六花 END1",
+                        "type": "bad",
+                        "steps": [
+                            {
+                                "id": "step_rikka_end1_02",
+                                "type": "note",
+                                "content": "「半月後…」から開始"
+                            },
+                            {
+                                "id": "step_rikka_end1_03",
+                                "type": "choice",
+                                "content": "千鶴さんの料理が世界一"
+                            },
+                            {
+                                "id": "step_rikka_end1_04",
+                                "type": "save",
+                                "content": "SAVE 11"
+                            },
+                            {
+                                "id": "step_rikka_end1_05",
+                                "type": "choice",
+                                "content": "ちゃんと話を聞く。"
+                            },
+                            {
+                                "id": "step_rikka_end1_06",
+                                "type": "choice",
+                                "content": "やっぱりあれは六花ちゃんだ。"
+                            },
+                            {
+                                "id": "step_rikka_end1_07",
+                                "type": "choice",
+                                "content": "買い物についていく"
+                            },
+                            {
+                                "id": "step_rikka_end1_08",
+                                "type": "choice",
+                                "content": "答えられない"
+                            },
+                            {
+                                "id": "step_rikka_end1_09",
+                                "type": "save",
+                                "content": "SAVE 12"
+                            },
+                            {
+                                "id": "step_rikka_end1_10",
+                                "type": "choice",
+                                "content": "ジュースを買う。"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "ending_rikka_end2",
+                        "name": "六花 END2",
+                        "type": "bad",
+                        "steps": [
+                            {
+                                "id": "step_rikka_end2_01",
+                                "type": "load",
+                                "content": "LOAD 12"
+                            },
+                            {
+                                "id": "step_rikka_end2_02",
+                                "type": "choice",
+                                "content": "すこし考える。"
+                            },
+                            {
+                                "id": "step_rikka_end2_03",
+                                "type": "save",
+                                "content": "SAVE 13"
+                            },
+                            {
+                                "id": "step_rikka_end2_04",
+                                "type": "choice",
+                                "content": "置いていく"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "ending_rikka_end3",
+                        "name": "六花 END3",
+                        "type": "bad",
+                        "steps": [
+                            {
+                                "id": "step_rikka_end3_01",
+                                "type": "load",
+                                "content": "LOAD 13"
+                            },
+                            {
+                                "id": "step_rikka_end3_02",
+                                "type": "choice",
+                                "content": "連れて行く"
+                            },
+                            {
+                                "id": "step_rikka_end3_03",
+                                "type": "save",
+                                "content": "SAVE 14"
+                            },
+                            {
+                                "id": "step_rikka_end3_04",
+                                "type": "choice",
+                                "content": "駆け寄る"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "ending_rikka_end4",
+                        "name": "六花 END4",
+                        "type": "bad",
+                        "steps": [
+                            {
+                                "id": "step_rikka_end4_01",
+                                "type": "load",
+                                "content": "LOAD 14"
+                            },
+                            {
+                                "id": "step_rikka_end4_02",
+                                "type": "choice",
+                                "content": "駆け寄らない"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "ending_rikka_end5",
+                        "name": "六花 END5",
+                        "type": "bad",
+                        "steps": [
+                            {
+                                "id": "step_rikka_end5_01",
+                                "type": "load",
+                                "content": "LOAD 11"
+                            },
+                            {
+                                "id": "step_rikka_end5_02",
+                                "type": "choice",
+                                "content": "聞かないでおく。"
+                            },
+                            {
+                                "id": "step_rikka_end5_03",
+                                "type": "choice",
+                                "content": "違うかもしれない。"
+                            },
+                            {
+                                "id": "step_rikka_end5_04",
+                                "type": "choice",
+                                "content": "一足先に帰る"
+                            },
+                            {
+                                "id": "step_rikka_end5_05",
+                                "type": "choice",
+                                "content": "信じる"
+                            },
+                            {
+                                "id": "step_rikka_end5_06",
+                                "type": "choice",
+                                "content": "すこし考える。"
+                            },
+                            {
+                                "id": "step_rikka_end5_07",
+                                "type": "choice",
+                                "content": "連れて行く"
+                            },
+                            {
+                                "id": "step_rikka_end5_08",
+                                "type": "choice",
+                                "content": "駆け寄らない"
+                            },
+                            {
+                                "id": "step_rikka_end5_09",
+                                "type": "save",
+                                "content": "SAVE 15"
+                            },
+                            {
+                                "id": "step_rikka_end5_10",
+                                "type": "choice",
+                                "content": "右"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "ending_rikka_end6",
+                        "name": "六花 END6",
+                        "type": "bad",
+                        "steps": [
+                            {
+                                "id": "step_rikka_end6_01",
+                                "type": "load",
+                                "content": "LOAD 15"
+                            },
+                            {
+                                "id": "step_rikka_end6_02",
+                                "type": "choice",
+                                "content": "左"
+                            },
+                            {
+                                "id": "step_rikka_end6_03",
+                                "type": "save",
+                                "content": "SAVE 16"
+                            },
+                            {
+                                "id": "step_rikka_end6_04",
+                                "type": "choice",
+                                "content": "六花ちゃんを下がらせる"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "ending_rikka_end7",
+                        "name": "六花 END7",
+                        "type": "normal",
+                        "steps": [
+                            {
+                                "id": "step_rikka_end7_01",
+                                "type": "load",
+                                "content": "LOAD 16"
+                            },
+                            {
+                                "id": "step_rikka_end7_02",
+                                "type": "choice",
+                                "content": "本気を出して一気に攻める"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "ending_rikka_end8",
+                        "name": "六花 END8",
+                        "type": "normal",
+                        "steps": [
+                            {
+                                "id": "step_rikka_end8_01",
+                                "type": "load",
+                                "content": "LOAD 16"
+                            },
+                            {
+                                "id": "step_rikka_end8_02",
+                                "type": "choice",
+                                "content": "一緒に戦う"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "updated_at": "2026-04-08T10:37:29.449Z",
+        "created_at": "2026-04-08T10:29:26.662Z"
+    }
+}
