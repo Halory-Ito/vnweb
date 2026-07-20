@@ -28,40 +28,24 @@ const endingTypeConfig: Record<
   },
 }
 
-interface Ending {
-  id: string
+interface EndingCardProps {
   name: string
   type: string
   cover?: string
-  steps: Array<{
-    id: string
-    type: string
-    content: string
-    group?: string
-    prefix?: string
-    subfix?: string
-  }>
-  requirements?: string
-}
-
-interface EndingProgress {
-  total: number
-  completed: number
-  percentage: number
-}
-
-interface GuideCharacterCardProps {
-  ending: Ending
-  progress: EndingProgress
-  onClick: () => void
+  progress: {
+    total: number
+    completed: number
+    percentage: number
+  }
+  onClick?: () => void
 }
 
 function getCharacterInitial(name: string): string {
-  const match = name.match(/^[一-龥]{2}/)
-  return match ? match[0] : name.charAt(0)
+  return name.toUpperCase().replace('END', '').replace('结局', '').trim().slice(0, 2) || '？'
 }
 
-export function GuideCharacterCard({ ending, progress, onClick }: GuideCharacterCardProps) {
+export function EndingCard({ name, type, cover, progress, onClick }: EndingCardProps) {
+  const config = endingTypeConfig[type] || endingTypeConfig.normal
   const isCompleted = progress.percentage === 100
 
   return (
@@ -76,33 +60,23 @@ export function GuideCharacterCard({ ending, progress, onClick }: GuideCharacter
     >
       {/* 头像 */}
       <div className="relative h-16 w-16 overflow-hidden rounded-full transition-transform duration-200 group-hover:scale-110">
-        {ending.cover ? (
-          <Image
-            src={ending.cover}
-            alt={ending.name}
-            fill
-            className="object-cover"
-          />
+        {cover ? (
+          <Image src={cover} alt={name} fill className="object-cover" />
         ) : (
-          <div className="flex h-full w-full items-center justify-center bg-muted text-xl font-bold">
-            {getCharacterInitial(ending.name)}
+          <div className="bg-muted flex h-full w-full items-center justify-center text-xl font-bold">
+            {getCharacterInitial(name)}
           </div>
         )}
       </div>
 
       {/* 名称 */}
-      <h3 className="text-center text-sm leading-tight font-semibold">{ending.name}</h3>
+      <h3 className="text-center text-sm leading-tight font-semibold">{name}</h3>
 
       {/* 类型标签 */}
-      {(() => {
-        const config = endingTypeConfig[ending.type] || endingTypeConfig.normal
-        return (
-          <Badge variant="outline" className={cn('text-xs gap-1', config.className)}>
-            {config.icon}
-            {config.label}
-          </Badge>
-        )
-      })()}
+      <Badge variant="outline" className={cn('text-xs gap-1', config.className)}>
+        {config.icon}
+        {config.label}
+      </Badge>
 
       {/* 进度条 */}
       <div className="w-full space-y-1">

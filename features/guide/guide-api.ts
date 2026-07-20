@@ -26,6 +26,7 @@ export type GuideEnding = {
   id: string
   name: string
   type: string
+  cover?: string
   steps: GuideStep[]
   requirements?: string
 }
@@ -86,6 +87,16 @@ export type UpdateGuideProgressParams = {
   finished: boolean
 }
 
+export type GuideListItem = {
+  id: number
+  gameId: number
+  name: string
+  cover: string
+  totalSteps: number
+  completedSteps: number
+  percentage: number
+}
+
 // 搜索攻略
 export async function searchGuidesApi(
   keyword: string,
@@ -128,4 +139,104 @@ export async function updateGuideProgressApi(
     url: `/guide/${gameId}/progress`,
     data: params,
   })
+}
+
+// 获取攻略列表
+export async function getGuideListApi(): Promise<GuideListItem[]> {
+  const res = await api.request({
+    method: 'GET',
+    url: '/guide/list',
+  })
+  return res.data
+}
+
+// 获取路线信息
+export async function getRouteApi(routeId: string): Promise<{ id: string; name: string; finished: boolean } | null> {
+  const res = await api.request({
+    method: 'GET',
+    url: `/guide/route/${routeId}`,
+  })
+  return res.data
+}
+
+// 获取路线的结局列表
+export async function getEndingsApi(routeId: string): Promise<GuideEndingWithProgress[]> {
+  const res = await api.request({
+    method: 'GET',
+    url: `/guide/route/${routeId}/endings`,
+  })
+  return res.data
+}
+
+// 获取结局信息
+export async function getEndingApi(endingId: string): Promise<{ id: string; name: string; type: string; finished: boolean; requirements?: string; cover?: string } | null> {
+  const res = await api.request({
+    method: 'GET',
+    url: `/guide/ending/${endingId}`,
+  })
+  return res.data
+}
+
+// 获取结局的步骤列表
+export async function getStepsApi(endingId: string): Promise<GuideStepWithProgress[]> {
+  const res = await api.request({
+    method: 'GET',
+    url: `/guide/ending/${endingId}/steps`,
+  })
+  return res.data
+}
+
+// 获取步骤信息
+export async function getStepApi(stepId: string): Promise<{ id: string; type: string; content: string; group?: string; prefix?: string; subfix?: string; finished: boolean } | null> {
+  const res = await api.request({
+    method: 'GET',
+    url: `/guide/step/${stepId}`,
+  })
+  return res.data
+}
+
+// 更新路线
+export async function updateRouteApi(routeId: string, data: { name: string }): Promise<void> {
+  await api.request({
+    method: 'PATCH',
+    url: `/guide/route/${routeId}`,
+    data,
+  })
+}
+
+// 更新结局
+export async function updateEndingApi(endingId: string, data: { name: string; type?: string; requirements?: string; cover?: string }): Promise<void> {
+  await api.request({
+    method: 'PATCH',
+    url: `/guide/ending/${endingId}`,
+    data,
+  })
+}
+
+// 更新步骤
+export async function updateStepApi(stepId: string, data: { type?: string; content: string; group?: string; prefix?: string; subfix?: string }): Promise<void> {
+  await api.request({
+    method: 'PATCH',
+    url: `/guide/step/${stepId}`,
+    data,
+  })
+}
+
+// 更新攻略
+export async function updateGuideApi(gameId: number, data: { name?: string; level?: number; tips?: string[] }): Promise<void> {
+  await api.request({
+    method: 'PATCH',
+    url: `/guide/${gameId}`,
+    data,
+  })
+}
+
+// 获取游戏角色列表
+export async function getGameCharactersApi(gameId: number): Promise<{ id: string; name: string; original: string; imageUrl: string }[]> {
+  const res = await api.request({
+    method: 'GET',
+    url: '/db/vndb/characters',
+    params: { gameId },
+  })
+  return res.data?.items || []
 }

@@ -2,6 +2,7 @@
 
 import { Checkbox } from '@/components/ui/checkbox'
 import { cn } from '@/lib/utils'
+import { EditStep } from '@/features/guide/components/edit-step'
 
 interface Step {
   id: string
@@ -27,36 +28,39 @@ const stepTypeColors: Record<string, string> = {
 
 export function GuideStep({ step, isCompleted, onToggle }: GuideStepProps) {
   return (
-    <label
+    <div
       className={cn(
-        'flex items-start gap-3 p-3 rounded-lg border transition-all duration-200 cursor-pointer select-none',
+        'flex items-start gap-3 p-3 rounded-lg border transition-all duration-200 select-none',
         isCompleted
           ? 'bg-muted/50 border-muted-foreground/20 opacity-75'
           : 'bg-background border-border hover:border-primary/40 hover:bg-accent/30 hover:shadow-sm'
       )}
     >
-      <Checkbox
-        checked={isCompleted}
-        onCheckedChange={onToggle}
-        className="mt-0.5 pointer-events-none"
-      />
-      <div className="flex-1">
-        <p
-          className={cn(
-            'text-sm',
-            stepTypeColors[step.type] || 'text-foreground',
-            isCompleted && 'line-through opacity-50'
-          )}
-        >
-          {step.prefix && (
-            <span className="text-yellow-500 mr-1">{step.prefix}</span>
-          )}
-          {step.content}
-          {step.subfix && (
-            <span className="text-muted-foreground ml-1">{step.subfix}</span>
-          )}
-        </p>
-      </div>
-    </label>
+      <label className="flex items-start gap-3 flex-1 cursor-pointer">
+        <Checkbox
+          checked={isCompleted}
+          onCheckedChange={onToggle}
+          className="mt-0.5 pointer-events-none"
+        />
+        <div className="flex-1">
+          <p
+            className={cn(
+              'text-sm',
+              stepTypeColors[step.type] || 'text-foreground',
+              isCompleted && 'line-through opacity-50'
+            )}
+          >
+            {step.prefix && (
+              <span className="text-yellow-500 mr-1">{step.prefix}</span>
+            )}
+            {step.content}
+            {step.subfix && (
+              <span className="text-muted-foreground ml-1">{step.subfix}</span>
+            )}
+          </p>
+        </div>
+      </label>
+      <EditStep stepId={step.id} />
+    </div>
   )
 }

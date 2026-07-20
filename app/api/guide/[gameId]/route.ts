@@ -1,3 +1,4 @@
+import dayjs from 'dayjs'
 import { eq } from 'drizzle-orm'
 import { NextRequest, NextResponse } from 'next/server'
 
@@ -56,6 +57,7 @@ export async function GET(
             return {
               ...ending,
               finished: Boolean(ending.finished),
+              cover: ending.cover || undefined,
               steps: steps.map((step) => ({
                 id: String(step.id),
                 type: step.type,
@@ -91,6 +93,65 @@ export async function GET(
     console.error('Fetch guide error:', error)
     return NextResponse.json(
       { error: 'Failed to fetch guide' },
+      { status: 500 },
+    )
+  }
+}
+
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ gameId: string }> },
+) {
+  const { gameId } = await params
+
+  if (!gameId) {
+    return NextResponse.json({ error: 'Missing gameId' }, { status: 400 })
+  }
+
+  try {
+    const body = await request.json()
+    const { name, level, tips } = body as {
+      name?: string
+      level?: number
+      tips?: string[]
+    }
+
+    // 查询攻略主表
+    const guides = await db
+      .select()
+      .from(GameGuideTable)
+      .where(eq(GameGuideTable.gameId, Number(gameId)))
+
+    if (guides.length === 0) {
+      return NextResponse.json({ error: 'Guide not found' }, { status: 404 })
+    }
+
+    const guide = guides[0]
+
+    const updateData: Record<string, unknown> = {
+      updatedAt: dayjs().toISOString(),
+    }
+
+    if (name !== undefined) {
+      updateData.name = name.trim()
+    }
+    if (level !== undefined) {
+      updateData.level = level
+    }
+    if (tips !== undefined) {
+      updateData.tips = JSON.stringify(tips)
+    }
+
+    await db
+      .update(GameGuideTable)
+      .set(updateData)
+      .where(eq(GameGuideTable.id, guide.id))
+
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    console.error('Update guide error:', error)
+    return NextResponse.json(
+      { error: 'Failed to update guide' },
       { status: 500 },
     )
   }

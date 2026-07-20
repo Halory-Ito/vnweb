@@ -1,16 +1,7 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
-import {
-  BookOpen,
-  List,
-  Lock,
-  RotateCcw,
-  Star,
-  Skull,
-  CircleDot,
-  Users,
-} from 'lucide-react'
+import { BookOpen, List, Lock, RotateCcw, Star, Skull, CircleDot, Users } from 'lucide-react'
 import { useState } from 'react'
 
 import { Badge } from '@/components/ui/badge'
@@ -19,10 +10,10 @@ import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/ca
 import { Label } from '@/components/ui/label'
 import { Progress } from '@/components/ui/progress'
 import { Switch } from '@/components/ui/switch'
+import { getGuideApi, type GuideEndingWithProgress } from '@/features/guide'
 import { GuideCharacterCard } from '@/features/guide/components/guide-character-card'
 import { GuideRoute } from '@/features/guide/components/guide-route'
 import { GuideStep } from '@/features/guide/components/guide-step'
-import { getGuideApi, type GuideData, type GuideEndingWithProgress, type GuideRouteWithProgress } from '@/features/guide/guide-api'
 import { useGuide } from '@/features/guide/hooks/use-guide'
 import { cn } from '@/lib/utils'
 

@@ -69,10 +69,14 @@ export default function ImportGuide() {
 
     setIsImporting(true)
     try {
-      // 调用导入 API
+      // 获取选中游戏的 cover
+      const selectedGame = gameCards.find((g) => g.id === selectedGameId)
+      const gameCover = selectedGame?.cover || ''
+
+      // 调用导入 API，使用游戏的 cover
       await importGuideApi({
         gameId: Number(selectedGameId),
-        guide: selectedGuide,
+        guide: { ...selectedGuide, cover: gameCover },
       })
 
       toast.success('攻略导入成功')
