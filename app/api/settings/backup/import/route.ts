@@ -86,16 +86,12 @@ async function getGameSaveConfig(): Promise<{
     if (fs.existsSync(configFile)) {
       const content = await fs.promises.readFile(configFile, 'utf-8')
       const config = JSON.parse(content)
-      const gameSave = (config['game-save-config'] || {}) as Record<
-        string,
-        unknown
-      >
+      const settings = (config['settings'] || {}) as Record<string, unknown>
+      const backup = (settings['backup'] || {}) as Record<string, unknown>
+      const save = (backup['save'] || {}) as Record<string, unknown>
       return {
-        enabled: Boolean(gameSave.open_save_dir),
-        directory:
-          typeof gameSave.save_dir_path === 'string'
-            ? gameSave.save_dir_path
-            : '',
+        enabled: Boolean(save.active),
+        directory: typeof save.dir === 'string' ? save.dir : '',
       }
     }
   } catch {

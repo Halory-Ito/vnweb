@@ -15,16 +15,12 @@ async function readConfig(): Promise<GameSaveConfig> {
     if (fs.existsSync(CONFIG_FILE)) {
       const content = await fs.promises.readFile(CONFIG_FILE, 'utf-8')
       const fullConfig = JSON.parse(content)
-      const gameSave = (fullConfig['game-save-config'] || {}) as Record<
-        string,
-        unknown
-      >
+      const settings = (fullConfig['settings'] || {}) as Record<string, unknown>
+      const backup = (settings['backup'] || {}) as Record<string, unknown>
+      const save = (backup['save'] || {}) as Record<string, unknown>
       return {
-        enabled: Boolean(gameSave.open_save_dir),
-        directory:
-          typeof gameSave.save_dir_path === 'string'
-            ? gameSave.save_dir_path
-            : '',
+        enabled: Boolean(save.active),
+        directory: typeof save.dir === 'string' ? save.dir : '',
       }
     }
   } catch {

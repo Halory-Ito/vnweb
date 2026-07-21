@@ -27,24 +27,26 @@ async function readFullConfig(): Promise<Record<string, unknown>> {
 // 读取游戏存档配置
 async function readGameSaveConfig(): Promise<GameSaveConfig> {
   const fullConfig = await readFullConfig()
-  const gameSave = (fullConfig['game-save-config'] || {}) as Record<
-    string,
-    unknown
-  >
+  const settings = (fullConfig['settings'] || {}) as Record<string, unknown>
+  const backup = (settings['backup'] || {}) as Record<string, unknown>
+  const save = (backup['save'] || {}) as Record<string, unknown>
   return {
-    enabled: Boolean(gameSave.open_save_dir),
-    directory:
-      typeof gameSave.save_dir_path === 'string' ? gameSave.save_dir_path : '',
+    enabled: Boolean(save.active),
+    directory: typeof save.dir === 'string' ? save.dir : '',
   }
 }
 
 // 写入游戏存档配置
 async function writeGameSaveConfig(config: GameSaveConfig) {
   const fullConfig = await readFullConfig()
-  fullConfig['game-save-config'] = {
-    open_save_dir: config.enabled,
-    save_dir_path: config.directory,
+  const settings = (fullConfig['settings'] || {}) as Record<string, unknown>
+  const backup = (settings['backup'] || {}) as Record<string, unknown>
+  backup['save'] = {
+    active: config.enabled,
+    dir: config.directory,
   }
+  settings['backup'] = backup
+  fullConfig['settings'] = settings
   await fs.promises.writeFile(CONFIG_FILE, JSON.stringify(fullConfig, null, 4))
 }
 
