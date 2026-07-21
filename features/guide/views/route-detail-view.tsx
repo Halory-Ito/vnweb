@@ -2,14 +2,41 @@
 
 import { useQuery } from '@tanstack/react-query'
 import { BookOpen, RotateCcw } from 'lucide-react'
+import { motion } from 'motion/react'
 import { useRouter } from 'next/navigation'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
-import { EndingCard } from '@/features/guide/components/ending-card'
 import { EditRoute } from '@/features/guide/components/edit-route'
+import { EndingCard } from '@/features/guide/components/ending-card'
 import { getRouteApi, getEndingsApi } from '@/features/guide/guide-api'
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.08 },
+  },
+} as const
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] as const },
+  },
+} as const
+
+const cardVariants = {
+  hidden: { opacity: 0, scale: 0.95 },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    transition: { duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] as const },
+  },
+} as const
 
 interface RouteDetailViewProps {
   gameId: number
@@ -76,59 +103,69 @@ export function RouteDetailView({ gameId, routeId }: RouteDetailViewProps) {
   }
 
   return (
-    <div className="max-h-[calc(100vh-144px)] w-full space-y-4 overflow-y-auto p-4">
+    <motion.div
+      className="max-h-[calc(100vh-144px)] w-full space-y-4 overflow-y-auto p-4"
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+    >
       {/* 返回按钮 */}
-      <Button variant="ghost" size="sm" onClick={() => router.push(`/guide/${gameId}`)}>
-        ← 返回路线
-      </Button>
+      <motion.div variants={itemVariants}>
+        <Button variant="ghost" size="sm" onClick={() => router.push(`/guide/${gameId}`)}>
+          ← 返回路线
+        </Button>
+      </motion.div>
 
       {/* 路线信息 */}
-      <Card variant="default">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle>{route.name}</CardTitle>
-              <CardDescription>
-                {(endings || []).length} 个结局 · {routeProgress.completed}/{routeProgress.total}{' '}
-                步骤完成
-              </CardDescription>
+      <motion.div variants={itemVariants}>
+        <Card variant="default">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>{route.name}</CardTitle>
+                <CardDescription>
+                  {(endings || []).length} 个结局 · {routeProgress.completed}/{routeProgress.total}{' '}
+                  步骤完成
+                </CardDescription>
+              </div>
+              <div className="flex items-center gap-2">
+                <EditRoute routeId={routeId} />
+                <Button variant="outline" size="sm" onClick={handleResetRoute}>
+                  <RotateCcw className="mr-2 h-4 w-4" />
+                  重置路线
+                </Button>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <EditRoute routeId={routeId} />
-              <Button variant="outline" size="sm" onClick={handleResetRoute}>
-                <RotateCcw className="mr-2 h-4 w-4" />
-                重置路线
-              </Button>
+            <div className="flex items-center gap-3">
+              <Progress value={routeProgress.percentage} className="h-3 flex-1" />
+              <span className="text-muted-foreground min-w-12 text-right text-sm font-medium tabular-nums">
+                {routeProgress.percentage}%
+              </span>
             </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <Progress value={routeProgress.percentage} className="h-3 flex-1" />
-            <span className="text-muted-foreground min-w-12 text-right text-sm font-medium tabular-nums">
-              {routeProgress.percentage}%
-            </span>
-          </div>
-        </CardHeader>
-      </Card>
+          </CardHeader>
+        </Card>
+      </motion.div>
 
       {/* 结局卡片列表 */}
-      <div className="space-y-2">
+      <motion.div className="space-y-2" variants={itemVariants}>
         <h2 className="text-lg font-semibold">结局</h2>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <motion.div className="grid grid-cols-2 gap-4" variants={containerVariants}>
           {(endings || []).map((ending) => {
             const progress = getEndingProgress(ending)
             return (
-              <EndingCard
-                key={ending.id}
-                name={ending.name}
-                type={ending.type}
-                cover={ending.cover}
-                progress={progress}
-                onClick={() => router.push(`/guide/${gameId}/${routeId}/${ending.id}`)}
-              />
+              <motion.div key={ending.id} variants={cardVariants} className="h-full w-full">
+                <EndingCard
+                  name={ending.name}
+                  type={ending.type}
+                  cover={ending.cover}
+                  progress={progress}
+                  onClick={() => router.push(`/guide/${gameId}/${routeId}/${ending.id}`)}
+                />
+              </motion.div>
             )
           })}
-        </div>
-      </div>
-    </div>
+        </motion.div>
+      </motion.div>
+    </motion.div>
   )
 }

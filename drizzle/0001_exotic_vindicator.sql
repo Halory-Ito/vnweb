@@ -1,49 +1,25 @@
-CREATE TABLE `game_guide` (
+PRAGMA foreign_keys=OFF;--> statement-breakpoint
+CREATE TABLE `__new_cg` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`gameId` integer NOT NULL,
-	`name` text NOT NULL,
-	`cover` text DEFAULT '',
-	`level` integer DEFAULT 0,
-	`tips` text DEFAULT '',
-	`createdAt` text DEFAULT 'Mon, 20 Jul 2026 01:37:09 GMT',
-	`updatedAt` text DEFAULT 'Mon, 20 Jul 2026 01:37:09 GMT'
-);
---> statement-breakpoint
-CREATE TABLE `guide_ending` (
-	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
-	`routeId` integer NOT NULL,
-	`name` text NOT NULL,
-	`type` text DEFAULT 'normal',
-	`cover` text DEFAULT '',
-	`requirements` text DEFAULT '',
+	`name` text DEFAULT '',
+	`url` text NOT NULL,
+	`thumbnail` text DEFAULT '',
+	`category` text DEFAULT '',
+	`description` text DEFAULT '',
+	`source` text DEFAULT '',
+	`width` integer,
+	`height` integer,
+	`fileSize` integer,
 	`sortOrder` integer DEFAULT 0,
-	`createdAt` text DEFAULT 'Mon, 20 Jul 2026 01:37:09 GMT',
-	`updatedAt` text DEFAULT 'Mon, 20 Jul 2026 01:37:09 GMT'
+	`createdAt` text DEFAULT 'Tue, 21 Jul 2026 04:56:05 GMT',
+	`updatedAt` text DEFAULT 'Tue, 21 Jul 2026 04:56:05 GMT'
 );
 --> statement-breakpoint
-CREATE TABLE `guide_route` (
-	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
-	`guideId` integer NOT NULL,
-	`name` text NOT NULL,
-	`sortOrder` integer DEFAULT 0,
-	`createdAt` text DEFAULT 'Mon, 20 Jul 2026 01:37:09 GMT',
-	`updatedAt` text DEFAULT 'Mon, 20 Jul 2026 01:37:09 GMT'
-);
---> statement-breakpoint
-CREATE TABLE `guide_step` (
-	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
-	`endingId` integer NOT NULL,
-	`type` text DEFAULT 'choice',
-	`content` text NOT NULL,
-	`group` text DEFAULT '',
-	`prefix` text DEFAULT '',
-	`subfix` text DEFAULT '',
-	`sortOrder` integer DEFAULT 0,
-	`createdAt` text DEFAULT 'Mon, 20 Jul 2026 01:37:09 GMT',
-	`updatedAt` text DEFAULT 'Mon, 20 Jul 2026 01:37:09 GMT'
-);
---> statement-breakpoint
-PRAGMA foreign_keys=OFF;--> statement-breakpoint
+INSERT INTO `__new_cg`("id", "gameId", "name", "url", "thumbnail", "category", "description", "source", "width", "height", "fileSize", "sortOrder", "createdAt", "updatedAt") SELECT "id", "gameId", "name", "url", "thumbnail", "category", "description", "source", "width", "height", "fileSize", "sortOrder", "createdAt", "updatedAt" FROM `cg`;--> statement-breakpoint
+DROP TABLE `cg`;--> statement-breakpoint
+ALTER TABLE `__new_cg` RENAME TO `cg`;--> statement-breakpoint
+PRAGMA foreign_keys=ON;--> statement-breakpoint
 CREATE TABLE `__new_character` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`gameId` integer NOT NULL,
@@ -63,25 +39,39 @@ CREATE TABLE `__new_character` (
 	`birthdayDay` integer,
 	`sex` text DEFAULT '',
 	`gender` text DEFAULT '',
-	`createdAt` text DEFAULT 'Mon, 20 Jul 2026 01:37:09 GMT',
-	`updatedAt` text DEFAULT 'Mon, 20 Jul 2026 01:37:09 GMT'
+	`createdAt` text DEFAULT 'Tue, 21 Jul 2026 04:56:05 GMT',
+	`updatedAt` text DEFAULT 'Tue, 21 Jul 2026 04:56:05 GMT'
 );
 --> statement-breakpoint
 INSERT INTO `__new_character`("id", "gameId", "vndbId", "name", "original", "description", "imageUrl", "bloodType", "height", "weight", "bust", "waist", "hips", "age", "birthdayMonth", "birthdayDay", "sex", "gender", "createdAt", "updatedAt") SELECT "id", "gameId", "vndbId", "name", "original", "description", "imageUrl", "bloodType", "height", "weight", "bust", "waist", "hips", "age", "birthdayMonth", "birthdayDay", "sex", "gender", "createdAt", "updatedAt" FROM `character`;--> statement-breakpoint
 DROP TABLE `character`;--> statement-breakpoint
 ALTER TABLE `__new_character` RENAME TO `character`;--> statement-breakpoint
-PRAGMA foreign_keys=ON;--> statement-breakpoint
 CREATE UNIQUE INDEX `character_game_vndb_unique` ON `character` (`gameId`,`vndbId`);--> statement-breakpoint
 CREATE TABLE `__new_collection` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`name` text NOT NULL,
-	`createdAt` text DEFAULT 'Mon, 20 Jul 2026 01:37:09 GMT',
-	`updatedAt` text DEFAULT 'Mon, 20 Jul 2026 01:37:09 GMT'
+	`createdAt` text DEFAULT 'Tue, 21 Jul 2026 04:56:05 GMT',
+	`updatedAt` text DEFAULT 'Tue, 21 Jul 2026 04:56:05 GMT'
 );
 --> statement-breakpoint
 INSERT INTO `__new_collection`("id", "name", "createdAt", "updatedAt") SELECT "id", "name", "createdAt", "updatedAt" FROM `collection`;--> statement-breakpoint
 DROP TABLE `collection`;--> statement-breakpoint
 ALTER TABLE `__new_collection` RENAME TO `collection`;--> statement-breakpoint
+CREATE TABLE `__new_game_guide` (
+	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+	`gameId` integer NOT NULL,
+	`name` text NOT NULL,
+	`cover` text DEFAULT '',
+	`level` integer DEFAULT 0,
+	`tips` text DEFAULT '',
+	`finished` integer DEFAULT 0,
+	`createdAt` text DEFAULT 'Tue, 21 Jul 2026 04:56:05 GMT',
+	`updatedAt` text DEFAULT 'Tue, 21 Jul 2026 04:56:05 GMT'
+);
+--> statement-breakpoint
+INSERT INTO `__new_game_guide`("id", "gameId", "name", "cover", "level", "tips", "finished", "createdAt", "updatedAt") SELECT "id", "gameId", "name", "cover", "level", "tips", "finished", "createdAt", "updatedAt" FROM `game_guide`;--> statement-breakpoint
+DROP TABLE `game_guide`;--> statement-breakpoint
+ALTER TABLE `__new_game_guide` RENAME TO `game_guide`;--> statement-breakpoint
 CREATE TABLE `__new_game_info` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`date` text NOT NULL,
@@ -107,8 +97,8 @@ CREATE TABLE `__new_game_info` (
 	`publisher` text NOT NULL,
 	`programmer` text NOT NULL,
 	`saveDir` text DEFAULT '',
-	`createdAt` text DEFAULT 'Mon, 20 Jul 2026 01:37:09 GMT',
-	`updatedAt` text DEFAULT 'Mon, 20 Jul 2026 01:37:09 GMT'
+	`createdAt` text DEFAULT 'Tue, 21 Jul 2026 04:56:05 GMT',
+	`updatedAt` text DEFAULT 'Tue, 21 Jul 2026 04:56:05 GMT'
 );
 --> statement-breakpoint
 INSERT INTO `__new_game_info`("id", "date", "cover", "icon", "logo", "bg", "summary", "name", "nameCn", "tags", "nsfw", "ailases", "platforms", "gameType", "gameEngine", "music", "script", "graphic", "originalPainter", "animationProduction", "developer", "publisher", "programmer", "saveDir", "createdAt", "updatedAt") SELECT "id", "date", "cover", "icon", "logo", "bg", "summary", "name", "nameCn", "tags", "nsfw", "ailases", "platforms", "gameType", "gameEngine", "music", "script", "graphic", "originalPainter", "animationProduction", "developer", "publisher", "programmer", "saveDir", "createdAt", "updatedAt" FROM `game_info`;--> statement-breakpoint
@@ -120,8 +110,8 @@ CREATE TABLE `__new_game_memory` (
 	`title` text DEFAULT '',
 	`description` text DEFAULT '',
 	`imageUrl` text DEFAULT '',
-	`createdAt` text DEFAULT 'Mon, 20 Jul 2026 01:37:09 GMT',
-	`updatedAt` text DEFAULT 'Mon, 20 Jul 2026 01:37:09 GMT'
+	`createdAt` text DEFAULT 'Tue, 21 Jul 2026 04:56:05 GMT',
+	`updatedAt` text DEFAULT 'Tue, 21 Jul 2026 04:56:05 GMT'
 );
 --> statement-breakpoint
 INSERT INTO `__new_game_memory`("id", "gameId", "title", "description", "imageUrl", "createdAt", "updatedAt") SELECT "id", "gameId", "title", "description", "imageUrl", "createdAt", "updatedAt" FROM `game_memory`;--> statement-breakpoint
@@ -136,8 +126,8 @@ CREATE TABLE `__new_game_ost_songs` (
 	`mediaType` text DEFAULT '',
 	`lyricsText` text DEFAULT '',
 	`lyricsPath` text DEFAULT '',
-	`createdAt` text DEFAULT 'Mon, 20 Jul 2026 01:37:09 GMT',
-	`updatedAt` text DEFAULT 'Mon, 20 Jul 2026 01:37:09 GMT'
+	`createdAt` text DEFAULT 'Tue, 21 Jul 2026 04:56:05 GMT',
+	`updatedAt` text DEFAULT 'Tue, 21 Jul 2026 04:56:05 GMT'
 );
 --> statement-breakpoint
 INSERT INTO `__new_game_ost_songs`("id", "gameId", "ostId", "name", "url", "mediaType", "lyricsText", "lyricsPath", "createdAt", "updatedAt") SELECT "id", "gameId", "ostId", "name", "url", "mediaType", "lyricsText", "lyricsPath", "createdAt", "updatedAt" FROM `game_ost_songs`;--> statement-breakpoint
@@ -149,8 +139,8 @@ CREATE TABLE `__new_game_ost` (
 	`name` text NOT NULL,
 	`cover` text NOT NULL,
 	`resource` text DEFAULT '',
-	`createdAt` text DEFAULT 'Mon, 20 Jul 2026 01:37:09 GMT',
-	`updatedAt` text DEFAULT 'Mon, 20 Jul 2026 01:37:09 GMT'
+	`createdAt` text DEFAULT 'Tue, 21 Jul 2026 04:56:05 GMT',
+	`updatedAt` text DEFAULT 'Tue, 21 Jul 2026 04:56:05 GMT'
 );
 --> statement-breakpoint
 INSERT INTO `__new_game_ost`("id", "gameId", "name", "cover", "resource", "createdAt", "updatedAt") SELECT "id", "gameId", "name", "cover", "resource", "createdAt", "updatedAt" FROM `game_ost`;--> statement-breakpoint
@@ -161,8 +151,8 @@ CREATE TABLE `__new_game_pv` (
 	`gameId` integer NOT NULL,
 	`name` text NOT NULL,
 	`url` text NOT NULL,
-	`createdAt` text DEFAULT 'Mon, 20 Jul 2026 01:37:09 GMT',
-	`updatedAt` text DEFAULT 'Mon, 20 Jul 2026 01:37:09 GMT'
+	`createdAt` text DEFAULT 'Tue, 21 Jul 2026 04:56:05 GMT',
+	`updatedAt` text DEFAULT 'Tue, 21 Jul 2026 04:56:05 GMT'
 );
 --> statement-breakpoint
 INSERT INTO `__new_game_pv`("id", "gameId", "name", "url", "createdAt", "updatedAt") SELECT "id", "gameId", "name", "url", "createdAt", "updatedAt" FROM `game_pv`;--> statement-breakpoint
@@ -174,13 +164,60 @@ CREATE TABLE `__new_game_quote` (
 	`content` text NOT NULL,
 	`characterId` text DEFAULT '',
 	`context` text DEFAULT '',
-	`createdAt` text DEFAULT 'Mon, 20 Jul 2026 01:37:09 GMT',
-	`updatedAt` text DEFAULT 'Mon, 20 Jul 2026 01:37:09 GMT'
+	`createdAt` text DEFAULT 'Tue, 21 Jul 2026 04:56:05 GMT',
+	`updatedAt` text DEFAULT 'Tue, 21 Jul 2026 04:56:05 GMT'
 );
 --> statement-breakpoint
 INSERT INTO `__new_game_quote`("id", "gameId", "content", "characterId", "context", "createdAt", "updatedAt") SELECT "id", "gameId", "content", "characterId", "context", "createdAt", "updatedAt" FROM `game_quote`;--> statement-breakpoint
 DROP TABLE `game_quote`;--> statement-breakpoint
 ALTER TABLE `__new_game_quote` RENAME TO `game_quote`;--> statement-breakpoint
+CREATE TABLE `__new_guide_ending` (
+	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+	`routeId` integer NOT NULL,
+	`name` text NOT NULL,
+	`type` text DEFAULT 'normal',
+	`cover` text DEFAULT '',
+	`cg` text DEFAULT '',
+	`requirements` text DEFAULT '',
+	`finished` integer DEFAULT 0,
+	`sortOrder` integer DEFAULT 0,
+	`createdAt` text DEFAULT 'Tue, 21 Jul 2026 04:56:05 GMT',
+	`updatedAt` text DEFAULT 'Tue, 21 Jul 2026 04:56:05 GMT'
+);
+--> statement-breakpoint
+INSERT INTO `__new_guide_ending`("id", "routeId", "name", "type", "cover", "cg", "requirements", "finished", "sortOrder", "createdAt", "updatedAt") SELECT "id", "routeId", "name", "type", "cover", "cg", "requirements", "finished", "sortOrder", "createdAt", "updatedAt" FROM `guide_ending`;--> statement-breakpoint
+DROP TABLE `guide_ending`;--> statement-breakpoint
+ALTER TABLE `__new_guide_ending` RENAME TO `guide_ending`;--> statement-breakpoint
+CREATE TABLE `__new_guide_route` (
+	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+	`guideId` integer NOT NULL,
+	`name` text NOT NULL,
+	`finished` integer DEFAULT 0,
+	`sortOrder` integer DEFAULT 0,
+	`createdAt` text DEFAULT 'Tue, 21 Jul 2026 04:56:05 GMT',
+	`updatedAt` text DEFAULT 'Tue, 21 Jul 2026 04:56:05 GMT'
+);
+--> statement-breakpoint
+INSERT INTO `__new_guide_route`("id", "guideId", "name", "finished", "sortOrder", "createdAt", "updatedAt") SELECT "id", "guideId", "name", "finished", "sortOrder", "createdAt", "updatedAt" FROM `guide_route`;--> statement-breakpoint
+DROP TABLE `guide_route`;--> statement-breakpoint
+ALTER TABLE `__new_guide_route` RENAME TO `guide_route`;--> statement-breakpoint
+CREATE TABLE `__new_guide_step` (
+	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+	`endingId` integer NOT NULL,
+	`type` text DEFAULT 'choice',
+	`content` text NOT NULL,
+	`group` text DEFAULT '',
+	`prefix` text DEFAULT '',
+	`subfix` text DEFAULT '',
+	`finished` integer DEFAULT 0,
+	`sortOrder` integer DEFAULT 0,
+	`createdAt` text DEFAULT 'Tue, 21 Jul 2026 04:56:05 GMT',
+	`updatedAt` text DEFAULT 'Tue, 21 Jul 2026 04:56:05 GMT'
+);
+--> statement-breakpoint
+INSERT INTO `__new_guide_step`("id", "endingId", "type", "content", "group", "prefix", "subfix", "finished", "sortOrder", "createdAt", "updatedAt") SELECT "id", "endingId", "type", "content", "group", "prefix", "subfix", "finished", "sortOrder", "createdAt", "updatedAt" FROM `guide_step`;--> statement-breakpoint
+DROP TABLE `guide_step`;--> statement-breakpoint
+ALTER TABLE `__new_guide_step` RENAME TO `guide_step`;--> statement-breakpoint
 CREATE TABLE `__new_proxy_config` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`name` text NOT NULL,
@@ -190,8 +227,8 @@ CREATE TABLE `__new_proxy_config` (
 	`username` text DEFAULT '',
 	`password` text DEFAULT '',
 	`enabled` integer DEFAULT 0,
-	`createdAt` text DEFAULT 'Mon, 20 Jul 2026 01:37:09 GMT',
-	`updatedAt` text DEFAULT 'Mon, 20 Jul 2026 01:37:09 GMT'
+	`createdAt` text DEFAULT 'Tue, 21 Jul 2026 04:56:05 GMT',
+	`updatedAt` text DEFAULT 'Tue, 21 Jul 2026 04:56:05 GMT'
 );
 --> statement-breakpoint
 INSERT INTO `__new_proxy_config`("id", "name", "type", "host", "port", "username", "password", "enabled", "createdAt", "updatedAt") SELECT "id", "name", "type", "host", "port", "username", "password", "enabled", "createdAt", "updatedAt" FROM `proxy_config`;--> statement-breakpoint
@@ -202,8 +239,8 @@ CREATE TABLE `__new_scan_error` (
 	`directory` text NOT NULL,
 	`error` text NOT NULL,
 	`status` integer DEFAULT 0,
-	`createdAt` text DEFAULT 'Mon, 20 Jul 2026 01:37:09 GMT',
-	`updatedAt` text DEFAULT 'Mon, 20 Jul 2026 01:37:09 GMT'
+	`createdAt` text DEFAULT 'Tue, 21 Jul 2026 04:56:05 GMT',
+	`updatedAt` text DEFAULT 'Tue, 21 Jul 2026 04:56:05 GMT'
 );
 --> statement-breakpoint
 INSERT INTO `__new_scan_error`("id", "directory", "error", "status", "createdAt", "updatedAt") SELECT "id", "directory", "error", "status", "createdAt", "updatedAt" FROM `scan_error`;--> statement-breakpoint
@@ -218,8 +255,8 @@ CREATE TABLE `__new_scanner` (
 	`scanMode` integer DEFAULT 0,
 	`scanLevel` integer DEFAULT 0,
 	`excludeDirs` text DEFAULT '',
-	`createdAt` text DEFAULT 'Mon, 20 Jul 2026 01:37:09 GMT',
-	`updatedAt` text DEFAULT 'Mon, 20 Jul 2026 01:37:09 GMT'
+	`createdAt` text DEFAULT 'Tue, 21 Jul 2026 04:56:05 GMT',
+	`updatedAt` text DEFAULT 'Tue, 21 Jul 2026 04:56:05 GMT'
 );
 --> statement-breakpoint
 INSERT INTO `__new_scanner`("id", "directory", "provider", "progress", "gameCount", "scanMode", "scanLevel", "excludeDirs", "createdAt", "updatedAt") SELECT "id", "directory", "provider", "progress", "gameCount", "scanMode", "scanLevel", "excludeDirs", "createdAt", "updatedAt" FROM `scanner`;--> statement-breakpoint
@@ -234,10 +271,11 @@ CREATE TABLE `__new_third_party_account` (
 	`username` text DEFAULT '',
 	`avatar` text DEFAULT '',
 	`expiresAt` text NOT NULL,
-	`createdAt` text DEFAULT 'Mon, 20 Jul 2026 01:37:09 GMT',
-	`updatedAt` text DEFAULT 'Mon, 20 Jul 2026 01:37:09 GMT'
+	`createdAt` text DEFAULT 'Tue, 21 Jul 2026 04:56:05 GMT',
+	`updatedAt` text DEFAULT 'Tue, 21 Jul 2026 04:56:05 GMT'
 );
 --> statement-breakpoint
 INSERT INTO `__new_third_party_account`("id", "provider", "accountId", "accessToken", "refreshToken", "username", "avatar", "expiresAt", "createdAt", "updatedAt") SELECT "id", "provider", "accountId", "accessToken", "refreshToken", "username", "avatar", "expiresAt", "createdAt", "updatedAt" FROM `third_party_account`;--> statement-breakpoint
 DROP TABLE `third_party_account`;--> statement-breakpoint
-ALTER TABLE `__new_third_party_account` RENAME TO `third_party_account`;
+ALTER TABLE `__new_third_party_account` RENAME TO `third_party_account`;--> statement-breakpoint
+ALTER TABLE `game_play` ADD `pid` integer DEFAULT 0;

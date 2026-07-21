@@ -3,6 +3,7 @@ import {
   ChartSection,
   FontSection,
   GlassSection,
+  GuideSection,
 } from '@/features/appearance'
 
 export default function AppearancePage() {
@@ -13,6 +14,7 @@ export default function AppearancePage() {
         <BackgroundSection />
         <GlassSection />
         <ChartSection />
+        <GuideSection />
       </div>
     </>
   )

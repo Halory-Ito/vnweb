@@ -77,6 +77,7 @@ export const GamePlayTable = sqliteTable('game_play', {
   rating: int().default(0), // 游戏评分，0-10分
   lastLaunchedAt: text().default(''), // 上次游玩时间
   status: int().default(0), // 游戏状态，0未开始、1游玩中、2部分完成、3已完成、4多周目、5搁置中
+  pid: int().default(0), // 游戏进程ID
 })
 
 // 游戏记录表
@@ -265,6 +266,7 @@ export const GuideEndingTable = sqliteTable('guide_ending', {
   name: text().notNull(), // 结局名称
   type: text().default('normal'), // 结局类型：normal/bad/true
   cover: text().default(''), // 结局封面图片
+  cg: text().default(''), // 如果有CG则替换封面
   requirements: text().default(''), // 开启条件
   finished: int().default(0), // 是否完成，0否1是
   sortOrder: int().default(0), // 排序顺序
@@ -282,6 +284,24 @@ export const GuideStepTable = sqliteTable('guide_step', {
   prefix: text().default(''), // 前缀标记（如★）
   subfix: text().default(''), // 后缀说明
   finished: int().default(0), // 是否完成，0否1是
+  sortOrder: int().default(0), // 排序顺序
+  createdAt: text().default(dayjs().toString()), // 创建时间
+  updatedAt: text().default(dayjs().toString()), // 更新时间
+})
+
+// 游戏 CG 表
+export const CGTable = sqliteTable('cg', {
+  id: int().primaryKey({ autoIncrement: true }),
+  gameId: int().notNull(), // 关联 GameInfoTable
+  name: text().default(''), // CG名称/标题
+  url: text().notNull(), // CG图片链接
+  thumbnail: text().default(''), // 缩略图链接
+  category: text().default(''), // CG分类：scene/character/event/cg
+  description: text().default(''), // CG描述
+  source: text().default(''), // 来源：游戏内、官网、粉丝制作等
+  width: int(), // 图片宽度
+  height: int(), // 图片高度
+  fileSize: int(), // 文件大小（字节）
   sortOrder: int().default(0), // 排序顺序
   createdAt: text().default(dayjs().toString()), // 创建时间
   updatedAt: text().default(dayjs().toString()), // 更新时间

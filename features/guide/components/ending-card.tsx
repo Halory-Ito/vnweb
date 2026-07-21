@@ -1,6 +1,6 @@
 'use client'
 
-import { Star, Skull, CircleDot } from 'lucide-react'
+import { CheckCircle2, CircleDot, Skull, Star } from 'lucide-react'
 import Image from 'next/image'
 
 import { Badge } from '@/components/ui/badge'
@@ -9,22 +9,28 @@ import { cn } from '@/lib/utils'
 
 const endingTypeConfig: Record<
   string,
-  { label: string; icon: React.ReactNode; className: string }
+  {
+    label: string
+    icon: React.ReactNode
+    className: string
+  }
 > = {
   true: {
     label: '真结局',
-    icon: <Star className="h-3 w-3" />,
-    className: 'bg-amber-500/20 text-amber-600 dark:text-amber-400 border-amber-500/30',
+    icon: <Star className="h-3 w-3 fill-current" />,
+    className: 'border-amber-500/30 bg-amber-500/15 text-amber-600 dark:text-amber-400',
   },
+
   bad: {
     label: '坏结局',
     icon: <Skull className="h-3 w-3" />,
-    className: 'bg-red-500/20 text-red-600 dark:text-red-400 border-red-500/30',
+    className: 'border-red-500/30 bg-red-500/15 text-red-500 dark:text-red-400',
   },
+
   normal: {
     label: '普通结局',
     icon: <CircleDot className="h-3 w-3" />,
-    className: 'bg-primary/10 text-primary border-primary/20',
+    className: 'border-primary/20 bg-primary/10 text-primary',
   },
 }
 
@@ -40,12 +46,13 @@ interface EndingCardProps {
   onClick?: () => void
 }
 
-function getCharacterInitial(name: string): string {
-  return name.toUpperCase().replace('END', '').replace('结局', '').trim().slice(0, 2) || '？'
+function getCharacterInitial(name: string) {
+  return name.replace('END', '').replace('结局', '').trim().slice(0, 2) || '？'
 }
 
 export function EndingCard({ name, type, cover, progress, onClick }: EndingCardProps) {
-  const config = endingTypeConfig[type] || endingTypeConfig.normal
+  const config = endingTypeConfig[type] ?? endingTypeConfig.normal
+
   const isCompleted = progress.percentage === 100
 
   return (
@@ -53,51 +60,70 @@ export function EndingCard({ name, type, cover, progress, onClick }: EndingCardP
       type="button"
       onClick={onClick}
       className={cn(
-        'group relative flex flex-col items-center gap-3 rounded-xl border p-4 transition-all duration-200 cursor-pointer text-left',
-        'bg-card hover:shadow-md hover:scale-[1.02] active:scale-[0.98]',
-        isCompleted && 'ring-2 ring-emerald-500/50',
+        'group relative flex w-full items-center gap-5 rounded-xl border bg-card p-5 text-left',
+        'transition-all duration-200',
+        'hover:-translate-y-1 hover:border-primary/40 hover:shadow-lg',
+        'focus-visible:ring-2 focus-visible:ring-primary/40',
+        isCompleted && 'border-emerald-500/40',
       )}
     >
-      {/* 头像 */}
-      <div className="relative h-16 w-16 overflow-hidden rounded-full transition-transform duration-200 group-hover:scale-110">
+      {/* Cover */}
+      <div
+        className={cn(
+          'relative h-18 w-18 shrink-0 overflow-hidden rounded-lg border',
+          'transition-transform duration-200 group-hover:scale-105',
+          isCompleted && 'border-emerald-500/40',
+        )}
+      >
         {cover ? (
           <Image src={cover} alt={name} fill className="object-cover" />
         ) : (
-          <div className="bg-muted flex h-full w-full items-center justify-center text-xl font-bold">
+          <div className="bg-muted flex h-full w-full items-center justify-center text-lg font-bold">
             {getCharacterInitial(name)}
           </div>
         )}
       </div>
 
-      {/* 名称 */}
-      <h3 className="text-center text-sm leading-tight font-semibold">{name}</h3>
+      {/* Right */}
+      <div className="flex min-w-0 flex-1 flex-col gap-2.5">
+        {/* 标题 */}
+        <div className="flex items-start justify-between gap-3">
+          <h3 className="line-clamp-2 text-sm leading-5 font-semibold">{name}</h3>
 
-      {/* 类型标签 */}
-      <Badge variant="outline" className={cn('text-xs gap-1', config.className)}>
-        {config.icon}
-        {config.label}
-      </Badge>
+          <div className="flex shrink-0 items-center gap-1.5">
+            {isCompleted && <CheckCircle2 className="h-4 w-4 fill-emerald-500 text-white" />}
+            <Badge
+              variant="outline"
+              className={cn('gap-1 rounded-md px-2 py-0.5 text-[10px]', config.className)}
+            >
+              {config.icon}
+              {config.label}
+            </Badge>
+          </div>
+        </div>
 
-      {/* 进度条 */}
-      <div className="w-full space-y-1">
+        {/* Progress */}
         <Progress
           value={progress.percentage}
-          className={cn('h-1.5', isCompleted && '[&>div]:bg-emerald-500')}
+          className={cn('h-2', isCompleted && '[&>div]:bg-emerald-500')}
         />
-        <div className="text-muted-foreground flex items-center justify-between text-xs">
-          <span>
+
+        {/* Footer */}
+        <div className="flex items-center justify-between text-xs">
+          <span className="text-muted-foreground tabular-nums">
             {progress.completed}/{progress.total} 步骤
           </span>
-          <span className="tabular-nums">{progress.percentage}%</span>
+
+          <span
+            className={cn(
+              'tabular-nums font-medium',
+              isCompleted ? 'text-emerald-500' : 'text-muted-foreground',
+            )}
+          >
+            {progress.percentage}%
+          </span>
         </div>
       </div>
-
-      {/* 完成标记 */}
-      {isCompleted && (
-        <div className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500 text-xs text-white">
-          ✓
-        </div>
-      )}
     </button>
   )
 }
