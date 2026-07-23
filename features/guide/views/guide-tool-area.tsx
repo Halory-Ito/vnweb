@@ -39,7 +39,7 @@ export default function GuideToolArea({ onSearch }: GuideToolAreaProps) {
       </div>
 
       {/* 操作按钮 */}
-      <div className="flex items-center gap-2">
+      <div className="grid grid-cols-2 gap-2 lg:flex lg:items-center">
         <AddRoute />
         <AddEnding />
         <AddStep />

@@ -32,8 +32,8 @@ export default function GuideCard({ guide, onClick }: GuideCardProps) {
         />
       </div>
 
-      {/* 悬停时显示百分比 */}
-      <div className="bg-primary/80 text-primary-foreground absolute right-1 bottom-3 rounded px-1.5 py-0.5 text-xs font-medium opacity-0 transition-opacity group-hover:opacity-100">
+      {/* 移动端始终显示百分比，PC端悬停显示 */}
+      <div className="bg-primary/80 text-primary-foreground absolute right-1 bottom-3 rounded px-1.5 py-0.5 text-xs font-medium transition-opacity md:opacity-0 md:group-hover:opacity-100">
         {guide.percentage}%
       </div>
     </div>
