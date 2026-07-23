@@ -68,7 +68,7 @@ export default function ImportJsonTab({
           placeholder="将 AI 生成的攻略 JSON 粘贴到此处..."
           value={jsonText}
           onChange={(event) => onJsonTextChange(event.target.value)}
-          className="max-h-32 overflow-y-auto font-mono text-sm"
+          className="max-h-32 overflow-y-auto text-sm"
         />
         {jsonError ? (
           <p className="text-destructive text-xs">{jsonError}</p>

@@ -56,21 +56,37 @@ export const AI_IMPORT_PROMPT = `你是一位 Galgame 攻略整理助手。请�
 
 \`\`\`json
 {
-  "name": { "zh-cn": "示例游戏" },
+  "name": { "zh-cn": "美好的每一天～不连续存在～" },
   "level": 0,
-  "tips": ["按角色顺序攻略"],
+  "tips": ["★为二周目会出现的选项"],
   "routes": [
     {
-      "name": "角色 A",
+      "name": "由岐视点",
       "endings": [
         {
-          "name": "角色 A END",
+          "name": "由岐视点 END2",
           "type": "normal",
           "steps": [
-            { "type": "choice", "content": "选择选项一" },
-            { "type": "save", "content": "SAVE 1" },
-            { "type": "load", "content": "LOAD 1" },
-            { "type": "note", "content": "从最初开始", "prefix": "※" }
+            {
+              "type": "choice",
+              "content": "去散步好了/海事快去做自己该做的事情吧……",
+              "prefix": "★",
+              "group": "7月2日"
+            },
+            {
+              "type": "save",
+              "content": "SAVE 2",
+              "group": "7月2日"
+            },
+            {
+              "type": "load",
+              "content": "LOAD 2"
+            },
+            {
+              "id": "step_1755094701246",
+              "type": "note",
+              "content": "由岐视点 END2后 选择It's my own Invention开始"
+            }
           ]
         }
       ]
