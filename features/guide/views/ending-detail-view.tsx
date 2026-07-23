@@ -4,12 +4,15 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { BookOpen, Lock, Star, Skull, CircleDot } from 'lucide-react'
 import { motion, AnimatePresence } from 'motion/react'
 import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Progress } from '@/components/ui/progress'
+import { Card, CardContent } from '@/components/ui/card'
+import { CompleteAllButton } from '@/features/guide/components/complete-all-botton'
 import { EditEnding } from '@/features/guide/components/edit-ending'
+import { GuideDetailHeader } from '@/features/guide/components/guide-detail-header'
+import { ResetAllButton } from '@/features/guide/components/reset-all-botton'
 import { getEndingApi, getStepsApi, updateGuideProgressApi } from '@/features/guide/guide-api'
 import { GuideStep } from '@/features/guide/components/guide-step'
 import { useGuideColors } from '@/features/guide/hooks/use-guide-colors'
@@ -137,6 +140,40 @@ export function EndingDetailView({ gameId, routeId, endingId }: EndingDetailView
     }
   }
 
+  // 重置结局进度
+  const handleResetEnding = async () => {
+    try {
+      await updateGuideProgressApi(gameId, {
+        type: 'ending',
+        id: Number(endingId),
+        finished: false,
+      })
+      queryClient.invalidateQueries({ queryKey: ['ending', endingId] })
+      queryClient.invalidateQueries({ queryKey: ['steps', endingId] })
+      queryClient.invalidateQueries({ queryKey: ['guide'] })
+      toast.success('结局进度已重置')
+    } catch {
+      toast.error('重置结局进度失败')
+    }
+  }
+
+  // 标记结局全部完成
+  const handleCompleteEnding = async () => {
+    try {
+      await updateGuideProgressApi(gameId, {
+        type: 'ending',
+        id: Number(endingId),
+        finished: true,
+      })
+      queryClient.invalidateQueries({ queryKey: ['ending', endingId] })
+      queryClient.invalidateQueries({ queryKey: ['steps', endingId] })
+      queryClient.invalidateQueries({ queryKey: ['guide'] })
+      toast.success('结局已全部标记完成')
+    } catch {
+      toast.error('标记结局完成失败')
+    }
+  }
+
   // 处理步骤分组，相同group只显示一次日期
   const renderStepsWithGroups = () => {
     let lastGroup: string | undefined
@@ -186,29 +223,38 @@ export function EndingDetailView({ gameId, routeId, endingId }: EndingDetailView
 
       {/* 结局信息 */}
       <motion.div variants={itemVariants}>
-        <Card variant="default">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <CardTitle>{ending.name}</CardTitle>
-                <Badge variant="outline" className={cn('text-xs gap-1', config.className)}>
-                  {config.icon}
-                  {config.label}
-                </Badge>
-              </div>
+        <GuideDetailHeader
+          title={
+            <div className="flex items-center gap-2">
+              {ending.name}
+              <Badge variant="outline" className={cn('text-xs gap-1', config.className)}>
+                {config.icon}
+                {config.label}
+              </Badge>
+            </div>
+          }
+          description={`${endingProgress.completed}/${endingProgress.total} 步骤完成`}
+          progress={endingProgress}
+          actions={
+            <>
               <EditEnding endingId={endingId} gameId={gameId} />
-            </div>
-            <CardDescription>
-              {endingProgress.completed}/{endingProgress.total} 步骤完成
-            </CardDescription>
-            <div className="flex items-center gap-3">
-              <Progress value={endingProgress.percentage} className="h-3 flex-1" />
-              <span className="text-muted-foreground min-w-12 text-right text-sm font-medium tabular-nums">
-                {endingProgress.percentage}%
-              </span>
-            </div>
-          </CardHeader>
-        </Card>
+              <ResetAllButton
+                title="重置结局进度"
+                description="确定要重置该结局的所有进度吗？此操作将清除该结局下所有步骤的完成状态。"
+                onConfirm={handleResetEnding}
+                disabled={endingProgress.completed === 0}
+                buttonTitle="重置结局"
+              />
+              <CompleteAllButton
+                title="标记结局全部完成"
+                description="确定要将该结局的所有步骤标记为已完成吗？"
+                onConfirm={handleCompleteEnding}
+                disabled={endingProgress.completed === endingProgress.total}
+                buttonTitle="标记结局全部完成"
+              />
+            </>
+          }
+        />
       </motion.div>
 
       {/* 开启条件 */}

@@ -5,16 +5,16 @@ const nextConfig: NextConfig = {
   // reactCompiler: true,
   experimental: {
     // 自动按需引入第三方包，大幅缩小打包体积
-    optimizePackageImports: [
-      'lucide-react',
-      'date-fns',
-      '@radix-ui/react-icons',
-      'lodash-es',
-    ],
+    optimizePackageImports: ['lucide-react', 'date-fns', '@radix-ui/react-icons', 'lodash-es'],
   },
   logging: {
     incomingRequests: false, // 关闭请求日志
   },
+  allowedDevOrigins: [
+    'http://localhost:8999',
+    'http://192.168.1.6:8999',
+    'http://192.168.1.6',
+  ],
   images: {
     remotePatterns: [
       {

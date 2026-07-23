@@ -1,5 +1,5 @@
 import dayjs from 'dayjs'
-import { eq } from 'drizzle-orm'
+import { eq, asc } from 'drizzle-orm'
 import { NextRequest, NextResponse } from 'next/server'
 
 import { db } from '@/lib/drizzle'
@@ -33,11 +33,12 @@ export async function GET(
 
     const guide = guides[0]
 
-    // 查询路线
+    // 查询路线（按 sortOrder 排序）
     const routes = await db
       .select()
       .from(GuideRouteTable)
       .where(eq(GuideRouteTable.guideId, guide.id))
+      .orderBy(asc(GuideRouteTable.sortOrder))
 
     // 查询所有结局和步骤
     const routesWithDetails = await Promise.all(

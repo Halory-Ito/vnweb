@@ -24,7 +24,7 @@ const RecentGame = ({
 
   return (
     <div className="h-full w-full">
-      <div className="bg-background/30 mb-4 flex items-center justify-between rounded-xl p-3">
+      <div className="bg-background dark:bg-input/30 dark:border-input mb-4 flex items-center justify-between rounded-xl p-3">
         <AreaHeader icon={HistoryIcon} title="最近游戏" count={items.length} />
       </div>
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">

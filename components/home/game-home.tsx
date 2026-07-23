@@ -333,7 +333,7 @@ export default function GameHome() {
   }
 
   return (
-    <div className="max-h-[calc(100vh-70px)] w-full space-y-12 overflow-x-hidden overflow-y-scroll p-4">
+    <div className="max-h-[calc(100vh-80px)] w-full space-y-12 overflow-x-hidden overflow-y-scroll p-4">
       <RecentGame
         gameCards={gameCards}
         selectedGameIds={selectedGameIds}

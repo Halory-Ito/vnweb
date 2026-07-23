@@ -1,16 +1,18 @@
 'use client'
 
-import { useQuery } from '@tanstack/react-query'
-import { BookOpen, RotateCcw } from 'lucide-react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { ArrowLeftIcon, BookOpen } from 'lucide-react'
 import { motion } from 'motion/react'
 import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
-import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Progress } from '@/components/ui/progress'
+import { CompleteAllButton } from '@/features/guide/components/complete-all-botton'
 import { EditRoute } from '@/features/guide/components/edit-route'
 import { EndingCard } from '@/features/guide/components/ending-card'
-import { getRouteApi, getEndingsApi } from '@/features/guide/guide-api'
+import { GuideDetailHeader } from '@/features/guide/components/guide-detail-header'
+import { ResetAllButton } from '@/features/guide/components/reset-all-botton'
+import { getRouteApi, getEndingsApi, updateGuideProgressApi } from '@/features/guide/guide-api'
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -45,6 +47,7 @@ interface RouteDetailViewProps {
 
 export function RouteDetailView({ gameId, routeId }: RouteDetailViewProps) {
   const router = useRouter()
+  const queryClient = useQueryClient()
 
   const { data: route, isLoading: isRouteLoading } = useQuery({
     queryKey: ['route', routeId],
@@ -96,10 +99,38 @@ export function RouteDetailView({ gameId, routeId }: RouteDetailViewProps) {
     }
   }
 
-  // 重置路线进度（本地状态）
+  // 重置路线进度
   const handleResetRoute = async () => {
-    // TODO: 调用重置API
-    console.log('重置路线进度:', routeId)
+    try {
+      await updateGuideProgressApi(gameId, {
+        type: 'route',
+        id: Number(routeId),
+        finished: false,
+      })
+      queryClient.invalidateQueries({ queryKey: ['route', routeId] })
+      queryClient.invalidateQueries({ queryKey: ['endings', routeId] })
+      queryClient.invalidateQueries({ queryKey: ['guide'] })
+      toast.success('路线进度已重置')
+    } catch {
+      toast.error('重置路线进度失败')
+    }
+  }
+
+  // 标记路线全部完成
+  const handleCompleteRoute = async () => {
+    try {
+      await updateGuideProgressApi(gameId, {
+        type: 'route',
+        id: Number(routeId),
+        finished: true,
+      })
+      queryClient.invalidateQueries({ queryKey: ['route', routeId] })
+      queryClient.invalidateQueries({ queryKey: ['endings', routeId] })
+      queryClient.invalidateQueries({ queryKey: ['guide'] })
+      toast.success('路线已全部标记完成')
+    } catch {
+      toast.error('标记路线完成失败')
+    }
   }
 
   return (
@@ -112,44 +143,43 @@ export function RouteDetailView({ gameId, routeId }: RouteDetailViewProps) {
       {/* 返回按钮 */}
       <motion.div variants={itemVariants}>
         <Button variant="ghost" size="sm" onClick={() => router.push(`/guide/${gameId}`)}>
-          ← 返回路线
+          <ArrowLeftIcon className="mr-1 h-4 w-4" />
+          返回路线
         </Button>
       </motion.div>
 
       {/* 路线信息 */}
       <motion.div variants={itemVariants}>
-        <Card variant="default">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle>{route.name}</CardTitle>
-                <CardDescription>
-                  {(endings || []).length} 个结局 · {routeProgress.completed}/{routeProgress.total}{' '}
-                  步骤完成
-                </CardDescription>
-              </div>
-              <div className="flex items-center gap-2">
-                <EditRoute routeId={routeId} />
-                <Button variant="outline" size="sm" onClick={handleResetRoute}>
-                  <RotateCcw className="mr-2 h-4 w-4" />
-                  重置路线
-                </Button>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <Progress value={routeProgress.percentage} className="h-3 flex-1" />
-              <span className="text-muted-foreground min-w-12 text-right text-sm font-medium tabular-nums">
-                {routeProgress.percentage}%
-              </span>
-            </div>
-          </CardHeader>
-        </Card>
+        <GuideDetailHeader
+          title={route.name}
+          description={`${(endings || []).length} 个结局 · ${routeProgress.completed}/${routeProgress.total} 步骤完成`}
+          progress={routeProgress}
+          actions={
+            <>
+              <EditRoute routeId={routeId} />
+              <ResetAllButton
+                title="重置路线进度"
+                description="确定要重置该路线的所有进度吗？此操作将清除该路线下所有结局和步骤的完成状态。"
+                onConfirm={handleResetRoute}
+                disabled={routeProgress.completed === 0}
+                buttonTitle="重置路线"
+              />
+              <CompleteAllButton
+                title="标记路线全部完成"
+                description="确定要将该路线的所有步骤标记为已完成吗？"
+                onConfirm={handleCompleteRoute}
+                disabled={routeProgress.completed === routeProgress.total}
+                buttonTitle="标记路线全部完成"
+              />
+            </>
+          }
+        />
       </motion.div>
 
       {/* 结局卡片列表 */}
       <motion.div className="space-y-2" variants={itemVariants}>
         <h2 className="text-lg font-semibold">结局</h2>
-        <motion.div className="grid grid-cols-2 gap-4" variants={containerVariants}>
+        <motion.div className="grid grid-cols-1 gap-4 lg:grid-cols-2" variants={containerVariants}>
           {(endings || []).map((ending) => {
             const progress = getEndingProgress(ending)
             return (

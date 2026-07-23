@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm'
+import { eq, inArray } from 'drizzle-orm'
 import { NextRequest, NextResponse } from 'next/server'
 
 import { db } from '@/lib/drizzle'
@@ -17,6 +17,17 @@ const tableMap = {
   route: GuideRouteTable,
   guide: GameGuideTable,
 } as const
+
+async function updateFinished(table: typeof GuideStepTable | typeof GuideEndingTable | typeof GuideRouteTable | typeof GameGuideTable, ids: number[], finished: boolean) {
+  if (ids.length === 0) return
+  await db
+    .update(table)
+    .set({
+      finished: finished ? 1 : 0,
+      updatedAt: new Date().toISOString(),
+    })
+    .where(inArray(table.id, ids))
+}
 
 export async function PATCH(
   request: NextRequest,
@@ -64,7 +75,7 @@ export async function PATCH(
       return NextResponse.json({ error: 'Record not found' }, { status: 404 })
     }
 
-    // 更新 finished 字段
+    // 更新目标记录
     await db
       .update(table)
       .set({
@@ -72,6 +83,60 @@ export async function PATCH(
         updatedAt: new Date().toISOString(),
       })
       .where(eq(table.id, id))
+
+    // 级联更新子级进度
+    if (type === 'guide') {
+      const routes = await db
+        .select({ id: GuideRouteTable.id })
+        .from(GuideRouteTable)
+        .where(eq(GuideRouteTable.guideId, id))
+      const routeIds = routes.map((r) => r.id)
+
+      const endings = routeIds.length
+        ? await db
+            .select({ id: GuideEndingTable.id })
+            .from(GuideEndingTable)
+            .where(inArray(GuideEndingTable.routeId, routeIds))
+        : []
+      const endingIds = endings.map((e) => e.id)
+
+      const steps = endingIds.length
+        ? await db
+            .select({ id: GuideStepTable.id })
+            .from(GuideStepTable)
+            .where(inArray(GuideStepTable.endingId, endingIds))
+        : []
+      const stepIds = steps.map((s) => s.id)
+
+      await updateFinished(GuideRouteTable, routeIds, finished)
+      await updateFinished(GuideEndingTable, endingIds, finished)
+      await updateFinished(GuideStepTable, stepIds, finished)
+    } else if (type === 'route') {
+      const endings = await db
+        .select({ id: GuideEndingTable.id })
+        .from(GuideEndingTable)
+        .where(eq(GuideEndingTable.routeId, id))
+      const endingIds = endings.map((e) => e.id)
+
+      const steps = endingIds.length
+        ? await db
+            .select({ id: GuideStepTable.id })
+            .from(GuideStepTable)
+            .where(inArray(GuideStepTable.endingId, endingIds))
+        : []
+      const stepIds = steps.map((s) => s.id)
+
+      await updateFinished(GuideEndingTable, endingIds, finished)
+      await updateFinished(GuideStepTable, stepIds, finished)
+    } else if (type === 'ending') {
+      const steps = await db
+        .select({ id: GuideStepTable.id })
+        .from(GuideStepTable)
+        .where(eq(GuideStepTable.endingId, id))
+      const stepIds = steps.map((s) => s.id)
+
+      await updateFinished(GuideStepTable, stepIds, finished)
+    }
 
     return NextResponse.json({ data: { updated: true, id } })
   } catch (error) {

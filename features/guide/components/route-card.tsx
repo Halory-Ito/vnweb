@@ -1,6 +1,6 @@
 'use client'
 
-import { ChevronRight } from 'lucide-react'
+import { ChevronRight, GripVertical } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
@@ -17,9 +17,10 @@ interface RouteCardProps {
     percentage: number
   }
   onClick?: () => void
+  onDragStart?: (e: React.DragEvent) => void
 }
 
-export function RouteCard({ name, endingCount, progress, onClick }: RouteCardProps) {
+export function RouteCard({ name, endingCount, progress, onClick, onDragStart }: RouteCardProps) {
   const isCompleted = progress.percentage === 100
   const isNotStarted = progress.percentage === 0
 
@@ -27,16 +28,31 @@ export function RouteCard({ name, endingCount, progress, onClick }: RouteCardPro
     <Card
       variant="outline"
       onClick={onClick}
+      draggable={!!onDragStart}
+      onDragStart={onDragStart}
       className={cn(
-        'group cursor-pointer overflow-hidden transition-all duration-300',
+        'group relative overflow-hidden transition-all duration-300',
         // 优化悬停时的浮动幅度和阴影
         'hover:-translate-y-1 hover:border-primary/50 hover:shadow-lg dark:hover:shadow-primary/10',
         // 100% 状态给予微弱的背景色反馈
         isCompleted && 'border-primary/20 bg-primary/5',
         // 0% 状态降低整体视觉权重
         isNotStarted && 'opacity-80 hover:opacity-100',
+        // 可拖拽状态
+        onDragStart && 'cursor-grab active:cursor-grabbing',
       )}
     >
+      {/* 拖拽手柄 */}
+      {onDragStart && (
+        <div
+          className="text-muted-foreground/50 hover:text-muted-foreground absolute left-1 top-1/2 -translate-y-1/2 cursor-grab opacity-0 transition-opacity group-hover:opacity-100 active:cursor-grabbing"
+          onMouseDown={(e) => {
+            e.stopPropagation()
+          }}
+        >
+          <GripVertical className="h-4 w-4" />
+        </div>
+      )}
       <CardContent className="px-4 py-3">
         <div className="space-y-2">
           {/* Header */}
@@ -45,6 +61,7 @@ export function RouteCard({ name, endingCount, progress, onClick }: RouteCardPro
               className={cn(
                 'truncate text-base font-semibold leading-5 transition-colors',
                 isNotStarted ? 'text-muted-foreground' : 'text-foreground',
+                onDragStart && 'pl-3',
               )}
             >
               {name}

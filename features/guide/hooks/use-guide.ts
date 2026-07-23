@@ -227,7 +227,39 @@ export function useGuide(guideData: GuideData | null, gameId: number) {
     }
   }, [guideData, gameId, queryClient])
 
-  // 重置单个路线进度
+  // 标记全部完成
+  const completeProgress = useCallback(async () => {
+    if (!guideData) return
+
+    // 乐观更新
+    queryClient.setQueryData(['guide', gameId], (old: GuideData | null) => {
+      if (!old) return old
+      return {
+        ...old,
+        finished: true,
+        routes: old.routes.map((route) => ({
+          ...route,
+          finished: true,
+          endings: route.endings.map((ending) => ({
+            ...ending,
+            finished: true,
+            steps: ending.steps.map((s) => ({ ...s, finished: true })),
+          })),
+        })),
+      }
+    })
+
+    try {
+      await updateGuideProgressApi(gameId, {
+        type: 'guide',
+        id: guideData.id,
+        finished: true,
+      })
+      queryClient.invalidateQueries({ queryKey: ['guide', gameId] })
+    } catch {
+      queryClient.invalidateQueries({ queryKey: ['guide', gameId] })
+    }
+  }, [guideData, gameId, queryClient])
   const resetRouteProgress = useCallback(
     async (route: Route) => {
       if (!guideData) return
@@ -275,6 +307,7 @@ export function useGuide(guideData: GuideData | null, gameId: number) {
     getRouteProgress,
     getTotalProgress,
     resetProgress,
+    completeProgress,
     resetRouteProgress,
   }
 }

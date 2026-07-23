@@ -150,6 +150,15 @@ export async function getGuideListApi(): Promise<GuideListItem[]> {
   return res.data
 }
 
+// 更新路线排序
+export async function updateRouteSortApi(routes: { id: number; sortOrder: number }[]): Promise<void> {
+  await api.request({
+    method: 'PATCH',
+    url: '/guide/route/sort',
+    data: { routes },
+  })
+}
+
 // 获取路线信息
 export async function getRouteApi(routeId: string): Promise<{ id: string; name: string; finished: boolean } | null> {
   const res = await api.request({

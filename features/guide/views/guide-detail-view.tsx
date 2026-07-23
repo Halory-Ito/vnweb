@@ -1,49 +1,90 @@
 'use client'
 
-import { useQuery } from '@tanstack/react-query'
-import { motion } from 'framer-motion'
-import { ArrowLeftIcon, BookOpen, Lightbulb, RotateCcw } from 'lucide-react'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { ArrowLeftIcon, BookOpen, Lightbulb } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { useCallback, useEffect, useState } from 'react'
 
 import { Button } from '@/components/ui/button'
-import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Progress } from '@/components/ui/progress'
+import { CompleteAllButton } from '@/features/guide/components/complete-all-botton'
 import { EditGuide } from '@/features/guide/components/edit-guide'
+import { GuideDetailHeader } from '@/features/guide/components/guide-detail-header'
+import { ResetAllButton } from '@/features/guide/components/reset-all-botton'
 import { RouteCard } from '@/features/guide/components/route-card'
-import { getGuideApi } from '@/features/guide/guide-api'
+import { getGuideApi, updateRouteSortApi } from '@/features/guide/guide-api'
+import { GuideRouteWithProgress } from '@/features/guide/guide-api'
 import { useGuide } from '@/features/guide/hooks/use-guide'
 
 interface GuideDetailViewProps {
   gameId: number
 }
 
-// Framer Motion 动画变体配置
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.06 }, // 每个卡片延迟 0.06 秒出现
-  },
-} as const
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 15 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { type: 'spring' as const, stiffness: 300, damping: 24 },
-  },
-} as const
-
 export function GuideDetailView({ gameId }: GuideDetailViewProps) {
   const router = useRouter()
+  const queryClient = useQueryClient()
 
   const { data: guide, isLoading } = useQuery({
     queryKey: ['guide', gameId],
     queryFn: () => getGuideApi(gameId),
   })
 
-  const { getRouteProgress, getTotalProgress, resetProgress } = useGuide(guide ?? null, gameId)
+  const { getRouteProgress, getTotalProgress, resetProgress, completeProgress } = useGuide(
+    guide ?? null,
+    gameId,
+  )
+
+  // 本地排序状态
+  const [routes, setRoutes] = useState<GuideRouteWithProgress[]>([])
+
+  // 当 guide 数据加载时，同步本地状态
+  useEffect(() => {
+    if (guide?.routes) {
+      setRoutes(guide.routes)
+    }
+  }, [guide?.routes])
+
+  // 更新排序的 mutation
+  const updateSortMutation = useMutation({
+    mutationFn: updateRouteSortApi,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['guide', gameId] })
+    },
+  })
+
+  // 拖拽状态
+  const [dragIndex, setDragIndex] = useState<number | null>(null)
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null)
+
+  // 处理拖拽开始
+  const handleDragStart = useCallback((index: number) => {
+    setDragIndex(index)
+  }, [])
+
+  // 处理拖拽进入
+  const handleDragEnter = useCallback((index: number) => {
+    setDragOverIndex(index)
+  }, [])
+
+  // 处理拖拽结束
+  const handleDragEnd = useCallback(() => {
+    if (dragIndex !== null && dragOverIndex !== null && dragIndex !== dragOverIndex) {
+      const newRoutes = [...routes]
+      const [draggedItem] = newRoutes.splice(dragIndex, 1)
+      newRoutes.splice(dragOverIndex, 0, draggedItem)
+
+      setRoutes(newRoutes)
+
+      // 更新排序到数据库
+      const sortData = newRoutes.map((route, index) => ({
+        id: Number(route.id),
+        sortOrder: index,
+      }))
+      updateSortMutation.mutate(sortData)
+    }
+
+    setDragIndex(null)
+    setDragOverIndex(null)
+  }, [dragIndex, dragOverIndex, routes, updateSortMutation])
 
   if (isLoading) {
     return (
@@ -74,31 +115,30 @@ export function GuideDetailView({ gameId }: GuideDetailViewProps) {
       </Button>
 
       {/* 攻略总览信息 */}
-      <Card variant="default" className="overflow-hidden">
-        <CardHeader className="bg-muted/30">
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="text-xl">{guide.name}</CardTitle>
-              <CardDescription className="mt-1.5">
-                {totalProgress.completed}/{totalProgress.total} 步骤完成
-              </CardDescription>
-            </div>
-            <div className="flex items-center gap-2">
-              <EditGuide gameId={gameId} />
-              <Button variant="outline" size="sm" onClick={resetProgress}>
-                <RotateCcw className="mr-2 h-4 w-4" />
-                重置全部
-              </Button>
-            </div>
-          </div>
-          <div className="mt-4 flex items-center gap-3">
-            <Progress value={totalProgress.percentage} className="h-2.5 flex-1" />
-            <span className="text-muted-foreground min-w-10 text-right text-sm font-medium tabular-nums">
-              {totalProgress.percentage}%
-            </span>
-          </div>
-        </CardHeader>
-      </Card>
+      <GuideDetailHeader
+        title={guide.name}
+        description={`${totalProgress.completed}/${totalProgress.total} 步骤完成`}
+        progress={totalProgress}
+        actions={
+          <>
+            <EditGuide gameId={gameId} />
+            <ResetAllButton
+              title="重置全部进度"
+              description="确定要重置所有攻略进度吗？此操作将清除所有步骤的完成状态。"
+              onConfirm={resetProgress}
+              disabled={totalProgress.completed === 0}
+              buttonTitle="重置全部"
+            />
+            <CompleteAllButton
+              title="标记全部完成"
+              description="确定要将所有攻略步骤标记为已完成吗？"
+              onConfirm={completeProgress}
+              disabled={totalProgress.completed === totalProgress.total}
+              buttonTitle="标记全部"
+            />
+          </>
+        }
+      />
 
       {/* 提示信息 - 优化为紧凑的 Alert 样式 */}
       {guide.tips.length > 0 && (
@@ -116,29 +156,32 @@ export function GuideDetailView({ gameId }: GuideDetailViewProps) {
       <div className="space-y-3">
         <h2 className="text-lg font-semibold tracking-tight">路线分支</h2>
 
-        {/* 使用 framer-motion 包裹 Grid 容器 */}
-        <motion.div
-          className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-        >
-          {guide.routes.map((route) => {
+        {/* 拖拽排序网格 */}
+        <div className="grid gap-4 sm:grid-cols-1 lg:grid-cols-4">
+          {routes.map((route, index) => {
             const progress = getRouteProgress(route)
+            const isDragging = dragIndex === index
+            const isDragOver = dragOverIndex === index
             return (
-              // 将每个子卡片作为动画目标
-              <motion.div key={route.id} variants={itemVariants}>
+              <div
+                key={route.id}
+                className={isDragOver && !isDragging ? 'ring-primary rounded-lg ring-2' : ''}
+                onDragOver={(e) => e.preventDefault()}
+                onDragEnter={() => handleDragEnter(index)}
+                onDragEnd={handleDragEnd}
+              >
                 <RouteCard
                   routeId={route.id}
                   name={route.name}
                   endingCount={route.endings.length}
                   progress={progress}
                   onClick={() => router.push(`/guide/${gameId}/${route.id}`)}
+                  onDragStart={() => handleDragStart(index)}
                 />
-              </motion.div>
+              </div>
             )
           })}
-        </motion.div>
+        </div>
       </div>
     </div>
   )

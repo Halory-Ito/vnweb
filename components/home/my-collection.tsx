@@ -47,7 +47,7 @@ const MyColletion = ({
 
   return (
     <div className="h-full w-full">
-      <div className="bg-background/30 mb-4 flex flex-col gap-3 rounded-xl p-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="bg-background dark:bg-input/30 dark:border-input mb-4 flex flex-col gap-3 rounded-xl p-3 sm:flex-row sm:items-center sm:justify-between">
         <AreaHeader icon={BookMarkedIcon} title="我的收藏" count={items.length} />
         <div className="flex flex-wrap items-center gap-2 sm:justify-end">
           {collectionSelectionMode ? (

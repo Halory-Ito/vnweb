@@ -33,14 +33,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { resolvedTheme } = useTheme()
   const pathname = usePathname()
   const [mounted, setMounted] = useState(false)
-  const [backgroundSettings, setBackgroundSettings] = useState(
-    DEFAULT_BACKGROUND_SETTINGS,
-  )
+  const [backgroundSettings, setBackgroundSettings] = useState(DEFAULT_BACKGROUND_SETTINGS)
   const [displayBackground, setDisplayBackground] = useState('')
   const [previousBackground, setPreviousBackground] = useState('')
   const [isBgTransitioning, setIsBgTransitioning] = useState(false)
-  const [transitionStyle, setTransitionStyle] =
-    useState<BackgroundTransitionStyle>('center-fade')
+  const [transitionStyle, setTransitionStyle] = useState<BackgroundTransitionStyle>('center-fade')
   const [transitionDurationMs, setTransitionDurationMs] = useState(420)
   const transitionTimerRef = useRef<number | null>(null)
 
@@ -70,10 +67,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     window.addEventListener('storage', handleStorage)
 
     return () => {
-      window.removeEventListener(
-        BACKGROUND_SETTINGS_EVENT,
-        syncBackgroundSettings,
-      )
+      window.removeEventListener(BACKGROUND_SETTINGS_EVENT, syncBackgroundSettings)
       window.removeEventListener('storage', handleStorage)
     }
   }, [setBg])
@@ -127,10 +121,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       return
     }
 
-    if (
-      backgroundSettings.customBackgroundEnabled &&
-      backgroundSettings.customBackgroundImage
-    ) {
+    if (backgroundSettings.customBackgroundEnabled && backgroundSettings.customBackgroundImage) {
       setBg(backgroundSettings.customBackgroundImage)
       return
     }
@@ -152,10 +143,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     setTransitionStyle(backgroundSettings.transitionStyle)
     setTransitionDurationMs(backgroundSettings.transitionDurationMs)
-  }, [
-    backgroundSettings.transitionDurationMs,
-    backgroundSettings.transitionStyle,
-  ])
+  }, [backgroundSettings.transitionDurationMs, backgroundSettings.transitionStyle])
 
   const enterClassByStyle: Record<BackgroundTransitionStyle, string> = {
     none: '',
@@ -210,12 +198,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       setIsBgTransitioning(false)
       transitionTimerRef.current = null
     }, transitionDurationMs)
-  }, [
-    activeBackground,
-    displayBackground,
-    transitionDurationMs,
-    transitionStyle,
-  ])
+  }, [activeBackground, displayBackground, transitionDurationMs, transitionStyle])
 
   useEffect(() => {
     return () => {
@@ -241,9 +224,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           <div
             className={`app-bg-image-layer pointer-events-none absolute inset-0 z-0 ${isBgTransitioning ? enterClassByStyle[transitionStyle] : ''}`}
             style={{
-              backgroundImage: displayBackground
-                ? `url(${displayBackground})`
-                : 'none',
+              backgroundImage: displayBackground ? `url(${displayBackground})` : 'none',
               animationDuration: `${transitionDurationMs}ms`,
             }}
           />
@@ -257,11 +238,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
       <div className="app-glass-overlay pointer-events-none absolute inset-0 z-10" />
 
-      <div className="relative z-20 flex h-full w-full min-w-0 overflow-hidden">
+      <div className="relative z-20 flex h-full w-full overflow-hidden">
         <AppSideBar />
-        <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
+        <div className="flex flex-1 flex-col overflow-hidden">
           <AppHeader />
-          <div className="min-w-0 flex-1 overflow-hidden">{children}</div>
+          <div className="flex-1 overflow-hidden">{children}</div>
         </div>
       </div>
     </div>
