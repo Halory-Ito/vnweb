@@ -6,6 +6,7 @@ import { ArrowLeftIcon, ArrowRightIcon, FilterIcon, XIcon } from 'lucide-react'
 import { usePathname, useRouter } from 'next/navigation'
 
 import GameAddButton from '../vndb/vndb-trigger'
+import MobileNav from './mobile-nav'
 import R18Switch from './r18-switch'
 import ThemeSwitch from './theme-switch'
 import {
@@ -55,6 +56,9 @@ export default function AppHeader() {
   return (
     <div className="flex w-full items-center justify-between border-b p-4">
       <div className="flex space-x-4">
+        <div className="md:hidden">
+          <MobileNav />
+        </div>
         <Button onClick={router.back} variant="outline" size="icon">
           <ArrowLeftIcon />
         </Button>
