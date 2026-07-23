@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ArrowLeftIcon, BookOpen, Lightbulb } from 'lucide-react'
+import { motion } from 'motion/react'
 import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useState } from 'react'
 
@@ -14,6 +15,7 @@ import { RouteCard } from '@/features/guide/components/route-card'
 import { getGuideApi, updateRouteSortApi } from '@/features/guide/guide-api'
 import { GuideRouteWithProgress } from '@/features/guide/guide-api'
 import { useGuide } from '@/features/guide/hooks/use-guide'
+import { containerVariants, itemVariants, cardVariants } from '@/features/guide/data/motion'
 
 interface GuideDetailViewProps {
   gameId: number
@@ -107,65 +109,80 @@ export function GuideDetailView({ gameId }: GuideDetailViewProps) {
   const totalProgress = getTotalProgress()
 
   return (
-    <div className="scrollbar-thin scrollbar-thumb-secondary max-h-[calc(100vh-72px)] w-full space-y-5 overflow-y-auto p-4">
+    <motion.div
+      className="max-h-[calc(100vh-70px)] w-full space-y-5 overflow-y-auto p-4"
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+    >
       {/* 返回按钮 */}
-      <Button variant="ghost" size="sm" onClick={() => router.push(`/guide`)} className="-ml-2">
-        <ArrowLeftIcon className="mr-1 h-4 w-4" />
-        返回攻略
-      </Button>
+      <motion.div variants={itemVariants}>
+        <Button variant="ghost" size="sm" onClick={() => router.push(`/guide`)}>
+          <ArrowLeftIcon className="mr-1 h-4 w-4" /> 返回列表
+        </Button>
+      </motion.div>
 
       {/* 攻略总览信息 */}
-      <GuideDetailHeader
-        title={guide.name}
-        description={`${totalProgress.completed}/${totalProgress.total} 步骤完成`}
-        progress={totalProgress}
-        actions={
-          <>
-            <EditGuide gameId={gameId} />
-            <ResetAllButton
-              title="重置全部进度"
-              description="确定要重置所有攻略进度吗？此操作将清除所有步骤的完成状态。"
-              onConfirm={resetProgress}
-              disabled={totalProgress.completed === 0}
-              buttonTitle="重置全部"
-            />
-            <CompleteAllButton
-              title="标记全部完成"
-              description="确定要将所有攻略步骤标记为已完成吗？"
-              onConfirm={completeProgress}
-              disabled={totalProgress.completed === totalProgress.total}
-              buttonTitle="标记全部"
-            />
-          </>
-        }
-      />
+      <motion.div variants={itemVariants}>
+        <GuideDetailHeader
+          title={guide.name}
+          description={`${totalProgress.completed}/${totalProgress.total} 步骤完成`}
+          progress={totalProgress}
+          actions={
+            <>
+              <EditGuide gameId={gameId} />
+              <ResetAllButton
+                title="重置全部进度"
+                description="确定要重置所有攻略进度吗？此操作将清除所有步骤的完成状态。"
+                onConfirm={resetProgress}
+                disabled={totalProgress.completed === 0}
+                buttonTitle="重置全部"
+              />
+              <CompleteAllButton
+                title="标记全部完成"
+                description="确定要将所有攻略步骤标记为已完成吗？"
+                onConfirm={completeProgress}
+                disabled={totalProgress.completed === totalProgress.total}
+                buttonTitle="标记全部"
+              />
+            </>
+          }
+        />
+      </motion.div>
 
       {/* 提示信息 - 优化为紧凑的 Alert 样式 */}
       {guide.tips.length > 0 && (
-        <div className="flex flex-col gap-1.5 rounded-lg border border-yellow-500/20 bg-yellow-500/10 px-4 py-3 text-sm text-yellow-700 dark:text-yellow-400">
+        <motion.div
+          className="flex flex-col gap-1.5 rounded-lg border border-yellow-500/20 bg-yellow-500/10 px-4 py-3 text-sm text-yellow-700 dark:text-yellow-400"
+          variants={itemVariants}
+        >
           {guide.tips.map((tip, index) => (
             <div key={index} className="flex items-start gap-2">
               <Lightbulb className="mt-0.5 h-4 w-4 shrink-0 text-yellow-500/80" />
               <span className="leading-relaxed">{tip}</span>
             </div>
           ))}
-        </div>
+        </motion.div>
       )}
 
       {/* 路线卡片列表 */}
-      <div className="space-y-3">
+      <motion.div className="space-y-3" variants={itemVariants}>
         <h2 className="text-lg font-semibold tracking-tight">路线分支</h2>
 
         {/* 拖拽排序网格 */}
-        <div className="grid gap-4 sm:grid-cols-1 lg:grid-cols-4">
+        <motion.div
+          className="grid gap-4 sm:grid-cols-1 lg:grid-cols-4"
+          variants={containerVariants}
+        >
           {routes.map((route, index) => {
             const progress = getRouteProgress(route)
             const isDragging = dragIndex === index
             const isDragOver = dragOverIndex === index
             return (
-              <div
+              <motion.div
                 key={route.id}
-                className={isDragOver && !isDragging ? 'ring-primary rounded-lg ring-2' : ''}
+                variants={cardVariants}
+                className={`h-full w-full ${isDragOver && !isDragging ? 'ring-primary rounded-lg ring-2' : ''}`}
                 onDragOver={(e) => e.preventDefault()}
                 onDragEnter={() => handleDragEnter(index)}
                 onDragEnd={handleDragEnd}
@@ -178,11 +195,11 @@ export function GuideDetailView({ gameId }: GuideDetailViewProps) {
                   onClick={() => router.push(`/guide/${gameId}/${route.id}`)}
                   onDragStart={() => handleDragStart(index)}
                 />
-              </div>
+              </motion.div>
             )
           })}
-        </div>
-      </div>
-    </div>
+        </motion.div>
+      </motion.div>
+    </motion.div>
   )
 }

@@ -13,32 +13,7 @@ import { EndingCard } from '@/features/guide/components/ending-card'
 import { GuideDetailHeader } from '@/features/guide/components/guide-detail-header'
 import { ResetAllButton } from '@/features/guide/components/reset-all-botton'
 import { getRouteApi, getEndingsApi, updateGuideProgressApi } from '@/features/guide/guide-api'
-
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.08 },
-  },
-} as const
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] as const },
-  },
-} as const
-
-const cardVariants = {
-  hidden: { opacity: 0, scale: 0.95 },
-  visible: {
-    opacity: 1,
-    scale: 1,
-    transition: { duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] as const },
-  },
-} as const
+import { containerVariants, itemVariants, cardVariants } from '@/features/guide/data/motion'
 
 interface RouteDetailViewProps {
   gameId: number
@@ -135,7 +110,7 @@ export function RouteDetailView({ gameId, routeId }: RouteDetailViewProps) {
 
   return (
     <motion.div
-      className="max-h-[calc(100vh-144px)] w-full space-y-4 overflow-y-auto p-4"
+      className="max-h-[calc(100vh-70px)] w-full space-y-4 overflow-y-auto p-4"
       variants={containerVariants}
       initial="hidden"
       animate="visible"
@@ -143,8 +118,7 @@ export function RouteDetailView({ gameId, routeId }: RouteDetailViewProps) {
       {/* 返回按钮 */}
       <motion.div variants={itemVariants}>
         <Button variant="ghost" size="sm" onClick={() => router.push(`/guide/${gameId}`)}>
-          <ArrowLeftIcon className="mr-1 h-4 w-4" />
-          返回路线
+          <ArrowLeftIcon className="mr-1 h-4 w-4" /> 返回攻略
         </Button>
       </motion.div>
 

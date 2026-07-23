@@ -2,10 +2,12 @@
 
 import { useQuery } from '@tanstack/react-query'
 import { BookOpen } from 'lucide-react'
+import { motion } from 'motion/react'
 import { useRouter } from 'next/navigation'
 
 import GuideCard from '@/features/guide/components/guide-card'
 import { getGuideListApi } from '@/features/guide/guide-api'
+import { fastContainerVariants, cardVariants } from '@/features/guide/data/motion'
 
 export default function GuideCardList() {
   const router = useRouter()
@@ -33,14 +35,20 @@ export default function GuideCardList() {
   }
 
   return (
-    <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-8">
+    <motion.div
+      className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-8"
+      variants={fastContainerVariants}
+      initial="hidden"
+      animate="visible"
+    >
       {guides.map((guide) => (
-        <GuideCard
-          key={guide.id}
-          guide={guide}
-          onClick={() => router.push(`/guide/${guide.gameId}`)}
-        />
+        <motion.div key={guide.id} variants={cardVariants}>
+          <GuideCard
+            guide={guide}
+            onClick={() => router.push(`/guide/${guide.gameId}`)}
+          />
+        </motion.div>
       ))}
-    </div>
+    </motion.div>
   )
 }

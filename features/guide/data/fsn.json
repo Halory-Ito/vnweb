@@ -1,0 +1,968 @@
+{
+    "name": {
+        "zh-cn": "Fate/stay night"
+    },
+    "routes": [
+        {
+            "name": "Fate线",
+            "endings": [
+                {
+                    "name": "梦的延续",
+                    "type": "true",
+                    "steps": [
+                        {
+                            "type": "choice",
+                            "content": "2.去完成每天固定的修炼。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "2.去打工吧。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "2.和藤姐玩。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "2.阻止不了。【此选项要通过一次Fate线后才出现】"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "2.参战。",
+                            "subfix": "（选“1.……放弃刻印。”则BAD END1）"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "2.帮助Saber……！",
+                            "subfix": "（选“1.带着远坂逃跑……！”则BAD END2）"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "2.那么从正题开始。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "1.……了解，联手吧。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "1.Saber是哪里的英雄呢？"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "1.往远阪等候的地方去。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "3.关于Berserker。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "1.和Rider说话。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "2.不战斗。",
+                            "subfix": "（选“1.战斗。”则BAD END3）"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "1.战斗的理由。想知道寻求圣杯的理由。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "1.想知道成为从者前的Saber。"
+                        },
+                        {
+                            "type": "save",
+                            "content": "SAVE1"
+                        },
+                        {
+                            "type": "note",
+                            "content": "若读取SAVE1并选择另一条路线（猴子也懂的必杀剑等），最终会进入BAD END13"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "1.直接回卫宫宅。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "1.藤姐，土产呢？"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "1.去叫远阪。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "1.没有阻止的必要……！"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "2.……连战斗都称不上。",
+                            "subfix": "（选“1.在被打倒前先打倒……！”则BAD END4）"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "1.召唤Saber……！",
+                            "subfix": "（选“3.不行，不能消耗令咒……！”则BAD END5）"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "2.如果不追Saber的话……！",
+                            "subfix": "（选“1.……在这里等待。”则BAD END6）"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "2.赶往Saber身边。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "2.……那件事，做不到。",
+                            "subfix": "（选“1.……如今只有点头了。”则BAD END7）"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "2.……不是能战斗的状态。坐在椅子上，假装被绑住。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "1.在意Saber。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "1.用弓掩护……！"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "2.———不要用！",
+                            "subfix": "（选“1.……除此之外，别无他法吗。”则BAD END8）"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "1.把伊莉雅藏起来。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "1.好、来吃午餐吧。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "1.更详细地问投影魔术。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "2.和Saber两个人打出去。",
+                            "subfix": "（选“1.Caster就拜托Saber、这里我们两个人守住。”则BAD END9）"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "1.相信远坂。",
+                            "subfix": "（选“2.Caster交给Saber。”则BAD END9）"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "2.Saber，不行……！",
+                            "subfix": "（选“1.……那个空挡、抓住……！”则BAD END10）"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "1.站起来。",
+                            "subfix": "（选“2.无法站起来。”则BAD END11）"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "2.到地下室。",
+                            "subfix": "（选“1.回家。”则BAD END12）"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "1.……尽管如此、远坂。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "3.……开作战会议。",
+                            "subfix": "（选“1.和Saber一起度过。”或“2.向切嗣报告。”则BAD END14）"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "3.……把剑鞘还给Saber。",
+                            "subfix": "（选“1.寻找武器。”或“2.强化Saber。”则BAD END14）"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Unlimited Blade Works线",
+            "endings": [
+                {
+                    "name": "Brilliant Years",
+                    "type": "true",
+                    "steps": [
+                        {
+                            "type": "choice",
+                            "content": "2.去完成每天固定的修炼。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "1.帮学生会忙吧。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "2.和藤姐玩。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "1.阻止。【此选项要通过一次Fate线后才出现】"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "2.……追上去。",
+                            "subfix": "（选“1.……留在这里。”或“3.听从远坂的话。”则BAD END15）"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "2.带Saber回去。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "3.带Saber参观学校。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "1.去看Saber的样子。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "2.跳到走廊……！",
+                            "subfix": "（选“1.跳下楼梯……！”则BAD END16）"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "2.对远坂认输可以吗……？"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "3.把刺进右手的‘钉子’拔出来……！",
+                            "subfix": "（选“1.使用另咒”则BAD END17）"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "1.无法断定。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "1.在太阳下山吃晚餐之前、阻止藤姐的恶行。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "1.……她的目标是我。乖乖的走出去吧。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "2.用令咒把Saber叫来。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "2.……应该没用吧、先去阻止他。",
+                            "subfix": "（选“1.……姑且、听他怎么说。”则BAD END18）"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "1.有点担心樱。去间桐邸看看吧。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "1.果然还是太危险了。阻止远坂。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "2.保护远坂到底……！",
+                            "subfix": "（选“1.为了帮助Saber而介入……！”则BAD END19）"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "2.到道场跟Saber说话吧。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "1.既然没有面包的话，早餐就吃日式的吧。不过要去惩戒一下犯人。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "1.看看里面的样子。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "1.拒绝。",
+                            "subfix": "（选“2.答应。”则BAD END20）"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "1.与远坂汇合。",
+                            "subfix": "（若去教会讨教则BAD END21）"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "2.……还不行。不可轻举妄动。",
+                            "subfix": "（选“1.……可行的。现在能制造出Caster的破绽……！”则BAD END22）"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "2.帮助她。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "3.光靠我们不够。找其他的主人合作。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "2.————阻止男人……！",
+                            "subfix": "（选“1.……按捺住自己。”则BAD END23）"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "2.……可以，但有个条件。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "1.……如果有办法阻止的话，阻止它是不被允许的吗。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "1.和远坂讨论作战计划。"
+                        },
+                        {
+                            "type": "save",
+                            "content": "SAVE2"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "2.……开玩笑，怎能轻易地放弃……！",
+                            "subfix": "（选“1.……既然如此，起码也要找人陪葬……！”则BAD END24）"
+                        }
+                    ]
+                },
+                {
+                    "name": "sunny day",
+                    "type": "good",
+                    "steps": [
+                        {
+                            "type": "choice",
+                            "content": "2.去完成每天固定的修炼。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "1.帮学生会忙吧。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "2.和藤姐玩。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "1.阻止。【此选项要通过一次Fate线后才出现】"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "2.……追上去。",
+                            "subfix": "（选“1.……留在这里。”或“3.听从远坂的话。”则BAD END15）"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "2.带Saber回去。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "3.带Saber参观学校。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "1.去看Saber的样子。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "2.跳到走廊……！",
+                            "subfix": "（选“1.跳下楼梯……！”则BAD END16）"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "2.对远坂认输可以吗……？"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "3.把刺进右手的‘钉子’拔出来……！",
+                            "subfix": "（选“1.使用另咒”则BAD END17）"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "1.无法断定。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "1.在太阳下山吃晚餐之前、阻止藤姐的恶行。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "1.……她的目标是我。乖乖的走出去吧。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "2.用令咒把Saber叫来。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "2.……应该没用吧、先去阻止他。",
+                            "subfix": "（选“1.……姑且、听他怎么说。”则BAD END18）"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "1.有点担心樱。去间桐邸看看吧。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "1.果然还是太危险了。阻止远坂。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "2.保护远坂到底……！",
+                            "subfix": "（选“1.为了帮助Saber而介入……！”则BAD END19）"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "2.到道场跟Saber说话吧。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "1.既然没有面包的话，早餐就吃日式的吧。不过要去惩戒一下犯人。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "1.看看里面的样子。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "1.拒绝。",
+                            "subfix": "（选“2.答应。”则BAD END20）"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "1.与远坂汇合。",
+                            "subfix": "（若去教会讨教则BAD END21）"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "2.……还不行。不可轻举妄动。",
+                            "subfix": "（选“1.……可行的。现在能制造出Caster的破绽……！”则BAD END22）"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "2.帮助她。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "3.光靠我们不够。找其他的主人合作。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "2.————阻止男人……！",
+                            "subfix": "（选“1.……按捺住自己。”则BAD END23）"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "2.……可以，但有个条件。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "1.……如果有办法阻止的话，阻止它是不被允许的吗。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "1.和远坂讨论作战计划。"
+                        },
+                        {
+                            "type": "save",
+                            "content": "SAVE2"
+                        },
+                        {
+                            "type": "load",
+                            "content": "LOAD 2"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "2.去道场看看Saber的情况。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "2.……开玩笑，怎能轻易地放弃……！",
+                            "subfix": "（选“1.……既然如此，起码也要找人陪葬……！”则BAD END24）"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Heavens Feel线",
+            "endings": [
+                {
+                    "name": "春天归来",
+                    "type": "true",
+                    "steps": [
+                        {
+                            "type": "choice",
+                            "content": "1.去帮忙樱做饭。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "2.去打工吧。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "1.去送樱一程。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "2.樱也要来说，再追加一道菜吧。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "2.在意樱。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "2.参战。",
+                            "subfix": "（选“1.……放弃刻印。”则BAD END1）"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "2.帮助Saber……！",
+                            "subfix": "（选“1.带着远坂逃跑……！”则BAD END2）"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "2.去新都。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "1.商量樱的事情。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "1.我并不讨厌你喔。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "2.自己来说。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "1.去看一下的好……？"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "2.敷衍过去。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "1.外出购物。"
+                        },
+                        {
+                            "type": "save",
+                            "content": "SAVE3"
+                        },
+                        {
+                            "type": "note",
+                            "content": "若读取SAVE3后选择“3.饭后看电视。”等，可能进入BAD END25或26"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "2.忍耐。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "3.……不、担心樱。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "2.我抱着前来谢罪的诚意，请听我说句话。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "1.调查柳洞寺。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "1.相信Saber而等着……！或3.使用令咒……！",
+                            "subfix": "（选“2.朝臓砚砍下……！”则BAD END27）"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "1.老家伙游刃有余、对吧？"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "2.我一个人行不通。得向远坂借力。",
+                            "subfix": "（选“1.……不、这是我个人的问题。”则BAD END28）"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "1.是。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "1.可以。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "1.谁办得到啊！"
+                        },
+                        {
+                            "type": "save",
+                            "content": "SAVE4"
+                        },
+                        {
+                            "type": "note",
+                            "content": "若读取SAVE4后选择“2.……没办法。”，后续可能进入BAD END31"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "1.不、不能再让樱一个人待在家里。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "1.去拉开远坂———",
+                            "subfix": "（选“2.闭上眼睛、朝Rider砍下———”则BAD END29）"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "2.我想做樱的保护者。",
+                            "subfix": "（选“1.……我要，坚持正义之士的道路。”则BAD END30）"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "3.对了Rider，你不吃吗？"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "2.赶快过去看看，",
+                            "subfix": "（选“1.……留在原地。”则BAD END32）"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "2.坚守伊莉雅……！",
+                            "subfix": "（选“1.拉回远坂……！”则BAD END33）"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "2.伊莉雅、吧？"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "2.不解开。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "3.不，探望樱是第一优先。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "1.……上下点头。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "1.接受。",
+                            "subfix": "（选“2.不接受。”则BAD END34）"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "2.……只有这件事，办不到。",
+                            "subfix": "（选“1.亲自下手。”则BAD END35）"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "1.急忙赶回家中。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "1.救出樱。带回伊莉雅。",
+                            "subfix": "（选“2.我们输了。”则BAD END36）"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "2.点头。",
+                            "subfix": "（选“1.拒绝。”则BAD END37）"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "1./2./3.带走伊莉雅。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "3.……回答之前的问题。",
+                            "subfix": "（选“1.逃到仓库外面……！”或“2.投影抵抗……！”则BAD END38）"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "3.“站在樱那边到最后一刻吗”",
+                            "subfix": "（选“1.“奋战到最后吗””或“2.“坚持到最后吗””则BAD END38）"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "3.等待机会……！",
+                            "subfix": "（选“1.和Saber对打……！”则BAD END39）"
+                        },
+                        {
+                            "type": "save",
+                            "content": "SAVE5"
+                        },
+                        {
+                            "type": "note",
+                            "content": "若读取SAVE5后选择“2.再次投影……！”等，可能进入BAD END39或40，但true路线不读取"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "2.……手臂挥下。",
+                            "subfix": "（选“1.……救Saber。”则BAD END40）"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "2.……这样，真的好吗。【此选项要通过一次HF线True End后才会出现】"
+                        }
+                    ]
+                },
+                {
+                    "name": "樱之梦",
+                    "type": "normal",
+                    "steps": [
+                        {
+                            "type": "choice",
+                            "content": "1.去帮忙樱做饭。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "2.去打工吧。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "1.去送樱一程。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "2.樱也要来说，再追加一道菜吧。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "2.在意樱。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "2.参战。",
+                            "subfix": "（选“1.……放弃刻印。”则BAD END1）"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "2.帮助Saber……！",
+                            "subfix": "（选“1.带着远坂逃跑……！”则BAD END2）"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "2.去新都。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "1.商量樱的事情。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "1.我并不讨厌你喔。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "2.自己来说。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "1.去看一下的好……？"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "2.敷衍过去。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "1.外出购物。"
+                        },
+                        {
+                            "type": "save",
+                            "content": "SAVE3"
+                        },
+                        {
+                            "type": "note",
+                            "content": "若读取SAVE3后选择其他选项会进入BAD END25或26，但此处不读取"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "2.忍耐。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "3.……不、担心樱。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "2.我抱着前来谢罪的诚意，请听我说句话。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "1.调查柳洞寺。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "1.相信Saber而等着……！或3.使用令咒……！",
+                            "subfix": "（选“2.朝臓砚砍下……！”则BAD END27）"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "1.老家伙游刃有余、对吧？"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "2.我一个人行不通。得向远坂借力。",
+                            "subfix": "（选“1.……不、这是我个人的问题。”则BAD END28）"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "1.是。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "1.可以。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "1.谁办得到啊！"
+                        },
+                        {
+                            "type": "save",
+                            "content": "SAVE4"
+                        },
+                        {
+                            "type": "note",
+                            "content": "若读取SAVE4后选择“2.……没办法。”则会进入BAD END31，但此处不读取"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "1.不、不能再让樱一个人待在家里。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "1.去拉开远坂———",
+                            "subfix": "（选“2.闭上眼睛、朝Rider砍下———”则BAD END29）"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "2.我想做樱的保护者。",
+                            "subfix": "（选“1.……我要，坚持正义之士的道路。”则BAD END30）"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "3.对了Rider，你不吃吗？"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "2.赶快过去看看，",
+                            "subfix": "（选“1.……留在原地。”则BAD END32）"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "2.坚守伊莉雅……！",
+                            "subfix": "（选“1.拉回远坂……！”则BAD END33）"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "2.伊莉雅、吧？"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "2.不解开。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "3.不，探望樱是第一优先。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "1.……上下点头。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "1.接受。",
+                            "subfix": "（选“2.不接受。”则BAD END34）"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "2.……只有这件事，办不到。",
+                            "subfix": "（选“1.亲自下手。”则BAD END35）"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "1.急忙赶回家中。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "1.救出樱。带回伊莉雅。",
+                            "subfix": "（选“2.我们输了。”则BAD END36）"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "2.点头。",
+                            "subfix": "（选“1.拒绝。”则BAD END37）"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "1./2./3.带走伊莉雅。"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "3.……回答之前的问题。",
+                            "subfix": "（选“1.逃到仓库外面……！”或“2.投影抵抗……！”则BAD END38）"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "3.“站在樱那边到最后一刻吗”",
+                            "subfix": "（选“1.“奋战到最后吗””或“2.“坚持到最后吗””则BAD END38）"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "3.等待机会……！",
+                            "subfix": "（选“1.和Saber对打……！”则BAD END39）"
+                        },
+                        {
+                            "type": "save",
+                            "content": "SAVE5"
+                        },
+                        {
+                            "type": "load",
+                            "content": "LOAD 5"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "2.再次投影……！",
+                            "subfix": "（选“1.和Saber对打……！”则BAD END39）"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "2.……手臂挥下。",
+                            "subfix": "（选“1.……救Saber。”则BAD END40）"
+                        },
+                        {
+                            "type": "choice",
+                            "content": "2.……这样，真的好吗。【此选项要通过一次HF线True End后才会出现】"
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

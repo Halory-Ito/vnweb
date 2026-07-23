@@ -1,7 +1,7 @@
 'use client'
 
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { BookOpen, Lock, Star, Skull, CircleDot } from 'lucide-react'
+import { BookOpen, Lock, Star, Skull, CircleDot, ArrowLeftIcon } from 'lucide-react'
 import { motion, AnimatePresence } from 'motion/react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
@@ -12,28 +12,12 @@ import { Card, CardContent } from '@/components/ui/card'
 import { CompleteAllButton } from '@/features/guide/components/complete-all-botton'
 import { EditEnding } from '@/features/guide/components/edit-ending'
 import { GuideDetailHeader } from '@/features/guide/components/guide-detail-header'
+import { GuideStep } from '@/features/guide/components/guide-step'
 import { ResetAllButton } from '@/features/guide/components/reset-all-botton'
 import { getEndingApi, getStepsApi, updateGuideProgressApi } from '@/features/guide/guide-api'
-import { GuideStep } from '@/features/guide/components/guide-step'
 import { useGuideColors } from '@/features/guide/hooks/use-guide-colors'
 import { cn } from '@/lib/utils'
-
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.08 },
-  },
-} as const
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] as const },
-  },
-} as const
+import { containerVariants, itemVariants } from '@/features/guide/data/motion'
 
 const stepVariants = {
   hidden: { opacity: 0, x: -16 },
@@ -106,9 +90,10 @@ export function EndingDetailView({ gameId, routeId, endingId }: EndingDetailView
   const endingProgress = {
     total: (steps || []).length,
     completed: (steps || []).filter((s) => s.finished).length,
-    percentage: (steps || []).length > 0
-      ? Math.round(((steps || []).filter((s) => s.finished).length / (steps || []).length) * 100)
-      : 0,
+    percentage:
+      (steps || []).length > 0
+        ? Math.round(((steps || []).filter((s) => s.finished).length / (steps || []).length) * 100)
+        : 0,
   }
 
   const config = endingTypeConfig[ending.type] || endingTypeConfig.normal
@@ -123,9 +108,7 @@ export function EndingDetailView({ gameId, routeId, endingId }: EndingDetailView
     // 乐观更新
     queryClient.setQueryData(['steps', endingId], (old: typeof steps) => {
       if (!old) return old
-      return old.map((s) =>
-        s.id === stepId ? { ...s, finished: newFinished } : s,
-      )
+      return old.map((s) => (s.id === stepId ? { ...s, finished: newFinished } : s))
     })
 
     try {
@@ -184,10 +167,10 @@ export function EndingDetailView({ gameId, routeId, endingId }: EndingDetailView
         elements.push(
           <div
             key={`group-${step.group}-${index}`}
-            className="text-xs font-medium text-primary bg-primary/10 px-2 py-1 rounded mt-2 first:mt-0"
+            className="text-primary bg-primary/10 mt-2 rounded px-2 py-1 text-xs font-medium first:mt-0"
           >
             {step.group}
-          </div>
+          </div>,
         )
         lastGroup = step.group
       } else if (!step.group) {
@@ -200,7 +183,7 @@ export function EndingDetailView({ gameId, routeId, endingId }: EndingDetailView
           step={step}
           isCompleted={!!step.finished}
           onToggle={() => toggleStep(step.id)}
-        />
+        />,
       )
     })
 
@@ -209,15 +192,19 @@ export function EndingDetailView({ gameId, routeId, endingId }: EndingDetailView
 
   return (
     <motion.div
-      className="max-h-[calc(100vh-144px)] w-full space-y-4 overflow-y-auto p-4"
+      className="max-h-[calc(100vh-70px)] w-full space-y-4 overflow-y-auto p-4"
       variants={containerVariants}
       initial="hidden"
       animate="visible"
     >
       {/* 返回按钮 */}
       <motion.div variants={itemVariants}>
-        <Button variant="ghost" size="sm" onClick={() => router.push(`/guide/${gameId}/${routeId}`)}>
-          ← 返回路线
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => router.push(`/guide/${gameId}/${routeId}`)}
+        >
+          <ArrowLeftIcon className="mr-1 h-4 w-4" /> 返回结局
         </Button>
       </motion.div>
 
@@ -281,19 +268,31 @@ export function EndingDetailView({ gameId, routeId, endingId }: EndingDetailView
           <CardContent className="py-3">
             <div className="flex flex-wrap items-center gap-4 text-sm">
               <span className="inline-flex items-center gap-1.5">
-                <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: guideColors.choice }} />
+                <span
+                  className="h-2.5 w-2.5 rounded-full"
+                  style={{ backgroundColor: guideColors.choice }}
+                />
                 <span className="text-foreground">选项</span>
               </span>
               <span className="inline-flex items-center gap-1.5">
-                <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: guideColors.save }} />
+                <span
+                  className="h-2.5 w-2.5 rounded-full"
+                  style={{ backgroundColor: guideColors.save }}
+                />
                 <span className="text-foreground">保存</span>
               </span>
               <span className="inline-flex items-center gap-1.5">
-                <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: guideColors.load }} />
+                <span
+                  className="h-2.5 w-2.5 rounded-full"
+                  style={{ backgroundColor: guideColors.load }}
+                />
                 <span className="text-foreground">读取</span>
               </span>
               <span className="inline-flex items-center gap-1.5">
-                <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: guideColors.note }} />
+                <span
+                  className="h-2.5 w-2.5 rounded-full"
+                  style={{ backgroundColor: guideColors.note }}
+                />
                 <span className="text-foreground">备注</span>
               </span>
             </div>

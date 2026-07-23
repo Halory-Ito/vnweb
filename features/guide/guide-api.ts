@@ -1,4 +1,7 @@
+import { validateGuideJson } from './import-guide-schema'
 import { api } from '@/lib/request-utils'
+
+import type { GuideJsonInput } from './import-guide-schema'
 
 export type GuideSearchResult = {
   uid: string
@@ -51,6 +54,7 @@ export type GuideSearchResponse = {
 export type ImportGuideParams = {
   gameId: number
   guide: GuideSearchResult
+  overwrite?: boolean
 }
 
 export type GuideData = {
@@ -151,7 +155,9 @@ export async function getGuideListApi(): Promise<GuideListItem[]> {
 }
 
 // 更新路线排序
-export async function updateRouteSortApi(routes: { id: number; sortOrder: number }[]): Promise<void> {
+export async function updateRouteSortApi(
+  routes: { id: number; sortOrder: number }[],
+): Promise<void> {
   await api.request({
     method: 'PATCH',
     url: '/guide/route/sort',
@@ -160,7 +166,9 @@ export async function updateRouteSortApi(routes: { id: number; sortOrder: number
 }
 
 // 获取路线信息
-export async function getRouteApi(routeId: string): Promise<{ id: string; name: string; finished: boolean } | null> {
+export async function getRouteApi(
+  routeId: string,
+): Promise<{ id: string; name: string; finished: boolean } | null> {
   const res = await api.request({
     method: 'GET',
     url: `/guide/route/${routeId}`,
@@ -178,7 +186,14 @@ export async function getEndingsApi(routeId: string): Promise<GuideEndingWithPro
 }
 
 // 获取结局信息
-export async function getEndingApi(endingId: string): Promise<{ id: string; name: string; type: string; finished: boolean; requirements?: string; cover?: string } | null> {
+export async function getEndingApi(endingId: string): Promise<{
+  id: string
+  name: string
+  type: string
+  finished: boolean
+  requirements?: string
+  cover?: string
+} | null> {
   const res = await api.request({
     method: 'GET',
     url: `/guide/ending/${endingId}`,
@@ -196,7 +211,15 @@ export async function getStepsApi(endingId: string): Promise<GuideStepWithProgre
 }
 
 // 获取步骤信息
-export async function getStepApi(stepId: string): Promise<{ id: string; type: string; content: string; group?: string; prefix?: string; subfix?: string; finished: boolean } | null> {
+export async function getStepApi(stepId: string): Promise<{
+  id: string
+  type: string
+  content: string
+  group?: string
+  prefix?: string
+  subfix?: string
+  finished: boolean
+} | null> {
   const res = await api.request({
     method: 'GET',
     url: `/guide/step/${stepId}`,
@@ -214,7 +237,10 @@ export async function updateRouteApi(routeId: string, data: { name: string }): P
 }
 
 // 更新结局
-export async function updateEndingApi(endingId: string, data: { name: string; type?: string; requirements?: string; cover?: string }): Promise<void> {
+export async function updateEndingApi(
+  endingId: string,
+  data: { name: string; type?: string; requirements?: string; cover?: string },
+): Promise<void> {
   await api.request({
     method: 'PATCH',
     url: `/guide/ending/${endingId}`,
@@ -223,7 +249,10 @@ export async function updateEndingApi(endingId: string, data: { name: string; ty
 }
 
 // 更新步骤
-export async function updateStepApi(stepId: string, data: { type?: string; content: string; group?: string; prefix?: string; subfix?: string }): Promise<void> {
+export async function updateStepApi(
+  stepId: string,
+  data: { type?: string; content: string; group?: string; prefix?: string; subfix?: string },
+): Promise<void> {
   await api.request({
     method: 'PATCH',
     url: `/guide/step/${stepId}`,
@@ -232,7 +261,10 @@ export async function updateStepApi(stepId: string, data: { type?: string; conte
 }
 
 // 更新攻略
-export async function updateGuideApi(gameId: number, data: { name?: string; level?: number; tips?: string[] }): Promise<void> {
+export async function updateGuideApi(
+  gameId: number,
+  data: { name?: string; level?: number; tips?: string[] },
+): Promise<void> {
   await api.request({
     method: 'PATCH',
     url: `/guide/${gameId}`,
@@ -241,7 +273,9 @@ export async function updateGuideApi(gameId: number, data: { name?: string; leve
 }
 
 // 获取游戏角色列表
-export async function getGameCharactersApi(gameId: number): Promise<{ id: string; name: string; original: string; imageUrl: string }[]> {
+export async function getGameCharactersApi(
+  gameId: number,
+): Promise<{ id: string; name: string; original: string; imageUrl: string }[]> {
   const res = await api.request({
     method: 'GET',
     url: '/db/vndb/characters',
@@ -249,3 +283,5 @@ export async function getGameCharactersApi(gameId: number): Promise<{ id: string
   })
   return res.data?.items || []
 }
+
+export { validateGuideJson, type GuideJsonInput }
