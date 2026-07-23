@@ -24,14 +24,17 @@ const getSafeExt = (fileName: string, fileType: string) => {
   return byMime[fileType] || '.png'
 }
 
-const removeOldCustomBackgrounds = async () => {
+const removeOldCustomBackgrounds = async (device: 'pc' | 'mobile') => {
   try {
     const entries = await fs.readdir(CUSTOM_BG_DIR)
     for (const entry of entries) {
-      const filePath = path.join(CUSTOM_BG_DIR, entry)
-      const stat = await fs.stat(filePath)
-      if (stat.isFile()) {
-        await fs.unlink(filePath)
+      // 只删除对应设备的旧背景（以设备类型开头的文件）
+      if (entry.startsWith(`${device}-`)) {
+        const filePath = path.join(CUSTOM_BG_DIR, entry)
+        const stat = await fs.stat(filePath)
+        if (stat.isFile()) {
+          await fs.unlink(filePath)
+        }
       }
     }
   } catch {
@@ -43,6 +46,7 @@ const uploadBackgroundImage = async (req: NextRequest) => {
   try {
     const formData = await req.formData()
     const file = formData.get('file')
+    const device = formData.get('device') as string
 
     if (!(file instanceof File)) {
       return NextResponse.json({ error: '未检测到上传文件' }, { status: 400 })
@@ -59,12 +63,15 @@ const uploadBackgroundImage = async (req: NextRequest) => {
       )
     }
 
+    // 验证设备类型
+    const deviceType = device === 'mobile' ? 'mobile' : 'pc'
+
     const ext = getSafeExt(file.name, file.type)
-    const fileName = `${Date.now()}${ext}`
+    const fileName = `${deviceType}-${Date.now()}${ext}`
     const targetPath = path.join(CUSTOM_BG_DIR, fileName)
 
     await fs.mkdir(CUSTOM_BG_DIR, { recursive: true })
-    await removeOldCustomBackgrounds()
+    await removeOldCustomBackgrounds(deviceType)
 
     const bytes = await file.arrayBuffer()
     await fs.writeFile(targetPath, Buffer.from(bytes))
@@ -72,6 +79,7 @@ const uploadBackgroundImage = async (req: NextRequest) => {
     return NextResponse.json({
       data: {
         path: `/assets/bg/custom/${fileName}`,
+        device: deviceType,
       },
     })
   } catch (error) {

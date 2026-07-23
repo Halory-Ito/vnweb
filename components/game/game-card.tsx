@@ -140,7 +140,7 @@ export default function GameCard(props: GameCardProps) {
     <>
       <Link
         href={gameHref}
-        className="group relative flex w-full flex-col items-center p-1 transition-all duration-300 hover:-translate-y-1"
+        className="group relative flex w-full flex-col items-center p-1 transition-all duration-300 md:hover:-translate-y-1"
         onClick={handleCardClick}
       >
         {showSelection ? (
@@ -149,7 +149,7 @@ export default function GameCard(props: GameCardProps) {
             className={`bg-background/60 absolute top-4 left-4 z-20 flex size-7 items-center justify-center rounded-full border-2 transition-all ${
               isSelected
                 ? 'border-primary bg-primary text-primary-foreground scale-100 opacity-100'
-                : 'scale-90 opacity-0 group-hover:scale-100 group-hover:opacity-100'
+                : 'scale-90 opacity-0 md:group-hover:scale-100 md:group-hover:opacity-100'
             }`}
             onClick={handleToggleSelect}
             aria-label={isSelected ? '取消选择' : '选择'}
@@ -161,9 +161,9 @@ export default function GameCard(props: GameCardProps) {
         {/* 封面图片 */}
         <div className="relative w-full">
           {/* 主图片 */}
-          <div className="relative aspect-3/4 w-full overflow-hidden rounded-lg shadow-lg transition-all duration-300 group-hover:shadow-2xl">
+          <div className="relative aspect-3/4 w-full overflow-hidden rounded-lg shadow-lg transition-all duration-300 md:group-hover:shadow-2xl">
             {/* 背景光晕效果 */}
-            <div className="bg-primary/20 pointer-events-none absolute -inset-4 opacity-0 blur-3xl transition-opacity duration-500 group-hover:opacity-60" />
+            <div className="bg-primary/20 pointer-events-none absolute -inset-4 opacity-0 blur-3xl transition-opacity duration-500 md:group-hover:opacity-60" />
 
             {imageError ? (
               <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-muted">
@@ -172,7 +172,7 @@ export default function GameCard(props: GameCardProps) {
               </div>
             ) : (
               <Image
-                className="h-full w-full cursor-pointer object-cover transition-transform duration-500 group-hover:scale-110"
+                className="h-full w-full cursor-pointer object-cover transition-transform duration-500 md:group-hover:scale-110"
                 src={props.cover}
                 alt={props.title}
                 fill
@@ -187,9 +187,29 @@ export default function GameCard(props: GameCardProps) {
               />
             )}
 
-            {/* 悬停遮罩 */}
+            {/* 移动端始终显示游戏信息 */}
+            {showPlayInfo && (
+              <div className="absolute right-2 bottom-2 left-2 space-y-1 md:hidden">
+                {/* 游戏时长 */}
+                <div className="flex items-center gap-1.5 rounded-md bg-black/60 px-2 py-1">
+                  <Clock3Icon className="size-3 text-white/80" />
+                  <span className="text-xs font-medium text-white">
+                    {formatPlayTime(props.playTime)}
+                  </span>
+                </div>
+                {/* 上次游玩 */}
+                <div className="flex items-center gap-1.5 rounded-md bg-black/60 px-2 py-1">
+                  <CalendarDaysIcon className="size-3 text-white/80" />
+                  <span className="text-xs text-white/90">
+                    {formatLastRunDate(props.lastRunAt)}
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {/* 桌面端悬停遮罩 */}
             {!selectionMode && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center bg-linear-to-t from-black/90 via-black/50 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+              <div className="absolute inset-0 hidden flex-col items-center justify-center bg-linear-to-t from-black/90 via-black/50 to-transparent opacity-0 transition-opacity duration-300 md:flex md:group-hover:opacity-100">
                 {/* 播放按钮 - 收藏卡片不显示 */}
                 {!props.href && (
                   <Button
@@ -234,7 +254,7 @@ export default function GameCard(props: GameCardProps) {
         {/* 标题 */}
         <div className="mt-2.5 w-full px-1">
           <h3
-            className="group-hover:text-primary truncate text-center text-sm leading-5 font-medium tracking-wide transition-colors"
+            className="truncate text-center text-sm leading-5 font-medium tracking-wide transition-colors md:group-hover:text-primary"
             title={props.title}
           >
             {props.title}

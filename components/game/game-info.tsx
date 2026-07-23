@@ -250,19 +250,19 @@ export default function GameInfo({ game, initialTab }: GameInfoProps) {
         <div className="w-full space-y-6 p-4 md:p-6">
           <div className="w-full rounded-lg">
             <div className="flex flex-col items-center justify-center rounded-md p-4 md:flex-row md:justify-between">
-              <div className="space-y-3">
+              <div className="space-y-3 text-center md:text-left">
                 <div>
                   {game.logo ? (
                     <img
                       src={game.logo}
                       alt={`${title} 徽标`}
-                      className="max-h-24 w-auto object-contain md:max-h-32"
+                      className="mx-auto max-h-20 w-auto object-contain md:mx-0 md:max-h-32"
                     />
                   ) : null}
                 </div>
-                <div className="text-2xl font-bold">{title || '-'}</div>
+                <div className="text-xl font-bold md:text-2xl">{title || '-'}</div>
                 <div className="text-sm">{game.name || '-'}</div>
-                <div className="flex gap-2">
+                <div className="flex justify-center gap-2 md:justify-start">
                   {isRunning ? (
                     <Button
                       variant="destructive"
@@ -289,15 +289,15 @@ export default function GameInfo({ game, initialTab }: GameInfoProps) {
                 </div>
               </div>
 
-              <div className="w-fit shrink-0">
+              <div className="mt-4 w-fit shrink-0 md:mt-0">
                 {game.cover ? (
                   <img
                     src={game.cover}
                     alt={title}
-                    className="h-auto w-40 rounded-md border object-cover"
+                    className="h-auto w-32 rounded-md border object-cover md:w-40"
                   />
                 ) : (
-                  <div className="flex h-56 w-40 items-center justify-center rounded-md border text-sm">
+                  <div className="flex h-44 w-32 items-center justify-center rounded-md border text-sm md:h-56 md:w-40">
                     游戏封面
                   </div>
                 )}
@@ -320,16 +320,18 @@ export default function GameInfo({ game, initialTab }: GameInfoProps) {
 
           <div>
             <Tabs value={currentTab} onValueChange={handleTabChange} className="mx-auto w-full">
-              <TabsList className="mx-auto dark:bg-transparent">
-                <TabsTrigger value="overview">概览</TabsTrigger>
-                <TabsTrigger value="characters">相关人物</TabsTrigger>
-                <TabsTrigger value="pv">PV</TabsTrigger>
-                <TabsTrigger value="ost">OST</TabsTrigger>
-                <TabsTrigger value="record">记录</TabsTrigger>
-                <TabsTrigger value="memory">回忆</TabsTrigger>
-                <TabsTrigger value="quote">摘录</TabsTrigger>
-                <TabsTrigger value="guide">攻略</TabsTrigger>
-              </TabsList>
+              <div className="scrollbar-none -mx-4 overflow-x-auto px-4 md:mx-0 md:px-0">
+                <TabsList className="mx-auto w-max dark:bg-transparent">
+                  <TabsTrigger value="overview">概览</TabsTrigger>
+                  <TabsTrigger value="characters">相关人物</TabsTrigger>
+                  <TabsTrigger value="pv">PV</TabsTrigger>
+                  <TabsTrigger value="ost">OST</TabsTrigger>
+                  <TabsTrigger value="record">记录</TabsTrigger>
+                  <TabsTrigger value="memory">回忆</TabsTrigger>
+                  <TabsTrigger value="quote">摘录</TabsTrigger>
+                  <TabsTrigger value="guide">攻略</TabsTrigger>
+                </TabsList>
+              </div>
 
               <TabsContent value="overview">
                 <GameOverview game={game} onApplyTagFilter={applyTagFilter} />

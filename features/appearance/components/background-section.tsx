@@ -1,5 +1,6 @@
 'use client'
 
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 
@@ -13,6 +14,7 @@ import {
 } from '@/components/ui/select'
 import { Slider } from '@/components/ui/slider'
 import { Switch } from '@/components/ui/switch'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { api } from '@/lib/request-utils'
 import {
   BACKGROUND_TRANSITION_STYLE_OPTIONS,
@@ -22,28 +24,97 @@ import {
   readBackgroundSettings,
   writeBackgroundSettings,
   type BackgroundSettings,
+  type DeviceType,
 } from '@/lib/settings/background-settings'
 
+// API 函数
+const getBackgroundConfigApi = async () => {
+  const response = await api.get('/settings/background')
+  return response.data as { data: { active: boolean; path: { pc: string; mobile: string } } }
+}
+
+const updateBackgroundConfigApi = async (data: { active?: boolean; path?: { pc?: string; mobile?: string } }) => {
+  const response = await api.post('/settings/background', data)
+  return response.data
+}
+
 export function BackgroundSection() {
+  const queryClient = useQueryClient()
   const [settings, setSettings] = useState(DEFAULT_BACKGROUND_SETTINGS)
   const [isUploading, setIsUploading] = useState(false)
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [uploadDevice, setUploadDevice] = useState<DeviceType>('pc')
+  const fileInputRefPc = useRef<HTMLInputElement>(null)
+  const fileInputRefMobile = useRef<HTMLInputElement>(null)
+
+  // 从 config.json 读取配置
+  const { data: configData } = useQuery({
+    queryKey: ['background-config'],
+    queryFn: getBackgroundConfigApi,
+  })
+
+  // 更新 config.json 的 mutation
+  const updateConfigMutation = useMutation({
+    mutationFn: updateBackgroundConfigApi,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['background-config'] })
+    },
+  })
 
   useEffect(() => {
     setSettings(readBackgroundSettings())
   }, [])
+
+  // 当 config 数据加载时，同步到本地存储
+  useEffect(() => {
+    if (configData?.data) {
+      const config = configData.data
+      const localSettings = readBackgroundSettings()
+
+      // 如果 config.json 中有配置，同步到本地存储
+      if (config.active !== localSettings.customBackgroundEnabled ||
+          config.path.pc !== localSettings.customBackgroundImagePc ||
+          config.path.mobile !== localSettings.customBackgroundImageMobile) {
+        const updatedSettings = {
+          ...localSettings,
+          customBackgroundEnabled: config.active,
+          customBackgroundImagePc: config.path.pc,
+          customBackgroundImageMobile: config.path.mobile,
+        }
+        setSettings(updatedSettings)
+        writeBackgroundSettings(updatedSettings)
+        notifyBackgroundSettingsChanged()
+      }
+    }
+  }, [configData])
 
   const update = (next: Partial<BackgroundSettings>) => {
     const normalized = normalizeBackgroundSettings({ ...settings, ...next })
     setSettings(normalized)
     writeBackgroundSettings(normalized)
     notifyBackgroundSettingsChanged()
+
+    // 同步到 config.json
+    updateConfigMutation.mutate({
+      active: normalized.customBackgroundEnabled,
+      path: {
+        pc: normalized.customBackgroundImagePc,
+        mobile: normalized.customBackgroundImageMobile,
+      },
+    })
   }
 
-  const handlePickFile = () => fileInputRef.current?.click()
+  const handlePickFile = (device: DeviceType) => {
+    setUploadDevice(device)
+    if (device === 'mobile') {
+      fileInputRefMobile.current?.click()
+    } else {
+      fileInputRefPc.current?.click()
+    }
+  }
 
   const handleFileChange = async (
     event: React.ChangeEvent<HTMLInputElement>,
+    device: DeviceType,
   ) => {
     const input = event.currentTarget
     const file = event.target.files?.[0]
@@ -51,6 +122,7 @@ export function BackgroundSection() {
 
     const formData = new FormData()
     formData.append('file', file)
+    formData.append('device', device)
 
     setIsUploading(true)
     try {
@@ -58,8 +130,14 @@ export function BackgroundSection() {
       const payload = response.data as { data?: { path?: string } }
       const uploadedPath = payload.data?.path?.trim()
       if (!uploadedPath) throw new Error('未获取到上传后的背景路径')
-      update({ customBackgroundImage: uploadedPath })
-      toast.success('背景图片上传成功')
+
+      if (device === 'mobile') {
+        update({ customBackgroundImageMobile: uploadedPath })
+      } else {
+        update({ customBackgroundImagePc: uploadedPath })
+      }
+
+      toast.success(`${device === 'mobile' ? '移动端' : 'PC端'}背景图片上传成功`)
     } catch (error) {
       toast.error((error as Error).message || '上传背景图片失败')
     } finally {
@@ -92,23 +170,74 @@ export function BackgroundSection() {
         />
       </div>
 
-      <div className="flex items-center justify-between space-y-2">
+      <div className="space-y-3">
         <span className="text-sm font-medium">自定义背景图片</span>
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          className="hidden"
-          onChange={(event) => void handleFileChange(event)}
-        />
-        <Button
-          type="button"
-          variant="outline"
-          disabled={isUploading}
-          onClick={handlePickFile}
-        >
-          {isUploading ? '上传中...' : '选择图片'}
-        </Button>
+        <p className="text-muted-foreground text-xs">
+          移动端和PC端可以分别设置不同的背景图片。
+        </p>
+
+        <Tabs defaultValue="pc" className="w-full">
+          <TabsList className="w-full">
+            <TabsTrigger value="pc" className="flex-1">PC端</TabsTrigger>
+            <TabsTrigger value="mobile" className="flex-1">移动端</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="pc" className="mt-4 space-y-3">
+            <input
+              ref={fileInputRefPc}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(event) => void handleFileChange(event, 'pc')}
+            />
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm">PC端背景</p>
+                {settings.customBackgroundImagePc && (
+                  <p className="text-muted-foreground max-w-48 truncate text-xs">
+                    {settings.customBackgroundImagePc}
+                  </p>
+                )}
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                disabled={isUploading}
+                onClick={() => handlePickFile('pc')}
+              >
+                {isUploading && uploadDevice === 'pc' ? '上传中...' : '选择图片'}
+              </Button>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="mobile" className="mt-4 space-y-3">
+            <input
+              ref={fileInputRefMobile}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(event) => void handleFileChange(event, 'mobile')}
+            />
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm">移动端背景</p>
+                {settings.customBackgroundImageMobile && (
+                  <p className="text-muted-foreground max-w-48 truncate text-xs">
+                    {settings.customBackgroundImageMobile}
+                  </p>
+                )}
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                disabled={isUploading}
+                onClick={() => handlePickFile('mobile')}
+              >
+                {isUploading && uploadDevice === 'mobile' ? '上传中...' : '选择图片'}
+              </Button>
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
 
       <div className="flex items-center justify-between gap-4">

@@ -5,9 +5,13 @@ export type BackgroundTransitionStyle =
   | 'slide-up'
   | 'zoom-fade'
 
+export type DeviceType = 'pc' | 'mobile'
+
 export type BackgroundSettings = {
   customBackgroundEnabled: boolean
   customBackgroundImage: string
+  customBackgroundImagePc: string
+  customBackgroundImageMobile: string
   lastGameBackgroundImage: string
   transitionStyle: BackgroundTransitionStyle
   transitionDurationMs: number
@@ -39,9 +43,17 @@ const TRANSITION_STYLE_SET = new Set<BackgroundTransitionStyle>(
 export const DEFAULT_BACKGROUND_SETTINGS: BackgroundSettings = {
   customBackgroundEnabled: false,
   customBackgroundImage: '',
+  customBackgroundImagePc: '',
+  customBackgroundImageMobile: '',
   lastGameBackgroundImage: DEFAULT_LAST_GAME_BACKGROUND_IMAGE,
   transitionStyle: DEFAULT_BACKGROUND_TRANSITION_STYLE,
   transitionDurationMs: DEFAULT_BACKGROUND_TRANSITION_DURATION_MS,
+}
+
+// 获取当前设备类型
+export function getDeviceType(): DeviceType {
+  if (typeof window === 'undefined') return 'pc'
+  return window.innerWidth < 768 ? 'mobile' : 'pc'
 }
 
 export function normalizeBackgroundSettings(
@@ -54,6 +66,14 @@ export function normalizeBackgroundSettings(
     customBackgroundImage:
       typeof input.customBackgroundImage === 'string'
         ? input.customBackgroundImage.trim()
+        : '',
+    customBackgroundImagePc:
+      typeof input.customBackgroundImagePc === 'string'
+        ? input.customBackgroundImagePc.trim()
+        : '',
+    customBackgroundImageMobile:
+      typeof input.customBackgroundImageMobile === 'string'
+        ? input.customBackgroundImageMobile.trim()
         : '',
     lastGameBackgroundImage:
       typeof input.lastGameBackgroundImage === 'string' &&
@@ -73,6 +93,12 @@ export function normalizeBackgroundSettings(
         ? Math.min(3000, Math.max(0, Math.round(transitionDurationCandidate)))
         : DEFAULT_BACKGROUND_TRANSITION_DURATION_MS,
   }
+}
+
+// 获取当前设备对应的自定义背景图片
+export function getCurrentDeviceBackgroundImage(settings: BackgroundSettings): string {
+  const device = getDeviceType()
+  return device === 'mobile' ? settings.customBackgroundImageMobile : settings.customBackgroundImagePc
 }
 
 export function readBackgroundSettings(): BackgroundSettings {

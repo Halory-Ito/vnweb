@@ -107,7 +107,7 @@ export default function ImportGuide() {
           导入攻略
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-2xl">
+      <DialogContent className="w-[calc(100vw-2rem)] sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>导入攻略</DialogTitle>
         </DialogHeader>
@@ -116,7 +116,7 @@ export default function ImportGuide() {
           {/* 搜索区域 */}
           <div className="space-y-2">
             <div className="text-sm font-medium">搜索攻略</div>
-            <div className="flex gap-2">
+            <div className="flex flex-col gap-2 sm:flex-row">
               <div className="relative flex-1">
                 <Input
                   className="pr-4 pl-10"
@@ -132,6 +132,7 @@ export default function ImportGuide() {
                 variant="secondary"
                 onClick={handleSearch}
                 disabled={isSearching || !keyword.trim()}
+                className="shrink-0"
               >
                 {isSearching ? <Loader2 className="h-4 w-4 animate-spin" /> : '搜索'}
               </Button>
@@ -141,7 +142,7 @@ export default function ImportGuide() {
           {/* 搜索结果 */}
           <div className="space-y-2">
             <div className="text-sm font-medium">搜索结果</div>
-            <div className="max-h-80 space-y-2 overflow-y-auto rounded-md border p-2">
+            <div className="max-h-60 space-y-2 overflow-y-auto rounded-md border p-2 sm:max-h-80">
               {isSearching ? (
                 <div className="flex flex-col items-center justify-center py-8 text-center">
                   <Loader2 className="text-muted-foreground h-8 w-8 animate-spin" />
@@ -152,7 +153,7 @@ export default function ImportGuide() {
                   <button
                     key={guide.uid}
                     type="button"
-                    className={`w-full rounded-md p-2 text-left transition-colors ${
+                    className={`w-full overflow-hidden rounded-md p-2 text-left transition-colors ${
                       selectedGuide?.uid === guide.uid
                         ? 'border-primary/30 bg-primary/10 border'
                         : 'hover:bg-muted/50 border border-transparent'
@@ -164,10 +165,12 @@ export default function ImportGuide() {
                         <img
                           src={guide.cover}
                           alt={guide.name['zh-cn']}
-                          className="h-16 w-12 shrink-0 rounded object-cover"
+                          className="h-10 w-8 shrink-0 rounded object-cover sm:h-16 sm:w-12"
                         />
                       )}
-                      <div className="truncate font-medium">{guide.name['zh-cn']}</div>
+                      <div className="min-w-0 flex-1 truncate font-medium">
+                        {guide.name['zh-cn']}
+                      </div>
                     </div>
                   </button>
                 ))
@@ -193,7 +196,7 @@ export default function ImportGuide() {
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="请选择要绑定的游戏" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent position="popper" className="max-h-60">
                 {gameCards.map((game) => (
                   <SelectItem key={game.id} value={game.id}>
                     {game.title}
@@ -204,12 +207,13 @@ export default function ImportGuide() {
           </div>
         </div>
 
-        <DialogFooter>
+        <DialogFooter className="flex-col gap-2 sm:flex-row">
           <Button
             type="button"
             variant="outline"
             onClick={() => setOpen(false)}
             disabled={isImporting}
+            className="w-full sm:w-auto"
           >
             取消
           </Button>
@@ -217,6 +221,7 @@ export default function ImportGuide() {
             type="button"
             onClick={handleImport}
             disabled={!selectedGuide?.uid || !selectedGameId || isImporting}
+            className="w-full sm:w-auto"
           >
             {isImporting ? (
               <>

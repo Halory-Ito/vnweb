@@ -13,6 +13,7 @@ import {
   BACKGROUND_SETTINGS_STORAGE_KEY,
   DEFAULT_BACKGROUND_SETTINGS,
   type BackgroundTransitionStyle,
+  getCurrentDeviceBackgroundImage,
   readBackgroundSettings,
 } from '@/lib/settings/background-settings'
 import {
@@ -116,27 +117,30 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   const isGameInfoPage = pathname.startsWith('/game/info/')
 
+  // 获取当前设备对应的自定义背景
+  const currentDeviceCustomBackground = getCurrentDeviceBackgroundImage(backgroundSettings)
+
   useEffect(() => {
     if (isGameInfoPage) {
       return
     }
 
-    if (backgroundSettings.customBackgroundEnabled && backgroundSettings.customBackgroundImage) {
-      setBg(backgroundSettings.customBackgroundImage)
+    if (backgroundSettings.customBackgroundEnabled && currentDeviceCustomBackground) {
+      setBg(currentDeviceCustomBackground)
       return
     }
 
     setBg(backgroundSettings.lastGameBackgroundImage)
   }, [
     backgroundSettings.customBackgroundEnabled,
-    backgroundSettings.customBackgroundImage,
+    currentDeviceCustomBackground,
     backgroundSettings.lastGameBackgroundImage,
     isGameInfoPage,
     setBg,
   ])
 
   const nonGameInfoBackground = backgroundSettings.customBackgroundEnabled
-    ? backgroundSettings.customBackgroundImage || bg
+    ? currentDeviceCustomBackground || bg
     : bg
   const activeBackground = isGameInfoPage ? bg : nonGameInfoBackground
 

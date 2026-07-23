@@ -201,8 +201,8 @@ export default function GameRecord({ gameId }: GameRecordProps) {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-        <div className="flex items-center gap-2">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-wrap items-center gap-2">
           <Button
             type="button"
             variant={range === 'week' ? 'default' : 'outline'}
@@ -246,7 +246,7 @@ export default function GameRecord({ gameId }: GameRecordProps) {
             onClick={() => setChartType('line')}
           >
             <ChartLineIcon className="size-4" />
-            折线图
+            <span className="hidden sm:inline">折线图</span>
           </Button>
           <Button
             type="button"
@@ -255,12 +255,12 @@ export default function GameRecord({ gameId }: GameRecordProps) {
             onClick={() => setChartType('bar')}
           >
             <BarChart3Icon className="size-4" />
-            柱状图
+            <span className="hidden sm:inline">柱状图</span>
           </Button>
         </div>
       </div>
 
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-2">
           <Button
             type="button"
@@ -269,7 +269,7 @@ export default function GameRecord({ gameId }: GameRecordProps) {
             onClick={() => setPeriodOffset((prev) => prev - 1)}
           >
             <ChevronLeftIcon className="size-4" />
-            上一周期
+            <span className="hidden sm:inline">上一周期</span>
           </Button>
           <Button
             type="button"
@@ -278,7 +278,7 @@ export default function GameRecord({ gameId }: GameRecordProps) {
             disabled={periodOffset === 0}
             onClick={() => setPeriodOffset((prev) => Math.min(0, prev + 1))}
           >
-            下一周期
+            <span className="hidden sm:inline">下一周期</span>
             <ChevronRightIcon className="size-4" />
           </Button>
         </div>

@@ -753,8 +753,8 @@ export default function GameOST({ gameId, cover, title }: GameOSTProps) {
     return (
       <div className="bg-background/50 relative h-64 w-full overflow-hidden rounded-xl border backdrop-blur">
         {/* 顶部和底部的遮罩，让歌词有渐隐效果 */}
-        <div className="from-background/80 pointer-events-none absolute inset-x-0 top-0 z-10 h-16 bg-gradient-to-b to-transparent" />
-        <div className="from-background/80 pointer-events-none absolute inset-x-0 bottom-0 z-10 h-16 bg-gradient-to-t to-transparent" />
+        <div className="from-background/80 pointer-events-none absolute inset-x-0 top-0 z-10 h-16 bg-linear-to-b to-transparent" />
+        <div className="from-background/80 pointer-events-none absolute inset-x-0 bottom-0 z-10 h-16 bg-linear-to-t to-transparent" />
 
         <div
           ref={lyricsContainerRef}
@@ -853,35 +853,47 @@ export default function GameOST({ gameId, cover, title }: GameOSTProps) {
         }}
       />
       {viewMode === 'album' ? (
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8">
-          {isLoading
-            ? Array.from({ length: 8 }).map((_, i) => (
-                <Skeleton key={i} className="aspect-square rounded-2xl" />
-              ))
-            : ostItems.map((item) => (
-                <button
-                  key={item.id}
-                  onClick={() => {
-                    setSelectedAlbum(item)
-                    setViewMode('song')
-                  }}
-                  className="group space-y-2"
-                >
-                  <div className="relative aspect-square cursor-pointer overflow-hidden rounded-2xl shadow-md transition-transform group-hover:scale-105">
-                    <img
-                      src={item.cover}
-                      alt=""
-                      className="h-full w-full object-cover"
-                    />
-                  </div>
-                  <p className="truncate text-center text-xs font-medium">
-                    {item.name}
-                  </p>
-                </button>
-              ))}
-        </div>
+        isLoading ? (
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <Skeleton key={i} className="aspect-square rounded-2xl" />
+            ))}
+          </div>
+        ) : ostItems.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-16 text-center">
+            <div className="bg-muted rounded-full p-4">
+              <Play className="text-muted-foreground size-8" />
+            </div>
+            <p className="text-muted-foreground mt-4 text-sm">暂无 OST 数据</p>
+            <p className="text-muted-foreground text-xs">请先导入 OST 专辑</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8">
+            {ostItems.map((item) => (
+              <button
+                key={item.id}
+                onClick={() => {
+                  setSelectedAlbum(item)
+                  setViewMode('song')
+                }}
+                className="group space-y-2"
+              >
+                <div className="relative aspect-square cursor-pointer overflow-hidden rounded-2xl shadow-md transition-transform group-hover:scale-105">
+                  <img
+                    src={item.cover}
+                    alt=""
+                    className="h-full w-full object-cover"
+                  />
+                </div>
+                <p className="truncate text-center text-xs font-medium">
+                  {item.name}
+                </p>
+              </button>
+            ))}
+          </div>
+        )
       ) : (
-        <div className="grid max-h-[800px] min-h-[520px] grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
+        <div className="grid max-h-200 min-h-130 grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
           <div className="order-2 flex flex-col gap-4 overflow-y-auto pr-2 pb-2 lg:order-1">
             {selectedSong ? (
               <>
