@@ -1,32 +1,17 @@
 import 'dotenv/config'
 import { NextRequest, NextResponse } from 'next/server'
 import fs from 'node:fs'
-import path from 'node:path'
 
-// 配置文件路径
-const CONFIG_FILE = path.join(process.cwd(), 'app', 'config.json')
+import { readConfig, updateConfigSection } from '@/lib/server/config-rw'
 
 type GameSaveConfig = {
   enabled: boolean
   directory: string
 }
 
-// 读取完整配置
-async function readFullConfig(): Promise<Record<string, unknown>> {
-  try {
-    if (fs.existsSync(CONFIG_FILE)) {
-      const content = await fs.promises.readFile(CONFIG_FILE, 'utf-8')
-      return JSON.parse(content)
-    }
-  } catch {
-    // ignore
-  }
-  return {}
-}
-
 // 读取游戏存档配置
 async function readGameSaveConfig(): Promise<GameSaveConfig> {
-  const fullConfig = await readFullConfig()
+  const fullConfig = await readConfig()
   const settings = (fullConfig['settings'] || {}) as Record<string, unknown>
   const backup = (settings['backup'] || {}) as Record<string, unknown>
   const save = (backup['save'] || {}) as Record<string, unknown>
@@ -34,20 +19,6 @@ async function readGameSaveConfig(): Promise<GameSaveConfig> {
     enabled: Boolean(save.active),
     directory: typeof save.dir === 'string' ? save.dir : '',
   }
-}
-
-// 写入游戏存档配置
-async function writeGameSaveConfig(config: GameSaveConfig) {
-  const fullConfig = await readFullConfig()
-  const settings = (fullConfig['settings'] || {}) as Record<string, unknown>
-  const backup = (settings['backup'] || {}) as Record<string, unknown>
-  backup['save'] = {
-    active: config.enabled,
-    dir: config.directory,
-  }
-  settings['backup'] = backup
-  fullConfig['settings'] = settings
-  await fs.promises.writeFile(CONFIG_FILE, JSON.stringify(fullConfig, null, 4))
 }
 
 // 获取游戏存档配置
@@ -90,7 +61,11 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    await writeGameSaveConfig(config)
+    // 只更新 settings.backup.save，不影响其他属性
+    await updateConfigSection(['settings', 'backup', 'save'], {
+      active: config.enabled,
+      dir: config.directory,
+    })
 
     return NextResponse.json({ data: config })
   } catch (error) {

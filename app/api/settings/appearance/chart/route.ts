@@ -1,9 +1,7 @@
 import 'dotenv/config'
 import { NextRequest, NextResponse } from 'next/server'
-import fs from 'node:fs'
-import path from 'node:path'
 
-const CONFIG_FILE = path.join(process.cwd(), 'app', 'config.json')
+import { readConfig, updateConfigSection } from '@/lib/server/config-rw'
 
 type ChartSettings = {
   color: string
@@ -15,27 +13,9 @@ const DEFAULT_CHART_SETTINGS: ChartSettings = {
   opacity: 100,
 }
 
-// 读取完整配置
-async function readFullConfig(): Promise<Record<string, unknown>> {
-  try {
-    if (fs.existsSync(CONFIG_FILE)) {
-      const content = await fs.promises.readFile(CONFIG_FILE, 'utf-8')
-      return JSON.parse(content)
-    }
-  } catch {
-    // ignore
-  }
-  return {}
-}
-
-// 写入完整配置
-async function writeFullConfig(config: Record<string, unknown>) {
-  await fs.promises.writeFile(CONFIG_FILE, JSON.stringify(config, null, 4))
-}
-
 // 读取图表设置
 async function readChartSettings(): Promise<ChartSettings> {
-  const fullConfig = await readFullConfig()
+  const fullConfig = await readConfig()
   const settings = (fullConfig['settings'] || {}) as Record<string, unknown>
   const appearance = (settings['appearance'] || {}) as Record<string, unknown>
   const chart = (appearance['chart'] || {}) as Record<string, unknown>
@@ -50,28 +30,6 @@ async function readChartSettings(): Promise<ChartSettings> {
       ? Math.min(100, Math.max(0, Math.round(opacity)))
       : DEFAULT_CHART_SETTINGS.opacity,
   }
-}
-
-// 写入图表设置
-async function writeChartSettings(chartSettings: ChartSettings) {
-  const fullConfig = await readFullConfig()
-
-  if (!fullConfig['settings']) {
-    fullConfig['settings'] = {}
-  }
-  const settings = fullConfig['settings'] as Record<string, unknown>
-
-  if (!settings['appearance']) {
-    settings['appearance'] = {}
-  }
-  const appearance = settings['appearance'] as Record<string, unknown>
-
-  appearance['chart'] = {
-    color: chartSettings.color,
-    opacity: chartSettings.opacity,
-  }
-
-  await writeFullConfig(fullConfig)
 }
 
 // 获取图表设置
@@ -104,7 +62,11 @@ export async function POST(req: NextRequest) {
       current.opacity = Math.min(100, Math.max(0, Math.round(opacity)))
     }
 
-    await writeChartSettings(current)
+    // 只更新 settings.appearance.chart，不影响其他属性
+    await updateConfigSection(
+      ['settings', 'appearance', 'chart'],
+      { color: current.color, opacity: current.opacity },
+    )
 
     return NextResponse.json({ data: current })
   } catch (error) {

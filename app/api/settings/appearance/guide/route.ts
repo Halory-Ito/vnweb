@@ -1,9 +1,7 @@
 import 'dotenv/config'
 import { NextRequest, NextResponse } from 'next/server'
-import fs from 'node:fs'
-import path from 'node:path'
 
-const CONFIG_FILE = path.join(process.cwd(), 'app', 'config.json')
+import { readConfig, updateConfigSection } from '@/lib/server/config-rw'
 
 type GuideColorSettings = {
   choice: string
@@ -19,27 +17,9 @@ const DEFAULT_GUIDE_SETTINGS: GuideColorSettings = {
   note: '#6b7280',
 }
 
-// 读取完整配置
-async function readFullConfig(): Promise<Record<string, unknown>> {
-  try {
-    if (fs.existsSync(CONFIG_FILE)) {
-      const content = await fs.promises.readFile(CONFIG_FILE, 'utf-8')
-      return JSON.parse(content)
-    }
-  } catch {
-    // ignore
-  }
-  return {}
-}
-
-// 写入完整配置
-async function writeFullConfig(config: Record<string, unknown>) {
-  await fs.promises.writeFile(CONFIG_FILE, JSON.stringify(config, null, 4))
-}
-
 // 读取 Guide 设置
 async function readGuideSettings(): Promise<GuideColorSettings> {
-  const fullConfig = await readFullConfig()
+  const fullConfig = await readConfig()
   const settings = (fullConfig['settings'] || {}) as Record<string, unknown>
   const appearance = (settings['appearance'] || {}) as Record<string, unknown>
   const guide = (appearance['guide'] || {}) as Record<string, unknown>
@@ -63,35 +43,6 @@ async function readGuideSettings(): Promise<GuideColorSettings> {
         ? color['note']
         : DEFAULT_GUIDE_SETTINGS.note,
   }
-}
-
-// 写入 Guide 设置
-async function writeGuideSettings(guideSettings: GuideColorSettings) {
-  const fullConfig = await readFullConfig()
-
-  if (!fullConfig['settings']) {
-    fullConfig['settings'] = {}
-  }
-  const settings = fullConfig['settings'] as Record<string, unknown>
-
-  if (!settings['appearance']) {
-    settings['appearance'] = {}
-  }
-  const appearance = settings['appearance'] as Record<string, unknown>
-
-  if (!appearance['guide']) {
-    appearance['guide'] = {}
-  }
-  const guide = appearance['guide'] as Record<string, unknown>
-
-  guide['color'] = {
-    choice: guideSettings.choice,
-    save: guideSettings.save,
-    load: guideSettings.load,
-    note: guideSettings.note,
-  }
-
-  await writeFullConfig(fullConfig)
 }
 
 // 获取 Guide 设置
@@ -132,7 +83,13 @@ export async function POST(req: NextRequest) {
       current.note = note
     }
 
-    await writeGuideSettings(current)
+    // 只更新 settings.appearance.guide.color，不影响其他属性
+    await updateConfigSection(['settings', 'appearance', 'guide', 'color'], {
+      choice: current.choice,
+      save: current.save,
+      load: current.load,
+      note: current.note,
+    })
 
     return NextResponse.json({ data: current })
   } catch (error) {

@@ -30,10 +30,20 @@ import {
 // API 函数
 const getBackgroundConfigApi = async () => {
   const response = await api.get('/settings/background')
-  return response.data as { data: { active: boolean; path: { pc: string; mobile: string } } }
+  return response.data as {
+    data: {
+      custom: { active: boolean; path: { pc: string; mobile: string } }
+      transitionStyle: string
+      transitionDurationMs: number
+    }
+  }
 }
 
-const updateBackgroundConfigApi = async (data: { active?: boolean; path?: { pc?: string; mobile?: string } }) => {
+const updateBackgroundConfigApi = async (data: {
+  custom?: { active?: boolean; path?: { pc?: string; mobile?: string } }
+  transitionStyle?: string
+  transitionDurationMs?: number
+}) => {
   const response = await api.post('/settings/background', data)
   return response.data
 }
@@ -45,6 +55,7 @@ export function BackgroundSection() {
   const [uploadDevice, setUploadDevice] = useState<DeviceType>('pc')
   const fileInputRefPc = useRef<HTMLInputElement>(null)
   const fileInputRefMobile = useRef<HTMLInputElement>(null)
+  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // 从 config.json 读取配置
   const { data: configData } = useQuery({
@@ -71,14 +82,21 @@ export function BackgroundSection() {
       const localSettings = readBackgroundSettings()
 
       // 如果 config.json 中有配置，同步到本地存储
-      if (config.active !== localSettings.customBackgroundEnabled ||
-          config.path.pc !== localSettings.customBackgroundImagePc ||
-          config.path.mobile !== localSettings.customBackgroundImageMobile) {
+      const needsSync =
+        config.custom.active !== localSettings.customBackgroundEnabled ||
+        config.custom.path.pc !== localSettings.customBackgroundImagePc ||
+        config.custom.path.mobile !== localSettings.customBackgroundImageMobile ||
+        config.transitionStyle !== localSettings.transitionStyle ||
+        config.transitionDurationMs !== localSettings.transitionDurationMs
+
+      if (needsSync) {
         const updatedSettings = {
           ...localSettings,
-          customBackgroundEnabled: config.active,
-          customBackgroundImagePc: config.path.pc,
-          customBackgroundImageMobile: config.path.mobile,
+          customBackgroundEnabled: config.custom.active,
+          customBackgroundImagePc: config.custom.path.pc,
+          customBackgroundImageMobile: config.custom.path.mobile,
+          transitionStyle: config.transitionStyle as BackgroundSettings['transitionStyle'],
+          transitionDurationMs: config.transitionDurationMs,
         }
         setSettings(updatedSettings)
         writeBackgroundSettings(updatedSettings)
@@ -87,20 +105,50 @@ export function BackgroundSection() {
     }
   }, [configData])
 
+  useEffect(() => {
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current)
+      }
+    }
+  }, [])
+
+  const syncToConfig = (normalized: BackgroundSettings) => {
+    updateConfigMutation.mutate({
+      custom: {
+        active: normalized.customBackgroundEnabled,
+        path: {
+          pc: normalized.customBackgroundImagePc,
+          mobile: normalized.customBackgroundImageMobile,
+        },
+      },
+      transitionStyle: normalized.transitionStyle,
+      transitionDurationMs: normalized.transitionDurationMs,
+    })
+  }
+
+  // 立即更新并同步到 config.json（用于非滑块类设置）
   const update = (next: Partial<BackgroundSettings>) => {
     const normalized = normalizeBackgroundSettings({ ...settings, ...next })
     setSettings(normalized)
     writeBackgroundSettings(normalized)
     notifyBackgroundSettingsChanged()
+    syncToConfig(normalized)
+  }
 
-    // 同步到 config.json
-    updateConfigMutation.mutate({
-      active: normalized.customBackgroundEnabled,
-      path: {
-        pc: normalized.customBackgroundImagePc,
-        mobile: normalized.customBackgroundImageMobile,
-      },
-    })
+  // 带防抖的更新（用于滑块类设置，本地立即生效，API 防抖）
+  const updateWithDebounce = (next: Partial<BackgroundSettings>) => {
+    const normalized = normalizeBackgroundSettings({ ...settings, ...next })
+    setSettings(normalized)
+    writeBackgroundSettings(normalized)
+    notifyBackgroundSettingsChanged()
+
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current)
+    }
+    debounceTimerRef.current = setTimeout(() => {
+      syncToConfig(normalized)
+    }, 500)
   }
 
   const handlePickFile = (device: DeviceType) => {
@@ -283,7 +331,7 @@ export function BackgroundSection() {
           step={50}
           value={[settings.transitionDurationMs]}
           onValueChange={(value) =>
-            update({ transitionDurationMs: value[0] ?? 0 })
+            updateWithDebounce({ transitionDurationMs: value[0] ?? 0 })
           }
         />
       </div>

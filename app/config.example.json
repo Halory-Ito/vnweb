@@ -12,6 +12,21 @@
                     "load": "#f59e0b",
                     "note": "#64748b"
                 }
+            },
+            "background": {
+                "custom": {
+                    "active": true,
+                    "path": {
+                        "pc": "/assets/bg/custom/pc-1784782966167.png",
+                        "mobile": "/assets/bg/custom/mobile-1784782937089.jpg"
+                    }
+                },
+                "transitionStyle": "center-fade",
+                "transitionDurationMs": 800
+            },
+            "glass": {
+                "blur": 24,
+                "opacity": 30
             }
         },
         "backup": {
