@@ -93,7 +93,7 @@ export function EditGuide({ gameId, onSuccess }: EditGuideProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button type="button" variant="ghost" size="icon" className="h-8 w-8">
+        <Button type="button" variant="outline" size="icon" className="h-8 w-8">
           <Pencil className="h-4 w-4" />
         </Button>
       </DialogTrigger>

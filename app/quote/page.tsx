@@ -1,15 +1,15 @@
 'use client'
 
 import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { motion } from 'motion/react'
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
 
-import { QuoteDeleteDialog } from './_ui/quote-delete-dialog'
-import { QuoteFormDialog } from './_ui/quote-form-dialog'
-import { QuoteManageContent } from './_ui/quote-manage-content'
-import { QuotePageHeader } from './_ui/quote-page-header'
-import { QuotePagination } from './_ui/quote-pagination'
-import { QuoteSearchToolbar } from './_ui/quote-search-toolbar'
+import { QuoteDeleteDialog } from '@/features/quote/components/quote-delete-dialog'
+import { QuoteFormDialog } from '@/features/quote/components/quote-form-dialog'
+import { QuoteManageContent } from '@/features/quote/components/quote-manage-content'
+import { QuotePagination } from '@/features/quote/components/quote-pagination'
+import { QuoteToolArea } from '@/features/quote/components/quote-tool-area'
 import { useDebounce } from '@/hooks/use-debounce'
 import {
   createQuoteManageItem,
@@ -21,6 +21,23 @@ import {
 } from '@/lib/game/game-utils'
 
 import type { GameOption, QuoteFormState } from './_ui/types'
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.1 },
+  },
+} as const
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] as const },
+  },
+} as const
 
 const defaultForm: QuoteFormState = {
   gameId: '',
@@ -37,9 +54,7 @@ export default function QuotePage() {
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
   const [dialogOpen, setDialogOpen] = useState(false)
-  const [pendingDelete, setPendingDelete] = useState<QuoteManageItem | null>(
-    null,
-  )
+  const [pendingDelete, setPendingDelete] = useState<QuoteManageItem | null>(null)
   const [editingItem, setEditingItem] = useState<QuoteManageItem | null>(null)
   const [form, setForm] = useState<QuoteFormState>(defaultForm)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -179,53 +194,63 @@ export default function QuotePage() {
   }
 
   return (
-    <div className="max-h-[calc(100vh-70px)] w-full space-y-4 overflow-x-hidden overflow-y-scroll p-4">
-      <QuotePageHeader onCreate={openCreateDialog} />
+    <motion.div
+      className="max-h-[calc(100vh-70px)] w-full space-y-4 overflow-x-hidden overflow-y-scroll p-4"
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+    >
+      <motion.div variants={itemVariants}>
+        <QuoteToolArea
+          keywordInput={keywordInput}
+          dateFrom={dateFrom}
+          dateTo={dateTo}
+          onKeywordInputChange={(value: string) => {
+            setKeywordInput(value)
+            setPage(1)
+          }}
+          onDateFromChange={(value: string) => {
+            setDateFrom(value)
+            setPage(1)
+          }}
+          onDateToChange={(value: string) => {
+            setDateTo(value)
+            setPage(1)
+          }}
+          onReset={() => {
+            setKeywordInput('')
+            setDateFrom('')
+            setDateTo('')
+            setPage(1)
+            void refetch()
+          }}
+          onCreate={openCreateDialog}
+        />
+      </motion.div>
 
-      <QuoteSearchToolbar
-        keywordInput={keywordInput}
-        dateFrom={dateFrom}
-        dateTo={dateTo}
-        onKeywordInputChange={(value) => {
-          setKeywordInput(value)
-          setPage(1)
-        }}
-        onDateFromChange={(value) => {
-          setDateFrom(value)
-          setPage(1)
-        }}
-        onDateToChange={(value) => {
-          setDateTo(value)
-          setPage(1)
-        }}
-        onReset={() => {
-          setKeywordInput('')
-          setDateFrom('')
-          setDateTo('')
-          setPage(1)
-          void refetch()
-        }}
-      />
+      <motion.div variants={itemVariants}>
+        <QuoteManageContent
+          items={items}
+          isLoading={isLoading}
+          isRefetching={isRefetching}
+          onEdit={openEditDialog}
+          onDelete={setPendingDelete}
+        />
+      </motion.div>
 
-      <QuoteManageContent
-        items={items}
-        isLoading={isLoading}
-        isRefetching={isRefetching}
-        onEdit={openEditDialog}
-        onDelete={setPendingDelete}
-      />
-
-      <QuotePagination
-        page={currentPage}
-        pageSize={pageSize}
-        total={total}
-        totalPages={totalPages}
-        onPageChange={setPage}
-        onPageSizeChange={(newSize) => {
-          setPageSize(newSize)
-          setPage(1)
-        }}
-      />
+      <motion.div variants={itemVariants}>
+        <QuotePagination
+          page={currentPage}
+          pageSize={pageSize}
+          total={total}
+          totalPages={totalPages}
+          onPageChange={setPage}
+          onPageSizeChange={(newSize) => {
+            setPageSize(newSize)
+            setPage(1)
+          }}
+        />
+      </motion.div>
 
       <QuoteFormDialog
         open={dialogOpen}
@@ -254,6 +279,6 @@ export default function QuotePage() {
         }}
         onConfirm={() => void handleDelete()}
       />
-    </div>
+    </motion.div>
   )
 }

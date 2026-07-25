@@ -1,9 +1,10 @@
 'use client'
 
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { BookOpen, Lock, Star, Skull, CircleDot, ArrowLeftIcon } from 'lucide-react'
+import { BookOpen, Lock, Star, Skull, CircleDot, ArrowLeftIcon, Eye, EyeOff } from 'lucide-react'
 import { motion, AnimatePresence } from 'motion/react'
 import { useRouter } from 'next/navigation'
+import { useState } from 'react'
 import { toast } from 'sonner'
 
 import { Badge } from '@/components/ui/badge'
@@ -14,10 +15,10 @@ import { EditEnding } from '@/features/guide/components/edit-ending'
 import { GuideDetailHeader } from '@/features/guide/components/guide-detail-header'
 import { GuideStep } from '@/features/guide/components/guide-step'
 import { ResetAllButton } from '@/features/guide/components/reset-all-botton'
+import { containerVariants, itemVariants } from '@/features/guide/data/motion'
 import { getEndingApi, getStepsApi, updateGuideProgressApi } from '@/features/guide/guide-api'
 import { useGuideColors } from '@/features/guide/hooks/use-guide-colors'
 import { cn } from '@/lib/utils'
-import { containerVariants, itemVariants } from '@/features/guide/data/motion'
 
 const stepVariants = {
   hidden: { opacity: 0, x: -16 },
@@ -59,6 +60,7 @@ export function EndingDetailView({ gameId, routeId, endingId }: EndingDetailView
   const router = useRouter()
   const queryClient = useQueryClient()
   const guideColors = useGuideColors()
+  const [hideCompleted, setHideCompleted] = useState(false)
 
   const { data: ending, isLoading: isEndingLoading } = useQuery({
     queryKey: ['ending', endingId],
@@ -162,7 +164,11 @@ export function EndingDetailView({ gameId, routeId, endingId }: EndingDetailView
     let lastGroup: string | undefined
     const elements: React.ReactNode[] = []
 
-    ;(steps || []).forEach((step, index) => {
+    const filteredSteps = hideCompleted
+      ? (steps || []).filter((step) => !step.finished)
+      : steps || []
+
+    filteredSteps.forEach((step, index) => {
       if (step.group && step.group !== lastGroup) {
         elements.push(
           <div
@@ -225,6 +231,14 @@ export function EndingDetailView({ gameId, routeId, endingId }: EndingDetailView
           actions={
             <>
               <EditEnding endingId={endingId} gameId={gameId} />
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-8 w-8"
+                onClick={() => setHideCompleted(!hideCompleted)}
+              >
+                {hideCompleted ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+              </Button>
               <ResetAllButton
                 title="重置结局进度"
                 description="确定要重置该结局的所有进度吗？此操作将清除该结局下所有步骤的完成状态。"
@@ -255,7 +269,7 @@ export function EndingDetailView({ gameId, routeId, endingId }: EndingDetailView
           >
             <div className="flex items-start gap-2 rounded-md border border-amber-500/20 bg-amber-500/10 px-3 py-2 text-sm text-amber-600 dark:text-amber-400">
               <Lock className="mt-0.5 h-4 w-4 shrink-0" />
-              <span className="font-medium">开启条件：</span>
+              <span className="min-w-1/4 font-medium">开启条件：</span>
               <span>{ending.requirements}</span>
             </div>
           </motion.div>

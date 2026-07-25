@@ -24,9 +24,9 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
-import { cn } from '@/lib/utils'
-import { getEndingApi, updateEndingApi } from '@/features/guide/guide-api'
 import { getCharactersByGameIdApi } from '@/features/character/character-api'
+import { getEndingApi, updateEndingApi } from '@/features/guide/guide-api'
+import { cn } from '@/lib/utils'
 
 interface EditEndingProps {
   endingId: string
@@ -97,7 +97,7 @@ export function EditEnding({ endingId, gameId, onSuccess }: EditEndingProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button type="button" variant="ghost" size="icon" className="h-8 w-8">
+        <Button type="button" variant="outline" size="icon" className="h-8 w-8">
           <Pencil className="h-4 w-4" />
         </Button>
       </DialogTrigger>
@@ -136,7 +136,9 @@ export function EditEnding({ endingId, gameId, onSuccess }: EditEndingProps) {
 
           {/* 开启条件 */}
           <div className="space-y-2">
-            <div className="text-sm font-medium">开启条件 <span className="text-muted-foreground">(可选)</span></div>
+            <div className="text-sm font-medium">
+              开启条件 <span className="text-muted-foreground">(可选)</span>
+            </div>
             <Textarea
               placeholder="输入开启条件..."
               value={requirements}
@@ -148,14 +150,16 @@ export function EditEnding({ endingId, gameId, onSuccess }: EditEndingProps) {
 
           {/* 封面选择 */}
           <div className="space-y-2">
-            <div className="text-sm font-medium">封面 <span className="text-muted-foreground">(从角色中选择)</span></div>
+            <div className="text-sm font-medium">
+              封面 <span className="text-muted-foreground">(从角色中选择)</span>
+            </div>
             {isCharactersLoading ? (
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <div className="text-muted-foreground flex items-center gap-2 text-sm">
                 <Loader2 className="h-4 w-4 animate-spin" />
                 加载角色列表...
               </div>
             ) : characters.length > 0 ? (
-              <div className="grid grid-cols-4 gap-2 max-h-48 overflow-y-auto">
+              <div className="grid max-h-48 grid-cols-4 gap-2 overflow-y-auto">
                 {characters.map((character) => (
                   <button
                     key={character.id}
@@ -176,18 +180,18 @@ export function EditEnding({ endingId, gameId, onSuccess }: EditEndingProps) {
                         className="object-cover"
                       />
                     ) : (
-                      <div className="flex h-full items-center justify-center bg-muted text-xs text-muted-foreground">
+                      <div className="bg-muted text-muted-foreground flex h-full items-center justify-center text-xs">
                         {character.name.charAt(0)}
                       </div>
                     )}
-                    <div className="absolute bottom-0 left-0 right-0 bg-black/60 px-1 py-0.5 text-center text-xs text-white truncate">
+                    <div className="absolute right-0 bottom-0 left-0 truncate bg-black/60 px-1 py-0.5 text-center text-xs text-white">
                       {character.name}
                     </div>
                   </button>
                 ))}
               </div>
             ) : (
-              <div className="text-sm text-muted-foreground">暂无角色数据</div>
+              <div className="text-muted-foreground text-sm">暂无角色数据</div>
             )}
             {cover && (
               <Button

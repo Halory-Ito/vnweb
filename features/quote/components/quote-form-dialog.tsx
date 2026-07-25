@@ -20,7 +20,7 @@ import {
 import { Textarea } from '@/components/ui/textarea'
 import { getVndbCharactersByGameId } from '@/lib/game/game-utils'
 
-import type { CharacterOption, GameOption, QuoteFormState } from './types'
+import type { CharacterOption, GameOption, QuoteFormState } from '../../../app/quote/_ui/types'
 
 type QuoteFormDialogProps = {
   open: boolean
@@ -43,9 +43,7 @@ export function QuoteFormDialog({
   onFormChange,
   onSubmit,
 }: QuoteFormDialogProps) {
-  const [characterOptions, setCharacterOptions] = useState<CharacterOption[]>(
-    [],
-  )
+  const [characterOptions, setCharacterOptions] = useState<CharacterOption[]>([])
   const [isLoadingCharacters, setIsLoadingCharacters] = useState(false)
   const [noCharactersWarning, setNoCharactersWarning] = useState('')
 
@@ -129,9 +127,7 @@ export function QuoteFormDialog({
             </div>
             <Textarea
               value={form.content}
-              onChange={(e) =>
-                onFormChange({ ...form, content: e.target.value })
-              }
+              onChange={(e) => onFormChange({ ...form, content: e.target.value })}
               placeholder="请输入台词内容"
               className="min-h-24 resize-none"
             />
@@ -144,9 +140,7 @@ export function QuoteFormDialog({
             ) : isLoadingCharacters ? (
               <div className="text-muted-foreground text-sm">加载角色中...</div>
             ) : noCharactersWarning ? (
-              <div className="text-destructive text-sm">
-                {noCharactersWarning}
-              </div>
+              <div className="text-destructive text-sm">{noCharactersWarning}</div>
             ) : (
               <Select
                 value={form.characterId || 'none'}
@@ -176,9 +170,7 @@ export function QuoteFormDialog({
             <div className="text-sm font-medium">台词背景</div>
             <Textarea
               value={form.context}
-              onChange={(e) =>
-                onFormChange({ ...form, context: e.target.value })
-              }
+              onChange={(e) => onFormChange({ ...form, context: e.target.value })}
               placeholder="请输入台词背景信息（可选）"
               className="min-h-20 resize-none"
             />
