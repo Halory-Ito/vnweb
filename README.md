@@ -62,6 +62,19 @@ vnweb 是一个面向视觉小说与本地单机游戏整理场景的 Web 管理
 - 支持图片本地化缓存
 - 支持本地图标提取、目录浏览与进程监控
 
+### 8. 游戏攻略
+
+- 支持从[yjgalgame](https://www.yjgalgame.com/)导入攻略
+- 支持自定义攻略（根据系统给出的提示词，把其他游戏的攻略文本交给ai，得到一段json数据，就可以导入）
+
+### 9. 游戏台词摘录
+
+- 支持按照角色来进行台词摘录分类
+
+### 10. 自动备份
+
+- 支持在游戏结束后在本机的指定路径自动备份游戏存档（很有用！）
+
 ## 技术栈
 
 - 前端框架：Next.js 16 + React 19 + TypeScript
@@ -70,7 +83,6 @@ vnweb 是一个面向视觉小说与本地单机游戏整理场景的 Web 管理
 - 图表：Recharts
 - 数据库：SQLite + Drizzle ORM
 - 媒体处理：hls.js、MDX、浏览器端图片处理
-- 测试：Vitest
 - 代码质量：oxlint、oxfmt
 
 ## 运行环境
@@ -145,66 +157,17 @@ npm run test         # 运行测试
 npm run db:studio    # 打开 Drizzle Studio
 ```
 
-## 数据模型概览
-
-当前数据库主要围绕以下实体组织：
-
-- 游戏基础信息
-- 游戏游玩状态与总时长
-- 游戏 PV
-- 游戏 OST
-- 游戏角色
-- 游戏回忆
-- 游戏游玩记录
-- 收藏夹与收藏夹关联
-- 扫描目录与扫描错误
-- 外部数据源映射
-- 第三方账号绑定
-
-这意味着项目已经具备从“游戏条目”延伸到“媒体、人物、记录、同步信息”的完整资料管理能力。
-
-## 目录说明
-
-```text
-app/                Next.js 路由与 API
-components/         业务组件与通用 UI
-db/                 Drizzle 数据表定义
-drizzle/            数据库迁移文件
-lib/                前后端通用工具与请求逻辑
-public/             静态资源与导入字体
-types/              项目类型定义
-win/                Windows 本地能力实现
-```
-
-## 适合的使用场景
-
-- 管理本地视觉小说游戏库
-- 为游戏维护更完整的封面、Logo、PV、OST 与角色资料
-- 统计个人游玩记录与周期变化
-- 为多来源数据建立统一本地档案
-- 在一个界面里完成“启动游戏 + 维护资料 + 查看记录”
-
-## 当前规划
-
-- 支持自定义项目 Logo 和标题
-- 支持 OST 后台播放
-- 支持进入游戏详情时自动播放 OST
-- 持续扩展 Steam、Bangumi、VNDB 等平台联动能力
-
-## 开发说明
-
-### 数据库迁移
-
-```bash
-npx drizzle-kit generate
-npx drizzle-kit migrate
-```
-
-### 数据库可视化
-
-```bash
-npm run db:studio
-```
-
 界面截图：
-![alt text](image.png)
+![主页](images/主页.png)
+
+![扫描页](images/扫描页.png)
+
+![摘录页](images/摘录页.png)
+
+![攻略页](images/攻略页.png)
+
+![游戏详情页](images/游戏详情页.png)
+
+![统计页](images/统计页.png)
+
+![设置页](images/设置页.png)
