@@ -8,7 +8,6 @@ import { toast } from 'sonner'
 import { PvDeleteDialog } from './_ui/pv-delete-dialog'
 import { PvFormDialog } from './_ui/pv-form-dialog'
 import { PvManageContent } from './_ui/pv-manage-content'
-import { PvPageHeader } from './_ui/pv-page-header'
 import { PvPlayerDialog } from './_ui/pv-player-dialog'
 import { PvSearchToolbar } from './_ui/pv-search-toolbar'
 import { isHlsUrl, isSteamVideoUrl, isVideoFileUrl, isVideoStreamUrl } from './_ui/utils'
@@ -21,6 +20,7 @@ import {
   updatePvManageItem,
 } from '@/lib/game/game-utils'
 import { callHook } from '@/lib/plugins'
+import { Pagination } from '@/components/custom-pagination'
 
 import type { GameOption, PvFormState, ViewMode } from './_ui/types'
 
@@ -34,7 +34,6 @@ export default function PVPage() {
   const queryClient = useQueryClient()
   const [keywordInput, setKeywordInput] = useState('')
   const [keyword, setKeyword] = useState('')
-  const [gameFilter, setGameFilter] = useState('all')
   const [dialogOpen, setDialogOpen] = useState(false)
   const [pendingDelete, setPendingDelete] = useState<PvManageItem | null>(null)
   const [editingItem, setEditingItem] = useState<PvManageItem | null>(null)
@@ -44,6 +43,10 @@ export default function PVPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [videoEl, setVideoEl] = useState<HTMLVideoElement | null>(null)
   const hlsRef = useRef<Hls | null>(null)
+
+  // Pagination state
+  const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(10)
 
   const disposeHls = () => {
     if (hlsRef.current) {
@@ -63,15 +66,21 @@ export default function PVPage() {
     isRefetching,
     refetch,
   } = useQuery({
-    queryKey: ['pv-manage', keyword, gameFilter],
+    queryKey: ['pv-manage', keyword],
     queryFn: () =>
       getPvManageList({
         keyword,
-        gameId: gameFilter === 'all' ? undefined : Number(gameFilter),
       }),
   })
 
-  const items = pvData?.items ?? []
+  const allItems = pvData?.items ?? []
+  const total = allItems.length
+  const totalPages = Math.max(1, Math.ceil(total / pageSize))
+  const currentPage = Math.min(page, totalPages)
+  const items = useMemo(
+    () => allItems.slice((currentPage - 1) * pageSize, currentPage * pageSize),
+    [allItems, currentPage, pageSize],
+  )
 
   const gameOptions = useMemo<GameOption[]>(
     () =>
@@ -328,25 +337,17 @@ export default function PVPage() {
 
   return (
     <div className="max-h-[calc(100vh-70px)] w-full space-y-6 overflow-x-hidden overflow-y-scroll p-6">
-      <PvPageHeader
-        viewMode={viewMode}
-        onViewModeChange={setViewMode}
-        onCreate={openCreateDialog}
-      />
-
       <PvSearchToolbar
         keywordInput={keywordInput}
-        gameFilter={gameFilter}
-        gameOptions={gameOptions}
-        onKeywordInputChange={setKeywordInput}
-        onGameFilterChange={setGameFilter}
-        onSearch={() => setKeyword(keywordInput.trim())}
-        onReset={() => {
-          setKeywordInput('')
-          setKeyword('')
-          setGameFilter('all')
-          void refetch()
+        onKeywordInputChange={(value) => {
+          setKeywordInput(value)
+          setPage(1)
         }}
+        onSearch={() => {
+          setKeyword(keywordInput.trim())
+          setPage(1)
+        }}
+        onCreate={openCreateDialog}
       />
 
       <PvManageContent
@@ -357,6 +358,18 @@ export default function PVPage() {
         onPlay={setPlayingItem}
         onEdit={openEditDialog}
         onDelete={setPendingDelete}
+      />
+
+      <Pagination
+        page={currentPage}
+        pageSize={pageSize}
+        total={total}
+        totalPages={totalPages}
+        onPageChange={setPage}
+        onPageSizeChange={(newSize) => {
+          setPageSize(newSize)
+          setPage(1)
+        }}
       />
 
       <PvFormDialog

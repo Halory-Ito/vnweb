@@ -43,17 +43,6 @@ export function PvManageContent({
 }: PvManageContentProps) {
   return (
     <div className="flex flex-col gap-4">
-      <div className="text-muted-foreground flex items-center text-sm font-medium">
-        <span className="bg-secondary text-secondary-foreground flex h-5 items-center rounded-full px-2.5 text-xs">
-          {items.length} 记录
-        </span>
-        {isRefetching && (
-          <span className="ml-2 animate-pulse text-xs opacity-70">
-            Refreshing...
-          </span>
-        )}
-      </div>
-
       {viewMode === 'list' ? (
         <div className="bg-background/50 overflow-hidden rounded-xl border shadow-sm backdrop-blur-xl">
           <Table>
@@ -181,7 +170,7 @@ export function PvManageContent({
           </Table>
         </div>
       ) : isLoading ? (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
           {Array.from({ length: 12 }).map((_, i) => (
             <div key={i} className="flex flex-col gap-2 p-1">
               <Skeleton className="aspect-video w-full rounded-lg" />
@@ -197,7 +186,7 @@ export function PvManageContent({
           暂无数据
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
           {items.map((item) => {
             const videoHost = getHostname(item.url)
             const coverUrl = getYouTubeCover(item.url)

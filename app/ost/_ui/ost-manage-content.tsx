@@ -28,19 +28,8 @@ export function OstManageContent({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="text-muted-foreground flex items-center text-sm font-medium">
-        <span className="bg-secondary text-secondary-foreground flex h-5 items-center rounded-full px-2.5 text-xs">
-          {items.length} 记录
-        </span>
-        {isRefetching && (
-          <span className="ml-2 animate-pulse text-xs opacity-70">
-            Refreshing...
-          </span>
-        )}
-      </div>
-
       {isLoading ? (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
           {Array.from({ length: 12 }).map((_, i) => (
             <div key={i} className="flex flex-col gap-2 p-1">
               <Skeleton className="aspect-square w-full rounded-lg" />
@@ -56,7 +45,7 @@ export function OstManageContent({
           暂无数据
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
           {items.map((item) => (
             <div
               key={item.id}
@@ -66,7 +55,7 @@ export function OstManageContent({
                 <div
                   className="relative aspect-square w-full cursor-pointer overflow-hidden rounded-lg shadow-lg transition-all duration-300 group-hover:shadow-2xl"
                   onClick={() => {
-                    router.push(`/ost/${item.id}`)
+                    router.push('/ost/' + item.id)
                   }}
                 >
                   <div className="from-primary/20 to-primary/5 absolute -inset-4 bg-linear-to-br opacity-0 blur-3xl transition-opacity duration-500 group-hover:opacity-40" />

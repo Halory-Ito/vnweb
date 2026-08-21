@@ -1,14 +1,10 @@
 'use client'
 
-import dayjs from 'dayjs'
-import { CalendarIcon, PlusIcon, RotateCcwIcon } from 'lucide-react'
+import { PlusIcon } from 'lucide-react'
 import { motion } from 'motion/react'
 
 import { Button } from '@/components/ui/button'
-import { Calendar } from '@/components/ui/calendar'
 import { Input } from '@/components/ui/input'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { cn } from '@/lib/utils'
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -29,125 +25,58 @@ const itemVariants = {
 
 type QuoteToolAreaProps = {
   keywordInput: string
-  dateFrom: string
-  dateTo: string
   onKeywordInputChange: (value: string) => void
-  onDateFromChange: (value: string) => void
-  onDateToChange: (value: string) => void
-  onReset: () => void
+  onSearch: () => void
   onCreate: () => void
 }
 
 export function QuoteToolArea({
   keywordInput,
-  dateFrom,
-  dateTo,
   onKeywordInputChange,
-  onDateFromChange,
-  onDateToChange,
-  onReset,
+  onSearch,
   onCreate,
 }: QuoteToolAreaProps) {
   return (
     <motion.div
-      className="space-y-3"
+      className="flex flex-col gap-3 sm:flex-row sm:items-center"
       variants={containerVariants}
       initial="hidden"
       animate="visible"
     >
-      {/* 搜索和筛选 */}
-      <motion.div
-        className="flex flex-col gap-3 sm:flex-row sm:items-center"
-        variants={itemVariants}
-      >
-        {/* 搜索框 */}
-        <div className="relative flex-1 sm:max-w-md">
-          <Input
-            placeholder="搜索游戏名称 / 台词内容 / 角色"
-            value={keywordInput}
-            onChange={(event) => onKeywordInputChange(event.target.value)}
-          />
-        </div>
+      {/* 搜索框 */}
+      <motion.div className="relative flex-1 sm:max-w-md" variants={itemVariants}>
+        <Input
+          className="pr-4 pl-10"
+          placeholder="搜索游戏名称 / 台词内容 / 角色"
+          value={keywordInput}
+          onChange={(event) => onKeywordInputChange(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter') {
+              onSearch()
+            }
+          }}
+        />
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className="text-muted-foreground absolute top-1/2 left-3.5 min-h-4 max-w-4 min-w-4 -translate-y-1/2"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <circle cx="11" cy="11" r="8" />
+          <path d="m21 21-4.3-4.3" />
+        </svg>
+      </motion.div>
 
-        {/* 日期筛选 */}
-        <div className="flex flex-1 flex-wrap items-center gap-2 sm:gap-3">
-          <div className="flex items-center gap-2">
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cn(
-                    'h-10 justify-start text-left font-normal',
-                    !dateFrom && 'text-muted-foreground',
-                  )}
-                >
-                  <CalendarIcon className="mr-2 size-4" />
-                  <span className="hidden sm:inline">
-                    {dateFrom ? dayjs(dateFrom).format('YYYY-MM-DD') : '开始日期'}
-                  </span>
-                  <span className="sm:hidden">
-                    {dateFrom ? dayjs(dateFrom).format('MM-DD') : '开始'}
-                  </span>
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={dateFrom ? new Date(dateFrom) : undefined}
-                  onSelect={(date) =>
-                    onDateFromChange(date ? dayjs(date).format('YYYY-MM-DD') : '')
-                  }
-                  initialFocus
-                />
-              </PopoverContent>
-            </Popover>
-
-            <span className="text-muted-foreground">至</span>
-
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cn(
-                    'h-10 justify-start text-left font-normal',
-                    !dateTo && 'text-muted-foreground',
-                  )}
-                >
-                  <CalendarIcon className="mr-2 size-4" />
-                  <span className="hidden sm:inline">
-                    {dateTo ? dayjs(dateTo).format('YYYY-MM-DD') : '结束日期'}
-                  </span>
-                  <span className="sm:hidden">
-                    {dateTo ? dayjs(dateTo).format('MM-DD') : '结束'}
-                  </span>
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={dateTo ? new Date(dateTo) : undefined}
-                  onSelect={(date) => onDateToChange(date ? dayjs(date).format('YYYY-MM-DD') : '')}
-                  initialFocus
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
-
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="text-muted-foreground hover:text-foreground transition-colors"
-            onClick={onReset}
-          >
-            <RotateCcwIcon className="size-4 sm:mr-1" />
-            <span className="hidden sm:inline">重置</span>
-          </Button>
-          <Button type="button" className="" variant="outline" onClick={onCreate}>
-            <PlusIcon className="size-4 sm:mr-2" />
-            <span className="hidden sm:inline">添加摘录</span>
-          </Button>
-        </div>
+      {/* 新增按钮 */}
+      <motion.div variants={itemVariants}>
+        <Button type="button" onClick={onCreate} variant="outline">
+          <PlusIcon />
+          添加摘录
+        </Button>
       </motion.div>
     </motion.div>
   )

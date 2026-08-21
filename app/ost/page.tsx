@@ -1,13 +1,12 @@
 'use client'
 
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 
 import { OstDeleteDialog } from './_ui/ost-delete-dialog'
 import { OstFormDialog } from './_ui/ost-form-dialog'
 import { OstManageContent } from './_ui/ost-manage-content'
-import { OstPageHeader } from './_ui/ost-page-header'
 import { OstSearchToolbar } from './_ui/ost-search-toolbar'
 import {
   createOstManageItem,
@@ -18,6 +17,7 @@ import {
   type OstManageItem,
 } from '@/lib/game/game-utils'
 import { api } from '@/lib/request-utils'
+import { Pagination } from '@/components/custom-pagination'
 
 import type { OstItem } from './_ui/types'
 
@@ -42,11 +42,14 @@ export default function OSTPage() {
   const [editingItem, setEditingItem] = useState<OstItem | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  // 搜索/筛选状态
+  // 搜索状态
   const [keywordInput, setKeywordInput] = useState('')
-  const [gameFilter, setGameFilter] = useState('all')
 
-  // 获取游戏列表用于筛选
+  // Pagination state
+  const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(10)
+
+  // 获取游戏列表用于表单
   const { data: gameCards = [] } = useQuery({
     queryKey: ['game-cards'],
     queryFn: () => getGameCardList(),
@@ -85,15 +88,17 @@ export default function OSTPage() {
       if (!nameMatch && !gameNameMatch) return false
     }
 
-    // 游戏筛选
-    if (gameFilter !== 'all') {
-      if (String(item.gameId) !== gameFilter) return false
-    }
-
     return true
   })
 
-  const items = transformItems(filteredItems)
+  const allItems = transformItems(filteredItems)
+  const total = allItems.length
+  const totalPages = Math.max(1, Math.ceil(total / pageSize))
+  const currentPage = Math.min(page, totalPages)
+  const items = useMemo(
+    () => allItems.slice((currentPage - 1) * pageSize, currentPage * pageSize),
+    [allItems, currentPage, pageSize],
+  )
 
   const openCreateDialog = () => {
     setEditingItem(null)
@@ -111,7 +116,7 @@ export default function OSTPage() {
 
   const handleReset = () => {
     setKeywordInput('')
-    setGameFilter('all')
+    setPage(1)
   }
 
   const handleSubmit = async (data: {
@@ -137,7 +142,7 @@ export default function OSTPage() {
 
     const songCount = data.songs?.length ?? 0
     const progressToastId = toast.loading(
-      songCount > 0 ? `正在保存 ${songCount} 首歌曲...` : '正在保存 OST...',
+      songCount > 0 ? '正在保存 ' + songCount + ' 首歌曲...' : '正在保存 OST...',
       { duration: 30000 },
     )
 
@@ -161,7 +166,7 @@ export default function OSTPage() {
         })
         toast.success('OST 已创建', {
           id: progressToastId,
-          description: songCount > 0 ? `已保存 ${songCount} 首歌曲` : undefined,
+          description: songCount > 0 ? '已保存 ' + songCount + ' 首歌曲' : undefined,
           duration: 5000,
         })
         // 返回本地封面路径（如果有）
@@ -216,16 +221,14 @@ export default function OSTPage() {
 
   return (
     <div className="max-h-[calc(100vh-70px)] w-full space-y-6 overflow-x-hidden overflow-y-scroll p-6">
-      <OstPageHeader onCreate={openCreateDialog} />
-
       <OstSearchToolbar
         keywordInput={keywordInput}
-        gameFilter={gameFilter}
-        gameOptions={gameOptions}
-        onKeywordInputChange={setKeywordInput}
-        onGameFilterChange={setGameFilter}
+        onKeywordInputChange={(value) => {
+          setKeywordInput(value)
+          setPage(1)
+        }}
         onSearch={handleSearch}
-        onReset={handleReset}
+        onCreate={openCreateDialog}
       />
 
       <OstManageContent
@@ -234,6 +237,18 @@ export default function OSTPage() {
         isRefetching={isRefetching}
         onEdit={openEditDialog}
         onDelete={setPendingDelete}
+      />
+
+      <Pagination
+        page={currentPage}
+        pageSize={pageSize}
+        total={total}
+        totalPages={totalPages}
+        onPageChange={setPage}
+        onPageSizeChange={(newSize) => {
+          setPageSize(newSize)
+          setPage(1)
+        }}
       />
 
       <OstFormDialog

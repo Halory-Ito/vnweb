@@ -49,8 +49,6 @@ const defaultForm: QuoteFormState = {
 export default function QuotePage() {
   const queryClient = useQueryClient()
   const [keywordInput, setKeywordInput] = useState('')
-  const [dateFrom, setDateFrom] = useState('')
-  const [dateTo, setDateTo] = useState('')
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -72,12 +70,10 @@ export default function QuotePage() {
     isRefetching,
     refetch,
   } = useQuery({
-    queryKey: ['quote-manage', debouncedKeyword, dateFrom, dateTo],
+    queryKey: ['quote-manage', debouncedKeyword],
     queryFn: () =>
       getQuoteManageList({
         keyword: debouncedKeyword,
-        dateFrom: dateFrom || undefined,
-        dateTo: dateTo || undefined,
         page: 1,
         pageSize: 9999,
       }),
@@ -116,6 +112,10 @@ export default function QuotePage() {
       context: item.context,
     })
     setDialogOpen(true)
+  }
+
+  const handleSearch = () => {
+    // 搜索逻辑由 debouncedKeyword 自动处理
   }
 
   const handleSubmit = async () => {
@@ -203,27 +203,11 @@ export default function QuotePage() {
       <motion.div variants={itemVariants}>
         <QuoteToolArea
           keywordInput={keywordInput}
-          dateFrom={dateFrom}
-          dateTo={dateTo}
           onKeywordInputChange={(value: string) => {
             setKeywordInput(value)
             setPage(1)
           }}
-          onDateFromChange={(value: string) => {
-            setDateFrom(value)
-            setPage(1)
-          }}
-          onDateToChange={(value: string) => {
-            setDateTo(value)
-            setPage(1)
-          }}
-          onReset={() => {
-            setKeywordInput('')
-            setDateFrom('')
-            setDateTo('')
-            setPage(1)
-            void refetch()
-          }}
+          onSearch={handleSearch}
           onCreate={openCreateDialog}
         />
       </motion.div>

@@ -76,77 +76,83 @@ const ScanDirectoryRow = ({
   onSubdirs: (id: number) => void
   isScanning: boolean
 }) => (
-  <div className="flex flex-col gap-3 rounded-lg border p-3 md:flex-row md:items-center md:justify-between">
+  <div className="flex flex-col gap-3 rounded-lg border p-3 sm:flex-row sm:items-center sm:justify-between">
     <div className="flex min-w-0 items-start gap-3">
       <FolderIcon className="text-muted-foreground mt-0.5 size-5 shrink-0" />
-      <div className="min-w-0">
+      <div className="min-w-0 flex-1">
         <div className="truncate text-sm font-medium">{item.path}</div>
-        <div className="text-muted-foreground text-xs">
+        <div className="text-muted-foreground mt-1 flex flex-wrap gap-x-2 gap-y-1 text-xs">
           <span>{item.sourceName}</span>
-          <span> · </span>
+          <span className="hidden sm:inline">·</span>
           <span>
             {item.scanMode === 0
               ? `层级扫描（层级 ${item.scanLevel}）`
               : '可执行文件扫描'}
           </span>
-          <span> · </span>
+          <span className="hidden sm:inline">·</span>
           <span>完成度 {item.progress}%</span>
-          <span> · </span>
+          <span className="hidden sm:inline">·</span>
           <span>游戏 {item.gameCount}</span>
         </div>
       </div>
     </div>
 
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-2 sm:shrink-0">
       <Badge
         variant="outline"
         className="hover:bg-accent hover:text-accent-foreground px-3 py-1 text-sm"
       >
         {isScanning ? '扫描中' : item.status}
       </Badge>
-      <Button
-        type="button"
-        variant="outline"
-        size="icon"
-        onClick={() => (isScanning ? onStop(item.id) : onStart(item.id))}
-        aria-label={isScanning ? '停止扫描' : '开始扫描'}
-      >
-        {isScanning ? (
-          <PauseIcon className="size-4 text-red-500" />
-        ) : (
-          <PlayIcon className="size-4" />
-        )}
-      </Button>
-      <Button
-        type="button"
-        variant="outline"
-        size="icon"
-        disabled={isScanning}
-        onClick={() => onSubdirs(item.id)}
-        aria-label="选择子目录"
-      >
-        <ListIcon className="size-4" />
-      </Button>
-      <Button
-        type="button"
-        variant="outline"
-        size="icon"
-        disabled={isScanning}
-        onClick={() => onEdit(item.id)}
-        aria-label="修改目录"
-      >
-        <PencilIcon className="size-4" />
-      </Button>
-      <Button
-        type="button"
-        variant="outline"
-        size="icon"
-        disabled={isScanning}
-        onClick={() => onDelete(item.id)}
-        aria-label="删除目录"
-      >
-        <Trash2Icon className="size-4" />
-      </Button>
+      <div className="flex items-center gap-1">
+        <Button
+          type="button"
+          variant="outline"
+          size="icon"
+          className="size-8"
+          onClick={() => (isScanning ? onStop(item.id) : onStart(item.id))}
+          aria-label={isScanning ? '停止扫描' : '开始扫描'}
+        >
+          {isScanning ? (
+            <PauseIcon className="size-4 text-red-500" />
+          ) : (
+            <PlayIcon className="size-4" />
+          )}
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          size="icon"
+          className="size-8"
+          disabled={isScanning}
+          onClick={() => onSubdirs(item.id)}
+          aria-label="选择子目录"
+        >
+          <ListIcon className="size-4" />
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          size="icon"
+          className="size-8"
+          disabled={isScanning}
+          onClick={() => onEdit(item.id)}
+          aria-label="修改目录"
+        >
+          <PencilIcon className="size-4" />
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          size="icon"
+          className="size-8"
+          disabled={isScanning}
+          onClick={() => onDelete(item.id)}
+          aria-label="删除目录"
+        >
+          <Trash2Icon className="size-4" />
+        </Button>
+      </div>
     </div>
   </div>
 )
@@ -383,7 +389,7 @@ export default function Scan() {
 
   const handleStopScan = async (id: number) => {
     try {
-      await api.post(`/scan/scanner/${id}/stop`)
+      await api.post('/scan/scanner/' + id + '/stop')
       setScanningDirectoryIds((prev) => prev.filter((item) => item !== id))
       toast.success('扫描已中断')
     } catch (error) {
@@ -437,7 +443,7 @@ export default function Scan() {
       await loadScanners()
       await loadScanErrors()
       await loadGameCount()
-      toast.success(`扫描完成，共扫描 ${selectedPaths.length} 个子目录`)
+      toast.success('扫描完成，共扫描 ' + selectedPaths.length + ' 个子目录')
     } catch (error) {
       const err = error as {
         response?: { data?: { error?: string } }
@@ -593,19 +599,19 @@ export default function Scan() {
   }
 
   return (
-    <div className="space-y-4 p-4 md:p-6">
+    <div className="space-y-4 p-4 sm:p-6">
       <Card variant="outline" className="py-4">
         <CardContent className="px-4">
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex min-w-0 items-center gap-3 overflow-x-auto pb-1">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3">
               <Badge
                 variant="outline"
                 className="hover:bg-accent hover:text-accent-foreground px-3 py-1 text-sm"
               >
                 状态：已完成
               </Badge>
-              <div className="flex w-52 shrink-0 items-center gap-2">
-                <Progress value={progress} className="h-2" />
+              <div className="flex w-full items-center gap-2 sm:w-52">
+                <Progress value={progress} className="h-2 flex-1" />
                 <span className="text-sm font-medium">{progress}%</span>
               </div>
               <Badge
@@ -637,14 +643,15 @@ export default function Scan() {
               </button>
             </div>
 
-            <div className="flex shrink-0 items-center gap-2">
-              <Button type="button" onClick={handleScanAll}>
+            <div className="flex items-center gap-2 sm:shrink-0">
+              <Button type="button" onClick={handleScanAll} className="flex-1 sm:flex-none">
                 扫描全部
               </Button>
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => setGlobalSettingOpen(true)}
+                className="flex-1 sm:flex-none"
               >
                 全局设置
               </Button>
@@ -654,13 +661,13 @@ export default function Scan() {
       </Card>
 
       <div className="rounded-lg border">
-        <div className="flex items-center justify-between px-6 py-4">
+        <div className="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
           <h3 className="text-lg font-semibold">扫描目录列表</h3>
-          <Button type="button" variant="outline" onClick={handleOpenAddDialog}>
+          <Button type="button" variant="outline" onClick={handleOpenAddDialog} className="w-full sm:w-auto">
             添加扫描目录列表
           </Button>
         </div>
-        <div className="space-y-3 px-6 pb-6">
+        <div className="space-y-3 px-4 pb-4 sm:px-6 sm:pb-6">
           {scanDirectories.map((item) => (
             <ScanDirectoryRow
               key={item.id}
@@ -679,7 +686,7 @@ export default function Scan() {
       </div>
 
       <Dialog open={failedDialogOpen} onOpenChange={setFailedDialogOpen}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>失败列表</DialogTitle>
           </DialogHeader>
@@ -702,11 +709,12 @@ export default function Scan() {
               ))
             )}
           </div>
-          <DialogFooter>
+          <DialogFooter className="flex-col gap-2 sm:flex-row">
             <Button
               type="button"
               variant="outline"
               onClick={() => void handleRetryFailed()}
+              className="w-full sm:w-auto"
             >
               <RefreshCcwIcon className="mr-2 size-4" />
               重试全部
@@ -715,6 +723,7 @@ export default function Scan() {
               type="button"
               variant="outline"
               onClick={() => setFailedDialogOpen(false)}
+              className="w-full sm:w-auto"
             >
               关闭
             </Button>
@@ -723,7 +732,7 @@ export default function Scan() {
       </Dialog>
 
       <Dialog open={globalSettingOpen} onOpenChange={setGlobalSettingOpen}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>全局设置</DialogTitle>
           </DialogHeader>
@@ -733,11 +742,13 @@ export default function Scan() {
                 value={excludePathInput}
                 onChange={(e) => setExcludePathInput(e.target.value)}
                 placeholder="添加排除路径"
+                className="flex-1"
               />
               <Button
                 type="button"
                 variant="outline"
                 onClick={handleAddExcludePath}
+                className="shrink-0"
               >
                 添加
               </Button>
@@ -754,11 +765,12 @@ export default function Scan() {
                     key={item}
                     className="flex items-center justify-between rounded-md border px-3 py-2 text-sm"
                   >
-                    <span className="truncate">{item}</span>
+                    <span className="min-w-0 flex-1 truncate">{item}</span>
                     <Button
                       type="button"
                       size="icon"
                       variant="ghost"
+                      className="size-8 shrink-0"
                       onClick={() => handleRemoveExcludePath(item)}
                       aria-label="删除排除路径"
                     >
@@ -769,15 +781,16 @@ export default function Scan() {
               )}
             </div>
           </div>
-          <DialogFooter>
+          <DialogFooter className="flex-col gap-2 sm:flex-row">
             <Button
               type="button"
               variant="outline"
               onClick={() => setGlobalSettingOpen(false)}
+              className="w-full sm:w-auto"
             >
               取消
             </Button>
-            <Button type="button" onClick={() => setGlobalSettingOpen(false)}>
+            <Button type="button" onClick={() => setGlobalSettingOpen(false)} className="w-full sm:w-auto">
               保存
             </Button>
           </DialogFooter>
@@ -785,7 +798,7 @@ export default function Scan() {
       </Dialog>
 
       <Dialog open={addDirectoryOpen} onOpenChange={setAddDirectoryOpen}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>添加扫描目录列表</DialogTitle>
           </DialogHeader>
@@ -795,11 +808,13 @@ export default function Scan() {
                 value={directoryPathInput}
                 onChange={(e) => setDirectoryPathInput(e.target.value)}
                 placeholder="扫描目录"
+                className="flex-1"
               />
               <Button
                 type="button"
                 variant="outline"
                 size="icon"
+                className="shrink-0"
                 onClick={() => void handleSelectDirectory()}
                 aria-label="选择目录"
               >
@@ -844,11 +859,12 @@ export default function Scan() {
               />
             ) : null}
           </div>
-          <DialogFooter>
+          <DialogFooter className="flex-col gap-2 sm:flex-row">
             <Button
               type="button"
               variant="outline"
               onClick={() => setAddDirectoryOpen(false)}
+              className="w-full sm:w-auto"
             >
               取消
             </Button>
@@ -856,6 +872,7 @@ export default function Scan() {
               type="button"
               disabled={isSavingDirectory}
               onClick={() => void handleAddDirectory()}
+              className="w-full sm:w-auto"
             >
               {isSavingDirectory ? '保存中...' : '保存'}
             </Button>
@@ -871,7 +888,7 @@ export default function Scan() {
           }
         }}
       >
-        <DialogContent>
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>修改扫描目录</DialogTitle>
           </DialogHeader>
@@ -881,11 +898,13 @@ export default function Scan() {
                 value={directoryPathInput}
                 onChange={(e) => setDirectoryPathInput(e.target.value)}
                 placeholder="扫描目录"
+                className="flex-1"
               />
               <Button
                 type="button"
                 variant="outline"
                 size="icon"
+                className="shrink-0"
                 onClick={() => void handleSelectDirectory()}
                 aria-label="选择目录"
               >
@@ -937,17 +956,19 @@ export default function Scan() {
               </div>
             ) : null}
           </div>
-          <DialogFooter>
+          <DialogFooter className="flex-col gap-2 sm:flex-row">
             <Button
               type="button"
               variant="outline"
               onClick={() => setEditDirectoryId(null)}
+              className="w-full sm:w-auto"
             >
               取消
             </Button>
             <Button
               type="button"
               onClick={() => void handleSaveEditDirectory()}
+              className="w-full sm:w-auto"
             >
               保存
             </Button>

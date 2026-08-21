@@ -1,38 +1,26 @@
 'use client'
 
+import { PlusIcon } from 'lucide-react'
+
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-
-import type { GameOption } from './types'
 
 type OstSearchToolbarProps = {
   keywordInput: string
-  gameFilter: string
-  gameOptions: GameOption[]
   onKeywordInputChange: (value: string) => void
-  onGameFilterChange: (value: string) => void
   onSearch: () => void
-  onReset: () => void
+  onCreate: () => void
 }
 
 export function OstSearchToolbar({
   keywordInput,
-  gameFilter,
-  gameOptions,
   onKeywordInputChange,
-  onGameFilterChange,
   onSearch,
-  onReset,
+  onCreate,
 }: OstSearchToolbarProps) {
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+      {/* 搜索框 */}
       <div className="relative flex-1 sm:max-w-md">
         <Input
           className="pr-4 pl-10"
@@ -60,40 +48,11 @@ export function OstSearchToolbar({
         </svg>
       </div>
 
-      <div className="flex flex-1 flex-wrap items-center gap-3">
-        <Select value={gameFilter} onValueChange={onGameFilterChange}>
-          <SelectTrigger className="h-10 w-55">
-            <SelectValue placeholder="按游戏筛选" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">全部游戏</SelectItem>
-            {gameOptions.map((game) => (
-              <SelectItem key={game.id} value={game.id}>
-                {game.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        <div className="flex items-center gap-2">
-          <Button
-            type="button"
-            variant="secondary"
-            className="h-10"
-            onClick={onSearch}
-          >
-            搜索
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            className="text-muted-foreground hover:text-foreground h-10 transition-colors"
-            onClick={onReset}
-          >
-            重置
-          </Button>
-        </div>
-      </div>
+      {/* 新增按钮 */}
+      <Button type="button" onClick={onCreate} variant="outline">
+        <PlusIcon />
+        新增 OST
+      </Button>
     </div>
   )
 }
