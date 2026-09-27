@@ -41,18 +41,12 @@ const importSteamGames = async (req: NextRequest) => {
     const appId = Number(body.appid)
     const appName = typeof body.name === 'string' ? body.name.trim() : ''
     const playtimeMinutes = Math.max(0, Number(body.playtimeMinutes ?? 0))
-    const coverUrlFromClient =
-      typeof body.coverUrl === 'string' ? body.coverUrl.trim() : ''
-    const iconUrlFromClient =
-      typeof body.iconUrl === 'string' ? body.iconUrl.trim() : ''
-    const logoUrlFromClient =
-      typeof body.logoUrl === 'string' ? body.logoUrl.trim() : ''
+    const coverUrlFromClient = typeof body.coverUrl === 'string' ? body.coverUrl.trim() : ''
+    const iconUrlFromClient = typeof body.iconUrl === 'string' ? body.iconUrl.trim() : ''
+    const logoUrlFromClient = typeof body.logoUrl === 'string' ? body.logoUrl.trim() : ''
 
     if (!isValidSteamUid(steamId)) {
-      return NextResponse.json(
-        { error: '请输入有效的 Steam UID（17 位数字）' },
-        { status: 400 },
-      )
+      return NextResponse.json({ error: '请输入有效的 Steam UID（17 位数字）' }, { status: 400 })
     }
 
     if (!Number.isInteger(appId) || appId <= 0) {
@@ -61,10 +55,7 @@ const importSteamGames = async (req: NextRequest) => {
 
     const steamApiKey = getSteamApiKey()
     if (!steamApiKey) {
-      return NextResponse.json(
-        { error: '未配置 STEAM_API_KEY，无法导入' },
-        { status: 500 },
-      )
+      return NextResponse.json({ error: '未配置 STEAM_API_KEY，无法导入' }, { status: 500 })
     }
 
     // 获取启用的代理配置
@@ -75,13 +66,8 @@ const importSteamGames = async (req: NextRequest) => {
     if (!iconUrl || !logoUrl) {
       let ownedGame = getCachedOwnedGame(steamId, appId)
       if (!ownedGame) {
-        const ownedGames = await fetchOwnedGames(
-          steamId,
-          steamApiKey,
-          proxySettings ?? undefined,
-        )
-        ownedGame =
-          ownedGames.find((item) => Number(item.appid) === appId) || null
+        const ownedGames = await fetchOwnedGames(steamId, steamApiKey, proxySettings ?? undefined)
+        ownedGame = ownedGames.find((item) => Number(item.appid) === appId) || null
       }
 
       if (!iconUrl) {
@@ -109,10 +95,7 @@ const importSteamGames = async (req: NextRequest) => {
       })
     }
 
-    const details = await fetchSteamAppDetails(
-      appId,
-      proxySettings ?? undefined,
-    )
+    const details = await fetchSteamAppDetails(appId, proxySettings ?? undefined)
     const now = dayjs().toISOString()
     const name = details?.name?.trim() || appName || `Steam App ${appId}`
     const playtimeSeconds = Math.floor(playtimeMinutes * 60)
@@ -133,10 +116,7 @@ const importSteamGames = async (req: NextRequest) => {
         .insert(GameInfoTable)
         .values({
           date: details?.release_date?.date?.trim() || '',
-          cover:
-            details?.header_image?.trim() ||
-            coverUrlFromClient ||
-            toSteamCoverUrl(appId),
+          cover: details?.header_image?.trim() || coverUrlFromClient || toSteamCoverUrl(appId),
           icon: iconUrl,
           logo: logoUrl,
           bg: '',
@@ -175,11 +155,7 @@ const importSteamGames = async (req: NextRequest) => {
           externalId: String(appId),
         })
         .onConflictDoNothing({
-          target: [
-            GameIdMapTable.gameId,
-            GameIdMapTable.provider,
-            GameIdMapTable.externalId,
-          ],
+          target: [GameIdMapTable.gameId, GameIdMapTable.provider, GameIdMapTable.externalId],
         })
 
       const websites: Array<{ gameId: number; name: string; url: string }> = [

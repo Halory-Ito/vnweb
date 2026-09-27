@@ -2,16 +2,11 @@ import dayjs from 'dayjs'
 import { NextRequest, NextResponse } from 'next/server'
 
 import { fetchSteamAppDetails } from './steam-import/_shared'
-import {
-  GameIdMapTable,
-  GameInfoTable,
-  GamePvTable,
-  relateWebsiteTable,
-} from '@/db/schema'
+import { GameIdMapTable, GameInfoTable, GamePvTable, relateWebsiteTable } from '@/db/schema'
 import { db } from '@/lib/drizzle'
 import { syncVndbCharactersByGameId } from '@/lib/server/vndb-character-sync'
 import { getEnabledProxySettings } from '@/lib/settings/proxy-settings'
-import { GameInfo } from '@/types/game-types'
+import { GameInfo } from '@/types/game'
 
 const normalizeText = (value: unknown): string => {
   if (typeof value !== 'string') {
@@ -123,10 +118,7 @@ const createGame = async (req: NextRequest) => {
     const sourceMap = parseSourceMapPayload(body)
 
     if (!gameInfo || !gameInfo.name) {
-      return NextResponse.json(
-        { error: 'Invalid game info payload' },
-        { status: 400 },
-      )
+      return NextResponse.json({ error: 'Invalid game info payload' }, { status: 400 })
     }
 
     const now = dayjs().toISOString()
@@ -173,11 +165,7 @@ const createGame = async (req: NextRequest) => {
             externalId: sourceMap.externalId,
           })
           .onConflictDoNothing({
-            target: [
-              GameIdMapTable.gameId,
-              GameIdMapTable.provider,
-              GameIdMapTable.externalId,
-            ],
+            target: [GameIdMapTable.gameId, GameIdMapTable.provider, GameIdMapTable.externalId],
           })
 
         if (sourceMap.provider.trim().toLowerCase() === 'vndb') {
@@ -192,10 +180,7 @@ const createGame = async (req: NextRequest) => {
         if (Number.isInteger(appId) && appId > 0) {
           // 获取启用的代理配置
           const proxySettings = await getEnabledProxySettings()
-          const details = await fetchSteamAppDetails(
-            appId,
-            proxySettings ?? undefined,
-          )
+          const details = await fetchSteamAppDetails(appId, proxySettings ?? undefined)
           const pvRows = (details?.movies ?? [])
             .map((movie, index) => {
               const url =
@@ -253,10 +238,7 @@ const createGame = async (req: NextRequest) => {
             url,
           }
         })
-        .filter(
-          (item): item is { gameId: number; name: string; url: string } =>
-            item !== null,
-        )
+        .filter((item): item is { gameId: number; name: string; url: string } => item !== null)
 
       if (websites.length > 0) {
         await db.insert(relateWebsiteTable).values(websites)

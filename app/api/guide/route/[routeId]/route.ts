@@ -2,8 +2,8 @@ import dayjs from 'dayjs'
 import { eq } from 'drizzle-orm'
 import { NextRequest, NextResponse } from 'next/server'
 
-import { db } from '@/lib/drizzle'
 import { GuideRouteTable } from '@/db/schema'
+import { db } from '@/lib/drizzle'
 
 export async function GET(
   request: NextRequest,
@@ -34,10 +34,7 @@ export async function GET(
     })
   } catch (error) {
     console.error('Fetch route error:', error)
-    return NextResponse.json(
-      { error: 'Failed to fetch route' },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: 'Failed to fetch route' }, { status: 500 })
   }
 }
 
@@ -70,9 +67,6 @@ export async function PATCH(
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error('Update route error:', error)
-    return NextResponse.json(
-      { error: 'Failed to update route' },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: 'Failed to update route' }, { status: 500 })
   }
 }

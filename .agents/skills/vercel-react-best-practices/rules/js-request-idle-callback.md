@@ -51,10 +51,9 @@ function handleSearch(query: string) {
 
 ```typescript
 // Ensure analytics fires within 2 seconds even if browser stays busy
-requestIdleCallback(
-  () => analytics.track('page_view', { path: location.pathname }),
-  { timeout: 2000 },
-)
+requestIdleCallback(() => analytics.track('page_view', { path: location.pathname }), {
+  timeout: 2000,
+})
 ```
 
 **Chunking large tasks:**
@@ -83,8 +82,7 @@ function processLargeDataset(items: Item[]) {
 **With fallback for unsupported browsers:**
 
 ```typescript
-const scheduleIdleWork =
-  window.requestIdleCallback ?? ((cb: () => void) => setTimeout(cb, 1))
+const scheduleIdleWork = window.requestIdleCallback ?? ((cb: () => void) => setTimeout(cb, 1))
 
 scheduleIdleWork(() => {
   // Non-critical work

@@ -2,12 +2,12 @@ import { eq } from 'drizzle-orm'
 import { NextRequest, NextResponse } from 'next/server'
 
 import { GameInfoTable } from '@/db/schema'
+import { mapBGMSubjectToGameInfo } from '@/features/game/import-api'
 import { db } from '@/lib/drizzle'
 import { localizeGameImageFields } from '@/lib/server/game-image-storage'
 import { BGMClient, SGDBClient } from '@/lib/vndb-client'
-import { mapBGMSubjectToGameInfo } from '@/lib/vndb-utils'
 
-import type { GameInfo } from '@/types/game-types'
+import type { GameInfo } from '@/types/game'
 
 type IncomingMetadata = GameInfo & {
   icon?: string
@@ -188,10 +188,7 @@ const toSGDBGameInfo = (
   }
 }
 
-const searchByProvider = async (
-  provider: MetadataProvider,
-  keyword: string,
-) => {
+const searchByProvider = async (provider: MetadataProvider, keyword: string) => {
   if (provider === 'bangumi') {
     const response = await BGMClient.request({
       method: 'POST',
@@ -223,9 +220,7 @@ const fetchByProvider = async (provider: MetadataProvider, id: string) => {
       method: 'GET',
       url: `/v0/subjects/${id}`,
     })
-    const info = mapBGMSubjectToGameInfo(
-      response.data as never,
-    ) as IncomingMetadata
+    const info = mapBGMSubjectToGameInfo(response.data as never) as IncomingMetadata
     return {
       ...info,
       icon: info.icon || '',
@@ -236,18 +231,10 @@ const fetchByProvider = async (provider: MetadataProvider, id: string) => {
 
   const gameId = Number(id)
   const game = (await SGDBClient.getGameById(gameId)) as SGDBGame
-  const grids = (await SGDBClient.getGridsById(
-    gameId,
-  )) as unknown as SGDBImage[]
-  const icons = (await SGDBClient.getIconsById(
-    gameId,
-  )) as unknown as SGDBImage[]
-  const logos = (await SGDBClient.getLogosById(
-    gameId,
-  )) as unknown as SGDBImage[]
-  const heroes = (await SGDBClient.getHeroesById(
-    gameId,
-  )) as unknown as SGDBImage[]
+  const grids = (await SGDBClient.getGridsById(gameId)) as unknown as SGDBImage[]
+  const icons = (await SGDBClient.getIconsById(gameId)) as unknown as SGDBImage[]
+  const logos = (await SGDBClient.getLogosById(gameId)) as unknown as SGDBImage[]
+  const heroes = (await SGDBClient.getHeroesById(gameId)) as unknown as SGDBImage[]
   return toSGDBGameInfo(game, grids, icons, logos, heroes)
 }
 
@@ -295,11 +282,7 @@ const mergeTextField = (
   return `${current}${separator}${incoming}`
 }
 
-const mergeListField = (
-  current: string[],
-  incoming: string[],
-  strategy: MergeStrategy,
-) => {
+const mergeListField = (current: string[], incoming: string[], strategy: MergeStrategy) => {
   if (strategy === 'replace') {
     return uniqueList(incoming)
   }
@@ -311,11 +294,7 @@ const mergeListField = (
   return uniqueList([...current, ...incoming])
 }
 
-const mergeBoolField = (
-  current: boolean,
-  incoming: boolean,
-  strategy: MergeStrategy,
-) => {
+const mergeBoolField = (current: boolean, incoming: boolean, strategy: MergeStrategy) => {
   if (strategy === 'replace') {
     return incoming
   }
@@ -327,9 +306,7 @@ const updateBatchMetadata = async (req: NextRequest) => {
   try {
     const body = (await req.json().catch(() => ({}))) as Payload
     const gameIds = Array.isArray(body.gameIds)
-      ? body.gameIds.filter(
-          (id): id is number => Number.isInteger(id) && id > 0,
-        )
+      ? body.gameIds.filter((id): id is number => Number.isInteger(id) && id > 0)
       : []
 
     const provider = body.provider
@@ -422,11 +399,7 @@ const updateBatchMetadata = async (req: NextRequest) => {
           continue
         }
 
-        const fallbackKeyword = (
-          currentRow.nameCn ||
-          currentRow.name ||
-          ''
-        ).trim()
+        const fallbackKeyword = (currentRow.nameCn || currentRow.name || '').trim()
         const effectiveQuery = customQuery || fallbackKeyword
         if (!effectiveQuery) {
           skippedCount += 1
@@ -545,11 +518,7 @@ const updateBatchMetadata = async (req: NextRequest) => {
               break
             }
             case 'tags': {
-              patch.tags = mergeListField(
-                current.tags,
-                resolvedIncoming.tags,
-                strategy,
-              ).join(',')
+              patch.tags = mergeListField(current.tags, resolvedIncoming.tags, strategy).join(',')
               break
             }
             case 'ailases': {
@@ -580,10 +549,7 @@ const updateBatchMetadata = async (req: NextRequest) => {
           }
         }
 
-        await db
-          .update(GameInfoTable)
-          .set(patch)
-          .where(eq(GameInfoTable.id, gameId))
+        await db.update(GameInfoTable).set(patch).where(eq(GameInfoTable.id, gameId))
         updatedCount += 1
       } catch {
         failedCount += 1

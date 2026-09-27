@@ -12,10 +12,10 @@ import { EditGuide } from '@/features/guide/components/edit-guide'
 import { GuideDetailHeader } from '@/features/guide/components/guide-detail-header'
 import { ResetAllButton } from '@/features/guide/components/reset-all-botton'
 import { RouteCard } from '@/features/guide/components/route-card'
+import { containerVariants, itemVariants, cardVariants } from '@/features/guide/data/motion'
 import { getGuideApi, updateRouteSortApi } from '@/features/guide/guide-api'
 import { GuideRouteWithProgress } from '@/features/guide/guide-api'
 import { useGuide } from '@/features/guide/hooks/use-guide'
-import { containerVariants, itemVariants, cardVariants } from '@/features/guide/data/motion'
 
 interface GuideDetailViewProps {
   gameId: number

@@ -4,6 +4,7 @@ import {
   FontSection,
   GlassSection,
   GuideSection,
+  StatusSection,
 } from '@/features/appearance'
 
 export default function AppearancePage() {
@@ -11,6 +12,7 @@ export default function AppearancePage() {
     <>
       <div className="space-y-6">
         <FontSection />
+        <StatusSection />
         <BackgroundSection />
         <GlassSection />
         <ChartSection />

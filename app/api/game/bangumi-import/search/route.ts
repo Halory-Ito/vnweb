@@ -46,16 +46,13 @@ const PAGE_SIZE = 50
 const MAX_ITEMS = 500
 
 const getCurrentBangumiUsername = async (accessToken: string) => {
-  const response = await axios.get<BangumiMeResponse>(
-    `${NEXT_PUBLIC_BANGUMI_API_URL}/v0/me`,
-    {
-      timeout: 10_000,
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        'User-Agent': USER_AGENT,
-      },
+  const response = await axios.get<BangumiMeResponse>(`${NEXT_PUBLIC_BANGUMI_API_URL}/v0/me`, {
+    timeout: 10_000,
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      'User-Agent': USER_AGENT,
     },
-  )
+  })
 
   const username = (response.data.username || '').trim()
   if (!username) {
@@ -73,10 +70,7 @@ const normalizeCollections = (payload: BangumiCollectionResponse) => {
   return payload.data ?? []
 }
 
-const fetchBangumiCollections = async (
-  username: string,
-  accessToken: string,
-) => {
+const fetchBangumiCollections = async (username: string, accessToken: string) => {
   const items: BangumiCollectionItem[] = []
 
   for (let offset = 0; offset < MAX_ITEMS; offset += PAGE_SIZE) {
@@ -115,17 +109,11 @@ const searchBangumiCollectedGames = async () => {
   try {
     const account = await getBoundThirdPartyAccount('bangumi')
     if (!account?.accessToken) {
-      return NextResponse.json(
-        { error: '请先绑定 Bangumi 账号' },
-        { status: 400 },
-      )
+      return NextResponse.json({ error: '请先绑定 Bangumi 账号' }, { status: 400 })
     }
 
     const username = await getCurrentBangumiUsername(account.accessToken)
-    const collections = await fetchBangumiCollections(
-      username,
-      account.accessToken,
-    )
+    const collections = await fetchBangumiCollections(username, account.accessToken)
     const importedIdSet = await getImportedExternalIdSet('bangumi')
 
     const items = collections
@@ -141,10 +129,7 @@ const searchBangumiCollectedGames = async () => {
 
         return {
           id,
-          name:
-            subject.name_cn?.trim() ||
-            subject.name?.trim() ||
-            `Bangumi Subject ${id}`,
+          name: subject.name_cn?.trim() || subject.name?.trim() || `Bangumi Subject ${id}`,
           date: subject.date?.trim() || '',
           coverUrl:
             subject.images?.large?.trim() ||

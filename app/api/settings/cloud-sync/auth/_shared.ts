@@ -29,10 +29,7 @@ export const issueOAuthState = async (provider: OAuthProvider) => {
   return state
 }
 
-export const validateOAuthState = async (
-  provider: OAuthProvider,
-  stateFromQuery: string,
-) => {
+export const validateOAuthState = async (provider: OAuthProvider, stateFromQuery: string) => {
   const cookieStore = await cookies()
   const key = makeStateCookieName(provider)
   const stateFromCookie = cookieStore.get(key)?.value || ''
@@ -62,9 +59,7 @@ export const saveThirdPartyAccount = async (
   const now = dayjs().toISOString()
 
   await db.transaction(async (tx) => {
-    await tx
-      .delete(ThirdPartyAccountTable)
-      .where(eq(ThirdPartyAccountTable.provider, provider))
+    await tx.delete(ThirdPartyAccountTable).where(eq(ThirdPartyAccountTable.provider, provider))
 
     await tx.insert(ThirdPartyAccountTable).values({
       provider,

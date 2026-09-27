@@ -51,10 +51,7 @@ const serveVideo = async (
       return NextResponse.json({ error: 'File not found' }, { status: 404 })
     }
     console.error('Serve PV video failed:', error)
-    return NextResponse.json(
-      { error: 'Failed to serve video' },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: 'Failed to serve video' }, { status: 500 })
   }
 }
 

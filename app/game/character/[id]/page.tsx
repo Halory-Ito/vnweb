@@ -7,15 +7,12 @@ import { useParams, useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
-import CharacterQuotes from '@/components/game/character-quotes'
+import { getVndbCharacterById, updateVndbCharacterById } from '@/api'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Textarea } from '@/components/ui/textarea'
-import {
-  getVndbCharacterById,
-  updateVndbCharacterById,
-} from '@/lib/game/game-utils'
+import CharacterQuotes from '@/features/game/components/character-quotes'
 
 const formatBirthday = (birthday: [number, number] | null) => {
   if (!birthday) {
@@ -128,14 +125,10 @@ function CharacterDetailEmptyState({
           </div>
           <div className="space-y-2">
             <h2 className="text-xl font-semibold">{title}</h2>
-            <p className="text-muted-foreground text-sm leading-6">
-              {description}
-            </p>
+            <p className="text-muted-foreground text-sm leading-6">{description}</p>
           </div>
           {children ? (
-            <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-              {children}
-            </div>
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-3">{children}</div>
           ) : null}
         </div>
       </div>
@@ -218,8 +211,7 @@ export default function CharacterDetailPage() {
 
   const { data, isLoading, error, refetch, isRefetching } = useQuery({
     queryKey: ['vndb-character', params.id, numericGameId || 0],
-    queryFn: () =>
-      getVndbCharacterById(params.id, canEdit ? numericGameId : undefined),
+    queryFn: () => getVndbCharacterById(params.id, canEdit ? numericGameId : undefined),
     enabled: Boolean(params.id),
   })
 
@@ -282,10 +274,7 @@ export default function CharacterDetailPage() {
         hips: toNullableNumber(form.hips),
         birthday:
           form.birthdayMonth.trim() && form.birthdayDay.trim()
-            ? [
-                Number(form.birthdayMonth.trim()),
-                Number(form.birthdayDay.trim()),
-              ]
+            ? [Number(form.birthdayMonth.trim()), Number(form.birthdayDay.trim())]
             : null,
         sex:
           form.sexPublic.trim() || form.sexSpoiler.trim()
@@ -293,10 +282,7 @@ export default function CharacterDetailPage() {
             : null,
         gender:
           form.genderPublic.trim() || form.genderSpoiler.trim()
-            ? [
-                form.genderPublic.trim() || null,
-                form.genderSpoiler.trim() || null,
-              ]
+            ? [form.genderPublic.trim() || null, form.genderSpoiler.trim() || null]
             : null,
         description: form.description,
       })
@@ -397,13 +383,9 @@ export default function CharacterDetailPage() {
           <div className="rounded-md border p-4">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <div className="text-xl font-semibold">
-                  {data.name || data.id}
-                </div>
+                <div className="text-xl font-semibold">{data.name || data.id}</div>
                 {data.original && data.original !== data.name ? (
-                  <div className="text-muted-foreground mt-1 text-sm">
-                    {data.original}
-                  </div>
+                  <div className="text-muted-foreground mt-1 text-sm">{data.original}</div>
                 ) : null}
               </div>
               {canEdit ? (
@@ -418,11 +400,7 @@ export default function CharacterDetailPage() {
                       >
                         取消
                       </Button>
-                      <Button
-                        type="button"
-                        onClick={() => void saveEdit()}
-                        disabled={saving}
-                      >
+                      <Button type="button" onClick={() => void saveEdit()} disabled={saving}>
                         {saving ? '保存中...' : '保存'}
                       </Button>
                     </>
@@ -444,72 +422,52 @@ export default function CharacterDetailPage() {
                 <Input
                   placeholder="姓名"
                   value={form.name}
-                  onChange={(e) =>
-                    setForm((prev) => ({ ...prev, name: e.target.value }))
-                  }
+                  onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
                 />
                 <Input
                   placeholder="本名"
                   value={form.original}
-                  onChange={(e) =>
-                    setForm((prev) => ({ ...prev, original: e.target.value }))
-                  }
+                  onChange={(e) => setForm((prev) => ({ ...prev, original: e.target.value }))}
                 />
                 <Input
                   placeholder="图片链接"
                   value={form.imageUrl}
-                  onChange={(e) =>
-                    setForm((prev) => ({ ...prev, imageUrl: e.target.value }))
-                  }
+                  onChange={(e) => setForm((prev) => ({ ...prev, imageUrl: e.target.value }))}
                 />
                 <Input
                   placeholder="血型"
                   value={form.bloodType}
-                  onChange={(e) =>
-                    setForm((prev) => ({ ...prev, bloodType: e.target.value }))
-                  }
+                  onChange={(e) => setForm((prev) => ({ ...prev, bloodType: e.target.value }))}
                 />
                 <Input
                   placeholder="年龄"
                   value={form.age}
-                  onChange={(e) =>
-                    setForm((prev) => ({ ...prev, age: e.target.value }))
-                  }
+                  onChange={(e) => setForm((prev) => ({ ...prev, age: e.target.value }))}
                 />
                 <Input
                   placeholder="身高"
                   value={form.height}
-                  onChange={(e) =>
-                    setForm((prev) => ({ ...prev, height: e.target.value }))
-                  }
+                  onChange={(e) => setForm((prev) => ({ ...prev, height: e.target.value }))}
                 />
                 <Input
                   placeholder="体重"
                   value={form.weight}
-                  onChange={(e) =>
-                    setForm((prev) => ({ ...prev, weight: e.target.value }))
-                  }
+                  onChange={(e) => setForm((prev) => ({ ...prev, weight: e.target.value }))}
                 />
                 <Input
                   placeholder="胸围"
                   value={form.bust}
-                  onChange={(e) =>
-                    setForm((prev) => ({ ...prev, bust: e.target.value }))
-                  }
+                  onChange={(e) => setForm((prev) => ({ ...prev, bust: e.target.value }))}
                 />
                 <Input
                   placeholder="腰围"
                   value={form.waist}
-                  onChange={(e) =>
-                    setForm((prev) => ({ ...prev, waist: e.target.value }))
-                  }
+                  onChange={(e) => setForm((prev) => ({ ...prev, waist: e.target.value }))}
                 />
                 <Input
                   placeholder="臀围"
                   value={form.hips}
-                  onChange={(e) =>
-                    setForm((prev) => ({ ...prev, hips: e.target.value }))
-                  }
+                  onChange={(e) => setForm((prev) => ({ ...prev, hips: e.target.value }))}
                 />
                 <Input
                   placeholder="生日月"
@@ -534,16 +492,12 @@ export default function CharacterDetailPage() {
                 <Input
                   placeholder="性别(公开) 例:m/f/b/n"
                   value={form.sexPublic}
-                  onChange={(e) =>
-                    setForm((prev) => ({ ...prev, sexPublic: e.target.value }))
-                  }
+                  onChange={(e) => setForm((prev) => ({ ...prev, sexPublic: e.target.value }))}
                 />
                 <Input
                   placeholder="性别(剧透) 例:m/f/b/n"
                   value={form.sexSpoiler}
-                  onChange={(e) =>
-                    setForm((prev) => ({ ...prev, sexSpoiler: e.target.value }))
-                  }
+                  onChange={(e) => setForm((prev) => ({ ...prev, sexSpoiler: e.target.value }))}
                 />
                 <Input
                   placeholder="性认同(公开) 例:m/f/o/a"
@@ -591,9 +545,7 @@ export default function CharacterDetailPage() {
                   key={row.label}
                   className="space-y-1 rounded-lg border p-3 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md"
                 >
-                  <div className="text-muted-foreground text-xs">
-                    {row.label}
-                  </div>
+                  <div className="text-muted-foreground text-xs">{row.label}</div>
                   <div className="text-sm">{row.value}</div>
                 </div>
               ))}

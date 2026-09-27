@@ -1,10 +1,10 @@
 import { eq } from 'drizzle-orm'
-import type { Metadata } from 'next'
 
+import GameInfoPage from './game-info-page'
 import { GameInfoTable } from '@/db/schema'
 import { db } from '@/lib/drizzle'
 
-import GameInfoPage from './game-info-page'
+import type { Metadata } from 'next'
 
 type Props = {
   params: Promise<{ id: string }>

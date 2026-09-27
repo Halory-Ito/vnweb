@@ -1,11 +1,7 @@
 import { api } from '@/lib/request-utils'
 
-import type {
-  BulkImportResult,
-  GameSearchResult,
-  ProviderPlugin,
-} from '@/lib/plugins/types'
-import type { GameInfo } from '@/types/game-types'
+import type { BulkImportResult, GameSearchResult, ProviderPlugin } from '@/lib/plugins/types'
+import type { GameInfo } from '@/types/game'
 
 // ── VNDB 响应类型 ─────────────────────────────────────────
 type VndbSearchResultItem = {
@@ -39,9 +35,7 @@ type VndbDetailResponse = {
 const mapVndbDetailToGameInfo = (entry: VndbDetailResponse): GameInfo => {
   const title = entry.title ?? ''
   const altTitle = entry.alttitle ?? ''
-  const developers = (entry.developers ?? [])
-    .map((item) => item.name ?? '')
-    .filter(Boolean)
+  const developers = (entry.developers ?? []).map((item) => item.name ?? '').filter(Boolean)
   const extlinks = (entry.extlinks ?? [])
     .map((item) => {
       const label = item.label?.trim() || ''

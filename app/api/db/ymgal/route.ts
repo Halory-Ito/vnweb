@@ -1,11 +1,7 @@
 import axios from 'axios'
 import { NextRequest, NextResponse } from 'next/server'
 
-import {
-  YMGAL_BASE_URL,
-  YMGAL_CLIENT_ID,
-  YMGAL_CLIENT_SECRET,
-} from '@/app/config'
+import { YMGAL_BASE_URL, YMGAL_CLIENT_ID, YMGAL_CLIENT_SECRET } from '@/app/config'
 
 // ── Token 缓存 ────────────────────────────────────────────
 let cachedToken: string | null = null
@@ -41,10 +37,7 @@ const getToken = async (): Promise<string> => {
   return cachedToken
 }
 
-const ymgalRequest = async (
-  path: string,
-  params: Record<string, string | number>,
-) => {
+const ymgalRequest = async (path: string, params: Record<string, string | number>) => {
   const token = await getToken()
   const res = await axios.get(`${YMGAL_BASE_URL}${path}`, {
     params,

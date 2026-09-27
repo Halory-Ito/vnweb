@@ -5,11 +5,7 @@ import { useEffect, useState } from 'react'
 import { bootstrapPlugins } from '@/lib/plugins/init'
 
 /** 客户端插件引导组件，在应用启动时注册所有插件 */
-export default function PluginProvider({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function PluginProvider({ children }: { children: React.ReactNode }) {
   const [ready, setReady] = useState(false)
 
   useEffect(() => {

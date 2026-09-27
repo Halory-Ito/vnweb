@@ -14,13 +14,9 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@/components/ui/tooltip'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 
-import type { QuoteManageItem } from '@/lib/game/game-utils'
+import type { QuoteManageItem } from '@/types'
 
 type QuoteManageContentProps = {
   items: QuoteManageItem[]
@@ -92,14 +88,10 @@ export function QuoteManageContent({
                     <Badge variant="secondary" className="text-xs">
                       #{index + 1}
                     </Badge>
-                    <span className="text-sm font-medium">
-                      {item.gameNameCn || item.gameName}
-                    </span>
+                    <span className="text-sm font-medium">{item.gameNameCn || item.gameName}</span>
                   </div>
                   {item.characterName && (
-                    <p className="text-muted-foreground text-xs">
-                      {item.characterName}
-                    </p>
+                    <p className="text-muted-foreground text-xs">{item.characterName}</p>
                   )}
                 </div>
                 <div className="flex items-center gap-1">
@@ -123,14 +115,10 @@ export function QuoteManageContent({
               </div>
               <p className="text-sm">{item.content}</p>
               {item.context && (
-                <p className="text-muted-foreground text-xs">
-                  背景：{item.context}
-                </p>
+                <p className="text-muted-foreground text-xs">背景：{item.context}</p>
               )}
               <p className="text-muted-foreground text-xs">
-                {item.createdAt
-                  ? dayjs(item.createdAt).format('YYYY-MM-DD HH:mm')
-                  : '-'}
+                {item.createdAt ? dayjs(item.createdAt).format('YYYY-MM-DD HH:mm') : '-'}
               </p>
             </CardContent>
           </Card>
@@ -154,9 +142,7 @@ export function QuoteManageContent({
           <TableBody>
             {items.map((item, index) => (
               <TableRow key={item.id}>
-                <TableCell className="text-muted-foreground text-center">
-                  {index + 1}
-                </TableCell>
+                <TableCell className="text-muted-foreground text-center">{index + 1}</TableCell>
                 <TableCell className="text-center">
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -172,9 +158,7 @@ export function QuoteManageContent({
                 <TableCell className="text-center">
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <div className="line-clamp-2 cursor-default">
-                        {item.content}
-                      </div>
+                      <div className="line-clamp-2 cursor-default">{item.content}</div>
                     </TooltipTrigger>
                     <TooltipContent>
                       <p className="max-w-xs">{item.content}</p>
@@ -198,9 +182,7 @@ export function QuoteManageContent({
                 <TableCell className="text-center">
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <div className="line-clamp-2 cursor-default">
-                        {item.context || '-'}
-                      </div>
+                      <div className="line-clamp-2 cursor-default">{item.context || '-'}</div>
                     </TooltipTrigger>
                     {item.context && (
                       <TooltipContent>
@@ -211,9 +193,7 @@ export function QuoteManageContent({
                 </TableCell>
                 <TableCell className="text-muted-foreground text-center">
                   <span className="block truncate">
-                    {item.createdAt
-                      ? dayjs(item.createdAt).format('YYYY-MM-DD HH:mm')
-                      : '-'}
+                    {item.createdAt ? dayjs(item.createdAt).format('YYYY-MM-DD HH:mm') : '-'}
                   </span>
                 </TableCell>
                 <TableCell className="text-center">

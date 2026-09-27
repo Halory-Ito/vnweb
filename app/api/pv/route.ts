@@ -72,10 +72,7 @@ const getPvList = async (req: NextRequest) => {
     })
   } catch (error) {
     console.error('Get pv list failed:', error)
-    return NextResponse.json(
-      { error: 'Failed to get pv list' },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: 'Failed to get pv list' }, { status: 500 })
   }
 }
 
@@ -96,10 +93,7 @@ const createPv = async (req: NextRequest) => {
     }
 
     if (!name || !url) {
-      return NextResponse.json(
-        { error: '游戏、PV名称和链接不能为空' },
-        { status: 400 },
-      )
+      return NextResponse.json({ error: '游戏、PV名称和链接不能为空' }, { status: 400 })
     }
 
     const game = await db

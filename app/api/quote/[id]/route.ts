@@ -22,10 +22,7 @@ const parseQuoteId = async (context: { params: Promise<{ id: string }> }) => {
   return quoteId
 }
 
-const updateQuote = async (
-  req: NextRequest,
-  context: { params: Promise<{ id: string }> },
-) => {
+const updateQuote = async (req: NextRequest, context: { params: Promise<{ id: string }> }) => {
   try {
     const quoteId = await parseQuoteId(context)
     const payload = (await req.json().catch(() => ({}))) as {
@@ -91,17 +88,11 @@ const updateQuote = async (
     }
 
     console.error('Update quote failed:', error)
-    return NextResponse.json(
-      { error: 'Failed to update quote' },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: 'Failed to update quote' }, { status: 500 })
   }
 }
 
-const deleteQuote = async (
-  _req: NextRequest,
-  context: { params: Promise<{ id: string }> },
-) => {
+const deleteQuote = async (_req: NextRequest, context: { params: Promise<{ id: string }> }) => {
   try {
     const quoteId = await parseQuoteId(context)
 
@@ -129,10 +120,7 @@ const deleteQuote = async (
     }
 
     console.error('Delete quote failed:', error)
-    return NextResponse.json(
-      { error: 'Failed to delete quote' },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: 'Failed to delete quote' }, { status: 500 })
   }
 }
 

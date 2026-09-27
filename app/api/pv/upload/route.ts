@@ -54,15 +54,18 @@ const uploadPvVideo = async (req: NextRequest) => {
       return NextResponse.json({ error: '无效的 gameId' }, { status: 400 })
     }
 
-    if (!VIDEO_MIME_TYPES.includes(file.type) && !file.name.match(/\.(mp4|webm|ogg|mov|avi|mkv|m4v)$/i)) {
-      return NextResponse.json({ error: '仅支持视频文件（mp4、webm、ogg、mov、avi、mkv）' }, { status: 400 })
+    if (
+      !VIDEO_MIME_TYPES.includes(file.type) &&
+      !file.name.match(/\.(mp4|webm|ogg|mov|avi|mkv|m4v)$/i)
+    ) {
+      return NextResponse.json(
+        { error: '仅支持视频文件（mp4、webm、ogg、mov、avi、mkv）' },
+        { status: 400 },
+      )
     }
 
     if (file.size <= 0 || file.size > MAX_UPLOAD_SIZE) {
-      return NextResponse.json(
-        { error: '视频大小需在 1B 到 500MB 之间' },
-        { status: 400 },
-      )
+      return NextResponse.json({ error: '视频大小需在 1B 到 500MB 之间' }, { status: 400 })
     }
 
     const ext = getSafeExt(file.name, file.type)
@@ -82,10 +85,7 @@ const uploadPvVideo = async (req: NextRequest) => {
     })
   } catch (error) {
     console.error('Upload PV video failed:', error)
-    return NextResponse.json(
-      { error: (error as Error).message || '上传视频失败' },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: (error as Error).message || '上传视频失败' }, { status: 500 })
   }
 }
 

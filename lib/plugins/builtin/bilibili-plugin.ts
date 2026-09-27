@@ -41,9 +41,11 @@ function extractBiliId(url: string): { type: 'bv' | 'av'; id: string; p: string 
 }
 
 /** 通过 bilibili-parse API 解析视频真实地址 */
-async function resolveBilibiliVideo(
-  biliId: { type: 'bv' | 'av'; id: string; p: string },
-): Promise<string | null> {
+async function resolveBilibiliVideo(biliId: {
+  type: 'bv' | 'av'
+  id: string
+  p: string
+}): Promise<string | null> {
   try {
     const params = new URLSearchParams({
       [biliId.type]: biliId.id,
@@ -125,10 +127,7 @@ export const bilibiliPlugin: FeaturePlugin = {
       if (!url?.includes('b23.tv/')) return null
 
       const resolved = await resolveB23ShortLink(url)
-      if (
-        resolved &&
-        (resolved.includes('bilibili.com') || resolved.includes('b23.tv'))
-      ) {
+      if (resolved && (resolved.includes('bilibili.com') || resolved.includes('b23.tv'))) {
         return { resolvedUrl: resolved }
       }
       return null

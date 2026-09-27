@@ -32,9 +32,7 @@ export async function bootstrapPlugins() {
       const { loadExternalPlugins } = await import('./loader')
       const external = await loadExternalPlugins()
       if (external.length > 0) {
-        console.log(
-          `Loaded ${external.length} external plugin(s): ${external.join(', ')}`,
-        )
+        console.log(`Loaded ${external.length} external plugin(s): ${external.join(', ')}`)
       }
     } catch {
       // 外部插件加载失败不阻塞启动

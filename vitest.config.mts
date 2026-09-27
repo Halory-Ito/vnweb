@@ -12,12 +12,7 @@ export default defineConfig({
       enabled: true,
       provider: 'v8',
       include: ['app/**/*.{ts,tsx}', 'lib/**/*.{ts,tsx}'],
-      exclude: [
-        '**/node_modules/**',
-        '**/dist/**',
-        '**/*.d.ts',
-        '**/addOns/**',
-      ],
+      exclude: ['**/node_modules/**', '**/dist/**', '**/*.d.ts', '**/addOns/**'],
     },
     projects: [
       {

@@ -28,9 +28,7 @@ export async function readConfig(): Promise<Record<string, unknown>> {
 }
 
 /** 写入完整的 config.json（串行，不会与其他写入交错） */
-export async function writeConfig(
-  config: Record<string, unknown>,
-): Promise<void> {
+export async function writeConfig(config: Record<string, unknown>): Promise<void> {
   return enqueue(async () => {
     await fs.promises.writeFile(CONFIG_FILE, JSON.stringify(config, null, 4))
   })
@@ -43,10 +41,7 @@ export async function writeConfig(
  * // 只更新 settings.appearance.glass
  * await updateConfigSection(['settings', 'appearance', 'glass'], { blur: 30, opacity: 50 })
  */
-export async function updateConfigSection(
-  keys: string[],
-  value: unknown,
-): Promise<void> {
+export async function updateConfigSection(keys: string[], value: unknown): Promise<void> {
   return enqueue(async () => {
     let config: Record<string, unknown> = {}
     try {

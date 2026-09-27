@@ -7,11 +7,12 @@ import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { useEffect } from 'react'
 
+import { getGameById } from '@/api'
 import { bgAtom } from '@/atom/global'
-import GameInfo from '@/components/game/game-info'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
-import { getGameById } from '@/lib/game/game-utils'
+import GameInfo from '@/features/game/views/game-info'
+import { useRecordVisit } from '@/features/recent'
 import { updateLastGameBackground } from '@/lib/settings/background-settings'
 
 function GameInfoSkeleton() {
@@ -70,12 +71,7 @@ type GameInfoEmptyStateProps = {
   children?: React.ReactNode
 }
 
-function GameInfoEmptyState({
-  icon: Icon,
-  title,
-  description,
-  children,
-}: GameInfoEmptyStateProps) {
+function GameInfoEmptyState({ icon: Icon, title, description, children }: GameInfoEmptyStateProps) {
   return (
     <div className="mx-auto max-h-[calc(100vh-70px)] w-full overflow-y-auto">
       <div className="flex min-h-[calc(100vh-70px)] items-center justify-center p-4 md:p-6">
@@ -85,14 +81,10 @@ function GameInfoEmptyState({
           </div>
           <div className="space-y-2">
             <h2 className="text-xl font-semibold">{title}</h2>
-            <p className="text-muted-foreground text-sm leading-6">
-              {description}
-            </p>
+            <p className="text-muted-foreground text-sm leading-6">{description}</p>
           </div>
           {children ? (
-            <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-              {children}
-            </div>
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-3">{children}</div>
           ) : null}
         </div>
       </div>
@@ -117,6 +109,9 @@ export default function GameInfoPage() {
       updateLastGameBackground(data.bg)
     }
   }, [data?.bg, setBg])
+
+  const recordGameId = Number(params.id)
+  useRecordVisit(recordGameId, 'detail', `/game/info/${recordGameId}`)
 
   if (isLoading) {
     return (

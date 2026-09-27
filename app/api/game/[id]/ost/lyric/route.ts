@@ -37,10 +37,7 @@ const normalizeName = (value: string) => {
     .replace(/^_+|_+$/g, '')
 }
 
-const uploadOstLyric = async (
-  req: NextRequest,
-  context: { params: Promise<{ id: string }> },
-) => {
+const uploadOstLyric = async (req: NextRequest, context: { params: Promise<{ id: string }> }) => {
   try {
     const gameId = await parseGameId(context)
     await ensureGameExists(gameId)
@@ -58,18 +55,12 @@ const uploadOstLyric = async (
     }
 
     if (file.size <= 0 || file.size > MAX_UPLOAD_SIZE) {
-      return NextResponse.json(
-        { error: '歌词文件大小需在 1B 到 2MB 之间' },
-        { status: 400 },
-      )
+      return NextResponse.json({ error: '歌词文件大小需在 1B 到 2MB 之间' }, { status: 400 })
     }
 
     const inputExt = path.extname(file.name).toLowerCase()
     if (inputExt !== '.lrc') {
-      return NextResponse.json(
-        { error: '仅支持 .lrc 歌词文件' },
-        { status: 400 },
-      )
+      return NextResponse.json({ error: '仅支持 .lrc 歌词文件' }, { status: 400 })
     }
 
     const rows = await db
@@ -80,12 +71,7 @@ const uploadOstLyric = async (
         name: GameOstSongsTable.name,
       })
       .from(GameOstSongsTable)
-      .where(
-        and(
-          eq(GameOstSongsTable.id, itemId),
-          eq(GameOstSongsTable.gameId, gameId),
-        ),
-      )
+      .where(and(eq(GameOstSongsTable.id, itemId), eq(GameOstSongsTable.gameId, gameId)))
       .limit(1)
 
     const item = rows[0]
@@ -94,22 +80,13 @@ const uploadOstLyric = async (
     }
 
     if (!item.url.startsWith(`/assets/ost/`)) {
-      return NextResponse.json(
-        { error: '仅支持为本地 OST 文件上传歌词' },
-        { status: 400 },
-      )
+      return NextResponse.json({ error: '仅支持为本地 OST 文件上传歌词' }, { status: 400 })
     }
 
     const safeBaseName = normalizeName(item.name) || `song_${itemId}`
     const targetFileName = `${safeBaseName}.lrc`
 
-    const targetDir = path.join(
-      process.cwd(),
-      'public',
-      'assets',
-      'ost',
-      String(item.ostId),
-    )
+    const targetDir = path.join(process.cwd(), 'public', 'assets', 'ost', String(item.ostId))
     const targetPath = path.join(targetDir, targetFileName)
 
     await fs.mkdir(targetDir, { recursive: true })

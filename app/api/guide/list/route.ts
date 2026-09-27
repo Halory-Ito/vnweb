@@ -1,13 +1,8 @@
-import { NextResponse } from 'next/server'
 import { eq } from 'drizzle-orm'
+import { NextResponse } from 'next/server'
 
+import { GameGuideTable, GuideRouteTable, GuideEndingTable, GuideStepTable } from '@/db/schema'
 import { db } from '@/lib/drizzle'
-import {
-  GameGuideTable,
-  GuideRouteTable,
-  GuideEndingTable,
-  GuideStepTable,
-} from '@/db/schema'
 
 export async function GET() {
   try {
@@ -47,10 +42,7 @@ export async function GET() {
           cover: guide.cover,
           totalSteps,
           completedSteps,
-          percentage:
-            totalSteps > 0
-              ? Math.round((completedSteps / totalSteps) * 100)
-              : 0,
+          percentage: totalSteps > 0 ? Math.round((completedSteps / totalSteps) * 100) : 0,
         }
       }),
     )
@@ -58,9 +50,6 @@ export async function GET() {
     return NextResponse.json(guidesWithProgress)
   } catch (error) {
     console.error('Fetch guide list error:', error)
-    return NextResponse.json(
-      { error: 'Failed to fetch guide list' },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: 'Failed to fetch guide list' }, { status: 500 })
   }
 }

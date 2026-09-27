@@ -32,9 +32,7 @@ export function normalizeProxySettings(
         : 'http',
     host: typeof input.host === 'string' ? input.host.trim() : '',
     port:
-      typeof input.port === 'number' && input.port > 0 && input.port <= 65535
-        ? input.port
-        : 7890,
+      typeof input.port === 'number' && input.port > 0 && input.port <= 65535 ? input.port : 7890,
     username: typeof input.username === 'string' ? input.username.trim() : '',
     password: typeof input.password === 'string' ? input.password.trim() : '',
   }
@@ -84,9 +82,7 @@ export function buildProxyUrl(settings: ProxySettings): string | null {
 
   const auth =
     settings.username && settings.password
-      ? `${encodeURIComponent(settings.username)}:${encodeURIComponent(
-          settings.password,
-        )}@`
+      ? `${encodeURIComponent(settings.username)}:${encodeURIComponent(settings.password)}@`
       : ''
 
   return `${settings.type}://${auth}${settings.host}:${settings.port}`

@@ -32,10 +32,7 @@ const ensureGameExists = async (gameId: number) => {
   }
 }
 
-const getPvs = async (
-  _req: NextRequest,
-  context: { params: Promise<{ id: string }> },
-) => {
+const getPvs = async (_req: NextRequest, context: { params: Promise<{ id: string }> }) => {
   try {
     const gameId = await parseGameId(context)
     await ensureGameExists(gameId)
@@ -69,10 +66,7 @@ const getPvs = async (
   }
 }
 
-const createPv = async (
-  req: NextRequest,
-  context: { params: Promise<{ id: string }> },
-) => {
+const createPv = async (req: NextRequest, context: { params: Promise<{ id: string }> }) => {
   try {
     const gameId = await parseGameId(context)
     await ensureGameExists(gameId)
@@ -86,10 +80,7 @@ const createPv = async (
     const url = normalizeText(payload.url)
 
     if (!name || !url) {
-      return NextResponse.json(
-        { error: 'name and url are required' },
-        { status: 400 },
-      )
+      return NextResponse.json({ error: 'name and url are required' }, { status: 400 })
     }
 
     const now = new Date().toISOString()
@@ -127,10 +118,7 @@ const createPv = async (
   }
 }
 
-const updatePv = async (
-  req: NextRequest,
-  context: { params: Promise<{ id: string }> },
-) => {
+const updatePv = async (req: NextRequest, context: { params: Promise<{ id: string }> }) => {
   try {
     const gameId = await parseGameId(context)
     await ensureGameExists(gameId)
@@ -146,10 +134,7 @@ const updatePv = async (
     const url = normalizeText(payload.url)
 
     if (!Number.isInteger(itemId) || itemId <= 0 || !name || !url) {
-      return NextResponse.json(
-        { error: 'itemId, name and url are required' },
-        { status: 400 },
-      )
+      return NextResponse.json({ error: 'itemId, name and url are required' }, { status: 400 })
     }
 
     const now = new Date().toISOString()
@@ -190,10 +175,7 @@ const updatePv = async (
   }
 }
 
-const deletePv = async (
-  req: NextRequest,
-  context: { params: Promise<{ id: string }> },
-) => {
+const deletePv = async (req: NextRequest, context: { params: Promise<{ id: string }> }) => {
   try {
     const gameId = await parseGameId(context)
     await ensureGameExists(gameId)
@@ -230,9 +212,4 @@ const deletePv = async (
   }
 }
 
-export {
-  getPvs as GET,
-  createPv as POST,
-  updatePv as PATCH,
-  deletePv as DELETE,
-}
+export { getPvs as GET, createPv as POST, updatePv as PATCH, deletePv as DELETE }

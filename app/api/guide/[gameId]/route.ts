@@ -2,13 +2,8 @@ import dayjs from 'dayjs'
 import { eq, asc } from 'drizzle-orm'
 import { NextRequest, NextResponse } from 'next/server'
 
+import { GameGuideTable, GuideRouteTable, GuideEndingTable, GuideStepTable } from '@/db/schema'
 import { db } from '@/lib/drizzle'
-import {
-  GameGuideTable,
-  GuideRouteTable,
-  GuideEndingTable,
-  GuideStepTable,
-} from '@/db/schema'
 
 export async function GET(
   request: NextRequest,
@@ -92,10 +87,7 @@ export async function GET(
     })
   } catch (error) {
     console.error('Fetch guide error:', error)
-    return NextResponse.json(
-      { error: 'Failed to fetch guide' },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: 'Failed to fetch guide' }, { status: 500 })
   }
 }
 
@@ -143,17 +135,11 @@ export async function PATCH(
       updateData.tips = JSON.stringify(tips)
     }
 
-    await db
-      .update(GameGuideTable)
-      .set(updateData)
-      .where(eq(GameGuideTable.id, guide.id))
+    await db.update(GameGuideTable).set(updateData).where(eq(GameGuideTable.id, guide.id))
 
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error('Update guide error:', error)
-    return NextResponse.json(
-      { error: 'Failed to update guide' },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: 'Failed to update guide' }, { status: 500 })
   }
 }

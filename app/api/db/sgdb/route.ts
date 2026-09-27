@@ -12,10 +12,7 @@ const searchGames = async (req: NextRequest) => {
     const keyword = (body.keyword || '').trim()
 
     if (!keyword) {
-      return NextResponse.json(
-        { error: 'Missing keyword parameter' },
-        { status: 400 },
-      )
+      return NextResponse.json({ error: 'Missing keyword parameter' }, { status: 400 })
     }
 
     const games = await SGDBClient.searchGame(keyword)
@@ -36,10 +33,7 @@ const getGameById = async (req: NextRequest) => {
   try {
     const id = req.nextUrl.searchParams.get('id')
     if (!id || Number.isNaN(Number(id))) {
-      return NextResponse.json(
-        { error: 'Invalid id parameter' },
-        { status: 400 },
-      )
+      return NextResponse.json({ error: 'Invalid id parameter' }, { status: 400 })
     }
 
     const gameId = Number(id)

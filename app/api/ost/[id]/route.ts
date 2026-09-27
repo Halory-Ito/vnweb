@@ -11,10 +11,7 @@ const normalizeText = (value: unknown) => {
   return value.trim()
 }
 
-const updateOst = async (
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) => {
+const updateOst = async (req: NextRequest, { params }: { params: Promise<{ id: string }> }) => {
   try {
     const { id } = await params
     const ostId = Number(id)
@@ -40,10 +37,7 @@ const updateOst = async (
     }
 
     if (!name || !cover) {
-      return NextResponse.json(
-        { error: 'OST名称和封面不能为空' },
-        { status: 400 },
-      )
+      return NextResponse.json({ error: 'OST名称和封面不能为空' }, { status: 400 })
     }
 
     // 检查 OST 是否存在
@@ -92,10 +86,7 @@ const updateOst = async (
   }
 }
 
-const deleteOst = async (
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) => {
+const deleteOst = async (req: NextRequest, { params }: { params: Promise<{ id: string }> }) => {
   try {
     const { id } = await params
     const ostId = Number(id)
@@ -132,10 +123,7 @@ const deleteOst = async (
   }
 }
 
-const getOst = async (
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) => {
+const getOst = async (req: NextRequest, { params }: { params: Promise<{ id: string }> }) => {
   try {
     const { id } = await params
     const ostId = Number(id)

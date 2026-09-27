@@ -5,22 +5,22 @@ import { motion } from 'motion/react'
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
 
+import {
+  createQuoteManageItem,
+  deleteQuoteManageItem,
+  getGameCardList,
+  getQuoteManageList,
+  updateQuoteManageItem,
+} from '@/api'
 import { QuoteDeleteDialog } from '@/features/quote/components/quote-delete-dialog'
 import { QuoteFormDialog } from '@/features/quote/components/quote-form-dialog'
 import { QuoteManageContent } from '@/features/quote/components/quote-manage-content'
 import { QuotePagination } from '@/features/quote/components/quote-pagination'
 import { QuoteToolArea } from '@/features/quote/components/quote-tool-area'
 import { useDebounce } from '@/hooks/use-debounce'
-import {
-  createQuoteManageItem,
-  deleteQuoteManageItem,
-  getGameCardList,
-  getQuoteManageList,
-  type QuoteManageItem,
-  updateQuoteManageItem,
-} from '@/lib/game/game-utils'
 
-import type { GameOption, QuoteFormState } from './_ui/types'
+import type { GameOption, QuoteFormState } from '@/features/quote/types'
+import type { QuoteManageItem } from '@/types'
 
 const containerVariants = {
   hidden: { opacity: 0 },

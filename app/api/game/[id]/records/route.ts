@@ -9,11 +9,7 @@ type RecordPayloadItem = {
   endAt?: string
 }
 
-const toRecordView = (record: {
-  id: number
-  playDate: string | null
-  playTime: number | null
-}) => {
+const toRecordView = (record: { id: number; playDate: string | null; playTime: number | null }) => {
   const rawStart = record.playDate || ''
   const startDate = new Date(rawStart)
   const isValidStart = !Number.isNaN(startDate.getTime())
@@ -29,10 +25,7 @@ const toRecordView = (record: {
   }
 }
 
-const getRecords = async (
-  _req: NextRequest,
-  context: { params: Promise<{ id: string }> },
-) => {
+const getRecords = async (_req: NextRequest, context: { params: Promise<{ id: string }> }) => {
   try {
     const { id } = await context.params
     const gameId = Number(id)
@@ -61,10 +54,7 @@ const getRecords = async (
       .where(eq(GameRecordTable.gameId, gameId))
 
     const records = recordRows.map(toRecordView)
-    const totalPlayTime = records.reduce(
-      (sum, item) => sum + item.durationSeconds,
-      0,
-    )
+    const totalPlayTime = records.reduce((sum, item) => sum + item.durationSeconds, 0)
 
     return NextResponse.json({
       data: {
@@ -74,17 +64,11 @@ const getRecords = async (
     })
   } catch (error) {
     console.error('Get game records failed:', error)
-    return NextResponse.json(
-      { error: 'Failed to query game records' },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: 'Failed to query game records' }, { status: 500 })
   }
 }
 
-const updateRecords = async (
-  req: NextRequest,
-  context: { params: Promise<{ id: string }> },
-) => {
+const updateRecords = async (req: NextRequest, context: { params: Promise<{ id: string }> }) => {
   try {
     const { id } = await context.params
     const gameId = Number(id)
@@ -127,10 +111,7 @@ const updateRecords = async (
       }
     })
 
-    const totalPlayTime = normalized.reduce(
-      (sum, item) => sum + item.playTime,
-      0,
-    )
+    const totalPlayTime = normalized.reduce((sum, item) => sum + item.playTime, 0)
 
     await db.delete(GameRecordTable).where(eq(GameRecordTable.gameId, gameId))
 

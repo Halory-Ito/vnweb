@@ -39,10 +39,7 @@ const searchSteamGamesByName = async (req: NextRequest) => {
 
     const keyword = normalizeKeyword(body.keyword)
     const offset = normalizePositiveInt(body.offset, 0)
-    const limit = Math.max(
-      1,
-      Math.min(50, normalizePositiveInt(body.limit, 10)),
-    )
+    const limit = Math.max(1, Math.min(50, normalizePositiveInt(body.limit, 10)))
 
     if (!keyword) {
       return NextResponse.json({
@@ -143,15 +140,9 @@ const getSteamGameById = async (req: NextRequest) => {
 
     // 获取启用的代理配置
     const proxySettings = await getEnabledProxySettings()
-    const details = await fetchSteamAppDetails(
-      appId,
-      proxySettings ?? undefined,
-    )
+    const details = await fetchSteamAppDetails(appId, proxySettings ?? undefined)
     if (!details) {
-      return NextResponse.json(
-        { error: '未找到 Steam 游戏详情' },
-        { status: 404 },
-      )
+      return NextResponse.json({ error: '未找到 Steam 游戏详情' }, { status: 404 })
     }
 
     const platforms: string[] = []

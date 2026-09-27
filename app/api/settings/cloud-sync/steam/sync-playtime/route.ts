@@ -2,16 +2,8 @@ import dayjs from 'dayjs'
 import { eq } from 'drizzle-orm'
 import { NextRequest, NextResponse } from 'next/server'
 
-import {
-  fetchOwnedGames,
-  getSteamApiKey,
-} from '@/app/api/game/steam-import/_shared'
-import {
-  GameIdMapTable,
-  GamePlayTable,
-  GameRecordTable,
-  ThirdPartyAccountTable,
-} from '@/db/schema'
+import { fetchOwnedGames, getSteamApiKey } from '@/app/api/game/steam-import/_shared'
+import { GameIdMapTable, GamePlayTable, GameRecordTable, ThirdPartyAccountTable } from '@/db/schema'
 import { db } from '@/lib/drizzle'
 
 import type { ProxySettings } from '@/lib/settings/proxy-settings'
@@ -116,13 +108,8 @@ const syncSteamPlaytime = async (req: NextRequest) => {
 
         const hasTimerRecord = Boolean(existingTimerRecord[0])
 
-        const previousTotal = Math.max(
-          0,
-          Number(existingRecord[0]?.totalPlayTime || 0),
-        )
-        const deltaSeconds = hasTimerRecord
-          ? playtimeSeconds - previousTotal
-          : playtimeSeconds
+        const previousTotal = Math.max(0, Number(existingRecord[0]?.totalPlayTime || 0))
+        const deltaSeconds = hasTimerRecord ? playtimeSeconds - previousTotal : playtimeSeconds
 
         if (existingRecord[0]) {
           // 更新现有记录

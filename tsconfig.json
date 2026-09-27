@@ -21,7 +21,6 @@
     ],
     "paths": {
       "@/*": ["./*"],
-      "@/fonts": ["./lib/font-utils"],
       "@/components/*": ["./components/*"],
       "@/features/*": ["./features/*"]
     }

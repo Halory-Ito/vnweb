@@ -125,10 +125,7 @@ const getMonthReport = async (req: NextRequest) => {
     })
   } catch (error) {
     console.error('Get month report failed:', error)
-    return NextResponse.json(
-      { error: 'Failed to fetch month report' },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: 'Failed to fetch month report' }, { status: 500 })
   }
 }
 

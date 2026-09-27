@@ -13,10 +13,7 @@ export async function GET(request: NextRequest) {
     const kw = searchParams.get('kw')
 
     if (!kw) {
-      return NextResponse.json(
-        { error: 'Missing kw parameter' },
-        { status: 400 },
-      )
+      return NextResponse.json({ error: 'Missing kw parameter' }, { status: 400 })
     }
 
     const url = `${KHINSIDER_BASE}/search`
@@ -79,9 +76,7 @@ export async function GET(request: NextRequest) {
       const nameMatch = rowHtml.match(
         /<td[^>]*>\s*<a href="[^"]*">([^<]+)<\/a>(?:\s*<span[^>]*>.*?<\/span>)?/,
       )
-      const albumName = nameMatch
-        ? nameMatch[1].trim()
-        : albumSlug.replace(/-/g, ' ')
+      const albumName = nameMatch ? nameMatch[1].trim() : albumSlug.replace(/-/g, ' ')
 
       // 提取类型（倒数第二个 td）
       const typeMatch = rowHtml.match(
@@ -120,9 +115,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ data: results })
   } catch (error) {
     console.error('Search albums failed:', error)
-    return NextResponse.json(
-      { error: 'Failed to search albums' },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: 'Failed to search albums' }, { status: 500 })
   }
 }

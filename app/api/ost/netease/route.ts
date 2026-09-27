@@ -11,10 +11,7 @@ export async function GET(request: NextRequest) {
     const kw = searchParams.get('kw')
 
     if (!kw) {
-      return NextResponse.json(
-        { error: 'Missing kw parameter' },
-        { status: 400 },
-      )
+      return NextResponse.json({ error: 'Missing kw parameter' }, { status: 400 })
     }
 
     // 使用本地 API 搜索专辑
@@ -32,10 +29,7 @@ export async function GET(request: NextRequest) {
     const data = res.data
 
     if (data.code !== 200) {
-      return NextResponse.json(
-        { error: 'Search failed', details: data },
-        { status: 500 },
-      )
+      return NextResponse.json({ error: 'Search failed', details: data }, { status: 500 })
     }
 
     const albums = (data.result?.albums || []).map(
@@ -55,9 +49,7 @@ export async function GET(request: NextRequest) {
         name: album.name,
         artist: album.artist?.name || album.artists?.[0]?.name || '未知艺术家',
         // 优先使用 picUrl，如果没有则使用旧的拼接方式
-        cover:
-          album.picUrl ||
-          `https://p2.music.126.net/${album.picId || album.pic}/300.jpg`,
+        cover: album.picUrl || `https://p2.music.126.net/${album.picId || album.pic}/300.jpg`,
         publishTime: album.publishTime
           ? new Date(album.publishTime).toISOString().split('T')[0]
           : null,
@@ -69,9 +61,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ data: albums })
   } catch (error) {
     console.error('Search albums failed:', error)
-    return NextResponse.json(
-      { error: 'Failed to search albums' },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: 'Failed to search albums' }, { status: 500 })
   }
 }

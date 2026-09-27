@@ -46,9 +46,7 @@ async function searchAlbums(kw: string) {
         results.push({
           name: albumName,
           url: albumUrl,
-          type: match[1].startsWith('/game-soundtracks')
-            ? 'album'
-            : 'soundtrack',
+          type: match[1].startsWith('/game-soundtracks') ? 'album' : 'soundtrack',
         })
       }
     }
@@ -129,8 +127,7 @@ async function getAlbumDetails(albumUrl: string) {
   }
 
   // 尝试获取时长信息 - 查找表格中的时长列
-  const durationPattern =
-    /<td class="clickable-row" align="right">(\d+:\d+)<\/td>/gi
+  const durationPattern = /<td class="clickable-row" align="right">(\d+:\d+)<\/td>/gi
 
   let songIndex = 0
   let durationMatch

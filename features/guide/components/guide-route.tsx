@@ -48,12 +48,7 @@ interface GuideRouteProps {
   onResetRoute: () => void
 }
 
-export function GuideRoute({
-  route,
-  progress,
-  onToggleStep,
-  onResetRoute,
-}: GuideRouteProps) {
+export function GuideRoute({ route, progress, onToggleStep, onResetRoute }: GuideRouteProps) {
   const [isOpen, setIsOpen] = useState(true)
 
   return (
@@ -108,8 +103,7 @@ export function GuideRoute({
                   percentage:
                     ending.steps.length > 0
                       ? Math.round(
-                          (ending.steps.filter((s) => s.finished).length /
-                            ending.steps.length) *
+                          (ending.steps.filter((s) => s.finished).length / ending.steps.length) *
                             100,
                         )
                       : 0,

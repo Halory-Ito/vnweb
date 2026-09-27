@@ -121,10 +121,7 @@ export async function GET(_req: NextRequest) {
     }
 
     // 按时间倒序排列
-    backups.sort(
-      (a, b) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-    )
+    backups.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
 
     return NextResponse.json({ data: backups })
   } catch (error) {
@@ -142,10 +139,7 @@ export async function POST(_req: NextRequest) {
     const backupDir = getBackupDir()
     await fs.promises.mkdir(backupDir, { recursive: true })
 
-    const timestamp = new Date()
-      .toISOString()
-      .replace(/[:.]/g, '-')
-      .slice(0, 19)
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19)
     const backupName = `vnweb-backup-${timestamp}`
     const backupPath = path.join(backupDir, backupName)
 
@@ -222,10 +216,7 @@ export async function POST(_req: NextRequest) {
     })
   } catch (error) {
     console.error('Create local backup failed:', error)
-    return NextResponse.json(
-      { error: (error as Error).message || '创建备份失败' },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: (error as Error).message || '创建备份失败' }, { status: 500 })
   }
 }
 
@@ -256,9 +247,6 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ data: { deleted: true, id: backupId } })
   } catch (error) {
     console.error('Delete local backup failed:', error)
-    return NextResponse.json(
-      { error: (error as Error).message || '删除备份失败' },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: (error as Error).message || '删除备份失败' }, { status: 500 })
   }
 }

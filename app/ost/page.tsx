@@ -4,22 +4,22 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 
-import { OstDeleteDialog } from './_ui/ost-delete-dialog'
-import { OstFormDialog } from './_ui/ost-form-dialog'
-import { OstManageContent } from './_ui/ost-manage-content'
-import { OstSearchToolbar } from './_ui/ost-search-toolbar'
 import {
   createOstManageItem,
   deleteOstManageItem,
   getGameCardList,
   getOstManageList,
   updateOstManageItem,
-  type OstManageItem,
-} from '@/lib/game/game-utils'
-import { api } from '@/lib/request-utils'
+} from '@/api'
 import { Pagination } from '@/components/custom-pagination'
+import { OstDeleteDialog } from '@/features/ost/components/ost-delete-dialog'
+import { OstFormDialog } from '@/features/ost/components/ost-form-dialog'
+import { OstManageContent } from '@/features/ost/components/ost-manage-content'
+import { OstSearchToolbar } from '@/features/ost/components/ost-search-toolbar'
+import { api } from '@/lib/request-utils'
 
-import type { OstItem } from './_ui/types'
+import type { OstItem } from '@/features/ost/types'
+import type { OstManageItem } from '@/types'
 
 // 转换 OstManageItem 为 OstItem
 const transformItems = (items: OstManageItem[]): OstItem[] =>
@@ -83,8 +83,7 @@ export default function OSTPage() {
       const kw = keywordInput.toLowerCase()
       const nameMatch = item.name.toLowerCase().includes(kw)
       const gameNameMatch =
-        item.gameName?.toLowerCase().includes(kw) ||
-        item.gameNameCn?.toLowerCase().includes(kw)
+        item.gameName?.toLowerCase().includes(kw) || item.gameNameCn?.toLowerCase().includes(kw)
       if (!nameMatch && !gameNameMatch) return false
     }
 

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 
+import { getVndbCharactersByGameId } from '@/api'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -18,9 +19,8 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
-import { getVndbCharactersByGameId } from '@/lib/game/game-utils'
 
-import type { CharacterOption, GameOption, QuoteFormState } from '../../../app/quote/_ui/types'
+import type { CharacterOption, GameOption, QuoteFormState } from '@/features/quote/types'
 
 type QuoteFormDialogProps = {
   open: boolean

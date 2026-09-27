@@ -19,10 +19,7 @@ function normalizePluginId(input: unknown) {
 
 function setInstalledFalse(manifestContent: string) {
   if (/installed:\s*(true|false)/.test(manifestContent)) {
-    return manifestContent.replace(
-      /installed:\s*(true|false)/,
-      'installed: false',
-    )
+    return manifestContent.replace(/installed:\s*(true|false)/, 'installed: false')
   }
 
   return manifestContent.replace(/\n\s*};\s*$/, '\n    installed: false,\n};\n')
@@ -60,9 +57,6 @@ export async function POST(request: Request) {
     })
   } catch (error) {
     console.error('Uninstall plugin failed:', error)
-    return NextResponse.json(
-      { error: 'Failed to uninstall plugin' },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: 'Failed to uninstall plugin' }, { status: 500 })
   }
 }

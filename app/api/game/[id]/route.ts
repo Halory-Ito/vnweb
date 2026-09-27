@@ -33,9 +33,7 @@ const normalizeText = (value: unknown): string => {
 
 const normalizeStringList = (value: unknown): string[] => {
   if (Array.isArray(value)) {
-    return value
-      .map((item) => (typeof item === 'string' ? item.trim() : ''))
-      .filter(Boolean)
+    return value.map((item) => (typeof item === 'string' ? item.trim() : '')).filter(Boolean)
   }
 
   if (typeof value === 'string') {
@@ -102,10 +100,7 @@ const normalizeWindowsPathInput = (value: string) => {
   return path.win32.normalize(withBackslash)
 }
 
-const getGameById = async (
-  _req: NextRequest,
-  context: { params: Promise<{ id: string }> },
-) => {
+const getGameById = async (_req: NextRequest, context: { params: Promise<{ id: string }> }) => {
   try {
     const { id } = await context.params
     const gameId = Number(id)
@@ -197,24 +192,16 @@ const getGameById = async (
         playStatus: playData?.status ?? 0,
         isRunning: (playData?.isRunning ?? 0) === 1,
         currentSessionSeconds: 0,
-        externalSourceIds: idMapRows
-          .map((item) => `${item.provider}:${item.externalId}`)
-          .join(';'),
+        externalSourceIds: idMapRows.map((item) => `${item.provider}:${item.externalId}`).join(';'),
       },
     })
   } catch (error) {
     console.error('Get game by id failed:', error)
-    return NextResponse.json(
-      { error: 'Failed to query game info' },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: 'Failed to query game info' }, { status: 500 })
   }
 }
 
-const updateGame = async (
-  req: NextRequest,
-  context: { params: Promise<{ id: string }> },
-) => {
+const updateGame = async (req: NextRequest, context: { params: Promise<{ id: string }> }) => {
   try {
     const { id } = await context.params
     const gameId = Number(id)
@@ -308,10 +295,7 @@ const updateGame = async (
         ? parseExternalSourceIds(payload.externalSourceIds)
         : undefined
 
-    if (
-      payload.externalSourceIds !== undefined &&
-      parsedExternalSourceIds === null
-    ) {
+    if (payload.externalSourceIds !== undefined && parsedExternalSourceIds === null) {
       return NextResponse.json(
         {
           error: '外部数据源id格式错误，应为 provider1:id1;provider2:id2',
@@ -324,23 +308,15 @@ const updateGame = async (
       const now = new Date().toISOString()
       const currentGame = gameRows[0]
 
-      const nextCover =
-        payload.cover !== undefined ? normalizeText(payload.cover) : undefined
-      const nextBg =
-        payload.bg !== undefined ? normalizeText(payload.bg) : undefined
-      const nextIcon =
-        payload.icon !== undefined ? normalizeText(payload.icon) : undefined
-      const nextLogo =
-        payload.logo !== undefined ? normalizeText(payload.logo) : undefined
+      const nextCover = payload.cover !== undefined ? normalizeText(payload.cover) : undefined
+      const nextBg = payload.bg !== undefined ? normalizeText(payload.bg) : undefined
+      const nextIcon = payload.icon !== undefined ? normalizeText(payload.icon) : undefined
+      const nextLogo = payload.logo !== undefined ? normalizeText(payload.logo) : undefined
 
-      const coverChanged =
-        nextCover !== undefined && nextCover !== (currentGame.cover || '')
-      const bgChanged =
-        nextBg !== undefined && nextBg !== (currentGame.bg || '')
-      const iconChanged =
-        nextIcon !== undefined && nextIcon !== (currentGame.icon || '')
-      const logoChanged =
-        nextLogo !== undefined && nextLogo !== (currentGame.logo || '')
+      const coverChanged = nextCover !== undefined && nextCover !== (currentGame.cover || '')
+      const bgChanged = nextBg !== undefined && nextBg !== (currentGame.bg || '')
+      const iconChanged = nextIcon !== undefined && nextIcon !== (currentGame.icon || '')
+      const logoChanged = nextLogo !== undefined && nextLogo !== (currentGame.logo || '')
 
       const localizedImages = localizeGameImageFieldsInBackground({
         gameName:
@@ -349,8 +325,7 @@ const updateGame = async (
           currentGame.nameCn ||
           currentGame.name ||
           `game_${gameId}`,
-        releaseDate:
-          normalizeText(payload.date ?? '') || currentGame.date || undefined,
+        releaseDate: normalizeText(payload.date ?? '') || currentGame.date || undefined,
         cover: coverChanged ? nextCover : undefined,
         bg: bgChanged ? nextBg : undefined,
         icon: iconChanged ? nextIcon : undefined,
@@ -432,9 +407,7 @@ const updateGame = async (
         gamePatch.originalPainter = normalizeText(payload.originalPainter)
       }
       if (payload.animationProduction !== undefined) {
-        gamePatch.animationProduction = normalizeText(
-          payload.animationProduction,
-        )
+        gamePatch.animationProduction = normalizeText(payload.animationProduction)
       }
       if (payload.developer !== undefined) {
         gamePatch.developer = normalizeText(payload.developer)
@@ -458,15 +431,9 @@ const updateGame = async (
         gamePatch.logo = localizedImages.logo || nextLogo || ''
       }
 
-      await db
-        .update(GameInfoTable)
-        .set(gamePatch)
-        .where(eq(GameInfoTable.id, gameId))
+      await db.update(GameInfoTable).set(gamePatch).where(eq(GameInfoTable.id, gameId))
 
-      if (
-        parsedExternalSourceIds !== undefined &&
-        parsedExternalSourceIds !== null
-      ) {
+      if (parsedExternalSourceIds !== undefined && parsedExternalSourceIds !== null) {
         const hadVndbBindingBefore = await db
           .select({ provider: GameIdMapTable.provider })
           .from(GameIdMapTable)
@@ -481,9 +448,7 @@ const updateGame = async (
         )
 
         await db.transaction(async (tx) => {
-          await tx
-            .delete(GameIdMapTable)
-            .where(eq(GameIdMapTable.gameId, gameId))
+          await tx.delete(GameIdMapTable).where(eq(GameIdMapTable.gameId, gameId))
 
           if (parsedExternalSourceIds.length > 0) {
             await tx
@@ -496,11 +461,7 @@ const updateGame = async (
                 })),
               )
               .onConflictDoNothing({
-                target: [
-                  GameIdMapTable.gameId,
-                  GameIdMapTable.provider,
-                  GameIdMapTable.externalId,
-                ],
+                target: [GameIdMapTable.gameId, GameIdMapTable.provider, GameIdMapTable.externalId],
               })
           }
         })
@@ -618,10 +579,7 @@ const updateGame = async (
   }
 }
 
-const deleteGameById = async (
-  _req: NextRequest,
-  context: { params: Promise<{ id: string }> },
-) => {
+const deleteGameById = async (_req: NextRequest, context: { params: Promise<{ id: string }> }) => {
   try {
     const { id } = await context.params
     const gameId = Number(id)
@@ -647,13 +605,9 @@ const deleteGameById = async (
       await tx.delete(GameOstTable).where(eq(GameOstTable.gameId, gameId))
       await tx.delete(GameMemoryTable).where(eq(GameMemoryTable.gameId, gameId))
       await tx.delete(CharacterTable).where(eq(CharacterTable.gameId, gameId))
-      await tx
-        .delete(CollectionGameTable)
-        .where(eq(CollectionGameTable.gameId, gameId))
+      await tx.delete(CollectionGameTable).where(eq(CollectionGameTable.gameId, gameId))
       await tx.delete(GameIdMapTable).where(eq(GameIdMapTable.gameId, gameId))
-      await tx
-        .delete(relateWebsiteTable)
-        .where(eq(relateWebsiteTable.gameId, gameId))
+      await tx.delete(relateWebsiteTable).where(eq(relateWebsiteTable.gameId, gameId))
       await tx.delete(GameInfoTable).where(eq(GameInfoTable.id, gameId))
     })
 
@@ -665,10 +619,7 @@ const deleteGameById = async (
     })
   } catch (error) {
     console.error('Delete game by id failed:', error)
-    return NextResponse.json(
-      { error: 'Failed to delete game' },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: 'Failed to delete game' }, { status: 500 })
   }
 }
 

@@ -1,4 +1,4 @@
-import { searchNeteaseAlbums, getNeteaseAlbumDetails } from './_ui/utils'
+import { searchNeteaseAlbums, getNeteaseAlbumDetails } from '@/features/ost/lib/song-utils'
 
 // 搜索专辑
 const albums = await searchNeteaseAlbums('最终幻想')

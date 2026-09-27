@@ -6,10 +6,7 @@ import path from 'node:path'
 import { ScannerTable } from '@/db/schema'
 import { db } from '@/lib/drizzle'
 
-export async function GET(
-  _req: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params
     const scannerId = Number(id)
@@ -37,9 +34,7 @@ export async function GET(
     }
 
     // 获取排除目录列表
-    const excludeList = excludeDirs
-      ? excludeDirs.split(',').map((d) => d.trim().toLowerCase())
-      : []
+    const excludeList = excludeDirs ? excludeDirs.split(',').map((d) => d.trim().toLowerCase()) : []
 
     // 获取子目录列表
     const entries = await fs.promises.readdir(directory, {

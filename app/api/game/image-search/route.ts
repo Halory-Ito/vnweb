@@ -82,10 +82,7 @@ const searchImages = async (req: NextRequest) => {
     }
 
     if (source !== 'steamgriddb') {
-      return NextResponse.json(
-        { error: `暂不支持的数据源: ${source}` },
-        { status: 400 },
-      )
+      return NextResponse.json({ error: `暂不支持的数据源: ${source}` }, { status: 400 })
     }
 
     const game = await resolveGameIdByKeyword(keyword)
@@ -118,10 +115,7 @@ const searchImages = async (req: NextRequest) => {
     })
   } catch (error) {
     console.error('Search game images failed:', error)
-    return NextResponse.json(
-      { error: (error as Error).message || '搜索图片失败' },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: (error as Error).message || '搜索图片失败' }, { status: 500 })
   }
 }
 

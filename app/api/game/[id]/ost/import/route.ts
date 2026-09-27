@@ -45,10 +45,7 @@ const getSafeExt = (fileName: string) => {
   return '.mp3'
 }
 
-const importOst = async (
-  req: NextRequest,
-  context: { params: Promise<{ id: string }> },
-) => {
+const importOst = async (req: NextRequest, context: { params: Promise<{ id: string }> }) => {
   try {
     const gameId = await parseGameId(context)
     await ensureGameExists(gameId)
@@ -65,24 +62,13 @@ const importOst = async (
     }
 
     if (file.size <= 0 || file.size > MAX_UPLOAD_SIZE) {
-      return NextResponse.json(
-        { error: '文件大小需在 1B 到 100MB 之间' },
-        { status: 400 },
-      )
+      return NextResponse.json({ error: '文件大小需在 1B 到 100MB 之间' }, { status: 400 })
     }
 
     const ext = getSafeExt(file.name)
-    const baseName = sanitizeFileName(
-      path.basename(file.name, path.extname(file.name)),
-    )
+    const baseName = sanitizeFileName(path.basename(file.name, path.extname(file.name)))
     const fileName = `${baseName}_${Date.now()}${ext}`
-    const targetDir = path.join(
-      process.cwd(),
-      'public',
-      'assets',
-      'ost',
-      String(gameId),
-    )
+    const targetDir = path.join(process.cwd(), 'public', 'assets', 'ost', String(gameId))
     const targetPath = path.join(targetDir, fileName)
 
     await fs.mkdir(targetDir, { recursive: true })

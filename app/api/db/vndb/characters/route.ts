@@ -30,12 +30,8 @@ const resolveBindingsByGameId = async (gameId: number) => {
     .from(GameIdMapTable)
     .where(eq(GameIdMapTable.gameId, gameId))
 
-  const vndbBinding = idMaps.find(
-    (item) => item.provider.trim().toLowerCase() === 'vndb',
-  )
-  const bangumiBinding = idMaps.find(
-    (item) => item.provider.trim().toLowerCase() === 'bangumi',
-  )
+  const vndbBinding = idMaps.find((item) => item.provider.trim().toLowerCase() === 'vndb')
+  const bangumiBinding = idMaps.find((item) => item.provider.trim().toLowerCase() === 'bangumi')
 
   const normalizeBangumiId = (rawId: string) => {
     const trimmed = rawId.trim()
@@ -57,9 +53,7 @@ const resolveBindingsByGameId = async (gameId: number) => {
 
   return {
     vnId: vndbBinding ? normalizeVnId(vndbBinding.externalId) : '',
-    bgmSubjectId: bangumiBinding
-      ? normalizeBangumiId(bangumiBinding.externalId)
-      : '',
+    bgmSubjectId: bangumiBinding ? normalizeBangumiId(bangumiBinding.externalId) : '',
   }
 }
 
@@ -115,10 +109,7 @@ const syncCharactersToDb = async (req: NextRequest) => {
     const payload = (await req.json().catch(() => ({}))) as {
       gameId?: number
       source?: string
-      mergeStrategy?:
-        | 'prefer_vndb'
-        | 'prefer_bangumi'
-        | 'prefer_bangumi_with_vndb_fallback'
+      mergeStrategy?: 'prefer_vndb' | 'prefer_bangumi' | 'prefer_bangumi_with_vndb_fallback'
       saveImagesToLocal?: boolean
     }
     const gameId = Number(payload.gameId)

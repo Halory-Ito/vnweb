@@ -39,10 +39,7 @@ const toNameKeys = (name: string, original: string) => {
 
 // ── 多源合并 ──────────────────────────────────────────────
 
-type CharacterMergeStrategy =
-  | 'prefer_vndb'
-  | 'prefer_bangumi'
-  | 'prefer_bangumi_with_vndb_fallback'
+type CharacterMergeStrategy = 'prefer_vndb' | 'prefer_bangumi' | 'prefer_bangumi_with_vndb_fallback'
 
 const mergeCharacterRows = (
   vndbRows: NormalizedCharacterRow[],
@@ -80,9 +77,7 @@ const mergeCharacterRows = (
     const merged = [...vndbRows]
     const used = new Set(merged.map((item) => item.vndbId))
     for (const row of bgmRows) {
-      const hasMatch = toNameKeys(row.name, row.original).some((key) =>
-        vndbByName.has(key),
-      )
+      const hasMatch = toNameKeys(row.name, row.original).some((key) => vndbByName.has(key))
       if (!hasMatch && !used.has(row.vndbId)) {
         merged.push(row)
         used.add(row.vndbId)
@@ -103,15 +98,9 @@ const mergeCharacterRows = (
         ...matchedVndb,
         ...bgmRow,
         name: isBlank(bgmRow.name) ? matchedVndb.name : bgmRow.name,
-        original: isBlank(bgmRow.original)
-          ? matchedVndb.original
-          : bgmRow.original,
-        description: isBlank(bgmRow.description)
-          ? matchedVndb.description
-          : bgmRow.description,
-        imageUrl: isBlank(bgmRow.imageUrl)
-          ? matchedVndb.imageUrl
-          : bgmRow.imageUrl,
+        original: isBlank(bgmRow.original) ? matchedVndb.original : bgmRow.original,
+        description: isBlank(bgmRow.description) ? matchedVndb.description : bgmRow.description,
+        imageUrl: isBlank(bgmRow.imageUrl) ? matchedVndb.imageUrl : bgmRow.imageUrl,
       })
       continue
     }
@@ -120,9 +109,7 @@ const mergeCharacterRows = (
   }
 
   for (const vndbRow of vndbRows) {
-    const hasMatch = toNameKeys(vndbRow.name, vndbRow.original).some((key) =>
-      bgmByName.has(key),
-    )
+    const hasMatch = toNameKeys(vndbRow.name, vndbRow.original).some((key) => bgmByName.has(key))
     if (!hasMatch) {
       result.set(vndbRow.vndbId, vndbRow)
     }
@@ -142,8 +129,7 @@ export const syncVndbCharactersByGameId = async (
   },
 ) => {
   const source = options?.source ?? 'vndb'
-  const mergeStrategy =
-    options?.mergeStrategy ?? 'prefer_bangumi_with_vndb_fallback'
+  const mergeStrategy = options?.mergeStrategy ?? 'prefer_bangumi_with_vndb_fallback'
   const saveImagesToLocal = options?.saveImagesToLocal ?? true
 
   const now = dayjs().toISOString()
@@ -153,9 +139,7 @@ export const syncVndbCharactersByGameId = async (
     const vndbProvider = getCharacterProvider('vndb')
     const bangumiProvider = getCharacterProvider('bangumi')
 
-    const vnId = vndbProvider
-      ? ((await vndbProvider.resolveExternalId(gameId)) ?? '')
-      : ''
+    const vnId = vndbProvider ? ((await vndbProvider.resolveExternalId(gameId)) ?? '') : ''
     const bgmSubjectId = bangumiProvider
       ? ((await bangumiProvider.resolveExternalId(gameId)) ?? '')
       : ''
@@ -239,11 +223,7 @@ export const syncVndbCharactersByGameId = async (
 
 // ── 数据库写入 ────────────────────────────────────────────
 
-const upsertCharacters = async (
-  gameId: number,
-  rows: NormalizedCharacterRow[],
-  now: string,
-) => {
+const upsertCharacters = async (gameId: number, rows: NormalizedCharacterRow[], now: string) => {
   if (!rows.length) {
     return { total: 0, inserted: 0, updated: 0 }
   }
@@ -284,12 +264,7 @@ const upsertCharacters = async (
           gender: row.gender,
           updatedAt: now,
         })
-        .where(
-          and(
-            eq(CharacterTable.gameId, gameId),
-            eq(CharacterTable.vndbId, row.vndbId),
-          ),
-        )
+        .where(and(eq(CharacterTable.gameId, gameId), eq(CharacterTable.vndbId, row.vndbId)))
     }
   })
 

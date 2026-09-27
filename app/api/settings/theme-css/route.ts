@@ -36,10 +36,7 @@ const updateThemeCss = async (req: NextRequest) => {
     }
 
     if (Buffer.byteLength(payload.content, 'utf-8') > MAX_CSS_SIZE) {
-      return NextResponse.json(
-        { error: '主题内容过大（超过 1MB）' },
-        { status: 400 },
-      )
+      return NextResponse.json({ error: '主题内容过大（超过 1MB）' }, { status: 400 })
     }
 
     await fs.writeFile(CUSTOM_CSS_PATH, payload.content, 'utf-8')

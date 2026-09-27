@@ -1,11 +1,7 @@
 import { api } from '@/lib/request-utils'
 
-import type {
-  GameSearchResult,
-  ProviderPlugin,
-  SteamOwnedGameItem,
-} from '@/lib/plugins/types'
-import type { GameInfo } from '@/types/game-types'
+import type { GameSearchResult, ProviderPlugin, SteamOwnedGameItem } from '@/lib/plugins/types'
+import type { GameInfo } from '@/types/game'
 
 // ── 插件定义 ──────────────────────────────────────────────
 export const steamProvider: ProviderPlugin = {
@@ -41,9 +37,7 @@ export const steamProvider: ProviderPlugin = {
     return (res.data as { data: GameInfo }).data
   },
 
-  searchByUid: async (
-    uid: string,
-  ): Promise<{ total: number; items: SteamOwnedGameItem[] }> => {
+  searchByUid: async (uid: string): Promise<{ total: number; items: SteamOwnedGameItem[] }> => {
     const res = await api.request({
       method: 'POST',
       url: '/game/steam-import/search',
@@ -51,9 +45,7 @@ export const steamProvider: ProviderPlugin = {
       data: { steamId: uid },
     })
 
-    return (
-      res.data as { data: { total: number; items: SteamOwnedGameItem[] } }
-    ).data
+    return (res.data as { data: { total: number; items: SteamOwnedGameItem[] } }).data
   },
 
   importOneByUid: async (payload) => {

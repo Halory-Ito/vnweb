@@ -26,9 +26,7 @@ const deleteCollectionById = async (
       return NextResponse.json({ error: '收藏夹不存在' }, { status: 404 })
     }
 
-    await db
-      .delete(CollectionGameTable)
-      .where(eq(CollectionGameTable.collectionId, collectionId))
+    await db.delete(CollectionGameTable).where(eq(CollectionGameTable.collectionId, collectionId))
 
     await db.delete(CollectionTable).where(eq(CollectionTable.id, collectionId))
 
@@ -40,10 +38,7 @@ const deleteCollectionById = async (
     })
   } catch (error) {
     console.error('Delete collection failed:', error)
-    return NextResponse.json(
-      { error: 'Failed to delete collection' },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: 'Failed to delete collection' }, { status: 500 })
   }
 }
 

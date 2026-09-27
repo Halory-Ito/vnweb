@@ -37,12 +37,7 @@ const resolveSteamAppId = async (gameId: number, steamAppIdRaw: unknown) => {
   const rows = await db
     .select({ externalId: GameIdMapTable.externalId })
     .from(GameIdMapTable)
-    .where(
-      and(
-        eq(GameIdMapTable.gameId, gameId),
-        eq(GameIdMapTable.provider, 'steam'),
-      ),
-    )
+    .where(and(eq(GameIdMapTable.gameId, gameId), eq(GameIdMapTable.provider, 'steam')))
     .limit(1)
 
   const existedAppId = normalizeSteamAppId(rows[0]?.externalId)
@@ -68,10 +63,7 @@ const ensureGameExists = async (gameId: number) => {
   }
 }
 
-const syncSteamPvs = async (
-  req: NextRequest,
-  context: { params: Promise<{ id: string }> },
-) => {
+const syncSteamPvs = async (req: NextRequest, context: { params: Promise<{ id: string }> }) => {
   try {
     const gameId = await parseGameId(context)
     await ensureGameExists(gameId)
@@ -80,22 +72,13 @@ const syncSteamPvs = async (
       steamAppId?: string | number
     }
 
-    const { steamAppId, shouldBind } = await resolveSteamAppId(
-      gameId,
-      payload.steamAppId,
-    )
+    const { steamAppId, shouldBind } = await resolveSteamAppId(gameId, payload.steamAppId)
 
     // 获取启用的代理配置
     const proxySettings = await getEnabledProxySettings()
-    const details = await fetchSteamAppDetails(
-      steamAppId,
-      proxySettings ?? undefined,
-    )
+    const details = await fetchSteamAppDetails(steamAppId, proxySettings ?? undefined)
     if (!details) {
-      return NextResponse.json(
-        { error: '未能从 Steam 获取游戏详情，请稍后重试' },
-        { status: 502 },
-      )
+      return NextResponse.json({ error: '未能从 Steam 获取游戏详情，请稍后重试' }, { status: 502 })
     }
 
     const movies = details.movies ?? []
@@ -127,12 +110,7 @@ const syncSteamPvs = async (
     if (shouldBind) {
       await db
         .delete(GameIdMapTable)
-        .where(
-          and(
-            eq(GameIdMapTable.gameId, gameId),
-            eq(GameIdMapTable.provider, 'steam'),
-          ),
-        )
+        .where(and(eq(GameIdMapTable.gameId, gameId), eq(GameIdMapTable.provider, 'steam')))
 
       await db.insert(GameIdMapTable).values({
         gameId,
@@ -195,10 +173,7 @@ const syncSteamPvs = async (
     }
 
     if (message === 'Steam appid is required') {
-      return NextResponse.json(
-        { error: '请提供有效的 Steam AppID（纯数字）' },
-        { status: 400 },
-      )
+      return NextResponse.json({ error: '请提供有效的 Steam AppID（纯数字）' }, { status: 400 })
     }
 
     return NextResponse.json({ error: message }, { status: 500 })

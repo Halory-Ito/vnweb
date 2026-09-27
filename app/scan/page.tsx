@@ -14,7 +14,7 @@ import {
 import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 
-import SubdirSelectDialog from '@/components/scan/subdir-select-dialog'
+import { getGameCardList } from '@/api'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -34,7 +34,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { getGameCardList } from '@/lib/game/game-utils'
 import {
   createScanner,
   deleteScannerById,
@@ -44,7 +43,8 @@ import {
   selectDirectory,
   startScannerById,
   updateScannerById,
-} from '@/lib/game/scan-utils'
+} from '@/features/game/lib/scan-utils'
+import SubdirSelectDialog from '@/features/scan/components/subdir-select-dialog'
 import { getAllProviders } from '@/lib/providers'
 import { api } from '@/lib/request-utils'
 
@@ -85,9 +85,7 @@ const ScanDirectoryRow = ({
           <span>{item.sourceName}</span>
           <span className="hidden sm:inline">·</span>
           <span>
-            {item.scanMode === 0
-              ? `层级扫描（层级 ${item.scanLevel}）`
-              : '可执行文件扫描'}
+            {item.scanMode === 0 ? `层级扫描（层级 ${item.scanLevel}）` : '可执行文件扫描'}
           </span>
           <span className="hidden sm:inline">·</span>
           <span>完成度 {item.progress}%</span>
@@ -160,9 +158,7 @@ const ScanDirectoryRow = ({
 export default function Scan() {
   const [progress, setProgress] = useState(0)
   const [failedItems, setFailedItems] = useState<ScanErrorItem[]>([])
-  const [scanDirectories, setScanDirectories] = useState<ScanDirectoryItem[]>(
-    [],
-  )
+  const [scanDirectories, setScanDirectories] = useState<ScanDirectoryItem[]>([])
   const [isLoadingScanners, setIsLoadingScanners] = useState(false)
 
   const [failedDialogOpen, setFailedDialogOpen] = useState(false)
@@ -170,9 +166,7 @@ export default function Scan() {
   const [addDirectoryOpen, setAddDirectoryOpen] = useState(false)
   const [editDirectoryId, setEditDirectoryId] = useState<number | null>(null)
   const [subdirSelectOpen, setSubdirSelectOpen] = useState(false)
-  const [subdirSelectScannerId, setSubdirSelectScannerId] = useState<
-    number | null
-  >(null)
+  const [subdirSelectScannerId, setSubdirSelectScannerId] = useState<number | null>(null)
 
   const [excludePathInput, setExcludePathInput] = useState('')
   const [excludePaths, setExcludePaths] = useState<string[]>([])
@@ -180,8 +174,7 @@ export default function Scan() {
   const [directoryPathInput, setDirectoryPathInput] = useState('')
   const allProviders = getAllProviders()
   const defaultProviderId = allProviders[0]?.id ?? 'bangumi'
-  const [directoryProviderInput, setDirectoryProviderInput] =
-    useState(defaultProviderId)
+  const [directoryProviderInput, setDirectoryProviderInput] = useState(defaultProviderId)
   const [directoryScanModeInput, setDirectoryScanModeInput] = useState('0')
   const [directoryScanLevelInput, setDirectoryScanLevelInput] = useState('0')
   const [isSavingDirectory, setIsSavingDirectory] = useState(false)
@@ -211,12 +204,7 @@ export default function Scan() {
           gameCount: item.gameCount ?? 0,
           scanMode: item.scanMode ?? 0,
           scanLevel: item.scanLevel ?? 0,
-          status:
-            progressValue >= 100
-              ? '已完成'
-              : progressValue > 0
-                ? '扫描中'
-                : '未开始',
+          status: progressValue >= 100 ? '已完成' : progressValue > 0 ? '扫描中' : '未开始',
         }
       })
       setScanDirectories((prev) => {
@@ -240,19 +228,13 @@ export default function Scan() {
         })
         return next
       })
-      const totalWeight = mapped.reduce(
-        (sum, item) => sum + Math.max(item.gameCount, 1),
-        0,
-      )
+      const totalWeight = mapped.reduce((sum, item) => sum + Math.max(item.gameCount, 1), 0)
       const weightedProgress =
         totalWeight === 0
           ? 0
           : Math.floor(
-              mapped.reduce(
-                (sum, item) =>
-                  sum + item.progress * Math.max(item.gameCount, 1),
-                0,
-              ) / totalWeight,
+              mapped.reduce((sum, item) => sum + item.progress * Math.max(item.gameCount, 1), 0) /
+                totalWeight,
             )
       setProgress(weightedProgress)
     } catch (error) {
@@ -260,9 +242,7 @@ export default function Scan() {
         response?: { data?: { error?: string } }
         message?: string
       }
-      toast.error(
-        err.response?.data?.error || err.message || '加载扫描目录失败',
-      )
+      toast.error(err.response?.data?.error || err.message || '加载扫描目录失败')
     } finally {
       setIsLoadingScanners(false)
     }
@@ -278,9 +258,7 @@ export default function Scan() {
         response?: { data?: { error?: string } }
         message?: string
       }
-      toast.error(
-        err.response?.data?.error || err.message || '加载失败列表失败',
-      )
+      toast.error(err.response?.data?.error || err.message || '加载失败列表失败')
     } finally {
       setIsLoadingErrors(false)
     }
@@ -327,9 +305,7 @@ export default function Scan() {
     }, 800)
 
     try {
-      await Promise.all(
-        scanDirectories.map((item) => startScannerById(item.id)),
-      )
+      await Promise.all(scanDirectories.map((item) => startScannerById(item.id)))
       await loadScanners()
       await loadScanErrors()
       await loadGameCount()
@@ -452,9 +428,7 @@ export default function Scan() {
       toast.error(err.response?.data?.error || err.message || '扫描失败')
     } finally {
       window.clearInterval(timer)
-      setScanningDirectoryIds((prev) =>
-        prev.filter((item) => item !== subdirSelectScannerId),
-      )
+      setScanningDirectoryIds((prev) => prev.filter((item) => item !== subdirSelectScannerId))
     }
   }
 
@@ -525,9 +499,7 @@ export default function Scan() {
         response?: { data?: { error?: string } }
         message?: string
       }
-      toast.error(
-        err.response?.data?.error || err.message || '保存扫描目录失败',
-      )
+      toast.error(err.response?.data?.error || err.message || '保存扫描目录失败')
     } finally {
       setIsSavingDirectory(false)
     }
@@ -552,10 +524,7 @@ export default function Scan() {
       return
     }
 
-    if (
-      !Number.isInteger(nextScanMode) ||
-      (nextScanMode !== 0 && nextScanMode !== 1)
-    ) {
+    if (!Number.isInteger(nextScanMode) || (nextScanMode !== 0 && nextScanMode !== 1)) {
       toast.error('请选择有效的扫描模式')
       return
     }
@@ -663,7 +632,12 @@ export default function Scan() {
       <div className="rounded-lg border">
         <div className="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
           <h3 className="text-lg font-semibold">扫描目录列表</h3>
-          <Button type="button" variant="outline" onClick={handleOpenAddDialog} className="w-full sm:w-auto">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleOpenAddDialog}
+            className="w-full sm:w-auto"
+          >
             添加扫描目录列表
           </Button>
         </div>
@@ -672,9 +646,7 @@ export default function Scan() {
             <ScanDirectoryRow
               key={item.id}
               item={item}
-              isScanning={
-                isScanningAll || scanningDirectoryIds.includes(item.id)
-              }
+              isScanning={isScanningAll || scanningDirectoryIds.includes(item.id)}
               onStart={(id) => void handleStartScan(id)}
               onStop={(id) => void handleStopScan(id)}
               onEdit={handleOpenEditDialog}
@@ -697,14 +669,9 @@ export default function Scan() {
               <div className="text-muted-foreground text-sm">暂无失败项</div>
             ) : (
               failedItems.map((item) => (
-                <div
-                  key={item.id}
-                  className="space-y-1 rounded-md border px-3 py-2 text-sm"
-                >
+                <div key={item.id} className="space-y-1 rounded-md border px-3 py-2 text-sm">
                   <div className="font-medium">{item.error}</div>
-                  <div className="text-muted-foreground text-xs">
-                    目录：{item.directory}
-                  </div>
+                  <div className="text-muted-foreground text-xs">目录：{item.directory}</div>
                 </div>
               ))
             )}
@@ -756,9 +723,7 @@ export default function Scan() {
 
             <div className="max-h-56 space-y-2 overflow-y-auto">
               {excludePaths.length === 0 ? (
-                <div className="text-muted-foreground text-sm">
-                  暂无排除路径
-                </div>
+                <div className="text-muted-foreground text-sm">暂无排除路径</div>
               ) : (
                 excludePaths.map((item) => (
                   <div
@@ -790,7 +755,11 @@ export default function Scan() {
             >
               取消
             </Button>
-            <Button type="button" onClick={() => setGlobalSettingOpen(false)} className="w-full sm:w-auto">
+            <Button
+              type="button"
+              onClick={() => setGlobalSettingOpen(false)}
+              className="w-full sm:w-auto"
+            >
               保存
             </Button>
           </DialogFooter>
@@ -821,10 +790,7 @@ export default function Scan() {
                 <FolderOpenIcon className="size-4" />
               </Button>
             </div>
-            <Select
-              value={directoryProviderInput}
-              onValueChange={setDirectoryProviderInput}
-            >
+            <Select value={directoryProviderInput} onValueChange={setDirectoryProviderInput}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="选择数据源" />
               </SelectTrigger>
@@ -836,10 +802,7 @@ export default function Scan() {
                 ))}
               </SelectContent>
             </Select>
-            <Select
-              value={directoryScanModeInput}
-              onValueChange={setDirectoryScanModeInput}
-            >
+            <Select value={directoryScanModeInput} onValueChange={setDirectoryScanModeInput}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="选择扫描模式" />
               </SelectTrigger>
@@ -911,10 +874,7 @@ export default function Scan() {
                 <FolderOpenIcon className="size-4" />
               </Button>
             </div>
-            <Select
-              value={directoryProviderInput}
-              onValueChange={setDirectoryProviderInput}
-            >
+            <Select value={directoryProviderInput} onValueChange={setDirectoryProviderInput}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="选择数据源" />
               </SelectTrigger>
@@ -926,10 +886,7 @@ export default function Scan() {
                 ))}
               </SelectContent>
             </Select>
-            <Select
-              value={directoryScanModeInput}
-              onValueChange={setDirectoryScanModeInput}
-            >
+            <Select value={directoryScanModeInput} onValueChange={setDirectoryScanModeInput}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="选择扫描模式" />
               </SelectTrigger>
@@ -951,8 +908,7 @@ export default function Scan() {
             {editingDirectory ? (
               <div className="text-muted-foreground text-xs">
                 <span></span>
-                当前完成度 {editingDirectory.progress}% · 游戏{' '}
-                {editingDirectory.gameCount}
+                当前完成度 {editingDirectory.progress}% · 游戏 {editingDirectory.gameCount}
               </div>
             ) : null}
           </div>

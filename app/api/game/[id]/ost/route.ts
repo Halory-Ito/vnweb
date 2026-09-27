@@ -32,10 +32,7 @@ const ensureGameExists = async (gameId: number) => {
   }
 }
 
-const getOsts = async (
-  _req: NextRequest,
-  context: { params: Promise<{ id: string }> },
-) => {
+const getOsts = async (_req: NextRequest, context: { params: Promise<{ id: string }> }) => {
   try {
     const gameId = await parseGameId(context)
     await ensureGameExists(gameId)
@@ -70,10 +67,7 @@ const getOsts = async (
   }
 }
 
-const createOst = async (
-  req: NextRequest,
-  context: { params: Promise<{ id: string }> },
-) => {
+const createOst = async (req: NextRequest, context: { params: Promise<{ id: string }> }) => {
   try {
     const gameId = await parseGameId(context)
     await ensureGameExists(gameId)
@@ -88,10 +82,7 @@ const createOst = async (
     const cover = normalizeText(payload.cover)
 
     if (!name || !cover) {
-      return NextResponse.json(
-        { error: 'name and cover are required' },
-        { status: 400 },
-      )
+      return NextResponse.json({ error: 'name and cover are required' }, { status: 400 })
     }
 
     const now = new Date().toISOString()
@@ -131,10 +122,7 @@ const createOst = async (
   }
 }
 
-const updateOst = async (
-  req: NextRequest,
-  context: { params: Promise<{ id: string }> },
-) => {
+const updateOst = async (req: NextRequest, context: { params: Promise<{ id: string }> }) => {
   try {
     const gameId = await parseGameId(context)
     await ensureGameExists(gameId)
@@ -151,10 +139,7 @@ const updateOst = async (
     const cover = normalizeText(payload.cover)
 
     if (!Number.isInteger(itemId) || itemId <= 0 || !name || !cover) {
-      return NextResponse.json(
-        { error: 'itemId, name and cover are required' },
-        { status: 400 },
-      )
+      return NextResponse.json({ error: 'itemId, name and cover are required' }, { status: 400 })
     }
 
     const now = new Date().toISOString()
@@ -197,10 +182,7 @@ const updateOst = async (
   }
 }
 
-const deleteOst = async (
-  req: NextRequest,
-  context: { params: Promise<{ id: string }> },
-) => {
+const deleteOst = async (req: NextRequest, context: { params: Promise<{ id: string }> }) => {
   try {
     const gameId = await parseGameId(context)
     await ensureGameExists(gameId)
@@ -237,9 +219,4 @@ const deleteOst = async (
   }
 }
 
-export {
-  getOsts as GET,
-  createOst as POST,
-  updateOst as PATCH,
-  deleteOst as DELETE,
-}
+export { getOsts as GET, createOst as POST, updateOst as PATCH, deleteOst as DELETE }

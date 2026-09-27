@@ -306,3 +306,13 @@ export const CGTable = sqliteTable('cg', {
   createdAt: text().default(dayjs().toString()), // 创建时间
   updatedAt: text().default(dayjs().toString()), // 更新时间
 })
+
+// 最近访问记录表
+// 同一游戏 + 同一入口类型只保留一条，重复访问时更新 href 与 visitedAt
+export const RecentVisitTable = sqliteTable('recent_visit', {
+  id: int().primaryKey({ autoIncrement: true }),
+  gameId: int().notNull(), // 关联 GameInfoTable
+  type: text().notNull(), // 入口类型：detail、guide、ost、memory
+  href: text().notNull(), // 访问路径
+  visitedAt: text().default(''), // 访问时间
+})

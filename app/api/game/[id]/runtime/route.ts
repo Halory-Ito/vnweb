@@ -4,10 +4,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { GamePlayTable } from '@/db/schema'
 import { db } from '@/lib/drizzle'
 
-const getRuntime = async (
-  _req: NextRequest,
-  context: { params: Promise<{ id: string }> },
-) => {
+const getRuntime = async (_req: NextRequest, context: { params: Promise<{ id: string }> }) => {
   try {
     const { id } = await context.params
     const gameId = Number(id)
@@ -36,12 +33,7 @@ const getRuntime = async (
     }
 
     const currentSessionSeconds = play.lastLaunchedAt
-      ? Math.max(
-          0,
-          Math.floor(
-            (Date.now() - new Date(play.lastLaunchedAt).getTime()) / 1000,
-          ),
-        )
+      ? Math.max(0, Math.floor((Date.now() - new Date(play.lastLaunchedAt).getTime()) / 1000))
       : 0
 
     return NextResponse.json({

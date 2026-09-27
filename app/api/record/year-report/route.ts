@@ -87,10 +87,7 @@ const getYearReport = async (req: NextRequest) => {
       const publisherKey = (game.publisher || '').trim() || '未知发行商'
 
       typeBucket.set(typeKey, (typeBucket.get(typeKey) || 0) + seconds)
-      publisherBucket.set(
-        publisherKey,
-        (publisherBucket.get(publisherKey) || 0) + seconds,
-      )
+      publisherBucket.set(publisherKey, (publisherBucket.get(publisherKey) || 0) + seconds)
     }
 
     const monthlyStats = Array.from({ length: 12 }).map((_, index) => {
@@ -143,10 +140,7 @@ const getYearReport = async (req: NextRequest) => {
     })
   } catch (error) {
     console.error('Get year report failed:', error)
-    return NextResponse.json(
-      { error: 'Failed to fetch year report' },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: 'Failed to fetch year report' }, { status: 500 })
   }
 }
 

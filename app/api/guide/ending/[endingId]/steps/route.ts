@@ -1,8 +1,8 @@
 import { eq } from 'drizzle-orm'
 import { NextRequest, NextResponse } from 'next/server'
 
-import { db } from '@/lib/drizzle'
 import { GuideStepTable } from '@/db/schema'
+import { db } from '@/lib/drizzle'
 
 export async function GET(
   request: NextRequest,
@@ -33,9 +33,6 @@ export async function GET(
     return NextResponse.json(stepsWithProgress)
   } catch (error) {
     console.error('Fetch steps error:', error)
-    return NextResponse.json(
-      { error: 'Failed to fetch steps' },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: 'Failed to fetch steps' }, { status: 500 })
   }
 }

@@ -10,18 +10,17 @@ import {
 
 const getPublicEnv = (key: string): string | undefined => {
   if (typeof import.meta !== 'undefined') {
-    const value = (
-      import.meta as ImportMeta & { env?: Record<string, string | undefined> }
-    ).env?.[key]
+    const value = (import.meta as ImportMeta & { env?: Record<string, string | undefined> }).env?.[
+      key
+    ]
     if (value) {
       return value
     }
   }
 
   if (typeof globalThis !== 'undefined') {
-    const value = (
-      globalThis as { process?: { env?: Record<string, string | undefined> } }
-    ).process?.env?.[key]
+    const value = (globalThis as { process?: { env?: Record<string, string | undefined> } }).process
+      ?.env?.[key]
     if (value) {
       return value
     }
@@ -32,21 +31,17 @@ const getPublicEnv = (key: string): string | undefined => {
 
 // bgm client
 export const BGMClient = axios.create({
-  baseURL:
-    getPublicEnv('NEXT_PUBLIC_BANGUMI_API_URL') || NEXT_PUBLIC_BANGUMI_API_URL,
+  baseURL: getPublicEnv('NEXT_PUBLIC_BANGUMI_API_URL') || NEXT_PUBLIC_BANGUMI_API_URL,
   timeout: undefined,
   headers: {
     'User-Agent':
       'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:144.0) Gecko/20100101 Firefox/144.0',
-    'Access-Token':
-      getPublicEnv('NEXT_PUBLIC_BANGUMI_API_KEY') ||
-      NEXT_PUBLIC_BANGUMI_API_KEY,
+    'Access-Token': getPublicEnv('NEXT_PUBLIC_BANGUMI_API_KEY') || NEXT_PUBLIC_BANGUMI_API_KEY,
   },
 })
 
 const sgdbApiKey =
-  getPublicEnv('NEXT_PUBLIC_STEAMGRIDDB_API_KEY')?.trim() ||
-  NEXT_PUBLIC_STEAMGRIDDB_API_KEY?.trim()
+  getPublicEnv('NEXT_PUBLIC_STEAMGRIDDB_API_KEY')?.trim() || NEXT_PUBLIC_STEAMGRIDDB_API_KEY?.trim()
 const sgdbBaseUrl =
   getPublicEnv('NEXT_PUBLIC_STEAMGRIDDB_BASE_URL') ||
   NEXT_PUBLIC_STEAMGRIDDB_BASE_URL ||
@@ -72,24 +67,12 @@ const getSGDBClient = (): SGDB => {
 }
 
 type SGDBClientMethods = {
-  searchGame: (
-    ...args: Parameters<SGDB['searchGame']>
-  ) => ReturnType<SGDB['searchGame']>
-  getGameById: (
-    ...args: Parameters<SGDB['getGameById']>
-  ) => ReturnType<SGDB['getGameById']>
-  getGridsById: (
-    ...args: Parameters<SGDB['getGridsById']>
-  ) => ReturnType<SGDB['getGridsById']>
-  getIconsById: (
-    ...args: Parameters<SGDB['getIconsById']>
-  ) => ReturnType<SGDB['getIconsById']>
-  getLogosById: (
-    ...args: Parameters<SGDB['getLogosById']>
-  ) => ReturnType<SGDB['getLogosById']>
-  getHeroesById: (
-    ...args: Parameters<SGDB['getHeroesById']>
-  ) => ReturnType<SGDB['getHeroesById']>
+  searchGame: (...args: Parameters<SGDB['searchGame']>) => ReturnType<SGDB['searchGame']>
+  getGameById: (...args: Parameters<SGDB['getGameById']>) => ReturnType<SGDB['getGameById']>
+  getGridsById: (...args: Parameters<SGDB['getGridsById']>) => ReturnType<SGDB['getGridsById']>
+  getIconsById: (...args: Parameters<SGDB['getIconsById']>) => ReturnType<SGDB['getIconsById']>
+  getLogosById: (...args: Parameters<SGDB['getLogosById']>) => ReturnType<SGDB['getLogosById']>
+  getHeroesById: (...args: Parameters<SGDB['getHeroesById']>) => ReturnType<SGDB['getHeroesById']>
 }
 
 // steamgriddb client
@@ -114,8 +97,7 @@ export const SteamClient = axios.create({
 
 // vndb client
 export const VNDBClient = axios.create({
-  baseURL:
-    getPublicEnv('NEXT_PUBLIC_VNDB_BASE_URL') || 'https://api.vndb.org/kana',
+  baseURL: getPublicEnv('NEXT_PUBLIC_VNDB_BASE_URL') || 'https://api.vndb.org/kana',
   timeout: undefined,
   headers: {
     'Content-Type': 'application/json',

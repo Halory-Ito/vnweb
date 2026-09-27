@@ -25,10 +25,13 @@
 
 # API 层
 
-- 所有 API 请求通过 `app/api`下的模块发起
+- 客户端请求统一封装，分两层：
+  - 跨模块共用的领域请求放在根级 `api/`（`@/api`），按域拆分文件（如 `api/game.ts`、`api/quote.ts`、`api/ost.ts`），由 `api/index.ts` 统一出口
+  - 仅本模块使用的请求放在 `features/xxx/xxx-api.ts`，由模块 `index.ts(x)` 出口
+- 请求涉及的领域类型放在根级 `types/`（`@/types`），按域拆分文件并由 `types/index.ts` 出口；仅模块内部使用的类型可留在模块内
+- 所有 API 请求通过 `app/api`下的模块发起（`route.ts` 提供服务端实现）
 - 使用项目封装的 `api`实例发起请求（`lib/request-utils.ts`）
-- 不要组件中直接调用 `fetch`
-- 请在`features`目录下的`xxx-api.ts`文件中封装请求的细节，在`route.ts`中调用
+- 不要组件中直接调用 `fetch`，统一经 react-query 调用 `@/api` 或 `features/xxx/xxx-api`
 - 使用`axios`示例发送请求的时候，一律采用类似格式：
 
 ```ts
@@ -42,12 +45,15 @@ export function actionObjectApi() {
 
 # 项目目录
 
+- `api`：根级跨模块共用请求层，按域拆分（`game`、`character`、`quote`、`ost`、`pv`、`collection` 等），入口 `index.ts`
+- `types`：根级跨模块共用类型层，按域拆分，入口 `index.ts`
 - `features`：按照模块进行分类，每一个模块包含：
   - `hooks`
   - `components`
   - `data`
   - `views`
-  - `index.tsx`
+  - `lib`（模块内工具与常量）
+  - `index.ts(x)`
 
 # 开发计划
 

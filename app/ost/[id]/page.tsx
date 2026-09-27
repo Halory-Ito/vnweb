@@ -6,25 +6,17 @@ import { useRouter } from 'next/navigation'
 import { use, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 
-import { SongConvertDialog } from './_ui/song-convert-dialog'
-import { SongDeleteDialog } from './_ui/song-delete-dialog'
-import { SongFormDialog } from './_ui/song-form-dialog'
-import { SongManageContent } from './_ui/song-manage-content'
-import { SongSearchToolbar } from './_ui/song-search-toolbar'
-import {
-  createOstSong,
-  deleteOstSong,
-  getOstById,
-  getOstSongs,
-  updateOstSong,
-  type OstSongItem,
-} from '@/lib/game/game-utils'
+import { createOstSong, deleteOstSong, getOstById, getOstSongs, updateOstSong } from '@/api'
+import { SongConvertDialog } from '@/features/ost/components/song-convert-dialog'
+import { SongDeleteDialog } from '@/features/ost/components/song-delete-dialog'
+import { SongFormDialog } from '@/features/ost/components/song-form-dialog'
+import { SongManageContent } from '@/features/ost/components/song-manage-content'
+import { SongSearchToolbar } from '@/features/ost/components/song-search-toolbar'
+import { useRecordVisit } from '@/features/recent'
 
-export default function SongPage({
-  params,
-}: {
-  params: Promise<{ id: string }>
-}) {
+import type { OstSongItem } from '@/types'
+
+export default function SongPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params)
   const ostId = Number(resolvedParams.id)
   const router = useRouter()
@@ -43,6 +35,8 @@ export default function SongPage({
     queryFn: () => getOstById(ostId),
     enabled: !Number.isNaN(ostId) && ostId > 0,
   })
+
+  useRecordVisit(ostData?.item?.gameId, 'ost', `/ost/${ostId}`)
 
   const {
     data: songsData,
@@ -169,9 +163,7 @@ export default function SongPage({
           <ArrowLeftIcon className="h-5 w-5" />
         </button>
         <h1 className="text-xl font-bold">
-          {ostData?.item?.name
-            ? `${ostData.item.name} - 歌曲列表`
-            : '加载中...'}
+          {ostData?.item?.name ? `${ostData.item.name} - 歌曲列表` : '加载中...'}
         </h1>
       </div>
 

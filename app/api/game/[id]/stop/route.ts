@@ -2,13 +2,10 @@ import { eq } from 'drizzle-orm'
 import { NextRequest, NextResponse } from 'next/server'
 
 import { GamePlayTable } from '@/db/schema'
+import { finalizeGameSession } from '@/features/game/lib/game-session-utils'
 import { db } from '@/lib/drizzle'
-import { finalizeGameSession } from '@/lib/game/game-session-utils'
 
-const stopGame = async (
-  _req: NextRequest,
-  context: { params: Promise<{ id: string }> },
-) => {
+const stopGame = async (_req: NextRequest, context: { params: Promise<{ id: string }> }) => {
   try {
     const { id } = await context.params
     const gameId = Number(id)
@@ -35,10 +32,7 @@ const stopGame = async (
 
     return NextResponse.json({ data: { stopped: true } })
   } catch (error) {
-    return NextResponse.json(
-      { error: (error as Error).message || '结束游戏失败' },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: (error as Error).message || '结束游戏失败' }, { status: 500 })
   }
 }
 

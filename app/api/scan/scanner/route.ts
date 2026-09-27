@@ -46,10 +46,7 @@ const getScanners = async () => {
     return NextResponse.json({ data: rows })
   } catch (error) {
     console.error('Get scanners failed:', error)
-    return NextResponse.json(
-      { error: 'Failed to get scanner list' },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: 'Failed to get scanner list' }, { status: 500 })
   }
 }
 
@@ -121,10 +118,7 @@ const createScanner = async (req: NextRequest) => {
     return NextResponse.json({ data: inserted[0] })
   } catch (error) {
     console.error('Create scanner failed:', error)
-    return NextResponse.json(
-      { error: 'Failed to create scanner' },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: 'Failed to create scanner' }, { status: 500 })
   }
 }
 

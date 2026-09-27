@@ -48,20 +48,16 @@ export const getThirdPartyAccounts = async () => {
   ).data
 }
 
-export const unlinkThirdPartyAccount = async (
-  provider: 'steam' | 'bangumi' | 'vndb' | 'ymgal',
-) => {
+export const unlinkThirdPartyAccount = async (provider: 'steam' | 'bangumi' | 'vndb' | 'ymgal') => {
   const response = await api.delete('/settings/cloud-sync/accounts', {
     params: { provider },
   })
-  return (response.data as { data: { deleted: boolean; provider: string } })
-    .data
+  return (response.data as { data: { deleted: boolean; provider: string } }).data
 }
 
 export const syncSteamPlaytime = async (proxy?: ProxySettings) => {
   const response = await api.post('/settings/cloud-sync/steam/sync-playtime', {
     proxy,
   })
-  return (response.data as { data: { success: boolean; message?: string } })
-    .data
+  return (response.data as { data: { success: boolean; message?: string } }).data
 }

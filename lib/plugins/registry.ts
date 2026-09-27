@@ -1,9 +1,5 @@
 import { setActiveFeaturePlugins } from './hooks'
-import {
-  isPluginEnabled,
-  readPluginSettings,
-  setPluginEnabled,
-} from './settings'
+import { isPluginEnabled, readPluginSettings, setPluginEnabled } from './settings'
 
 import type {
   AnyPlugin,
@@ -68,22 +64,16 @@ export function getPlugin(id: string): AnyPlugin | undefined {
 
 /** 获取所有已启用的数据源插件 */
 export function getEnabledProviders(): ProviderPlugin[] {
-  return getEnabledPlugins().filter(
-    (p): p is ProviderPlugin => p.type === 'provider',
-  )
+  return getEnabledPlugins().filter((p): p is ProviderPlugin => p.type === 'provider')
 }
 
 /** 获取所有已启用的功能插件 */
 export function getEnabledFeatures(): FeaturePlugin[] {
-  return getEnabledPlugins().filter(
-    (p): p is FeaturePlugin => p.type === 'feature',
-  )
+  return getEnabledPlugins().filter((p): p is FeaturePlugin => p.type === 'feature')
 }
 
 /** 获取所有数据源插件（含启用状态） */
-export function getAllProviders(): Array<
-  ProviderPlugin & { enabled: boolean }
-> {
+export function getAllProviders(): Array<ProviderPlugin & { enabled: boolean }> {
   const settings = readPluginSettings()
   return allPlugins()
     .filter((p): p is ProviderPlugin => p.type === 'provider')
@@ -94,12 +84,8 @@ export function getAllProviders(): Array<
 }
 
 /** 获取具有指定能力的已启用数据源插件 */
-export function getProvidersByCapability(
-  capability: ProviderCapability,
-): ProviderPlugin[] {
-  return getEnabledProviders().filter((p) =>
-    p.capabilities.includes(capability),
-  )
+export function getProvidersByCapability(capability: ProviderCapability): ProviderPlugin[] {
+  return getEnabledProviders().filter((p) => p.capabilities.includes(capability))
 }
 
 /** 获取用于手动搜索的选项列表 */
@@ -137,9 +123,7 @@ export function getCharacterProviders(): CharacterProviderPlugin[] {
 }
 
 /** 根据 sourceId 获取角色数据源插件 */
-export function getCharacterProvider(
-  sourceId: string,
-): CharacterProviderPlugin | undefined {
+export function getCharacterProvider(sourceId: string): CharacterProviderPlugin | undefined {
   return characterProviders.find((p) => p.sourceId === sourceId)
 }
 
@@ -154,10 +138,7 @@ export function getEnabledCharacterProviders(): CharacterProviderPlugin[] {
 // ═══════════════════════════════════════════════════════════
 
 /** 切换插件启用状态 */
-export async function togglePlugin(
-  id: string,
-  enabled: boolean,
-): Promise<void> {
+export async function togglePlugin(id: string, enabled: boolean): Promise<void> {
   const plugin = getPlugin(id)
   if (!plugin) return
 

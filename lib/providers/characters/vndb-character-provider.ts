@@ -1,7 +1,4 @@
-import type {
-  CharacterProviderPlugin,
-  NormalizedCharacterRow,
-} from '@/lib/plugins/types'
+import type { CharacterProviderPlugin, NormalizedCharacterRow } from '@/lib/plugins/types'
 
 // ── VNDB 响应类型 ─────────────────────────────────────────
 
@@ -34,9 +31,7 @@ const toNullableInteger = (value: number | null | undefined) => {
   return Math.trunc(value)
 }
 
-const serializeTuple = (
-  value: [string | null, string | null] | null | undefined,
-) => {
+const serializeTuple = (value: [string | null, string | null] | null | undefined) => {
   if (!value) {
     return ''
   }
@@ -82,9 +77,7 @@ export const vndbCharacterProvider: CharacterProviderPlugin = {
       .from(GameIdMapTable)
       .where(eq(GameIdMapTable.gameId, gameId))
 
-    const binding = idMaps.find(
-      (item) => item.provider.trim().toLowerCase() === 'vndb',
-    )
+    const binding = idMaps.find((item) => item.provider.trim().toLowerCase() === 'vndb')
 
     if (!binding) {
       return null
@@ -141,11 +134,7 @@ export const vndbCharacterProvider: CharacterProviderPlugin = {
 
         if (saveImagesToLocal && imageUrl) {
           try {
-            finalImageUrl = await localizeCharacterImage(
-              gameId,
-              item.id ?? '',
-              imageUrl,
-            )
+            finalImageUrl = await localizeCharacterImage(gameId, item.id ?? '', imageUrl)
           } catch (error) {
             console.error('Localize VNDB character image failed:', error)
             finalImageUrl = imageUrl

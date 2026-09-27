@@ -4,11 +4,6 @@ import { Plus } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
-import { ProxyConfigCard } from '@/components/settings/proxy-config-card'
-import {
-  ProxyConfigDialog,
-  type ProxyConfig,
-} from '@/components/settings/proxy-config-dialog'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,16 +15,15 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Empty, EmptyDescription, EmptyTitle } from '@/components/ui/empty'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { ProxyConfigCard } from '@/features/settings/components/proxy-config-card'
+import {
+  ProxyConfigDialog,
+  type ProxyConfig,
+} from '@/features/settings/components/proxy-config-dialog'
 import { api } from '@/lib/request-utils'
 
 // 常用测试地址
@@ -214,12 +208,8 @@ export default function ProxyPage() {
     <div className="flex flex-col gap-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">
-            网络代理设置
-          </h1>
-          <p className="text-muted-foreground mt-1 text-sm">
-            管理多个代理配置，快速切换使用
-          </p>
+          <h1 className="text-2xl font-semibold tracking-tight">网络代理设置</h1>
+          <p className="text-muted-foreground mt-1 text-sm">管理多个代理配置，快速切换使用</p>
         </div>
         <Button onClick={handleAdd}>
           <Plus className="mr-2 size-4" />
@@ -363,9 +353,7 @@ export default function ProxyPage() {
                   </svg>
                 )}
                 <div className="flex-1">
-                  <p className="font-medium">
-                    {testResult.success ? `访问成功！` : `访问失败`}
-                  </p>
+                  <p className="font-medium">{testResult.success ? `访问成功！` : `访问失败`}</p>
                   <div className="mt-1 text-sm opacity-80">
                     {testResult.success ? (
                       <>
@@ -394,21 +382,15 @@ export default function ProxyPage() {
       <div className="space-y-4">
         <div>
           <h2 className="text-lg font-semibold">代理配置列表</h2>
-          <p className="text-muted-foreground mt-1 text-sm">
-            点击卡片切换当前使用的代理
-          </p>
+          <p className="text-muted-foreground mt-1 text-sm">点击卡片切换当前使用的代理</p>
         </div>
 
         {isLoading ? (
-          <div className="text-muted-foreground py-8 text-center">
-            加载中...
-          </div>
+          <div className="text-muted-foreground py-8 text-center">加载中...</div>
         ) : proxyList.length === 0 ? (
           <Empty className="border-dashed">
             <EmptyTitle>暂无代理配置</EmptyTitle>
-            <EmptyDescription>
-              点击右上角的「新增代理」按钮来添加第一个代理配置
-            </EmptyDescription>
+            <EmptyDescription>点击右上角的「新增代理」按钮来添加第一个代理配置</EmptyDescription>
             <Button onClick={handleAdd} className="mt-4">
               <Plus className="mr-2 size-4" />
               新增代理

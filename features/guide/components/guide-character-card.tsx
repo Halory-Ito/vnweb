@@ -77,14 +77,9 @@ export function GuideCharacterCard({ ending, progress, onClick }: GuideCharacter
       {/* 头像 */}
       <div className="relative h-16 w-16 overflow-hidden rounded-full transition-transform duration-200 group-hover:scale-110">
         {ending.cover ? (
-          <Image
-            src={ending.cover}
-            alt={ending.name}
-            fill
-            className="object-cover"
-          />
+          <Image src={ending.cover} alt={ending.name} fill className="object-cover" />
         ) : (
-          <div className="flex h-full w-full items-center justify-center bg-muted text-xl font-bold">
+          <div className="bg-muted flex h-full w-full items-center justify-center text-xl font-bold">
             {getCharacterInitial(ending.name)}
           </div>
         )}

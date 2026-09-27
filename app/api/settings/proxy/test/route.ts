@@ -45,10 +45,7 @@ export async function GET(req: NextRequest) {
     let errorMessage = '未知错误'
 
     if (error instanceof Error) {
-      if (
-        error.message.includes('timeout') ||
-        error.message.includes('ETIMEDOUT')
-      ) {
+      if (error.message.includes('timeout') || error.message.includes('ETIMEDOUT')) {
         errorMessage = '连接超时（10秒）'
       } else if (error.message.includes('ECONNREFUSED')) {
         errorMessage = '代理服务器连接被拒绝，请确认代理软件已启动'

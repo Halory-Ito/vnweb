@@ -19,9 +19,7 @@ export const DEFAULT_GUIDE_SETTINGS: GuideColorSettings = {
 // 从 API 读取 Guide 设置
 export async function readGuideSettings(): Promise<GuideColorSettings> {
   try {
-    const response = await api.get<{ data: GuideColorSettings }>(
-      '/settings/appearance/guide',
-    )
+    const response = await api.get<{ data: GuideColorSettings }>('/settings/appearance/guide')
     return response.data.data
   } catch {
     return DEFAULT_GUIDE_SETTINGS
@@ -29,9 +27,7 @@ export async function readGuideSettings(): Promise<GuideColorSettings> {
 }
 
 // 通过 API 写入 Guide 设置
-export async function writeGuideSettings(
-  settings: GuideColorSettings,
-): Promise<void> {
+export async function writeGuideSettings(settings: GuideColorSettings): Promise<void> {
   await api.post('/settings/appearance/guide', settings)
 }
 

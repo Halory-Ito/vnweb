@@ -41,10 +41,7 @@ export async function POST(req: NextRequest) {
     }
 
     if (!Array.isArray(sourceIds) || sourceIds.length === 0) {
-      return NextResponse.json(
-        { error: '请选择至少一个源游戏' },
-        { status: 400 },
-      )
+      return NextResponse.json({ error: '请选择至少一个源游戏' }, { status: 400 })
     }
 
     if (!targetId) {
@@ -61,10 +58,7 @@ export async function POST(req: NextRequest) {
     }
 
     if (numericSourceIds.includes(numericTargetId)) {
-      return NextResponse.json(
-        { error: '源游戏不能包含目标游戏' },
-        { status: 400 },
-      )
+      return NextResponse.json({ error: '源游戏不能包含目标游戏' }, { status: 400 })
     }
 
     // 获取目标游戏信息
@@ -90,18 +84,9 @@ export async function POST(req: NextRequest) {
 
     // 合并游戏信息
     const target = targetGame[0]
-    const mergedTags = mergeCsvFields(
-      target.tags,
-      ...sourceGames.map((g) => g.tags),
-    )
-    const mergedAliases = mergeCsvFields(
-      target.ailases,
-      ...sourceGames.map((g) => g.ailases),
-    )
-    const mergedPlatforms = mergeCsvFields(
-      target.platforms,
-      ...sourceGames.map((g) => g.platforms),
-    )
+    const mergedTags = mergeCsvFields(target.tags, ...sourceGames.map((g) => g.tags))
+    const mergedAliases = mergeCsvFields(target.ailases, ...sourceGames.map((g) => g.ailases))
+    const mergedPlatforms = mergeCsvFields(target.platforms, ...sourceGames.map((g) => g.platforms))
 
     // 更新目标游戏信息
     await db
@@ -116,15 +101,10 @@ export async function POST(req: NextRequest) {
         bg: target.bg || sourceGames.find((g) => g.bg)?.bg,
         icon: target.icon || sourceGames.find((g) => g.icon)?.icon,
         logo: target.logo || sourceGames.find((g) => g.logo)?.logo,
-        developer:
-          target.developer || sourceGames.find((g) => g.developer)?.developer,
-        publisher:
-          target.publisher || sourceGames.find((g) => g.publisher)?.publisher,
-        gameType:
-          target.gameType || sourceGames.find((g) => g.gameType)?.gameType,
-        gameEngine:
-          target.gameEngine ||
-          sourceGames.find((g) => g.gameEngine)?.gameEngine,
+        developer: target.developer || sourceGames.find((g) => g.developer)?.developer,
+        publisher: target.publisher || sourceGames.find((g) => g.publisher)?.publisher,
+        gameType: target.gameType || sourceGames.find((g) => g.gameType)?.gameType,
+        gameEngine: target.gameEngine || sourceGames.find((g) => g.gameEngine)?.gameEngine,
       })
       .where(eq(GameInfoTable.id, numericTargetId))
 
@@ -204,10 +184,8 @@ export async function POST(req: NextRequest) {
             .update(GamePlayTable)
             .set({
               totalPlayTime:
-                (targetPlay[0].totalPlayTime || 0) +
-                (sourcePlay[0].totalPlayTime || 0),
-              playCount:
-                (targetPlay[0].playCount || 0) + (sourcePlay[0].playCount || 0),
+                (targetPlay[0].totalPlayTime || 0) + (sourcePlay[0].totalPlayTime || 0),
+              playCount: (targetPlay[0].playCount || 0) + (sourcePlay[0].playCount || 0),
             })
             .where(eq(GamePlayTable.id, targetPlay[0].id))
         } else {
@@ -232,9 +210,6 @@ export async function POST(req: NextRequest) {
     })
   } catch (error) {
     console.error('Merge games failed:', error)
-    return NextResponse.json(
-      { error: (error as Error).message || '合并游戏失败' },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: (error as Error).message || '合并游戏失败' }, { status: 500 })
   }
 }

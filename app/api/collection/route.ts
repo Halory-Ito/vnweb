@@ -2,12 +2,7 @@ import dayjs from 'dayjs'
 import { desc, eq } from 'drizzle-orm'
 import { NextRequest, NextResponse } from 'next/server'
 
-import {
-  CollectionGameTable,
-  CollectionTable,
-  GameInfoTable,
-  GamePlayTable,
-} from '@/db/schema'
+import { CollectionGameTable, CollectionTable, GameInfoTable, GamePlayTable } from '@/db/schema'
 import { db } from '@/lib/drizzle'
 
 export const dynamic = 'force-dynamic'
@@ -45,16 +40,11 @@ const getCollections = async () => {
         gameLastRunAt: GamePlayTable.lastLaunchedAt,
         gamePlayTime: GamePlayTable.totalPlayTime,
         gameRating: GamePlayTable.rating,
+        gameStatus: GamePlayTable.status,
       })
       .from(CollectionGameTable)
-      .innerJoin(
-        GameInfoTable,
-        eq(CollectionGameTable.gameId, GameInfoTable.id),
-      )
-      .leftJoin(
-        GamePlayTable,
-        eq(CollectionGameTable.gameId, GamePlayTable.gameId),
-      )
+      .innerJoin(GameInfoTable, eq(CollectionGameTable.gameId, GameInfoTable.id))
+      .leftJoin(GamePlayTable, eq(CollectionGameTable.gameId, GamePlayTable.gameId))
       .orderBy(desc(CollectionGameTable.id))
 
     const grouped = new Map<
@@ -70,6 +60,7 @@ const getCollections = async () => {
         lastRunAt: string
         playTime: number
         rating: number
+        status: number
       }>
     >()
 
@@ -86,6 +77,7 @@ const getCollections = async () => {
         lastRunAt: link.gameLastRunAt || '',
         playTime: link.gamePlayTime || 0,
         rating: link.gameRating || 0,
+        status: link.gameStatus ?? 0,
       })
       grouped.set(link.collectionId, current)
     }
@@ -106,18 +98,13 @@ const getCollections = async () => {
     return NextResponse.json({ data })
   } catch (error) {
     console.error('Get collections failed:', error)
-    return NextResponse.json(
-      { error: 'Failed to get collections' },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: 'Failed to get collections' }, { status: 500 })
   }
 }
 
 const createCollection = async (req: NextRequest) => {
   try {
-    const payload = (await req
-      .json()
-      .catch(() => ({}))) as CreateCollectionPayload
+    const payload = (await req.json().catch(() => ({}))) as CreateCollectionPayload
     const name = (payload.name || '').trim()
 
     if (!name) {
@@ -147,10 +134,7 @@ const createCollection = async (req: NextRequest) => {
     return NextResponse.json({ data: inserted[0] })
   } catch (error) {
     console.error('Create collection failed:', error)
-    return NextResponse.json(
-      { error: 'Failed to create collection' },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: 'Failed to create collection' }, { status: 500 })
   }
 }
 

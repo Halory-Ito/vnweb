@@ -20,10 +20,7 @@ export async function POST(request: NextRequest) {
     const { imageUrl, ostId, ostName } = body
 
     if (!imageUrl || !ostId) {
-      return NextResponse.json(
-        { error: 'Missing imageUrl or ostId' },
-        { status: 400 },
-      )
+      return NextResponse.json({ error: 'Missing imageUrl or ostId' }, { status: 400 })
     }
 
     if (!ostName) {
@@ -61,9 +58,6 @@ export async function POST(request: NextRequest) {
     })
   } catch (error) {
     console.error('Download image failed:', error)
-    return NextResponse.json(
-      { error: 'Failed to download image' },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: 'Failed to download image' }, { status: 500 })
   }
 }

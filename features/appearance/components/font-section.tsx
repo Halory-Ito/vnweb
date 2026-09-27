@@ -2,11 +2,13 @@
 
 import { useEffect, useState } from 'react'
 
+import { FontDialog } from './font-dialog'
 import { Button } from '@/components/ui/button'
 import { Slider } from '@/components/ui/slider'
 import {
   applyFontSettingsToDocument,
   DEFAULT_FONT_SETTINGS,
+  getBrowserFontLabel,
   normalizeFontSettings,
   notifyFontSettingsChanged,
   readFontSettings,
@@ -14,9 +16,12 @@ import {
   type FontSettings,
 } from '@/lib/settings/font-settings'
 
-import { FontDialog } from './font-dialog'
-
 const getFontNameFromPath = (fontPath: string) => {
+  const browserFontLabel = getBrowserFontLabel(fontPath)
+  if (browserFontLabel) {
+    return `跟随浏览器 · ${browserFontLabel}`
+  }
+
   const normalized = fontPath.replace(/\\/g, '/')
   const fileName = normalized.split('/').pop() || normalized
   const withoutExt = fileName.replace(/\.[^.]+$/, '') || fileName
@@ -50,18 +55,11 @@ export function FontSection() {
       <div className="flex items-center justify-between gap-4">
         <div className="min-w-0">
           <p className="text-sm font-medium">当前字体</p>
-          <p
-            className="text-muted-foreground truncate text-xs"
-            title={settings.fontPath}
-          >
+          <p className="text-muted-foreground truncate text-xs" title={settings.fontPath}>
             {getFontNameFromPath(settings.fontPath)}
           </p>
         </div>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => setDialogOpen(true)}
-        >
+        <Button type="button" variant="outline" onClick={() => setDialogOpen(true)}>
           选择字体
         </Button>
       </div>
@@ -69,9 +67,7 @@ export function FontSection() {
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <span className="text-sm font-medium">字体粗细</span>
-          <span className="text-muted-foreground text-sm">
-            {settings.fontWeight}
-          </span>
+          <span className="text-muted-foreground text-sm">{settings.fontWeight}</span>
         </div>
         <Slider
           min={100}

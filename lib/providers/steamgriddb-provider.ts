@@ -1,7 +1,7 @@
 import { api } from '@/lib/request-utils'
 
 import type { GameSearchResult, ProviderPlugin } from '@/lib/plugins/types'
-import type { GameInfo } from '@/types/game-types'
+import type { GameInfo } from '@/types/game'
 
 // ── SGDB 响应类型 ─────────────────────────────────────────
 type SGDBGame = {

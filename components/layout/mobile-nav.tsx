@@ -2,6 +2,7 @@
 
 import {
   BoxIcon,
+  Gamepad2Icon,
   HomeIcon,
   MenuIcon,
   MusicIcon,
@@ -35,7 +36,8 @@ type NavItem = {
 }
 
 const navItems: NavItem[] = [
-  { title: '主页', href: '/game', icon: HomeIcon },
+  { title: '主页', href: '/', icon: HomeIcon },
+  { title: '游戏库', href: '/game', icon: Gamepad2Icon },
   { title: '记录', href: '/record', icon: BoxIcon },
   { title: '扫描', href: '/scan', icon: ScanIcon },
   { title: '攻略', href: '/guide', icon: MapIcon },
@@ -67,6 +69,7 @@ export default function MobileNav() {
             <Image
               src="/LOGO.png"
               alt="VNWeb Logo"
+              loading="eager"
               width={32}
               height={32}
               className="object-contain"

@@ -1,11 +1,7 @@
 import { api } from '@/lib/request-utils'
 
-import type {
-  BulkImportResult,
-  GameSearchResult,
-  ProviderPlugin,
-} from '@/lib/plugins/types'
-import type { GameInfo } from '@/types/game-types'
+import type { BulkImportResult, GameSearchResult, ProviderPlugin } from '@/lib/plugins/types'
+import type { GameInfo } from '@/types/game'
 
 // ── YMGal 响应类型 ────────────────────────────────────────
 type YMGalApiResponse<T = unknown> = {
@@ -118,9 +114,7 @@ const mapYMGalGameToGameInfo = (game: YMGalGame): GameInfo => {
     new Set((game.releases ?? []).map((r) => r.platform ?? '').filter(Boolean)),
   )
 
-  const aliases = (game.extensionName ?? [])
-    .map((e) => e.name ?? '')
-    .filter(Boolean)
+  const aliases = (game.extensionName ?? []).map((e) => e.name ?? '').filter(Boolean)
 
   return {
     date: game.releaseDate ?? '',

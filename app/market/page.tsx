@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { toast } from 'sonner'
 
-import { PluginCard } from '@/components/market/plugin-card'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -31,6 +30,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { PluginCard } from '@/features/market/components/plugin-card'
 import { api } from '@/lib/request-utils'
 
 type Plugin = {
@@ -98,11 +98,11 @@ export default function MarketPage() {
   const queryClient = useQueryClient()
   const [importDialogOpen, setImportDialogOpen] = useState(false)
   const [selectedZipFile, setSelectedZipFile] = useState<File | null>(null)
-  const [importPreview, setImportPreview] =
-    useState<PluginImportPreview | null>(null)
+  const [importPreview, setImportPreview] = useState<PluginImportPreview | null>(null)
   const [hasImportConflict, setHasImportConflict] = useState(false)
-  const [existingPluginPreview, setExistingPluginPreview] =
-    useState<PluginImportPreview | null>(null)
+  const [existingPluginPreview, setExistingPluginPreview] = useState<PluginImportPreview | null>(
+    null,
+  )
   const [overwriteConfirmOpen, setOverwriteConfirmOpen] = useState(false)
 
   const {
@@ -162,13 +162,7 @@ export default function MarketPage() {
   })
 
   const confirmImportMutation = useMutation({
-    mutationFn: async ({
-      file,
-      overwrite,
-    }: {
-      file: File
-      overwrite: boolean
-    }) => {
+    mutationFn: async ({ file, overwrite }: { file: File; overwrite: boolean }) => {
       const formData = new FormData()
       formData.append('action', 'import')
       formData.append('file', file)
@@ -258,9 +252,7 @@ export default function MarketPage() {
           </div>
           <div>
             <h1 className="text-2xl font-bold">插件市场</h1>
-            <p className="text-muted-foreground text-sm">
-              发现并安装优秀的插件来增强你的体验
-            </p>
+            <p className="text-muted-foreground text-sm">发现并安装优秀的插件来增强你的体验</p>
           </div>
         </div>
       </div>
@@ -282,9 +274,7 @@ export default function MarketPage() {
             onClick={() => void refetch()}
             disabled={isRefetching}
           >
-            <RefreshCw
-              className={`size-4 ${isRefetching ? 'animate-spin' : ''}`}
-            />
+            <RefreshCw className={`size-4 ${isRefetching ? 'animate-spin' : ''}`} />
           </Button>
         </div>
       </div>
@@ -329,28 +319,18 @@ export default function MarketPage() {
                 <PluginCard
                   key={plugin.id}
                   plugin={plugin}
-                  installing={
-                    installMutation.isPending &&
-                    installMutation.variables === plugin.id
-                  }
+                  installing={installMutation.isPending && installMutation.variables === plugin.id}
                   uninstalling={
-                    uninstallMutation.isPending &&
-                    uninstallMutation.variables === plugin.id
+                    uninstallMutation.isPending && uninstallMutation.variables === plugin.id
                   }
                   onInstall={() => installMutation.mutate(plugin.id)}
                   onUninstall={() => uninstallMutation.mutate(plugin.id)}
-                  onViewDetails={() =>
-                    router.push(`/addOns/${plugin.id}/intro`)
-                  }
+                  onViewDetails={() => router.push(`/addOns/${plugin.id}/intro`)}
                 />
               ))}
             </div>
           ) : (
-            <EmptyState
-              icon={Package}
-              title="暂无插件"
-              description="插件市场中还没有可用的插件"
-            />
+            <EmptyState icon={Package} title="暂无插件" description="插件市场中还没有可用的插件" />
           )}
         </TabsContent>
 
@@ -361,37 +341,23 @@ export default function MarketPage() {
                 <PluginCard
                   key={plugin.id}
                   plugin={plugin}
-                  installing={
-                    installMutation.isPending &&
-                    installMutation.variables === plugin.id
-                  }
+                  installing={installMutation.isPending && installMutation.variables === plugin.id}
                   uninstalling={
-                    uninstallMutation.isPending &&
-                    uninstallMutation.variables === plugin.id
+                    uninstallMutation.isPending && uninstallMutation.variables === plugin.id
                   }
                   onInstall={() => installMutation.mutate(plugin.id)}
                   onUninstall={() => uninstallMutation.mutate(plugin.id)}
-                  onViewDetails={() =>
-                    router.push(`/addOns/${plugin.id}/intro`)
-                  }
+                  onViewDetails={() => router.push(`/addOns/${plugin.id}/intro`)}
                 />
               ))}
             </div>
           ) : (
-            <EmptyState
-              icon={Package}
-              title="暂无已安装插件"
-              description="你还没有安装任何插件"
-            />
+            <EmptyState icon={Package} title="暂无已安装插件" description="你还没有安装任何插件" />
           )}
         </TabsContent>
 
         <TabsContent value="updates">
-          <EmptyState
-            icon={RefreshCw}
-            title="所有插件已是最新版本"
-            description="没有可用的更新"
-          />
+          <EmptyState icon={RefreshCw} title="所有插件已是最新版本" description="没有可用的更新" />
         </TabsContent>
       </Tabs>
 
@@ -412,10 +378,7 @@ export default function MarketPage() {
                 type="file"
                 accept=".zip,application/zip"
                 onChange={handlePickZipFile}
-                disabled={
-                  previewImportMutation.isPending ||
-                  confirmImportMutation.isPending
-                }
+                disabled={previewImportMutation.isPending || confirmImportMutation.isPending}
               />
               {previewImportMutation.isPending && (
                 <p className="text-muted-foreground text-xs">正在解析插件...</p>
@@ -504,16 +467,12 @@ export default function MarketPage() {
         </DialogContent>
       </Dialog>
 
-      <AlertDialog
-        open={overwriteConfirmOpen}
-        onOpenChange={setOverwriteConfirmOpen}
-      >
+      <AlertDialog open={overwriteConfirmOpen} onOpenChange={setOverwriteConfirmOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>检测到同名插件</AlertDialogTitle>
             <AlertDialogDescription>
-              插件 ID 为 {importPreview?.id}{' '}
-              的插件已存在，覆盖后将替换当前插件文件。是否继续？
+              插件 ID 为 {importPreview?.id} 的插件已存在，覆盖后将替换当前插件文件。是否继续？
             </AlertDialogDescription>
           </AlertDialogHeader>
 
@@ -557,19 +516,13 @@ export default function MarketPage() {
                     ? existingPluginPreview.authors.join(', ')
                     : '-'}
                 </span>
-                <span>
-                  {importPreview.authors.length
-                    ? importPreview.authors.join(', ')
-                    : '-'}
-                </span>
+                <span>{importPreview.authors.length ? importPreview.authors.join(', ') : '-'}</span>
               </div>
             </div>
           )}
 
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={confirmImportMutation.isPending}>
-              取消
-            </AlertDialogCancel>
+            <AlertDialogCancel disabled={confirmImportMutation.isPending}>取消</AlertDialogCancel>
             <AlertDialogAction
               variant="destructive"
               disabled={confirmImportMutation.isPending}

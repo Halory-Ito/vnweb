@@ -3,10 +3,7 @@ import dayjs from 'dayjs'
 import { eq } from 'drizzle-orm'
 import { NextRequest, NextResponse } from 'next/server'
 
-import {
-  NEXT_PUBLIC_BANGUMI_API_URL,
-  NEXT_PUBLIC_BANGUMI_BASE_URL,
-} from '@/app/config'
+import { NEXT_PUBLIC_BANGUMI_API_URL, NEXT_PUBLIC_BANGUMI_BASE_URL } from '@/app/config'
 import { ThirdPartyAccountTable } from '@/db/schema'
 import { db } from '@/lib/drizzle'
 
@@ -29,8 +26,7 @@ type SteamPlayerSummary = {
 }
 
 const PROVIDER_SET = new Set<Provider>(['steam', 'bangumi', 'vndb', 'ymgal'])
-const STEAM_PLAYER_SUMMARIES_API =
-  'https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/'
+const STEAM_PLAYER_SUMMARIES_API = 'https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/'
 
 const normalizeText = (value: unknown) => {
   if (typeof value !== 'string') {
@@ -117,9 +113,7 @@ const validateBangumiToken = async (accessToken: string) => {
   }
 
   const accountId =
-    payload.username?.trim() ||
-    payload.nickname?.trim() ||
-    (payload.id ? String(payload.id) : '')
+    payload.username?.trim() || payload.nickname?.trim() || (payload.id ? String(payload.id) : '')
 
   if (!accountId) {
     throw new Error('无法获取 Bangumi 账号信息')
@@ -196,9 +190,7 @@ const validateYmgalUserId = async (userId: string) => {
       throw new Error('YMGal 用户不存在')
     }
 
-    const accountId = payload.data?.uid
-      ? String(payload.data.uid)
-      : normalizedUid
+    const accountId = payload.data?.uid ? String(payload.data.uid) : normalizedUid
 
     return {
       accountId,
@@ -262,11 +254,9 @@ const getSteamProfile = async (accountId: string): Promise<AccountProfile> => {
     const player = await fetchSteamPlayerSummary(accountId)
     const displayName = normalizeText(player?.personaname) || accountId
     const realName = normalizeText(player?.realname)
-    const avatar =
-      normalizeText(player?.avatarfull) || normalizeText(player?.avatarmedium)
+    const avatar = normalizeText(player?.avatarfull) || normalizeText(player?.avatarmedium)
     const profileUrl =
-      normalizeText(player?.profileurl) ||
-      `https://steamcommunity.com/profiles/${accountId}`
+      normalizeText(player?.profileurl) || `https://steamcommunity.com/profiles/${accountId}`
 
     return {
       displayName,
@@ -284,10 +274,7 @@ const getSteamProfile = async (accountId: string): Promise<AccountProfile> => {
   }
 }
 
-const getVndbProfile = async (
-  accountId: string,
-  accessToken: string,
-): Promise<AccountProfile> => {
+const getVndbProfile = async (accountId: string, accessToken: string): Promise<AccountProfile> => {
   try {
     const response = await axios.get('https://api.vndb.org/kana/authinfo', {
       timeout: 10_000,
@@ -380,9 +367,7 @@ const PROFILE_TIMEOUT_MS = 10_000
 const withTimeout = <T>(promise: Promise<T>, ms: number): Promise<T> =>
   Promise.race([
     promise,
-    new Promise<T>((_, reject) =>
-      setTimeout(() => reject(new Error('timeout')), ms),
-    ),
+    new Promise<T>((_, reject) => setTimeout(() => reject(new Error('timeout')), ms)),
   ])
 
 const fallbackProfile = (accountId: string): AccountProfile => ({
@@ -419,10 +404,7 @@ const listAccounts = async () => {
               PROFILE_TIMEOUT_MS,
             )
           } else if (provider === 'steam') {
-            profile = await withTimeout(
-              getSteamProfile(row.accountId),
-              PROFILE_TIMEOUT_MS,
-            )
+            profile = await withTimeout(getSteamProfile(row.accountId), PROFILE_TIMEOUT_MS)
           } else if (provider === 'vndb') {
             profile = await withTimeout(
               getVndbProfile(row.accountId, row.accessToken),
@@ -441,10 +423,7 @@ const listAccounts = async () => {
         }
 
         // 如果 profile 中的 username/avatar 与数据库中的不同，则更新数据库
-        if (
-          profile.displayName !== row.username ||
-          profile.avatar !== row.avatar
-        ) {
+        if (profile.displayName !== row.username || profile.avatar !== row.avatar) {
           await db
             .update(ThirdPartyAccountTable)
             .set({
@@ -500,10 +479,7 @@ const loginByToken = async (req: NextRequest) => {
     }
 
     if (provider !== 'steam' && provider !== 'ymgal' && !accessToken) {
-      return NextResponse.json(
-        { error: 'accessToken 不能为空' },
-        { status: 400 },
-      )
+      return NextResponse.json({ error: 'accessToken 不能为空' }, { status: 400 })
     }
 
     const validated =
@@ -527,10 +503,7 @@ const loginByToken = async (req: NextRequest) => {
           PROFILE_TIMEOUT_MS,
         )
       } else if (provider === 'steam') {
-        profile = await withTimeout(
-          getSteamProfile(validated.accountId),
-          PROFILE_TIMEOUT_MS,
-        )
+        profile = await withTimeout(getSteamProfile(validated.accountId), PROFILE_TIMEOUT_MS)
       } else if (provider === 'vndb') {
         profile = await withTimeout(
           getVndbProfile(validated.accountId, accessToken),
@@ -549,9 +522,7 @@ const loginByToken = async (req: NextRequest) => {
     }
 
     await db.transaction(async (tx) => {
-      await tx
-        .delete(ThirdPartyAccountTable)
-        .where(eq(ThirdPartyAccountTable.provider, provider))
+      await tx.delete(ThirdPartyAccountTable).where(eq(ThirdPartyAccountTable.provider, provider))
 
       await tx.insert(ThirdPartyAccountTable).values({
         provider,
@@ -579,10 +550,7 @@ const loginByToken = async (req: NextRequest) => {
     if (axios.isAxiosError(error)) {
       const status = error.response?.status
       if (status === 401) {
-        return NextResponse.json(
-          { error: 'Token 无效或已过期' },
-          { status: 401 },
-        )
+        return NextResponse.json({ error: 'Token 无效或已过期' }, { status: 401 })
       }
     }
 
@@ -601,9 +569,7 @@ const removeAccount = async (req: NextRequest) => {
       return NextResponse.json({ error: 'provider 无效' }, { status: 400 })
     }
 
-    await db
-      .delete(ThirdPartyAccountTable)
-      .where(eq(ThirdPartyAccountTable.provider, provider))
+    await db.delete(ThirdPartyAccountTable).where(eq(ThirdPartyAccountTable.provider, provider))
 
     return NextResponse.json({
       data: {

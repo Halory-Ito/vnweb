@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server'
 import { eq, inArray } from 'drizzle-orm'
+import { NextRequest, NextResponse } from 'next/server'
 
-import { db } from '@/lib/drizzle'
 import { GuideRouteTable } from '@/db/schema'
+import { db } from '@/lib/drizzle'
 
 export async function PATCH(request: NextRequest) {
   try {
@@ -10,10 +10,7 @@ export async function PATCH(request: NextRequest) {
     const { routes } = body as { routes: { id: number; sortOrder: number }[] }
 
     if (!Array.isArray(routes) || routes.length === 0) {
-      return NextResponse.json(
-        { error: 'Missing or invalid routes array' },
-        { status: 400 },
-      )
+      return NextResponse.json({ error: 'Missing or invalid routes array' }, { status: 400 })
     }
 
     // 验证所有路由 ID 存在
@@ -24,10 +21,7 @@ export async function PATCH(request: NextRequest) {
       .where(inArray(GuideRouteTable.id, routeIds))
 
     if (existingRoutes.length !== routeIds.length) {
-      return NextResponse.json(
-        { error: 'Some routes not found' },
-        { status: 404 },
-      )
+      return NextResponse.json({ error: 'Some routes not found' }, { status: 404 })
     }
 
     // 批量更新排序顺序
@@ -45,9 +39,6 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error('Update route sort order error:', error)
-    return NextResponse.json(
-      { error: 'Failed to update route sort order' },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: 'Failed to update route sort order' }, { status: 500 })
   }
 }

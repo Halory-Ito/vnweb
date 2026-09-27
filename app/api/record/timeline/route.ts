@@ -86,8 +86,7 @@ const getTimeline = async (req: NextRequest) => {
         continue
       }
 
-      const key =
-        range === 'year' ? date.format('YYYY-MM') : date.format('YYYY-MM-DD')
+      const key = range === 'year' ? date.format('YYYY-MM') : date.format('YYYY-MM-DD')
       const seconds = Math.max(0, Number(row.playTime || 0))
       bucket.set(key, (bucket.get(key) || 0) + seconds)
     }
@@ -149,10 +148,7 @@ const getTimeline = async (req: NextRequest) => {
     })
   } catch (error) {
     console.error('Get record timeline failed:', error)
-    return NextResponse.json(
-      { error: 'Failed to fetch timeline' },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: 'Failed to fetch timeline' }, { status: 500 })
   }
 }
 

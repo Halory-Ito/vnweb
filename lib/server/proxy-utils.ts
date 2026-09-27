@@ -12,18 +12,14 @@ export type ServerProxySettings = {
   password: string
 }
 
-export function buildProxyAgentUrl(
-  settings: ServerProxySettings,
-): string | null {
+export function buildProxyAgentUrl(settings: ServerProxySettings): string | null {
   if (!settings.enabled || !settings.host) {
     return null
   }
 
   const auth =
     settings.username && settings.password
-      ? `${encodeURIComponent(settings.username)}:${encodeURIComponent(
-          settings.password,
-        )}@`
+      ? `${encodeURIComponent(settings.username)}:${encodeURIComponent(settings.password)}@`
       : ''
 
   return `${settings.type}://${auth}${settings.host}:${settings.port}`

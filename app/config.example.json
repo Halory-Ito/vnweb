@@ -1,39 +1,49 @@
 {
-    "settings": {
-        "appearance": {
-            "chart": {
-                "color": "#e84479",
-                "opacity": 40
-            },
-            "guide": {
-                "color": {
-                    "choice": "#3b82f6",
-                    "save": "#10b981",
-                    "load": "#f59e0b",
-                    "note": "#64748b"
-                }
-            },
-            "background": {
-                "custom": {
-                    "active": true,
-                    "path": {
-                        "pc": "/assets/bg/custom/pc-1784782966167.png",
-                        "mobile": "/assets/bg/custom/mobile-1784782937089.jpg"
-                    }
-                },
-                "transitionStyle": "center-fade",
-                "transitionDurationMs": 800
-            },
-            "glass": {
-                "blur": 24,
-                "opacity": 30
-            }
-        },
-        "backup": {
-            "save": {
-                "active": true,
-                "dir": "D:\\Cache\\GameSaveDir"
-            }
+  "settings": {
+    "appearance": {
+      "chart": {
+        "color": "#e84479",
+        "opacity": 40
+      },
+      "guide": {
+        "color": {
+          "choice": "#3b82f6",
+          "save": "#10b981",
+          "load": "#f59e0b",
+          "note": "#64748b"
         }
+      },
+      "status": {
+        "color": {
+          "0": "#a1a1aa",
+          "1": "#34d399",
+          "2": "#fbbf24",
+          "3": "#38bdf8",
+          "4": "#a78bfa",
+          "5": "#fb7185"
+        }
+      },
+      "background": {
+        "custom": {
+          "active": true,
+          "path": {
+            "pc": "/assets/bg/custom/pc-1784782966167.png",
+            "mobile": "/assets/bg/custom/mobile-1784782937089.jpg"
+          }
+        },
+        "transitionStyle": "center-fade",
+        "transitionDurationMs": 800
+      },
+      "glass": {
+        "blur": 24,
+        "opacity": 30
+      }
+    },
+    "backup": {
+      "save": {
+        "active": true,
+        "dir": "D:\\Cache\\GameSaveDir"
+      }
     }
+  }
 }

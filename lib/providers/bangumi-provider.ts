@@ -1,11 +1,7 @@
 import { api } from '@/lib/request-utils'
 
-import type {
-  BulkImportResult,
-  GameSearchResult,
-  ProviderPlugin,
-} from '@/lib/plugins/types'
-import type { GameInfo } from '@/types/game-types'
+import type { BulkImportResult, GameSearchResult, ProviderPlugin } from '@/lib/plugins/types'
+import type { GameInfo } from '@/types/game'
 
 // ── BGM 响应类型 ──────────────────────────────────────────
 type BGMInfoboxItem = {
@@ -33,9 +29,7 @@ type BGMSearchResponse = {
 }
 
 // ── Infobox 工具函数 ──────────────────────────────────────
-const toInfoboxTextList = (
-  value: BGMInfoboxItem['value'] | undefined,
-): string[] => {
+const toInfoboxTextList = (value: BGMInfoboxItem['value'] | undefined): string[] => {
   if (!value) return []
   if (typeof value === 'string') return value ? [value] : []
   return value.map((item) => item.v).filter(Boolean)
@@ -54,18 +48,12 @@ const toInfoboxRecordList = (
     .filter((item): item is Record<string, string> => item !== null)
 }
 
-const getInfoboxItem = (
-  infobox: BGMInfoboxItem[] | undefined,
-  keys: string[],
-) => {
+const getInfoboxItem = (infobox: BGMInfoboxItem[] | undefined, keys: string[]) => {
   if (!infobox?.length) return undefined
   return infobox.find((item) => keys.includes(item.key))
 }
 
-const getInfoboxValueText = (
-  infobox: BGMInfoboxItem[] | undefined,
-  keys: string[],
-) => {
+const getInfoboxValueText = (infobox: BGMInfoboxItem[] | undefined, keys: string[]) => {
   const item = getInfoboxItem(infobox, keys)
   return toInfoboxTextList(item?.value)[0] ?? ''
 }
@@ -77,9 +65,7 @@ const mapBGMSubjectToGameInfo = (subject: BGMSubject): GameInfo => {
   const platforms = [
     ...toInfoboxTextList(getInfoboxItem(infobox, ['平台'])?.value),
     ...infobox
-      .map((item) =>
-        item.key.startsWith('平台:') ? item.key.replace('平台:', '') : '',
-      )
+      .map((item) => (item.key.startsWith('平台:') ? item.key.replace('平台:', '') : ''))
       .filter(Boolean),
   ]
 
@@ -142,10 +128,7 @@ export const bangumiProvider: ProviderPlugin = {
       items: subjects
         .map((subject) => {
           if (subject.id === undefined || subject.id === null) return null
-          const developer = getInfoboxValueText(subject.infobox, [
-            '开发',
-            '开发商',
-          ])
+          const developer = getInfoboxValueText(subject.infobox, ['开发', '开发商'])
           return {
             id: String(subject.id),
             name: subject.name_cn || subject.name || '',

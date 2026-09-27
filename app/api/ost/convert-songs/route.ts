@@ -48,16 +48,12 @@ export async function POST(req: NextRequest) {
     try {
       if (direction === 'khinsider-to-netease') {
         // 获取网易云专辑详情
-        const albumId =
-          typeof targetAlbumId === 'string'
-            ? parseInt(targetAlbumId)
-            : targetAlbumId
+        const albumId = typeof targetAlbumId === 'string' ? parseInt(targetAlbumId) : targetAlbumId
         const apiUrl = `${NETEASE_API_BASE}/album`
         const response = await api.get(apiUrl, {
           params: { id: albumId },
           headers: {
-            'User-Agent':
-              'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
             Referer: 'https://music.163.com/',
           },
         })
@@ -65,31 +61,24 @@ export async function POST(req: NextRequest) {
         const data = response.data
         if (data.songs) {
           // 先收集所有歌曲信息
-          const songsWithLyricPaths = data.songs.map(
-            (song: { id: number; name: string }) => ({
-              id: song.id,
-              name: song.name,
-              url: `https://music.163.com/song/media/outer/url?id=${song.id}.mp3`,
-              lyricsText: '',
-              lyricsPath: `${NETEASE_API_BASE}/lyric?id=${song.id}`,
-            }),
-          )
+          const songsWithLyricPaths = data.songs.map((song: { id: number; name: string }) => ({
+            id: song.id,
+            name: song.name,
+            url: `https://music.163.com/song/media/outer/url?id=${song.id}.mp3`,
+            lyricsText: '',
+            lyricsPath: `${NETEASE_API_BASE}/lyric?id=${song.id}`,
+          }))
           targetSongs = songsWithLyricPaths
         }
       } else {
         // 获取 Khinsider 专辑详情
-        const albumUrl =
-          typeof targetAlbumId === 'string'
-            ? targetAlbumId
-            : String(targetAlbumId)
+        const albumUrl = typeof targetAlbumId === 'string' ? targetAlbumId : String(targetAlbumId)
         const response = await api.get('/ost/khinsider/album', {
           params: { url: albumUrl },
         })
         const khinsiderData = response.data
         targetSongs =
-          (
-            khinsiderData.data?.songs as Array<{ name: string; url: string }>
-          )?.map((song, idx) => ({
+          (khinsiderData.data?.songs as Array<{ name: string; url: string }>)?.map((song, idx) => ({
             id: idx,
             name: song.name,
             url: song.url,

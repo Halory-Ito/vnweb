@@ -64,10 +64,10 @@ export async function POST(req: NextRequest) {
     }
 
     // 只更新 settings.appearance.glass，不影响其他属性
-    await updateConfigSection(
-      ['settings', 'appearance', 'glass'],
-      { blur: current.blur, opacity: current.opacity },
-    )
+    await updateConfigSection(['settings', 'appearance', 'glass'], {
+      blur: current.blur,
+      opacity: current.opacity,
+    })
 
     return NextResponse.json({ data: current })
   } catch (error) {

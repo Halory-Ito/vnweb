@@ -3,12 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 
 import { readConfig, updateConfigSection } from '@/lib/server/config-rw'
 
-type BackgroundTransitionStyle =
-  | 'none'
-  | 'center-fade'
-  | 'cross-fade'
-  | 'slide-up'
-  | 'zoom-fade'
+type BackgroundTransitionStyle = 'none' | 'center-fade' | 'cross-fade' | 'slide-up' | 'zoom-fade'
 
 type BackgroundSettings = {
   custom: {
@@ -61,19 +56,14 @@ async function readBackgroundSettings(): Promise<BackgroundSettings> {
           ? custom['active']
           : DEFAULT_BACKGROUND_SETTINGS.custom.active,
       path: {
-        pc:
-          typeof p['pc'] === 'string'
-            ? p['pc']
-            : DEFAULT_BACKGROUND_SETTINGS.custom.path.pc,
+        pc: typeof p['pc'] === 'string' ? p['pc'] : DEFAULT_BACKGROUND_SETTINGS.custom.path.pc,
         mobile:
           typeof p['mobile'] === 'string'
             ? p['mobile']
             : DEFAULT_BACKGROUND_SETTINGS.custom.path.mobile,
       },
     },
-    transitionStyle: VALID_TRANSITION_STYLES.includes(
-      transitionStyle as BackgroundTransitionStyle,
-    )
+    transitionStyle: VALID_TRANSITION_STYLES.includes(transitionStyle as BackgroundTransitionStyle)
       ? (transitionStyle as BackgroundTransitionStyle)
       : DEFAULT_BACKGROUND_SETTINGS.transitionStyle,
     transitionDurationMs:
@@ -101,8 +91,7 @@ export async function GET(_req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const { custom, transitionStyle, transitionDurationMs } =
-      body as Partial<BackgroundSettings>
+    const { custom, transitionStyle, transitionDurationMs } = body as Partial<BackgroundSettings>
 
     const current = await readBackgroundSettings()
 
@@ -122,21 +111,13 @@ export async function POST(req: NextRequest) {
 
     if (
       typeof transitionStyle === 'string' &&
-      VALID_TRANSITION_STYLES.includes(
-        transitionStyle as BackgroundTransitionStyle,
-      )
+      VALID_TRANSITION_STYLES.includes(transitionStyle as BackgroundTransitionStyle)
     ) {
       current.transitionStyle = transitionStyle as BackgroundTransitionStyle
     }
 
-    if (
-      typeof transitionDurationMs === 'number' &&
-      Number.isFinite(transitionDurationMs)
-    ) {
-      current.transitionDurationMs = Math.min(
-        3000,
-        Math.max(0, Math.round(transitionDurationMs)),
-      )
+    if (typeof transitionDurationMs === 'number' && Number.isFinite(transitionDurationMs)) {
+      current.transitionDurationMs = Math.min(3000, Math.max(0, Math.round(transitionDurationMs)))
     }
 
     // 只更新 settings.appearance.background，不影响其他属性

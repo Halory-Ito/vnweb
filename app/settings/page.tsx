@@ -4,9 +4,9 @@ import AppearancePage from './appearance/page'
 import BackupSettingsContent from './backup/backup-settings-content'
 import ProxyPage from './proxy/page'
 import ThemeContent from './theme/theme-content'
-import CloudSync from '@/components/settings/cloud-sync'
-import PluginSettings from '@/components/settings/plugin-settings'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import CloudSync from '@/features/settings/components/cloud-sync'
+import PluginSettings from '@/features/settings/components/plugin-settings'
 
 type SettingsPropsItem = {
   value: string

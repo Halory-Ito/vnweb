@@ -75,11 +75,7 @@ export default function AddRoute() {
           >
             取消
           </Button>
-          <Button
-            type="button"
-            onClick={handleSubmit}
-            disabled={!name.trim() || isSubmitting}
-          >
+          <Button type="button" onClick={handleSubmit} disabled={!name.trim() || isSubmitting}>
             {isSubmitting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />

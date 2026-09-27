@@ -53,16 +53,12 @@ const steamCallback = async (req: NextRequest) => {
 
     incoming.set('openid.mode', 'check_authentication')
 
-    const verification = await axios.post(
-      STEAM_OPENID_ENDPOINT,
-      incoming.toString(),
-      {
-        timeout: 10_000,
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
+    const verification = await axios.post(STEAM_OPENID_ENDPOINT, incoming.toString(), {
+      timeout: 10_000,
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
       },
-    )
+    })
 
     const bodyText = String(verification.data || '')
     if (!/is_valid\s*:\s*true/i.test(bodyText)) {
@@ -77,9 +73,7 @@ const steamCallback = async (req: NextRequest) => {
     const now = dayjs().toISOString()
 
     await db.transaction(async (tx) => {
-      await tx
-        .delete(ThirdPartyAccountTable)
-        .where(eq(ThirdPartyAccountTable.provider, 'steam'))
+      await tx.delete(ThirdPartyAccountTable).where(eq(ThirdPartyAccountTable.provider, 'steam'))
 
       await tx.insert(ThirdPartyAccountTable).values({
         provider: 'steam',

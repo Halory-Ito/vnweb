@@ -56,27 +56,17 @@ async function getPlugins() {
           // Extract properties using regex
           const idMatch = manifestContent.match(/id:\s*["']([^"']+)["']/)
           const nameMatch = manifestContent.match(/name:\s*["']([^"']+)["']/)
-          const descMatch = manifestContent.match(
-            /description:\s*["']([^"']+)["']/,
-          )
-          const versionMatch = manifestContent.match(
-            /version:\s*["']([^"']+)["']/,
-          )
+          const descMatch = manifestContent.match(/description:\s*["']([^"']+)["']/)
+          const versionMatch = manifestContent.match(/version:\s*["']([^"']+)["']/)
           const iconMatch = manifestContent.match(/icon:\s*["']([^"']+)["']/)
-          const authorsBlockMatch = manifestContent.match(
-            /authors:\s*\[([^\]]*)\]/,
-          )
-          const installedMatch = manifestContent.match(
-            /installed:\s*(true|false)/,
-          )
+          const authorsBlockMatch = manifestContent.match(/authors:\s*\[([^\]]*)\]/)
+          const installedMatch = manifestContent.match(/installed:\s*(true|false)/)
 
           if (idMatch && nameMatch) {
             const iconValue = iconMatch ? iconMatch[1] : ''
             const authorsValue = authorsBlockMatch ? authorsBlockMatch[1] : ''
             const authors = authorsValue
-              ? [...authorsValue.matchAll(/["']([^"']+)["']/g)].map(
-                  (match) => match[1],
-                )
+              ? [...authorsValue.matchAll(/["']([^"']+)["']/g)].map((match) => match[1])
               : []
 
             plugins.push({

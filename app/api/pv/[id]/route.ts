@@ -22,10 +22,7 @@ const parsePvId = async (context: { params: Promise<{ id: string }> }) => {
   return pvId
 }
 
-const updatePv = async (
-  req: NextRequest,
-  context: { params: Promise<{ id: string }> },
-) => {
+const updatePv = async (req: NextRequest, context: { params: Promise<{ id: string }> }) => {
   try {
     const pvId = await parsePvId(context)
     const payload = (await req.json().catch(() => ({}))) as {
@@ -43,10 +40,7 @@ const updatePv = async (
     }
 
     if (!name || !url) {
-      return NextResponse.json(
-        { error: '游戏、PV名称和链接不能为空' },
-        { status: 400 },
-      )
+      return NextResponse.json({ error: '游戏、PV名称和链接不能为空' }, { status: 400 })
     }
 
     const game = await db
@@ -95,10 +89,7 @@ const updatePv = async (
   }
 }
 
-const deletePv = async (
-  _req: NextRequest,
-  context: { params: Promise<{ id: string }> },
-) => {
+const deletePv = async (_req: NextRequest, context: { params: Promise<{ id: string }> }) => {
   try {
     const pvId = await parsePvId(context)
 

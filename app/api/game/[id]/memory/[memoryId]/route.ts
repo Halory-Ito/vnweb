@@ -24,9 +24,7 @@ const normalizeText = (value: unknown) => {
   return value.trim()
 }
 
-const parseIds = async (context: {
-  params: Promise<{ id: string; memoryId: string }>
-}) => {
+const parseIds = async (context: { params: Promise<{ id: string; memoryId: string }> }) => {
   const { id, memoryId } = await context.params
   const gameId = Number(id)
   const memoryItemId = Number(memoryId)
@@ -92,12 +90,7 @@ const getGameMemory = async (
         updatedAt: GameMemoryTable.updatedAt,
       })
       .from(GameMemoryTable)
-      .where(
-        and(
-          eq(GameMemoryTable.id, memoryItemId),
-          eq(GameMemoryTable.gameId, gameId),
-        ),
-      )
+      .where(and(eq(GameMemoryTable.id, memoryItemId), eq(GameMemoryTable.gameId, gameId)))
       .limit(1)
 
     const item = rows[0]
@@ -132,12 +125,7 @@ const updateGameMemory = async (
         imageUrl: GameMemoryTable.imageUrl,
       })
       .from(GameMemoryTable)
-      .where(
-        and(
-          eq(GameMemoryTable.id, memoryItemId),
-          eq(GameMemoryTable.gameId, gameId),
-        ),
-      )
+      .where(and(eq(GameMemoryTable.id, memoryItemId), eq(GameMemoryTable.gameId, gameId)))
       .limit(1)
 
     const memory = rows[0]
@@ -153,31 +141,17 @@ const updateGameMemory = async (
     let nextImageUrl = memory.imageUrl
     if (image instanceof File) {
       if (!image.type.startsWith('image/')) {
-        return NextResponse.json(
-          { error: '截图仅支持图片文件' },
-          { status: 400 },
-        )
+        return NextResponse.json({ error: '截图仅支持图片文件' }, { status: 400 })
       }
 
       if (image.size <= 0 || image.size > MAX_UPLOAD_SIZE) {
-        return NextResponse.json(
-          { error: '截图大小需在 1B 到 20MB 之间' },
-          { status: 400 },
-        )
+        return NextResponse.json({ error: '截图大小需在 1B 到 20MB 之间' }, { status: 400 })
       }
 
       const ext = getSafeExt(image.name)
-      const baseName = sanitizeFileName(
-        path.basename(image.name, path.extname(image.name)),
-      )
+      const baseName = sanitizeFileName(path.basename(image.name, path.extname(image.name)))
       const fileName = `${baseName}_${Date.now()}${ext}`
-      const targetDir = path.join(
-        process.cwd(),
-        'public',
-        'assets',
-        'memory',
-        String(gameId),
-      )
+      const targetDir = path.join(process.cwd(), 'public', 'assets', 'memory', String(gameId))
       const targetPath = path.join(targetDir, fileName)
 
       await fs.mkdir(targetDir, { recursive: true })
@@ -201,12 +175,7 @@ const updateGameMemory = async (
         imageUrl: nextImageUrl,
         updatedAt: now,
       })
-      .where(
-        and(
-          eq(GameMemoryTable.id, memoryItemId),
-          eq(GameMemoryTable.gameId, gameId),
-        ),
-      )
+      .where(and(eq(GameMemoryTable.id, memoryItemId), eq(GameMemoryTable.gameId, gameId)))
       .returning({
         id: GameMemoryTable.id,
         gameId: GameMemoryTable.gameId,
@@ -244,12 +213,7 @@ const deleteGameMemory = async (
         imageUrl: GameMemoryTable.imageUrl,
       })
       .from(GameMemoryTable)
-      .where(
-        and(
-          eq(GameMemoryTable.id, memoryItemId),
-          eq(GameMemoryTable.gameId, gameId),
-        ),
-      )
+      .where(and(eq(GameMemoryTable.id, memoryItemId), eq(GameMemoryTable.gameId, gameId)))
       .limit(1)
 
     const memory = rows[0]
@@ -259,12 +223,7 @@ const deleteGameMemory = async (
 
     await db
       .delete(GameMemoryTable)
-      .where(
-        and(
-          eq(GameMemoryTable.id, memoryItemId),
-          eq(GameMemoryTable.gameId, gameId),
-        ),
-      )
+      .where(and(eq(GameMemoryTable.id, memoryItemId), eq(GameMemoryTable.gameId, gameId)))
 
     const filePath = getMemoryFilePath(memory.imageUrl)
     if (filePath) {
@@ -284,8 +243,4 @@ const deleteGameMemory = async (
   }
 }
 
-export {
-  deleteGameMemory as DELETE,
-  getGameMemory as GET,
-  updateGameMemory as PATCH,
-}
+export { deleteGameMemory as DELETE, getGameMemory as GET, updateGameMemory as PATCH }

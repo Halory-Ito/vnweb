@@ -85,7 +85,7 @@ export function ChartSection() {
               value={draftColor}
               onChange={(e) => handleColorChange(e.target.value)}
               onBlur={handleColorConfirm}
-              className="h-8 w-8 cursor-pointer rounded border border-input"
+              className="border-input h-8 w-8 cursor-pointer rounded border"
             />
           </div>
         </div>
@@ -94,9 +94,7 @@ export function ChartSection() {
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <span className="text-sm font-medium">图表透明度</span>
-          <span className="text-muted-foreground text-sm">
-            {draftOpacity}%
-          </span>
+          <span className="text-muted-foreground text-sm">{draftOpacity}%</span>
         </div>
         <Slider
           min={0}

@@ -20,27 +20,17 @@ const searchSteamOwnedGames = async (req: NextRequest) => {
     const steamId = normalizeSteamId(body.steamId)
 
     if (!isValidSteamUid(steamId)) {
-      return NextResponse.json(
-        { error: '请输入有效的 Steam UID（17 位数字）' },
-        { status: 400 },
-      )
+      return NextResponse.json({ error: '请输入有效的 Steam UID（17 位数字）' }, { status: 400 })
     }
 
     const steamApiKey = getSteamApiKey()
     if (!steamApiKey) {
-      return NextResponse.json(
-        { error: '未配置 STEAM_API_KEY，无法搜索' },
-        { status: 500 },
-      )
+      return NextResponse.json({ error: '未配置 STEAM_API_KEY，无法搜索' }, { status: 500 })
     }
 
     // 获取启用的代理配置
     const proxySettings = await getEnabledProxySettings()
-    const ownedGames = await fetchOwnedGames(
-      steamId,
-      steamApiKey,
-      proxySettings ?? undefined,
-    )
+    const ownedGames = await fetchOwnedGames(steamId, steamApiKey, proxySettings ?? undefined)
     const importedAppIdSet = await getImportedSteamAppIdSet()
 
     const items = ownedGames

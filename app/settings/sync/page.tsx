@@ -1,6 +1,6 @@
 import { Suspense } from 'react'
 
-import CloudSync from '@/components/settings/cloud-sync'
+import CloudSync from '@/features/settings/components/cloud-sync'
 
 function SyncPageContent() {
   return <CloudSync />

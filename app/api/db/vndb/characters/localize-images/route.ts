@@ -53,11 +53,7 @@ const localizeCharacterImages = async (req: NextRequest) => {
       }
 
       try {
-        const localPath = await localizeCharacterImage(
-          gameId,
-          character.vndbId,
-          character.imageUrl,
-        )
+        const localPath = await localizeCharacterImage(gameId, character.vndbId, character.imageUrl)
 
         // 更新数据库中的图片路径
         await db
@@ -67,10 +63,7 @@ const localizeCharacterImages = async (req: NextRequest) => {
 
         localized++
       } catch (error) {
-        console.error(
-          `Failed to localize image for character ${character.vndbId}:`,
-          error,
-        )
+        console.error(`Failed to localize image for character ${character.vndbId}:`, error)
         failed++
       }
     }
@@ -85,10 +78,7 @@ const localizeCharacterImages = async (req: NextRequest) => {
     })
   } catch (error) {
     console.error('Localize character images failed:', error)
-    return NextResponse.json(
-      { error: 'Failed to localize character images' },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: 'Failed to localize character images' }, { status: 500 })
   }
 }
 

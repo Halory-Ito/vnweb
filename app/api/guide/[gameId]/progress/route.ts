@@ -1,13 +1,8 @@
 import { eq, inArray } from 'drizzle-orm'
 import { NextRequest, NextResponse } from 'next/server'
 
+import { GameGuideTable, GuideRouteTable, GuideEndingTable, GuideStepTable } from '@/db/schema'
 import { db } from '@/lib/drizzle'
-import {
-  GameGuideTable,
-  GuideRouteTable,
-  GuideEndingTable,
-  GuideStepTable,
-} from '@/db/schema'
 
 type ProgressType = 'step' | 'ending' | 'route' | 'guide'
 
@@ -18,7 +13,15 @@ const tableMap = {
   guide: GameGuideTable,
 } as const
 
-async function updateFinished(table: typeof GuideStepTable | typeof GuideEndingTable | typeof GuideRouteTable | typeof GameGuideTable, ids: number[], finished: boolean) {
+async function updateFinished(
+  table:
+    | typeof GuideStepTable
+    | typeof GuideEndingTable
+    | typeof GuideRouteTable
+    | typeof GameGuideTable,
+  ids: number[],
+  finished: boolean,
+) {
   if (ids.length === 0) return
   await db
     .update(table)
@@ -40,7 +43,7 @@ export async function PATCH(
   }
 
   try {
-    const body = await request.json().catch(() => ({})) as {
+    const body = (await request.json().catch(() => ({}))) as {
       type?: ProgressType
       id?: number
       finished?: boolean
@@ -65,11 +68,7 @@ export async function PATCH(
     const table = tableMap[type]
 
     // 检查记录是否存在
-    const existing = await db
-      .select({ id: table.id })
-      .from(table)
-      .where(eq(table.id, id))
-      .limit(1)
+    const existing = await db.select({ id: table.id }).from(table).where(eq(table.id, id)).limit(1)
 
     if (existing.length === 0) {
       return NextResponse.json({ error: 'Record not found' }, { status: 404 })
@@ -141,9 +140,6 @@ export async function PATCH(
     return NextResponse.json({ data: { updated: true, id } })
   } catch (error) {
     console.error('Update guide progress error:', error)
-    return NextResponse.json(
-      { error: 'Failed to update progress' },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: 'Failed to update progress' }, { status: 500 })
   }
 }

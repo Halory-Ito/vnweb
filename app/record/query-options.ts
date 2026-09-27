@@ -125,9 +125,7 @@ export const fetchRecordYearReportApi = async (payload: { offset: number }) => {
   return (res.data as { data: RecordYearReportResponse }).data
 }
 
-export const fetchRecordMonthReportApi = async (payload: {
-  offset: number
-}) => {
+export const fetchRecordMonthReportApi = async (payload: { offset: number }) => {
   const res = await api.get('/record/month-report', {
     params: payload,
   })

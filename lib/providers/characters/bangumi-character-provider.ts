@@ -1,7 +1,4 @@
-import type {
-  CharacterProviderPlugin,
-  NormalizedCharacterRow,
-} from '@/lib/plugins/types'
+import type { CharacterProviderPlugin, NormalizedCharacterRow } from '@/lib/plugins/types'
 
 // ── Bangumi 响应类型 ──────────────────────────────────────
 
@@ -110,9 +107,7 @@ const parseBwhValue = (value: string) => {
   }
 
   const compact = value.replace(/\s+/g, '')
-  const tagged = Array.from(
-    compact.matchAll(/([BWHbwh])[：:]*([0-9]+(?:\.[0-9]+)?)/g),
-  )
+  const tagged = Array.from(compact.matchAll(/([BWHbwh])[：:]*([0-9]+(?:\.[0-9]+)?)/g))
   if (tagged.length > 0) {
     for (const part of tagged) {
       const label = (part[1] || '').toUpperCase()
@@ -145,9 +140,7 @@ const parseBwhValue = (value: string) => {
   return result
 }
 
-const serializeTuple = (
-  value: [string | null, string | null] | null | undefined,
-) => {
+const serializeTuple = (value: [string | null, string | null] | null | undefined) => {
   if (!value) {
     return ''
   }
@@ -195,12 +188,7 @@ const mapBangumiBloodType = (value: number | null | undefined) => {
 
 const mapBangumiBloodTypeFromText = (value: string) => {
   const normalized = value.trim().toUpperCase()
-  if (
-    normalized === 'A' ||
-    normalized === 'B' ||
-    normalized === 'AB' ||
-    normalized === 'O'
-  ) {
+  if (normalized === 'A' || normalized === 'B' || normalized === 'AB' || normalized === 'O') {
     return normalized
   }
   return ''
@@ -220,26 +208,15 @@ const pickBgmImageUrl = (
   if (!images) {
     return ''
   }
-  return (
-    images.large ||
-    images.common ||
-    images.medium ||
-    images.small ||
-    images.grid ||
-    ''
-  )
+  return images.large || images.common || images.medium || images.small || images.grid || ''
 }
 
-const pickBangumiNameFromInfobox = (
-  infobox: BgmCharacterInfoboxItem[] | undefined,
-) => {
+const pickBangumiNameFromInfobox = (infobox: BgmCharacterInfoboxItem[] | undefined) => {
   if (!Array.isArray(infobox)) {
     return ''
   }
 
-  const match = infobox.find(
-    (item) => (item.key || '').trim().toLowerCase() === '简体中文名',
-  )
+  const match = infobox.find((item) => (item.key || '').trim().toLowerCase() === '简体中文名')
   return normalizeInfoboxValue(match?.value).trim()
 }
 
@@ -295,11 +272,9 @@ const mapBangumiDetailToCharacterFields = (detail: BgmCharacterDetail) => {
   }
 
   const mappedGenderTuple =
-    mapBangumiGenderToTuple(detail.gender) ||
-    mapBangumiGenderToTuple(infoboxGender)
+    mapBangumiGenderToTuple(detail.gender) || mapBangumiGenderToTuple(infoboxGender)
   const mappedBloodType =
-    mapBangumiBloodType(detail.blood_type) ||
-    mapBangumiBloodTypeFromText(infoboxBloodType)
+    mapBangumiBloodType(detail.blood_type) || mapBangumiBloodTypeFromText(infoboxBloodType)
 
   return {
     name: pickBangumiNameFromInfobox(infobox),
@@ -362,9 +337,7 @@ export const bangumiCharacterProvider: CharacterProviderPlugin = {
       .from(GameIdMapTable)
       .where(eq(GameIdMapTable.gameId, gameId))
 
-    const binding = idMaps.find(
-      (item) => item.provider.trim().toLowerCase() === 'bangumi',
-    )
+    const binding = idMaps.find((item) => item.provider.trim().toLowerCase() === 'bangumi')
 
     if (!binding) {
       return null
@@ -393,27 +366,18 @@ export const bangumiCharacterProvider: CharacterProviderPlugin = {
         const character = item.character
         const bgmCharacterId = character?.id ?? item.id ?? index + 1
         const fallbackId = sanitizeFileNamePart(
-          [character?.name, character?.name_cn, item.name]
-            .filter(Boolean)
-            .join('_'),
+          [character?.name, character?.name_cn, item.name].filter(Boolean).join('_'),
         )
         const rowId = `bgm-${bgmCharacterId || fallbackId || index + 1}`
 
-        let detailMapped: ReturnType<
-          typeof mapBangumiDetailToCharacterFields
-        > | null = null
-        if (
-          typeof bgmCharacterId === 'number' &&
-          Number.isFinite(bgmCharacterId)
-        ) {
+        let detailMapped: ReturnType<typeof mapBangumiDetailToCharacterFields> | null = null
+        if (typeof bgmCharacterId === 'number' && Number.isFinite(bgmCharacterId)) {
           try {
             const detailRes = await BGMClient.request({
               method: 'GET',
               url: `/v0/characters/${bgmCharacterId}`,
             })
-            detailMapped = mapBangumiDetailToCharacterFields(
-              detailRes.data as BgmCharacterDetail,
-            )
+            detailMapped = mapBangumiDetailToCharacterFields(detailRes.data as BgmCharacterDetail)
           } catch (error) {
             console.warn('Fetch Bangumi character detail failed:', {
               gameId,
@@ -432,11 +396,7 @@ export const bangumiCharacterProvider: CharacterProviderPlugin = {
 
         if (saveImagesToLocal && imageUrl) {
           try {
-            finalImageUrl = await localizeCharacterImage(
-              gameId,
-              rowId,
-              imageUrl,
-            )
+            finalImageUrl = await localizeCharacterImage(gameId, rowId, imageUrl)
           } catch (error) {
             console.error('Localize Bangumi character image failed:', error)
             finalImageUrl = imageUrl

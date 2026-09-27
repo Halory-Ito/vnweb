@@ -12,8 +12,7 @@ export async function GET(req: NextRequest) {
     }
 
     // 根据方向确定搜索哪个资源
-    const targetResource =
-      direction === 'khinsider-to-netease' ? 'netease' : 'khinsider'
+    const targetResource = direction === 'khinsider-to-netease' ? 'netease' : 'khinsider'
 
     try {
       let items: Array<{

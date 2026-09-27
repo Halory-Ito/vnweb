@@ -1,20 +1,14 @@
 import { desc, eq, sql } from 'drizzle-orm'
 import { NextRequest, NextResponse } from 'next/server'
 
-import {
-  CollectionGameTable,
-  CollectionTable,
-  GameInfoTable,
-  GamePlayTable,
-} from '@/db/schema'
+import { CollectionGameTable, CollectionTable, GameInfoTable, GamePlayTable } from '@/db/schema'
 import { db } from '@/lib/drizzle'
 
-import type { GameSidebarProps } from '@/types/game-types'
+import type { GameSidebarProps } from '@/types/game'
 
 const DEFAULT_GAME_ICON = '/file.svg'
 
-const normalizeText = (value: string | null | undefined) =>
-  (value || '').trim().toLowerCase()
+const normalizeText = (value: string | null | undefined) => (value || '').trim().toLowerCase()
 
 const includesText = (value: string | null | undefined, keyword: string) => {
   if (!keyword) {
@@ -37,11 +31,7 @@ const parseDate = (value: string | null | undefined) => {
   return date
 }
 
-const matchesDateRange = (
-  dateText: string,
-  fromText: string,
-  toText: string,
-) => {
+const matchesDateRange = (dateText: string, fromText: string, toText: string) => {
   if (!fromText && !toText) {
     return true
   }
@@ -78,9 +68,7 @@ const getSidebarData = async (req: NextRequest) => {
   try {
     const searchParams = req.nextUrl.searchParams
     const search = (searchParams.get('search') || '').trim()
-    const includeNsfw =
-      (searchParams.get('includeNsfw') || 'true').trim().toLowerCase() !==
-      'false'
+    const includeNsfw = (searchParams.get('includeNsfw') || 'true').trim().toLowerCase() !== 'false'
     const releaseDateFrom = (searchParams.get('releaseDateFrom') || '').trim()
     const releaseDateTo = (searchParams.get('releaseDateTo') || '').trim()
     const playStatus = (searchParams.get('playStatus') || '').trim()
@@ -123,11 +111,7 @@ const getSidebarData = async (req: NextRequest) => {
       const title = game.nameCn || game.name
       const statusValue = Number(game.playStatus ?? 0)
 
-      if (
-        search &&
-        !includesText(title, search) &&
-        !includesText(game.name, search)
-      ) {
+      if (search && !includesText(title, search) && !includesText(game.name, search)) {
         return false
       }
 
@@ -232,16 +216,10 @@ const getSidebarData = async (req: NextRequest) => {
         gameIcon: GameInfoTable.icon,
       })
       .from(CollectionGameTable)
-      .innerJoin(
-        GameInfoTable,
-        eq(CollectionGameTable.gameId, GameInfoTable.id),
-      )
+      .innerJoin(GameInfoTable, eq(CollectionGameTable.gameId, GameInfoTable.id))
       .orderBy(desc(CollectionGameTable.id))
 
-    const collectionGameMap = new Map<
-      number,
-      Array<{ id: string; title: string; icon: string }>
-    >()
+    const collectionGameMap = new Map<number, Array<{ id: string; title: string; icon: string }>>()
 
     for (const row of collectionGameRows) {
       if (!filteredGameIdSet.has(row.gameId)) {
@@ -274,14 +252,13 @@ const getSidebarData = async (req: NextRequest) => {
       .orderBy(desc(GamePlayTable.lastLaunchedAt))
       .limit(10)
 
-    const recentGameItems: Array<{ id: string; title: string; icon: string }> =
-      recentGameRows
-        .filter((game) => filteredGameIdSet.has(game.gameId))
-        .map((game) => ({
-          id: String(game.gameId),
-          title: game.gameNameCn || game.gameName,
-          icon: game.gameIcon?.trim() ? game.gameIcon : DEFAULT_GAME_ICON,
-        }))
+    const recentGameItems: Array<{ id: string; title: string; icon: string }> = recentGameRows
+      .filter((game) => filteredGameIdSet.has(game.gameId))
+      .map((game) => ({
+        id: String(game.gameId),
+        title: game.gameNameCn || game.gameName,
+        icon: game.gameIcon?.trim() ? game.gameIcon : DEFAULT_GAME_ICON,
+      }))
 
     const items: GameSidebarProps[] = [
       {
@@ -313,10 +290,7 @@ const getSidebarData = async (req: NextRequest) => {
     })
   } catch (error) {
     console.error('Get sidebar data failed:', error)
-    return NextResponse.json(
-      { error: 'Failed to get sidebar data' },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: 'Failed to get sidebar data' }, { status: 500 })
   }
 }
 

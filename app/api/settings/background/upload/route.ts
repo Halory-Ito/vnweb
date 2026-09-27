@@ -57,10 +57,7 @@ const uploadBackgroundImage = async (req: NextRequest) => {
     }
 
     if (file.size <= 0 || file.size > MAX_UPLOAD_SIZE) {
-      return NextResponse.json(
-        { error: '图片大小需在 1B 到 20MB 之间' },
-        { status: 400 },
-      )
+      return NextResponse.json({ error: '图片大小需在 1B 到 20MB 之间' }, { status: 400 })
     }
 
     // 验证设备类型

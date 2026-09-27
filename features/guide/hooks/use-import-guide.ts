@@ -4,6 +4,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useCallback, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 
+import { getGameCardList } from '@/api'
 import {
   getGuideApi,
   importGuideApi,
@@ -11,7 +12,6 @@ import {
   validateGuideJson,
   type GuideSearchResult,
 } from '@/features/guide/guide-api'
-import { getGameCardList } from '@/lib/game/game-utils'
 
 export type ImportMode = 'search' | 'json'
 

@@ -18,10 +18,15 @@ import { useParams, useRouter } from 'next/navigation'
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
 
+import {
+  addGameToCollection,
+  createCollection,
+  deleteGameById,
+  getCollections,
+  moveGameToCollection,
+  removeGameFromCollection,
+} from '@/api'
 import { selectedGameIdsAtom } from '@/atom/global'
-import GameBulkUpdateMetadataDialog from '@/components/game/dialog/game-bulk-update-metadata-dialog'
-import GameCard from '@/components/game/game-card'
-import { SortSelect } from '@/components/game/sort-select'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -57,14 +62,9 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
-import {
-  addGameToCollection,
-  createCollection,
-  deleteGameById,
-  getCollections,
-  moveGameToCollection,
-  removeGameFromCollection,
-} from '@/lib/game/game-utils'
+import GameBulkUpdateMetadataDialog from '@/features/game/components/dialog/game-bulk-update-metadata-dialog'
+import GameCard from '@/features/game/components/game-card'
+import { SortSelect } from '@/features/game/components/sort-select'
 
 type CollectionEmptyStateProps = {
   icon: typeof AlertCircle
@@ -88,14 +88,10 @@ function CollectionEmptyState({
           </div>
           <div className="space-y-2">
             <h2 className="text-xl font-semibold">{title}</h2>
-            <p className="text-muted-foreground text-sm leading-6">
-              {description}
-            </p>
+            <p className="text-muted-foreground text-sm leading-6">{description}</p>
           </div>
           {children ? (
-            <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-              {children}
-            </div>
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-3">{children}</div>
           ) : null}
         </div>
       </div>
@@ -160,18 +156,13 @@ export default function CollectionDetailPage() {
   })
 
   const collection = collections.find((item) => item.id === collectionId)
-  const otherCollections = collections.filter(
-    (item) => item.id !== collectionId,
-  )
+  const otherCollections = collections.filter((item) => item.id !== collectionId)
 
   const collectionGameIds = useMemo(
     () => (collection ? collection.games.map((item) => String(item.id)) : []),
     [collection],
   )
-  const collectionGameIdSet = useMemo(
-    () => new Set(collectionGameIds),
-    [collectionGameIds],
-  )
+  const collectionGameIdSet = useMemo(() => new Set(collectionGameIds), [collectionGameIds])
 
   const selectedInCollection = useMemo(
     () => selectedGameIds.filter((id) => collectionGameIdSet.has(id)),
@@ -196,12 +187,10 @@ export default function CollectionDetailPage() {
           compare = new Date(a.date).getTime() - new Date(b.date).getTime()
           break
         case 'last_run':
-          compare =
-            new Date(a.lastRunAt).getTime() - new Date(b.lastRunAt).getTime()
+          compare = new Date(a.lastRunAt).getTime() - new Date(b.lastRunAt).getTime()
           break
         case 'add_date':
-          compare =
-            new Date(a.addedAt).getTime() - new Date(b.addedAt).getTime()
+          compare = new Date(a.addedAt).getTime() - new Date(b.addedAt).getTime()
           break
         case 'play_time':
           compare = a.playTime - b.playTime
@@ -226,16 +215,12 @@ export default function CollectionDetailPage() {
 
   const toggleSelect = (gameId: string) => {
     setSelectedGameIds((prev) =>
-      prev.includes(gameId)
-        ? prev.filter((item) => item !== gameId)
-        : [...prev, gameId],
+      prev.includes(gameId) ? prev.filter((item) => item !== gameId) : [...prev, gameId],
     )
   }
 
   const clearSelection = () => {
-    setSelectedGameIds((prev) =>
-      prev.filter((id) => !collectionGameIdSet.has(id)),
-    )
+    setSelectedGameIds((prev) => prev.filter((id) => !collectionGameIdSet.has(id)))
   }
 
   const selectAllInCollection = () => {
@@ -254,17 +239,12 @@ export default function CollectionDetailPage() {
     setIsAddingToCollection(true)
     try {
       const targetCollection =
-        collections.find((item) => item.name === targetName) ??
-        (await createCollection(targetName))
+        collections.find((item) => item.name === targetName) ?? (await createCollection(targetName))
 
       const results = await Promise.allSettled(
-        selectedInCollection.map((id) =>
-          addGameToCollection(targetCollection.id, Number(id)),
-        ),
+        selectedInCollection.map((id) => addGameToCollection(targetCollection.id, Number(id))),
       )
-      const successCount = results.filter(
-        (item) => item.status === 'fulfilled',
-      ).length
+      const successCount = results.filter((item) => item.status === 'fulfilled').length
 
       await refreshAll()
       toast.success(`已添加 ${successCount}/${selectedInCollection.length} 项`)
@@ -301,9 +281,7 @@ export default function CollectionDetailPage() {
       const results = await Promise.allSettled(
         selectedInCollection.map((id) => deleteGameById(Number(id))),
       )
-      const successCount = results.filter(
-        (item) => item.status === 'fulfilled',
-      ).length
+      const successCount = results.filter((item) => item.status === 'fulfilled').length
 
       clearSelection()
       setDeleteSelectedOpen(false)
@@ -426,9 +404,7 @@ export default function CollectionDetailPage() {
       </div>
 
       {sortedGames.length === 0 ? (
-        <div className="text-muted-foreground rounded-md border p-4 text-sm">
-          收藏夹暂无游戏
-        </div>
+        <div className="text-muted-foreground rounded-md border p-4 text-sm">收藏夹暂无游戏</div>
       ) : (
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-8">
           {sortedGames.map((game) => (
@@ -445,6 +421,7 @@ export default function CollectionDetailPage() {
                     addedAt={game.addedAt}
                     playTime={game.playTime}
                     rating={game.rating}
+                    status={game.status}
                     showSelection
                     selectionMode={selectionMode}
                     isSelected={selectedInCollection.includes(String(game.id))}
@@ -458,9 +435,7 @@ export default function CollectionDetailPage() {
                   移除收藏夹
                 </ContextMenuItem>
                 <ContextMenuSub>
-                  <ContextMenuSubTrigger>
-                    移动至其他收藏夹
-                  </ContextMenuSubTrigger>
+                  <ContextMenuSubTrigger>移动至其他收藏夹</ContextMenuSubTrigger>
                   <ContextMenuSubContent>
                     {otherCollections.length === 0 ? (
                       <ContextMenuItem disabled>暂无其他收藏夹</ContextMenuItem>
@@ -478,9 +453,7 @@ export default function CollectionDetailPage() {
                 </ContextMenuSub>
                 <ContextMenuItem
                   variant="destructive"
-                  onClick={() =>
-                    setPendingDeleteGame({ id: game.id, name: game.name })
-                  }
+                  onClick={() => setPendingDeleteGame({ id: game.id, name: game.name })}
                 >
                   删除游戏
                 </ContextMenuItem>
@@ -495,11 +468,7 @@ export default function CollectionDetailPage() {
           <div className="flex items-center gap-2">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={isAddingToCollection}
-                >
+                <Button variant="outline" size="sm" disabled={isAddingToCollection}>
                   <FolderPlusIcon className="size-4" />
                   添加到合集
                 </Button>
@@ -511,9 +480,7 @@ export default function CollectionDetailPage() {
                   collections.map((item) => (
                     <DropdownMenuItem
                       key={item.id}
-                      onClick={() =>
-                        void handleAddSelectedToCollection(item.name)
-                      }
+                      onClick={() => void handleAddSelectedToCollection(item.name)}
                     >
                       {item.name}
                     </DropdownMenuItem>
@@ -529,11 +496,7 @@ export default function CollectionDetailPage() {
               </DropdownMenuContent>
             </DropdownMenu>
 
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setMetadataDialogOpen(true)}
-            >
+            <Button variant="outline" size="sm" onClick={() => setMetadataDialogOpen(true)}>
               <RefreshCcwIcon className="size-4" />
               更新元数据
             </Button>
@@ -556,18 +519,14 @@ export default function CollectionDetailPage() {
             <Button
               variant="outline"
               size="sm"
-              disabled={
-                selectedInCollection.length === collectionGameIds.length
-              }
+              disabled={selectedInCollection.length === collectionGameIds.length}
               onClick={selectAllInCollection}
             >
               <CheckIcon className="size-4" />
               全选
             </Button>
 
-            <div className="text-sm font-medium">
-              已选择 {selectedInCollection.length} 项
-            </div>
+            <div className="text-sm font-medium">已选择 {selectedInCollection.length} 项</div>
           </div>
         </div>
       ) : null}
@@ -591,17 +550,10 @@ export default function CollectionDetailPage() {
             placeholder="请输入合集名称"
           />
           <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setCreateCollectionOpen(false)}
-            >
+            <Button type="button" variant="outline" onClick={() => setCreateCollectionOpen(false)}>
               取消
             </Button>
-            <Button
-              type="button"
-              onClick={() => void handleCreateCollectionAndAdd()}
-            >
+            <Button type="button" onClick={() => void handleCreateCollectionAndAdd()}>
               确定
             </Button>
           </DialogFooter>
@@ -614,22 +566,16 @@ export default function CollectionDetailPage() {
         gameIds={selectedInCollection}
       />
 
-      <AlertDialog
-        open={deleteSelectedOpen}
-        onOpenChange={setDeleteSelectedOpen}
-      >
+      <AlertDialog open={deleteSelectedOpen} onOpenChange={setDeleteSelectedOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>删除已选游戏</AlertDialogTitle>
             <AlertDialogDescription>
-              确定删除已选择的 {selectedInCollection.length}{' '}
-              项吗？此操作无法撤销。
+              确定删除已选择的 {selectedInCollection.length} 项吗？此操作无法撤销。
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeletingGames}>
-              取消
-            </AlertDialogCancel>
+            <AlertDialogCancel disabled={isDeletingGames}>取消</AlertDialogCancel>
             <AlertDialogAction
               variant="destructive"
               disabled={isDeletingGames}
@@ -661,9 +607,7 @@ export default function CollectionDetailPage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeletingSingleGame}>
-              取消
-            </AlertDialogCancel>
+            <AlertDialogCancel disabled={isDeletingSingleGame}>取消</AlertDialogCancel>
             <AlertDialogAction
               variant="destructive"
               disabled={isDeletingSingleGame || !pendingDeleteGame}

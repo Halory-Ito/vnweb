@@ -41,9 +41,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(characters)
   } catch (error) {
     console.error('Fetch characters error:', error)
-    return NextResponse.json(
-      { error: 'Failed to fetch characters' },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: 'Failed to fetch characters' }, { status: 500 })
   }
 }

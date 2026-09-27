@@ -19,10 +19,7 @@ function normalizePluginId(input: unknown) {
 
 function setInstalledTrue(manifestContent: string) {
   if (/installed:\s*(true|false)/.test(manifestContent)) {
-    return manifestContent.replace(
-      /installed:\s*(true|false)/,
-      'installed: true',
-    )
+    return manifestContent.replace(/installed:\s*(true|false)/, 'installed: true')
   }
 
   return manifestContent.replace(/\n\s*};\s*$/, '\n    installed: true,\n};\n')
@@ -60,9 +57,6 @@ export async function POST(request: Request) {
     })
   } catch (error) {
     console.error('Install plugin failed:', error)
-    return NextResponse.json(
-      { error: 'Failed to install plugin' },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: 'Failed to install plugin' }, { status: 500 })
   }
 }

@@ -5,10 +5,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { GameOstSongsTable } from '@/db/schema'
 import { db } from '@/lib/drizzle'
 
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params
     const songId = Number(id)
@@ -20,10 +17,7 @@ export async function PUT(
     const { name, url, mediaType = '', lyricsText = '', lyricsPath = '' } = body
 
     if (!name || !url) {
-      return NextResponse.json(
-        { error: 'Missing required fields' },
-        { status: 400 },
-      )
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
 
     const result = await db
@@ -46,10 +40,7 @@ export async function PUT(
     return NextResponse.json({ data: { item: result[0] } })
   } catch (error) {
     console.error('Update ost song failed:', error)
-    return NextResponse.json(
-      { error: 'Failed to update ost song' },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: 'Failed to update ost song' }, { status: 500 })
   }
 }
 
@@ -76,9 +67,6 @@ export async function DELETE(
     return NextResponse.json({ data: { item: result[0] } })
   } catch (error) {
     console.error('Delete ost song failed:', error)
-    return NextResponse.json(
-      { error: 'Failed to delete ost song' },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: 'Failed to delete ost song' }, { status: 500 })
   }
 }

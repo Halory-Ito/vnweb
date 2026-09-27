@@ -59,13 +59,7 @@ const resolveCoverFilePath = (cover: string) => {
     return ''
   }
 
-  const fallback = path.join(
-    process.cwd(),
-    'public',
-    'assets',
-    'cover',
-    basename,
-  )
+  const fallback = path.join(process.cwd(), 'public', 'assets', 'cover', basename)
   if (fs.existsSync(fallback)) {
     return fallback
   }
@@ -106,14 +100,8 @@ export async function POST(_req: NextRequest) {
       })
       .from(GameRecordTable)
       .innerJoin(GameInfoTable, eq(GameRecordTable.gameId, GameInfoTable.id))
-      .where(
-        and(gt(GameRecordTable.playTime, 0), gt(GameRecordTable.gameId, 0)),
-      )
-      .orderBy(
-        asc(GameRecordTable.gameId),
-        asc(GameRecordTable.playDate),
-        asc(GameRecordTable.id),
-      )
+      .where(and(gt(GameRecordTable.playTime, 0), gt(GameRecordTable.gameId, 0)))
+      .orderBy(asc(GameRecordTable.gameId), asc(GameRecordTable.playDate), asc(GameRecordTable.id))
 
     const workbook = new ExcelJS.Workbook()
     const worksheet = workbook.addWorksheet('Timer Records')
@@ -158,9 +146,7 @@ export async function POST(_req: NextRequest) {
         const startDate = dayjs(start)
         const durationSeconds = record.playTime || 0
         const end = startDate.isValid()
-          ? startDate
-              .add(durationSeconds, 'second')
-              .format('YYYY-MM-DD HH:mm:ss')
+          ? startDate.add(durationSeconds, 'second').format('YYYY-MM-DD HH:mm:ss')
           : ''
 
         const row = worksheet.getRow(currentRow)
@@ -195,9 +181,7 @@ export async function POST(_req: NextRequest) {
       }
 
       const coverPath = resolveCoverFilePath(first.cover || '')
-      const imageExtension = coverPath
-        ? pickImageExtension(coverPath)
-        : undefined
+      const imageExtension = coverPath ? pickImageExtension(coverPath) : undefined
 
       if (coverPath && imageExtension) {
         const imageBytes = new Uint8Array(fs.readFileSync(coverPath))
@@ -212,27 +196,20 @@ export async function POST(_req: NextRequest) {
 
         if (imageWidth > 0 && imageHeight > 0) {
           const rowsSpan = endRow - startRow + 1
-          const containerWidthPx =
-            excelColWidthToPx(COVER_COL_WIDTH) - COVER_CELL_PADDING_PX * 2
+          const containerWidthPx = excelColWidthToPx(COVER_COL_WIDTH) - COVER_CELL_PADDING_PX * 2
           const containerHeightPx =
-            rowsSpan * excelRowHeightToPx(COVER_ROW_HEIGHT) -
-            COVER_CELL_PADDING_PX * 2
-          const scale = Math.min(
-            containerWidthPx / imageWidth,
-            containerHeightPx / imageHeight,
-          )
+            rowsSpan * excelRowHeightToPx(COVER_ROW_HEIGHT) - COVER_CELL_PADDING_PX * 2
+          const scale = Math.min(containerWidthPx / imageWidth, containerHeightPx / imageHeight)
           const renderWidthPx = Math.max(1, Math.floor(imageWidth * scale))
           const renderHeightPx = Math.max(1, Math.floor(imageHeight * scale))
 
           const offsetXPx = Math.max(
             COVER_CELL_PADDING_PX,
-            Math.floor((containerWidthPx - renderWidthPx) / 2) +
-              COVER_CELL_PADDING_PX,
+            Math.floor((containerWidthPx - renderWidthPx) / 2) + COVER_CELL_PADDING_PX,
           )
           const offsetYPx = Math.max(
             COVER_CELL_PADDING_PX,
-            Math.floor((containerHeightPx - renderHeightPx) / 2) +
-              COVER_CELL_PADDING_PX,
+            Math.floor((containerHeightPx - renderHeightPx) / 2) + COVER_CELL_PADDING_PX,
           )
 
           const colOffset = offsetXPx / excelColWidthToPx(COVER_COL_WIDTH)
@@ -296,8 +273,7 @@ export async function POST(_req: NextRequest) {
 
     return new NextResponse(fileBlob, {
       headers: {
-        'Content-Type':
-          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         'Content-Disposition': `attachment; filename="${fileName}"`,
       },
     })

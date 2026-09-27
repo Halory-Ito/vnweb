@@ -53,10 +53,7 @@ const getSafeExt = (fileName: string) => {
   return '.png'
 }
 
-const listGameMemories = async (
-  req: NextRequest,
-  context: { params: Promise<{ id: string }> },
-) => {
+const listGameMemories = async (req: NextRequest, context: { params: Promise<{ id: string }> }) => {
   try {
     const gameId = await parseGameId(context)
     await ensureGameExists(gameId)
@@ -97,10 +94,7 @@ const listGameMemories = async (
   }
 }
 
-const createGameMemory = async (
-  req: NextRequest,
-  context: { params: Promise<{ id: string }> },
-) => {
+const createGameMemory = async (req: NextRequest, context: { params: Promise<{ id: string }> }) => {
   try {
     const gameId = await parseGameId(context)
     await ensureGameExists(gameId)
@@ -119,24 +113,13 @@ const createGameMemory = async (
     }
 
     if (image.size <= 0 || image.size > MAX_UPLOAD_SIZE) {
-      return NextResponse.json(
-        { error: '截图大小需在 1B 到 20MB 之间' },
-        { status: 400 },
-      )
+      return NextResponse.json({ error: '截图大小需在 1B 到 20MB 之间' }, { status: 400 })
     }
 
     const ext = getSafeExt(image.name)
-    const baseName = sanitizeFileName(
-      path.basename(image.name, path.extname(image.name)),
-    )
+    const baseName = sanitizeFileName(path.basename(image.name, path.extname(image.name)))
     const fileName = `${baseName}_${Date.now()}${ext}`
-    const targetDir = path.join(
-      process.cwd(),
-      'public',
-      'assets',
-      'memory',
-      String(gameId),
-    )
+    const targetDir = path.join(process.cwd(), 'public', 'assets', 'memory', String(gameId))
     const targetPath = path.join(targetDir, fileName)
 
     await fs.mkdir(targetDir, { recursive: true })

@@ -5,11 +5,7 @@ import { EyeIcon, EyeOffIcon } from 'lucide-react'
 
 import { showNsfwAtom } from '@/atom/global'
 import { Button } from '@/components/ui/button'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@/components/ui/tooltip'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 
 export default function R18Switch() {
   const [showNsfw, setShowNsfw] = useAtom(showNsfwAtom)
@@ -26,9 +22,7 @@ export default function R18Switch() {
           {showNsfw ? <EyeIcon /> : <EyeOffIcon />}
         </Button>
       </TooltipTrigger>
-      <TooltipContent>
-        {showNsfw ? '点击隐藏 NSFW 游戏' : '点击显示 NSFW 游戏'}
-      </TooltipContent>
+      <TooltipContent>{showNsfw ? '点击隐藏 NSFW 游戏' : '点击显示 NSFW 游戏'}</TooltipContent>
     </Tooltip>
   )
 }

@@ -14,9 +14,7 @@ export function normalizeProviderSettings(
   input: Partial<ProviderSettings> | ProviderSettings,
 ): ProviderSettings {
   const disabled = Array.isArray(input.disabledProviders)
-    ? input.disabledProviders.filter(
-        (item): item is string => typeof item === 'string',
-      )
+    ? input.disabledProviders.filter((item): item is string => typeof item === 'string')
     : []
 
   return {
@@ -53,10 +51,7 @@ export function writeProviderSettings(settings: ProviderSettings) {
   )
 }
 
-export function isProviderEnabled(
-  providerId: string,
-  settings?: ProviderSettings,
-): boolean {
+export function isProviderEnabled(providerId: string, settings?: ProviderSettings): boolean {
   const s = settings ?? readProviderSettings()
   return !s.disabledProviders.includes(providerId)
 }
@@ -65,9 +60,7 @@ export function setProviderEnabled(providerId: string, enabled: boolean) {
   const settings = readProviderSettings()
 
   if (enabled) {
-    settings.disabledProviders = settings.disabledProviders.filter(
-      (id) => id !== providerId,
-    )
+    settings.disabledProviders = settings.disabledProviders.filter((id) => id !== providerId)
   } else if (!settings.disabledProviders.includes(providerId)) {
     settings.disabledProviders.push(providerId)
   }

@@ -61,11 +61,7 @@ export async function backupGameSave(
     // 创建目标目录: 全局存档目录/游戏名称/存档目录名/
     const sanitizedGameName = gameName.replace(/[<>:"/\\|?*]/g, '_')
     const saveDirName = path.basename(saveDir)
-    const targetDir = path.join(
-      config.directory.trim(),
-      sanitizedGameName,
-      saveDirName,
-    )
+    const targetDir = path.join(config.directory.trim(), sanitizedGameName, saveDirName)
     await fs.promises.mkdir(targetDir, { recursive: true })
 
     // 复制存档文件

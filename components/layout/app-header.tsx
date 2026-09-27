@@ -5,23 +5,15 @@ import { useAtom } from 'jotai'
 import { ArrowLeftIcon, ArrowRightIcon, FilterIcon, XIcon } from 'lucide-react'
 import { usePathname, useRouter } from 'next/navigation'
 
-import GameAddButton from '../vndb/vndb-trigger'
 import MobileNav from './mobile-nav'
 import R18Switch from './r18-switch'
 import ThemeSwitch from './theme-switch'
-import {
-  defaultGameFilter,
-  gameFilterAtom,
-  gameSearchAtom,
-} from '@/atom/global'
+import { getGameFilterOptions } from '@/api'
+import { defaultGameFilter, gameFilterAtom, gameSearchAtom } from '@/atom/global'
 import { Button } from '@/components/ui/button'
 import { Field } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import {
   Select,
   SelectContent,
@@ -29,9 +21,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { getGameFilterOptions } from '@/lib/game/game-utils'
+import GameAddButton from '@/features/game/components/import/game-add-button'
+import { GAME_PLAY_STATUS_OPTIONS, getGamePlayStatusLabel } from '@/features/game/lib/game-status'
 
-import type { GameFilterState } from '@/types/game-types'
+import type { GameFilterState } from '@/types/game'
 
 export default function AppHeader() {
   const pathname = usePathname()
@@ -96,10 +89,7 @@ export default function AppHeader() {
                       type="date"
                       value={gameFilter.releaseDateFrom}
                       onChange={(event) =>
-                        handleFilterChange(
-                          'releaseDateFrom',
-                          event.target.value,
-                        )
+                        handleFilterChange('releaseDateFrom', event.target.value)
                       }
                     />
                     <Button
@@ -116,9 +106,7 @@ export default function AppHeader() {
                       className="w-64"
                       type="date"
                       value={gameFilter.releaseDateTo}
-                      onChange={(event) =>
-                        handleFilterChange('releaseDateTo', event.target.value)
-                      }
+                      onChange={(event) => handleFilterChange('releaseDateTo', event.target.value)}
                     />
                     <Button
                       variant="outline"
@@ -133,26 +121,19 @@ export default function AppHeader() {
                     <Select
                       value={gameFilter.playStatus || 'all'}
                       onValueChange={(value) =>
-                        handleFilterChange(
-                          'playStatus',
-                          value === 'all' ? '' : value,
-                        )
+                        handleFilterChange('playStatus', value === 'all' ? '' : value)
                       }
                     >
                       <SelectTrigger className="w-64">
-                        <SelectValue
-                          className="truncate"
-                          placeholder="游玩状态"
-                        />
+                        <SelectValue className="truncate" placeholder="游玩状态" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">全部状态</SelectItem>
-                        <SelectItem value="0">未开始</SelectItem>
-                        <SelectItem value="1">游玩中</SelectItem>
-                        <SelectItem value="2">部分完成</SelectItem>
-                        <SelectItem value="3">已完成</SelectItem>
-                        <SelectItem value="4">多周目</SelectItem>
-                        <SelectItem value="5">搁置中</SelectItem>
+                        {GAME_PLAY_STATUS_OPTIONS.map((status) => (
+                          <SelectItem key={status} value={String(status)}>
+                            {getGamePlayStatusLabel(status)}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                     <Button
@@ -169,17 +150,11 @@ export default function AppHeader() {
                       <Select
                         value={gameFilter.developer || 'all'}
                         onValueChange={(value) =>
-                          handleFilterChange(
-                            'developer',
-                            value === 'all' ? '' : value,
-                          )
+                          handleFilterChange('developer', value === 'all' ? '' : value)
                         }
                       >
                         <SelectTrigger className="w-64">
-                          <SelectValue
-                            className="truncate"
-                            placeholder="开发商"
-                          />
+                          <SelectValue className="truncate" placeholder="开发商" />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="all">开发商</SelectItem>
@@ -203,17 +178,11 @@ export default function AppHeader() {
                       <Select
                         value={gameFilter.publisher || 'all'}
                         onValueChange={(value) =>
-                          handleFilterChange(
-                            'publisher',
-                            value === 'all' ? '' : value,
-                          )
+                          handleFilterChange('publisher', value === 'all' ? '' : value)
                         }
                       >
                         <SelectTrigger className="w-64">
-                          <SelectValue
-                            className="truncate"
-                            placeholder="发行商"
-                          />
+                          <SelectValue className="truncate" placeholder="发行商" />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="all">发行商</SelectItem>
@@ -237,17 +206,11 @@ export default function AppHeader() {
                       <Select
                         value={gameFilter.category || 'all'}
                         onValueChange={(value) =>
-                          handleFilterChange(
-                            'category',
-                            value === 'all' ? '' : value,
-                          )
+                          handleFilterChange('category', value === 'all' ? '' : value)
                         }
                       >
                         <SelectTrigger className="w-64">
-                          <SelectValue
-                            className="truncate"
-                            placeholder="类别"
-                          />
+                          <SelectValue className="truncate" placeholder="类别" />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="all">类别</SelectItem>
@@ -271,17 +234,11 @@ export default function AppHeader() {
                       <Select
                         value={gameFilter.platform || 'all'}
                         onValueChange={(value) =>
-                          handleFilterChange(
-                            'platform',
-                            value === 'all' ? '' : value,
-                          )
+                          handleFilterChange('platform', value === 'all' ? '' : value)
                         }
                       >
                         <SelectTrigger className="w-64">
-                          <SelectValue
-                            className="truncate"
-                            placeholder="平台"
-                          />
+                          <SelectValue className="truncate" placeholder="平台" />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="all">平台</SelectItem>
@@ -305,17 +262,11 @@ export default function AppHeader() {
                       <Select
                         value={gameFilter.tags || 'all'}
                         onValueChange={(value) =>
-                          handleFilterChange(
-                            'tags',
-                            value === 'all' ? '' : value,
-                          )
+                          handleFilterChange('tags', value === 'all' ? '' : value)
                         }
                       >
                         <SelectTrigger className="w-64">
-                          <SelectValue
-                            className="truncate"
-                            placeholder="标签"
-                          />
+                          <SelectValue className="truncate" placeholder="标签" />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="all">标签</SelectItem>
@@ -339,38 +290,25 @@ export default function AppHeader() {
                       <Select
                         value={gameFilter.originalPainter || 'all'}
                         onValueChange={(value) =>
-                          handleFilterChange(
-                            'originalPainter',
-                            value === 'all' ? '' : value,
-                          )
+                          handleFilterChange('originalPainter', value === 'all' ? '' : value)
                         }
                       >
                         <SelectTrigger className="w-64">
-                          <SelectValue
-                            className="truncate"
-                            placeholder="原画"
-                          />
+                          <SelectValue className="truncate" placeholder="原画" />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="all">原画</SelectItem>
-                          {(filterOptions?.originalPainters ?? []).map(
-                            (item) => (
-                              <SelectItem
-                                key={`originalPainter-${item}`}
-                                value={item}
-                              >
-                                {item}
-                              </SelectItem>
-                            ),
-                          )}
+                          {(filterOptions?.originalPainters ?? []).map((item) => (
+                            <SelectItem key={`originalPainter-${item}`} value={item}>
+                              {item}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                       <Button
                         variant="outline"
                         size="icon"
-                        onClick={() =>
-                          handleFilterChange('originalPainter', '')
-                        }
+                        onClick={() => handleFilterChange('originalPainter', '')}
                       >
                         <XIcon className="size-4" />
                       </Button>
@@ -380,17 +318,11 @@ export default function AppHeader() {
                       <Select
                         value={gameFilter.script || 'all'}
                         onValueChange={(value) =>
-                          handleFilterChange(
-                            'script',
-                            value === 'all' ? '' : value,
-                          )
+                          handleFilterChange('script', value === 'all' ? '' : value)
                         }
                       >
                         <SelectTrigger className="w-64">
-                          <SelectValue
-                            className="truncate"
-                            placeholder="脚本"
-                          />
+                          <SelectValue className="truncate" placeholder="脚本" />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="all">脚本</SelectItem>
@@ -414,17 +346,11 @@ export default function AppHeader() {
                       <Select
                         value={gameFilter.music || 'all'}
                         onValueChange={(value) =>
-                          handleFilterChange(
-                            'music',
-                            value === 'all' ? '' : value,
-                          )
+                          handleFilterChange('music', value === 'all' ? '' : value)
                         }
                       >
                         <SelectTrigger className="w-64">
-                          <SelectValue
-                            className="truncate"
-                            placeholder="音乐"
-                          />
+                          <SelectValue className="truncate" placeholder="音乐" />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="all">音乐</SelectItem>
@@ -448,17 +374,11 @@ export default function AppHeader() {
                       <Select
                         value={gameFilter.engine || 'all'}
                         onValueChange={(value) =>
-                          handleFilterChange(
-                            'engine',
-                            value === 'all' ? '' : value,
-                          )
+                          handleFilterChange('engine', value === 'all' ? '' : value)
                         }
                       >
                         <SelectTrigger className="w-64">
-                          <SelectValue
-                            className="truncate"
-                            placeholder="引擎"
-                          />
+                          <SelectValue className="truncate" placeholder="引擎" />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="all">引擎</SelectItem>
@@ -482,17 +402,11 @@ export default function AppHeader() {
                       <Select
                         value={gameFilter.planning || 'all'}
                         onValueChange={(value) =>
-                          handleFilterChange(
-                            'planning',
-                            value === 'all' ? '' : value,
-                          )
+                          handleFilterChange('planning', value === 'all' ? '' : value)
                         }
                       >
                         <SelectTrigger className="w-64">
-                          <SelectValue
-                            className="truncate"
-                            placeholder="企划"
-                          />
+                          <SelectValue className="truncate" placeholder="企划" />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="all">企划</SelectItem>

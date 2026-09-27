@@ -25,10 +25,7 @@ const providerSet = new Set([
   ymgalProvider.id,
 ])
 
-const updateScanner = async (
-  req: NextRequest,
-  context: { params: Promise<{ id: string }> },
-) => {
+const updateScanner = async (req: NextRequest, context: { params: Promise<{ id: string }> }) => {
   try {
     const { id } = await context.params
     const scannerId = Number(id)
@@ -97,17 +94,11 @@ const updateScanner = async (
     return NextResponse.json({ data: updated[0] })
   } catch (error) {
     console.error('Update scanner failed:', error)
-    return NextResponse.json(
-      { error: 'Failed to update scanner' },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: 'Failed to update scanner' }, { status: 500 })
   }
 }
 
-const deleteScanner = async (
-  _req: NextRequest,
-  context: { params: Promise<{ id: string }> },
-) => {
+const deleteScanner = async (_req: NextRequest, context: { params: Promise<{ id: string }> }) => {
   try {
     const { id } = await context.params
     const scannerId = Number(id)
@@ -126,10 +117,7 @@ const deleteScanner = async (
     })
   } catch (error) {
     console.error('Delete scanner failed:', error)
-    return NextResponse.json(
-      { error: 'Failed to delete scanner' },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: 'Failed to delete scanner' }, { status: 500 })
   }
 }
 

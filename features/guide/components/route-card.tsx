@@ -45,7 +45,7 @@ export function RouteCard({ name, endingCount, progress, onClick, onDragStart }:
       {/* 拖拽手柄 */}
       {onDragStart && (
         <div
-          className="text-muted-foreground/50 hover:text-muted-foreground absolute left-1 top-1/2 -translate-y-1/2 cursor-grab opacity-0 transition-opacity group-hover:opacity-100 active:cursor-grabbing"
+          className="text-muted-foreground/50 hover:text-muted-foreground absolute top-1/2 left-1 -translate-y-1/2 cursor-grab opacity-0 transition-opacity group-hover:opacity-100 active:cursor-grabbing"
           onMouseDown={(e) => {
             e.stopPropagation()
           }}

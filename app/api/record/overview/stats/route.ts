@@ -79,10 +79,7 @@ const getOverviewStats = async () => {
 
       if (playDate.year() === currentYear) {
         const monthKey = playDate.format('YYYY-MM')
-        monthBucket.set(
-          monthKey,
-          (monthBucket.get(monthKey) || 0) + durationSeconds,
-        )
+        monthBucket.set(monthKey, (monthBucket.get(monthKey) || 0) + durationSeconds)
       }
 
       const hour = playDate.hour()
@@ -96,12 +93,10 @@ const getOverviewStats = async () => {
       }),
     )
 
-    const hourlyTimeDistribution = Array.from(hourBucket.entries()).map(
-      ([hour, seconds]) => ({
-        label: `${String(hour).padStart(2, '0')}:00`,
-        hours: Number((seconds / 3600).toFixed(2)),
-      }),
-    )
+    const hourlyTimeDistribution = Array.from(hourBucket.entries()).map(([hour, seconds]) => ({
+      label: `${String(hour).padStart(2, '0')}:00`,
+      hours: Number((seconds / 3600).toFixed(2)),
+    }))
 
     const peakHour = hourlyTimeDistribution.reduce(
       (max, item, index) => {
@@ -139,9 +134,7 @@ const getOverviewStats = async () => {
           id: String(game.id),
           cover: game.cover || '/cover/wa2.jpg',
           title: game.nameCn || game.name || `游戏 ${game.id}`,
-          stat: Number(
-            (Math.max(0, Number(item.totalPlayTime || 0)) / 3600).toFixed(2),
-          ),
+          stat: Number((Math.max(0, Number(item.totalPlayTime || 0)) / 3600).toFixed(2)),
         }
       })
       .filter((item): item is NonNullable<typeof item> => item !== null)
@@ -188,10 +181,7 @@ const getOverviewStats = async () => {
     })
   } catch (error) {
     console.error('Get overview stats failed:', error)
-    return NextResponse.json(
-      { error: 'Failed to fetch overview stats' },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: 'Failed to fetch overview stats' }, { status: 500 })
   }
 }
 

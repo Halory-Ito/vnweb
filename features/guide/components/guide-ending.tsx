@@ -1,34 +1,34 @@
 'use client'
 
+import { ChevronDown, ChevronRight, Lock, Star, Skull, CircleDot } from 'lucide-react'
 import { useState } from 'react'
-import { Progress } from '@/components/ui/progress'
+
+import { GuideStep } from './guide-step'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger
-} from '@/components/ui/collapsible'
-import { ChevronDown, ChevronRight, Lock, Star, Skull, CircleDot } from 'lucide-react'
-import { GuideStep } from './guide-step'
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
+import { Progress } from '@/components/ui/progress'
 import { cn } from '@/lib/utils'
 
-const endingTypeConfig: Record<string, { label: string; icon: React.ReactNode; className: string }> = {
+const endingTypeConfig: Record<
+  string,
+  { label: string; icon: React.ReactNode; className: string }
+> = {
   true: {
     label: '真结局',
     icon: <Star className="h-3 w-3" />,
-    className: 'bg-amber-500/20 text-amber-600 dark:text-amber-400 border-amber-500/30'
+    className: 'bg-amber-500/20 text-amber-600 dark:text-amber-400 border-amber-500/30',
   },
   bad: {
     label: '坏结局',
     icon: <Skull className="h-3 w-3" />,
-    className: 'bg-red-500/20 text-red-600 dark:text-red-400 border-red-500/30'
+    className: 'bg-red-500/20 text-red-600 dark:text-red-400 border-red-500/30',
   },
   normal: {
     label: '普通结局',
     icon: <CircleDot className="h-3 w-3" />,
-    className: 'bg-primary/10 text-primary border-primary/20'
-  }
+    className: 'bg-primary/10 text-primary border-primary/20',
+  },
 }
 
 interface Step {
@@ -62,11 +62,7 @@ interface GuideEndingProps {
   onToggleStep: (stepId: string) => void
 }
 
-export function GuideEnding({
-  ending,
-  progress,
-  onToggleStep
-}: GuideEndingProps) {
+export function GuideEnding({ ending, progress, onToggleStep }: GuideEndingProps) {
   const [isOpen, setIsOpen] = useState(true)
 
   // 处理步骤分组，相同group只显示一次日期
@@ -80,10 +76,10 @@ export function GuideEnding({
         elements.push(
           <div
             key={`group-${step.group}-${index}`}
-            className="text-xs font-medium text-primary bg-primary/10 px-2 py-1 rounded mt-2 first:mt-0"
+            className="text-primary bg-primary/10 mt-2 rounded px-2 py-1 text-xs font-medium first:mt-0"
           >
             {step.group}
-          </div>
+          </div>,
         )
         lastGroup = step.group
       } else if (!step.group) {
@@ -97,7 +93,7 @@ export function GuideEnding({
           step={step}
           isCompleted={!!step.finished}
           onToggle={() => onToggleStep(step.id)}
-        />
+        />,
       )
     })
 
@@ -106,11 +102,11 @@ export function GuideEnding({
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-      <div className="border rounded-lg bg-card overflow-hidden">
+      <div className="bg-card overflow-hidden rounded-lg border">
         <CollapsibleTrigger asChild>
-          <div className="flex items-center justify-between p-4 cursor-pointer hover:bg-accent/30 transition-all duration-200">
+          <div className="hover:bg-accent/30 flex cursor-pointer items-center justify-between p-4 transition-all duration-200">
             <div className="flex items-center gap-3">
-              <Button variant="ghost" size="sm" className="p-0 h-6 w-6">
+              <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
                 {isOpen ? (
                   <ChevronDown className="h-4 w-4" />
                 ) : (
@@ -131,7 +127,7 @@ export function GuideEnding({
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <span className="text-sm text-muted-foreground">
+              <span className="text-muted-foreground text-sm">
                 {progress.completed}/{progress.total}
               </span>
               <div className="w-24">
@@ -141,10 +137,10 @@ export function GuideEnding({
           </div>
         </CollapsibleTrigger>
         <CollapsibleContent>
-          <div className="px-4 pb-4 space-y-2 border-t pt-3">
+          <div className="space-y-2 border-t px-4 pt-3 pb-4">
             {ending.requirements && (
-              <div className="flex items-start gap-2 rounded-md bg-amber-500/10 border border-amber-500/20 px-3 py-2 text-sm text-amber-600 dark:text-amber-400">
-                <Lock className="h-4 w-4 mt-0.5 shrink-0" />
+              <div className="flex items-start gap-2 rounded-md border border-amber-500/20 bg-amber-500/10 px-3 py-2 text-sm text-amber-600 dark:text-amber-400">
+                <Lock className="mt-0.5 h-4 w-4 shrink-0" />
                 <span className="font-medium">开启条件：</span>
                 <span>{ending.requirements}</span>
               </div>

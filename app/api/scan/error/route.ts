@@ -21,10 +21,7 @@ const getScanErrors = async () => {
     return NextResponse.json({ data: rows })
   } catch (error) {
     console.error('Get scan errors failed:', error)
-    return NextResponse.json(
-      { error: 'Failed to get scan errors' },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: 'Failed to get scan errors' }, { status: 500 })
   }
 }
 

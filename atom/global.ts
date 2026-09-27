@@ -1,6 +1,6 @@
 import { atom } from 'jotai'
 
-import type { GameFilterState } from '@/types/game-types'
+import type { GameFilterState } from '@/types/game'
 
 const fontAtom = atom('')
 

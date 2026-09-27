@@ -6,8 +6,7 @@ type Payload = {
   paths?: string[]
 }
 
-const isSafeFontPublicPath = (value: string) =>
-  /^\/assets\/fonts\/[a-zA-Z0-9._-]+$/.test(value)
+const isSafeFontPublicPath = (value: string) => /^\/assets\/fonts\/[a-zA-Z0-9._-]+$/.test(value)
 
 const cleanupPreviewFonts = async (req: NextRequest) => {
   try {

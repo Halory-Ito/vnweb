@@ -1,7 +1,7 @@
 import RecordOverview from './overview/page'
-import RecordExportPanel from '@/components/record/record-export-panel'
-import RecordPeriodPanel from '@/components/record/record-period-panel'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import RecordExportPanel from '@/features/record/components/record-export-panel'
+import RecordPeriodPanel from '@/features/record/components/record-period-panel'
 
 export default function Record() {
   return (

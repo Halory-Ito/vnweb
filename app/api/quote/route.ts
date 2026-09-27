@@ -15,9 +15,7 @@ const getQuoteList = async (req: NextRequest) => {
   try {
     const keyword = normalizeText(req.nextUrl.searchParams.get('keyword'))
     const gameId = req.nextUrl.searchParams.get('gameId')
-    const characterId = normalizeText(
-      req.nextUrl.searchParams.get('characterId'),
-    )
+    const characterId = normalizeText(req.nextUrl.searchParams.get('characterId'))
     const dateFrom = normalizeText(req.nextUrl.searchParams.get('dateFrom'))
     const dateTo = normalizeText(req.nextUrl.searchParams.get('dateTo'))
     const page = Math.max(1, Number(req.nextUrl.searchParams.get('page')) || 1)
@@ -67,10 +65,7 @@ const getQuoteList = async (req: NextRequest) => {
       .select({ count: sql<number>`count(*)` })
       .from(GameQuoteTable)
       .innerJoin(GameInfoTable, eq(GameQuoteTable.gameId, GameInfoTable.id))
-      .leftJoin(
-        CharacterTable,
-        eq(GameQuoteTable.characterId, CharacterTable.vndbId),
-      )
+      .leftJoin(CharacterTable, eq(GameQuoteTable.characterId, CharacterTable.vndbId))
       .where(whereClause)
 
     const total = countResult[0]?.count ?? 0
@@ -94,10 +89,7 @@ const getQuoteList = async (req: NextRequest) => {
       })
       .from(GameQuoteTable)
       .innerJoin(GameInfoTable, eq(GameQuoteTable.gameId, GameInfoTable.id))
-      .leftJoin(
-        CharacterTable,
-        eq(GameQuoteTable.characterId, CharacterTable.vndbId),
-      )
+      .leftJoin(CharacterTable, eq(GameQuoteTable.characterId, CharacterTable.vndbId))
       .where(whereClause)
       .orderBy(GameQuoteTable.id)
       .limit(pageSize)
@@ -122,10 +114,7 @@ const getQuoteList = async (req: NextRequest) => {
     })
   } catch (error) {
     console.error('Get quote list failed:', error)
-    return NextResponse.json(
-      { error: 'Failed to get quote list' },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: 'Failed to get quote list' }, { status: 500 })
   }
 }
 
@@ -189,10 +178,7 @@ const createQuote = async (req: NextRequest) => {
     })
   } catch (error) {
     console.error('Create quote failed:', error)
-    return NextResponse.json(
-      { error: 'Failed to create quote' },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: 'Failed to create quote' }, { status: 500 })
   }
 }
 

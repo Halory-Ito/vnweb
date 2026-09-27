@@ -62,18 +62,13 @@ function normalizeEntryPath(entryName: string) {
 function findManifestEntry(zip: AdmZip) {
   const manifestEntries = zip
     .getEntries()
-    .filter(
-      (entry) =>
-        !entry.isDirectory && /(^|\/)manifest\.ts$/.test(entry.entryName),
-    )
+    .filter((entry) => !entry.isDirectory && /(^|\/)manifest\.ts$/.test(entry.entryName))
 
   if (manifestEntries.length === 0) {
     return null
   }
 
-  manifestEntries.sort(
-    (a, b) => a.entryName.split('/').length - b.entryName.split('/').length,
-  )
+  manifestEntries.sort((a, b) => a.entryName.split('/').length - b.entryName.split('/').length)
 
   return manifestEntries[0]
 }
@@ -137,17 +132,11 @@ function findZipEntryByPath(zip: AdmZip, candidatePath: string) {
   return zip
     .getEntries()
     .find(
-      (entry) =>
-        !entry.isDirectory &&
-        normalizeEntryPath(entry.entryName) === normalizedCandidate,
+      (entry) => !entry.isDirectory && normalizeEntryPath(entry.entryName) === normalizedCandidate,
     )
 }
 
-function buildPreviewIconUrl(
-  zip: AdmZip,
-  rootPrefix: string,
-  manifest: ManifestPreview,
-) {
+function buildPreviewIconUrl(zip: AdmZip, rootPrefix: string, manifest: ManifestPreview) {
   const iconValue = manifest.icon.trim()
 
   if (!iconValue) {
@@ -275,9 +264,7 @@ async function importPluginFiles(
       continue
     }
 
-    const relativePath = rootPrefix
-      ? normalizedEntry.slice(rootPrefix.length)
-      : normalizedEntry
+    const relativePath = rootPrefix ? normalizedEntry.slice(rootPrefix.length) : normalizedEntry
 
     if (!relativePath || isUnsafePath(relativePath)) {
       continue
@@ -324,9 +311,7 @@ export async function POST(request: Request) {
       previewIconUrl,
     }
     const conflict = await hasPluginConflict(manifest.id)
-    const existingPlugin = conflict
-      ? await getExistingPluginPreview(manifest.id)
-      : null
+    const existingPlugin = conflict ? await getExistingPluginPreview(manifest.id) : null
 
     if (action !== 'import') {
       return NextResponse.json({
@@ -364,10 +349,7 @@ export async function POST(request: Request) {
     const message = error instanceof Error ? error.message : '导入插件失败'
 
     if (/EEXIST/.test(message)) {
-      return NextResponse.json(
-        { error: '同名插件已存在，请先移除或修改插件 id' },
-        { status: 409 },
-      )
+      return NextResponse.json({ error: '同名插件已存在，请先移除或修改插件 id' }, { status: 409 })
     }
 
     console.error('Import plugin failed:', error)

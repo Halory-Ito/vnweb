@@ -22,6 +22,7 @@ import rehypeHighlight from 'rehype-highlight'
 import remarkGfm from 'remark-gfm'
 import { toast } from 'sonner'
 
+import { getGameMemoryById, updateGameMemoryById } from '@/api'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import {
@@ -33,7 +34,7 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { getGameMemoryById, updateGameMemoryById } from '@/lib/game/game-utils'
+import { useRecordVisit } from '@/features/recent'
 
 type RouteParams = {
   id: string
@@ -139,6 +140,8 @@ export default function GameMemoryDetailPage() {
     queryFn: () => getGameMemoryById(gameId, memoryId),
     enabled: Number.isInteger(gameId) && gameId > 0 && Number.isInteger(memoryId) && memoryId > 0,
   })
+
+  useRecordVisit(gameId, 'memory', `/game/info/${gameId}/memory`)
 
   const item = data?.item
   const tocItems = useMemo(() => extractTocItems(item?.description || ''), [item?.description])

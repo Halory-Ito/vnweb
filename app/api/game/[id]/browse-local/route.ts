@@ -49,10 +49,7 @@ const openGameLocalFile = async (
     }
 
     if (!path.win32.isAbsolute(exePath)) {
-      return NextResponse.json(
-        { error: '可执行路径必须是绝对路径' },
-        { status: 400 },
-      )
+      return NextResponse.json({ error: '可执行路径必须是绝对路径' }, { status: 400 })
     }
 
     await fs.promises.access(exePath, fs.constants.F_OK).catch(() => {

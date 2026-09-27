@@ -110,10 +110,7 @@ export async function POST(req: NextRequest) {
     }
 
     if (!file.name.endsWith('.zip')) {
-      return NextResponse.json(
-        { error: '仅支持 ZIP 格式的备份文件' },
-        { status: 400 },
-      )
+      return NextResponse.json({ error: '仅支持 ZIP 格式的备份文件' }, { status: 400 })
     }
 
     // 读取文件内容
@@ -126,8 +123,10 @@ export async function POST(req: NextRequest) {
 
     try {
       // 解压文件
-      const { dbPath: extractedDbPath, gameSavesDir: extractedGameSavesDir } =
-        await extractZip(buffer, tempDir)
+      const { dbPath: extractedDbPath, gameSavesDir: extractedGameSavesDir } = await extractZip(
+        buffer,
+        tempDir,
+      )
 
       // 替换数据库文件
       const currentDbPath = getDbPath()
@@ -190,9 +189,6 @@ export async function POST(req: NextRequest) {
     }
   } catch (error) {
     console.error('Import backup failed:', error)
-    return NextResponse.json(
-      { error: (error as Error).message || '导入备份失败' },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: (error as Error).message || '导入备份失败' }, { status: 500 })
   }
 }

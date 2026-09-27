@@ -21,9 +21,7 @@ type NameRecord = {
   text: string
 }
 
-const CHINESE_WINDOWS_LANGUAGE_IDS = new Set([
-  0x0804, 0x0404, 0x0c04, 0x1404, 0x1004,
-])
+const CHINESE_WINDOWS_LANGUAGE_IDS = new Set([0x0804, 0x0404, 0x0c04, 0x1404, 0x1004])
 
 const CHINESE_MAC_LANGUAGE_IDS = new Set([19, 33])
 
@@ -109,10 +107,7 @@ const getTable = (
   return null
 }
 
-const parseNameRecords = (
-  buffer: Buffer,
-  nameTableOffset: number,
-): NameRecord[] => {
+const parseNameRecords = (buffer: Buffer, nameTableOffset: number): NameRecord[] => {
   if (buffer.length < nameTableOffset + 6) {
     return []
   }
@@ -167,11 +162,7 @@ const isChineseRecord = (record: NameRecord): boolean => {
   return false
 }
 
-const pickName = (
-  records: NameRecord[],
-  preferredNameIds: number[],
-  fallback: string,
-): string => {
+const pickName = (records: NameRecord[], preferredNameIds: number[], fallback: string): string => {
   for (const nameId of preferredNameIds) {
     const scoped = records.filter((record) => record.nameId === nameId)
 
@@ -195,13 +186,10 @@ const pickName = (
   return fallback
 }
 
-const inferStyle = (
-  subfamily: string,
-): { style: string; isBold: boolean; isItalic: boolean } => {
+const inferStyle = (subfamily: string): { style: string; isBold: boolean; isItalic: boolean } => {
   const normalized = subfamily.toLowerCase()
   const isBold = normalized.includes('bold')
-  const isItalic =
-    normalized.includes('italic') || normalized.includes('oblique')
+  const isItalic = normalized.includes('italic') || normalized.includes('oblique')
 
   if (!subfamily) {
     return {
@@ -219,9 +207,7 @@ const inferStyle = (
 }
 
 // 获取字体文件的元数据，例如字体名称（如果有中文名，优先返回中文名）、样式等
-export const getFontMetadata = async (
-  fontfile: string,
-): Promise<FontMetadata> => {
+export const getFontMetadata = async (fontfile: string): Promise<FontMetadata> => {
   const resolvedFontFile = path.resolve(fontfile)
   const extension = path.extname(resolvedFontFile).toLowerCase()
 
@@ -263,10 +249,7 @@ export const getFontMetadata = async (
 }
 
 // 将电脑中的字体文件复制到项目的 public 目录下，并返回新的路径
-export const copyFontFileToPublic = async (
-  source: string,
-  target: string,
-): Promise<string> => {
+export const copyFontFileToPublic = async (source: string, target: string): Promise<string> => {
   const resolvedSource = path.resolve(source)
   const projectRoot = process.cwd()
   const publicDir = path.join(projectRoot, 'public')
@@ -289,9 +272,7 @@ export const copyFontFileToPublic = async (
 
   const relativeToPublic = path.relative(publicDir, finalTarget)
   if (relativeToPublic.startsWith('..') || path.isAbsolute(relativeToPublic)) {
-    throw new Error(
-      'target 必须位于项目 public 目录内（可传相对 public 的路径）',
-    )
+    throw new Error('target 必须位于项目 public 目录内（可传相对 public 的路径）')
   }
 
   await fs.mkdir(path.dirname(finalTarget), { recursive: true })

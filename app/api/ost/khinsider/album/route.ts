@@ -24,8 +24,7 @@ const getSongDownloadInfo = async (
     const html = res.data
 
     // 从 audio 标签提取下载链接
-    const audioSrcPattern =
-      /<audio[^>]+src="([^"]+\.(?:mp3|flac|ogg|wav|m4a|aac|opus))"[^>]*>/i
+    const audioSrcPattern = /<audio[^>]+src="([^"]+\.(?:mp3|flac|ogg|wav|m4a|aac|opus))"[^>]*>/i
     const audioMatch = html.match(audioSrcPattern)
 
     let downloadUrl: string | null = null
@@ -34,8 +33,7 @@ const getSongDownloadInfo = async (
       downloadUrl = audioMatch[1]
     } else {
       // 备用：尝试从 source 标签提取
-      const sourcePattern =
-        /<source[^>]+src="([^"]+\.(?:mp3|flac|ogg|wav|m4a|aac|opus))"[^>]*>/i
+      const sourcePattern = /<source[^>]+src="([^"]+\.(?:mp3|flac|ogg|wav|m4a|aac|opus))"[^>]*>/i
       const sourceMatch = html.match(sourcePattern)
       if (sourceMatch) {
         downloadUrl = sourceMatch[1]
@@ -61,10 +59,7 @@ export async function GET(request: NextRequest) {
     const albumUrl = searchParams.get('url')
 
     if (!albumUrl) {
-      return NextResponse.json(
-        { error: 'Missing url parameter' },
-        { status: 400 },
-      )
+      return NextResponse.json({ error: 'Missing url parameter' }, { status: 400 })
     }
 
     const res = await api.get(albumUrl, {
@@ -133,8 +128,7 @@ export async function GET(request: NextRequest) {
     }
 
     // 提取时长信息
-    const durationPattern =
-      /<td class="clickable-row" align="right">(\d+:\d+)<\/td>/gi
+    const durationPattern = /<td class="clickable-row" align="right">(\d+:\d+)<\/td>/gi
     const durationMap = new Map<number, string>()
     let durationIndex = 0
     let durationMatch
@@ -169,9 +163,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ data: result })
   } catch (error) {
     console.error('Get album details failed:', error)
-    return NextResponse.json(
-      { error: 'Failed to get album details' },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: 'Failed to get album details' }, { status: 500 })
   }
 }

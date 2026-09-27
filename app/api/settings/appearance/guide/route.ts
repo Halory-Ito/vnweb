@@ -26,22 +26,10 @@ async function readGuideSettings(): Promise<GuideColorSettings> {
   const color = (guide['color'] || {}) as Record<string, unknown>
 
   return {
-    choice:
-      typeof color['choice'] === 'string'
-        ? color['choice']
-        : DEFAULT_GUIDE_SETTINGS.choice,
-    save:
-      typeof color['save'] === 'string'
-        ? color['save']
-        : DEFAULT_GUIDE_SETTINGS.save,
-    load:
-      typeof color['load'] === 'string'
-        ? color['load']
-        : DEFAULT_GUIDE_SETTINGS.load,
-    note:
-      typeof color['note'] === 'string'
-        ? color['note']
-        : DEFAULT_GUIDE_SETTINGS.note,
+    choice: typeof color['choice'] === 'string' ? color['choice'] : DEFAULT_GUIDE_SETTINGS.choice,
+    save: typeof color['save'] === 'string' ? color['save'] : DEFAULT_GUIDE_SETTINGS.save,
+    load: typeof color['load'] === 'string' ? color['load'] : DEFAULT_GUIDE_SETTINGS.load,
+    note: typeof color['note'] === 'string' ? color['note'] : DEFAULT_GUIDE_SETTINGS.note,
   }
 }
 

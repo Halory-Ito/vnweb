@@ -30,9 +30,7 @@ export async function GET(
 ) {
   try {
     const resolvedParams = await params
-    const pathArray = Array.isArray(resolvedParams?.path)
-      ? resolvedParams.path
-      : []
+    const pathArray = Array.isArray(resolvedParams?.path) ? resolvedParams.path : []
     const filePath = path.join(process.cwd(), 'assets', ...pathArray)
 
     if (!fs.existsSync(filePath)) {

@@ -2,15 +2,14 @@ import axios from 'axios'
 import { like } from 'drizzle-orm'
 import { HttpsProxyAgent } from 'https-proxy-agent'
 
+import { NEXT_PUBLIC_STEAM_API_KEY } from '@/app/config'
 import { relateWebsiteTable } from '@/db/schema'
 import { db } from '@/lib/drizzle'
 
 import type { ProxySettings } from '@/lib/settings/proxy-settings'
 
-export const STEAM_OWNED_GAMES_API =
-  'https://api.steampowered.com/IPlayerService/GetOwnedGames/v1/'
-export const STEAM_APP_DETAILS_API =
-  'https://store.steampowered.com/api/appdetails'
+export const STEAM_OWNED_GAMES_API = 'https://api.steampowered.com/IPlayerService/GetOwnedGames/v1/'
+export const STEAM_APP_DETAILS_API = 'https://store.steampowered.com/api/appdetails'
 export const STEAM_REQUEST_TIMEOUT_MS = 10_000
 const STEAM_STORE_PREFIX = 'https://store.steampowered.com/app/'
 const STEAM_OWNED_GAMES_MAX_RETRIES = 3
@@ -26,9 +25,7 @@ const RETRYABLE_NETWORK_CODES = new Set([
 /**
  * 将客户端 ProxySettings 转换为 axios 的 proxy 配置
  */
-function buildAxiosProxyConfig(
-  settings: ProxySettings,
-): false | AxiosProxyConfig {
+function buildAxiosProxyConfig(settings: ProxySettings): false | AxiosProxyConfig {
   if (!settings.enabled || !settings.host || !settings.port) {
     return false
   }
@@ -64,9 +61,7 @@ function buildProxyAgent(settings: ProxySettings): any {
 
   const auth =
     settings.username && settings.password
-      ? `${encodeURIComponent(settings.username)}:${encodeURIComponent(
-          settings.password,
-        )}@`
+      ? `${encodeURIComponent(settings.username)}:${encodeURIComponent(settings.password)}@`
       : ''
   const proxyUrl = `${settings.type}://${auth}${settings.host}:${settings.port}`
 
@@ -102,10 +97,7 @@ type SteamOwnedGamesResponse = {
   }
 }
 
-const ownedGamesCache = new Map<
-  string,
-  { expiresAt: number; games: SteamOwnedGame[] }
->()
+const ownedGamesCache = new Map<string, { expiresAt: number; games: SteamOwnedGame[] }>()
 
 export type SteamAppDetail = {
   name?: string
@@ -146,12 +138,7 @@ type SteamAppDetailResponse = {
 }
 
 export const getSteamApiKey = () => {
-  return (
-    process.env.STEAM_API_KEY ||
-    process.env.NEXT_PUBLIC_STEAM_API_KEY ||
-    process.env.STEAM_WEB_API_KEY ||
-    ''
-  )
+  return NEXT_PUBLIC_STEAM_API_KEY
 }
 
 export const normalizeSteamId = (value: unknown) => {
@@ -165,8 +152,7 @@ export const isValidSteamUid = (value: string) => {
   return /^\d{17}$/.test(value)
 }
 
-export const toSteamStoreUrl = (appId: number) =>
-  `${STEAM_STORE_PREFIX}${appId}`
+export const toSteamStoreUrl = (appId: number) => `${STEAM_STORE_PREFIX}${appId}`
 
 export const toSteamCoverUrl = (appId: number) =>
   `https://shared.cloudflare.steamstatic.com/store_item_assets/steam/apps/${appId}/header.jpg`
@@ -196,30 +182,21 @@ export const fetchOwnedGames = async (
 ) => {
   // 不使用缓存，因为代理可能变化
   let lastError: unknown = null
-  const proxyConfig = proxySettings
-    ? buildAxiosProxyConfig(proxySettings)
-    : false
+  const proxyConfig = proxySettings ? buildAxiosProxyConfig(proxySettings) : false
 
-  for (
-    let attempt = 1;
-    attempt <= STEAM_OWNED_GAMES_MAX_RETRIES;
-    attempt += 1
-  ) {
+  for (let attempt = 1; attempt <= STEAM_OWNED_GAMES_MAX_RETRIES; attempt += 1) {
     try {
-      const response = await axios.get<SteamOwnedGamesResponse>(
-        STEAM_OWNED_GAMES_API,
-        {
-          timeout: STEAM_REQUEST_TIMEOUT_MS,
-          params: {
-            key: apiKey,
-            steamid: steamId,
-            include_appinfo: 1,
-            include_played_free_games: 1,
-            format: 'json',
-          },
-          proxy: proxyConfig,
+      const response = await axios.get<SteamOwnedGamesResponse>(STEAM_OWNED_GAMES_API, {
+        timeout: STEAM_REQUEST_TIMEOUT_MS,
+        params: {
+          key: apiKey,
+          steamid: steamId,
+          include_appinfo: 1,
+          include_played_free_games: 1,
+          format: 'json',
         },
-      )
+        proxy: proxyConfig,
+      })
 
       const games = response.data.response?.games ?? []
       ownedGamesCache.set(steamId, {
@@ -235,9 +212,7 @@ export const fetchOwnedGames = async (
       }
 
       const code = error.code || ''
-      const canRetry =
-        RETRYABLE_NETWORK_CODES.has(code) &&
-        attempt < STEAM_OWNED_GAMES_MAX_RETRIES
+      const canRetry = RETRYABLE_NETWORK_CODES.has(code) && attempt < STEAM_OWNED_GAMES_MAX_RETRIES
 
       if (canRetry) {
         await new Promise((resolve) => setTimeout(resolve, 500 * attempt))
@@ -263,10 +238,7 @@ export const fetchOwnedGames = async (
   throw new Error('获取 Steam 游戏库失败')
 }
 
-export const fetchSteamAppDetails = async (
-  appId: number,
-  proxySettings?: ProxySettings,
-) => {
+export const fetchSteamAppDetails = async (appId: number, proxySettings?: ProxySettings) => {
   try {
     const httpsAgent = proxySettings ? buildProxyAgent(proxySettings) : null
 

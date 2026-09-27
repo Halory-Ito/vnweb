@@ -216,9 +216,7 @@ export async function extractIconFromExe(
   timeoutMs = 10_000,
 ): Promise<string> {
   if (!exePath || !iconSavePath) {
-    throw new Error(
-      'extractIconFromExe(exePath, iconSavePath) 需要传入 exe 路径和 icon 保存路径',
-    )
+    throw new Error('extractIconFromExe(exePath, iconSavePath) 需要传入 exe 路径和 icon 保存路径')
   }
 
   if (!Number.isFinite(timeoutMs) || timeoutMs <= 0) {

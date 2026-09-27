@@ -7,9 +7,7 @@ import { db } from '@/lib/drizzle'
 const getGameCardList = async (req: NextRequest) => {
   try {
     const includeNsfw =
-      (req.nextUrl.searchParams.get('includeNsfw') || 'true')
-        .trim()
-        .toLowerCase() !== 'false'
+      (req.nextUrl.searchParams.get('includeNsfw') || 'true').trim().toLowerCase() !== 'false'
 
     const gameListQuery = db
       .select({
@@ -33,6 +31,7 @@ const getGameCardList = async (req: NextRequest) => {
         totalPlayTime: GamePlayTable.totalPlayTime,
         rating: GamePlayTable.rating,
         lastLaunchedAt: GamePlayTable.lastLaunchedAt,
+        status: GamePlayTable.status,
       })
       .from(GamePlayTable)
 
@@ -43,6 +42,7 @@ const getGameCardList = async (req: NextRequest) => {
           totalPlayTime: play.totalPlayTime ?? 0,
           rating: play.rating ?? 0,
           lastLaunchedAt: play.lastLaunchedAt ?? '',
+          status: play.status ?? 0,
         },
       ]),
     )
@@ -58,16 +58,14 @@ const getGameCardList = async (req: NextRequest) => {
         addedAt: game.createdAt || '',
         playTime: play?.totalPlayTime || 0,
         rating: play?.rating || 0,
+        status: play?.status ?? 0,
       }
     })
 
     return NextResponse.json({ data })
   } catch (error) {
     console.error('Get game card list failed:', error)
-    return NextResponse.json(
-      { error: 'Failed to get game card list' },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: 'Failed to get game card list' }, { status: 500 })
   }
 }
 

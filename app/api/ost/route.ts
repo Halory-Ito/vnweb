@@ -77,10 +77,7 @@ const getOstList = async (req: NextRequest) => {
     })
   } catch (error) {
     console.error('Get ost list failed:', error)
-    return NextResponse.json(
-      { error: 'Failed to get ost list' },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: 'Failed to get ost list' }, { status: 500 })
   }
 }
 
@@ -163,10 +160,7 @@ const createOst = async (req: NextRequest) => {
     }
 
     if (!name || !cover) {
-      return NextResponse.json(
-        { error: '游戏、OST名称和封面不能为空' },
-        { status: 400 },
-      )
+      return NextResponse.json({ error: '游戏、OST名称和封面不能为空' }, { status: 400 })
     }
 
     const game = await db
@@ -209,21 +203,14 @@ const createOst = async (req: NextRequest) => {
           let lyricsText = normalizeText(song.lyricsText || '')
 
           // 如果是网易云资源且没有提供 lyricsText，则从歌词服务获取
-          if (
-            resource === 'netease' &&
-            !lyricsText &&
-            song.url.includes('?id=')
-          ) {
+          if (resource === 'netease' && !lyricsText && song.url.includes('?id=')) {
             const match = song.url.match(/[?&]id=(\d+)/)
             if (match) {
               const songId = match[1]
               try {
-                const lyricResponse = await api.get(
-                  `${NETEASE_API_BASE}/lyric`,
-                  {
-                    params: { id: songId },
-                  },
-                )
+                const lyricResponse = await api.get(`${NETEASE_API_BASE}/lyric`, {
+                  params: { id: songId },
+                })
                 const lyricData = lyricResponse.data
                 if (lyricData.lrc?.lyric) {
                   lyricsText = lyricData.lrc.lyric
@@ -270,10 +257,7 @@ const deleteOst = async (req: NextRequest) => {
       parsePositiveNumber(req.nextUrl.searchParams.get('ostId'))
 
     if (!ostId) {
-      return NextResponse.json(
-        { error: 'Missing or invalid id parameter' },
-        { status: 400 },
-      )
+      return NextResponse.json({ error: 'Missing or invalid id parameter' }, { status: 400 })
     }
 
     // 检查 OST 是否存在
@@ -333,11 +317,7 @@ const syncCoverToLocal = async () => {
           .where(eq(GameOstTable.id, ost.id))
       } else {
         // 文件不存在，下载并保存
-        const downloadedPath = await downloadCoverToLocal(
-          ost.cover,
-          ost.id,
-          ost.name,
-        )
+        const downloadedPath = await downloadCoverToLocal(ost.cover, ost.id, ost.name)
         if (downloadedPath) {
           const now = new Date().toISOString()
           await db
@@ -351,16 +331,8 @@ const syncCoverToLocal = async () => {
     return NextResponse.json({ data: { synced: true } })
   } catch (error) {
     console.error('Sync cover failed:', error)
-    return NextResponse.json(
-      { error: 'Failed to sync covers' },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: 'Failed to sync covers' }, { status: 500 })
   }
 }
 
-export {
-  getOstList as GET,
-  createOst as POST,
-  deleteOst as DELETE,
-  syncCoverToLocal as PATCH,
-}
+export { getOstList as GET, createOst as POST, deleteOst as DELETE, syncCoverToLocal as PATCH }

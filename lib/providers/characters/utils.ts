@@ -110,12 +110,7 @@ export const localizeCharacterImage = async (
   const ext = pickImageExt(normalized, null)
   const safeCharacterId = sanitizeFileNamePart(characterId) || 'character'
 
-  const publicDir = path.join(
-    process.cwd(),
-    'assets',
-    'characters',
-    String(gameId),
-  )
+  const publicDir = path.join(process.cwd(), 'assets', 'characters', String(gameId))
 
   await fs.mkdir(publicDir, { recursive: true })
 

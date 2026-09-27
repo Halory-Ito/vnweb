@@ -16,23 +16,13 @@ export const POST = async (request: NextRequest) => {
     const timeoutMs = body?.timeoutMs
 
     if (!exePath || !iconSavePath) {
-      return NextResponse.json(
-        { error: 'exePath 和 iconSavePath 为必填项' },
-        { status: 400 },
-      )
+      return NextResponse.json({ error: 'exePath 和 iconSavePath 为必填项' }, { status: 400 })
     }
 
-    const extractedPath = await extractIconFromExe(
-      exePath,
-      iconSavePath,
-      timeoutMs,
-    )
+    const extractedPath = await extractIconFromExe(exePath, iconSavePath, timeoutMs)
 
     return NextResponse.json({ data: { iconPath: extractedPath } })
   } catch (error) {
-    return NextResponse.json(
-      { error: (error as Error).message || '图标提取失败' },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: (error as Error).message || '图标提取失败' }, { status: 500 })
   }
 }

@@ -3,10 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 const STEAM_OPENID_ENDPOINT = 'https://steamcommunity.com/openid/login'
 
 const buildReturnTo = (req: NextRequest) => {
-  const callbackUrl = new URL(
-    '/api/settings/cloud-sync/auth/steam/callback',
-    req.nextUrl.origin,
-  )
+  const callbackUrl = new URL('/api/settings/cloud-sync/auth/steam/callback', req.nextUrl.origin)
   return callbackUrl.toString()
 }
 

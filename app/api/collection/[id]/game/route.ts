@@ -2,11 +2,7 @@ import dayjs from 'dayjs'
 import { and, eq } from 'drizzle-orm'
 import { NextRequest, NextResponse } from 'next/server'
 
-import {
-  CollectionGameTable,
-  CollectionTable,
-  GameInfoTable,
-} from '@/db/schema'
+import { CollectionGameTable, CollectionTable, GameInfoTable } from '@/db/schema'
 import { db } from '@/lib/drizzle'
 
 type AddGameToCollectionPayload = {
@@ -30,9 +26,7 @@ const addGameToCollection = async (
       return NextResponse.json({ error: '无效的收藏夹 id' }, { status: 400 })
     }
 
-    const payload = (await req
-      .json()
-      .catch(() => ({}))) as AddGameToCollectionPayload
+    const payload = (await req.json().catch(() => ({}))) as AddGameToCollectionPayload
     const gameId = Number(payload.gameId)
 
     if (!Number.isInteger(gameId) || gameId <= 0) {
@@ -88,10 +82,7 @@ const addGameToCollection = async (
     })
   } catch (error) {
     console.error('Add game to collection failed:', error)
-    return NextResponse.json(
-      { error: 'Failed to add game to collection' },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: 'Failed to add game to collection' }, { status: 500 })
   }
 }
 
@@ -135,10 +126,7 @@ const removeGameFromCollection = async (
     })
   } catch (error) {
     console.error('Remove game from collection failed:', error)
-    return NextResponse.json(
-      { error: 'Failed to remove game from collection' },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: 'Failed to remove game from collection' }, { status: 500 })
   }
 }
 
@@ -154,25 +142,16 @@ const moveGameToOtherCollection = async (
     const targetCollectionId = Number(payload.targetCollectionId)
 
     if (!Number.isInteger(sourceCollectionId) || sourceCollectionId <= 0) {
-      return NextResponse.json(
-        { error: '无效的来源收藏夹 id' },
-        { status: 400 },
-      )
+      return NextResponse.json({ error: '无效的来源收藏夹 id' }, { status: 400 })
     }
     if (!Number.isInteger(targetCollectionId) || targetCollectionId <= 0) {
-      return NextResponse.json(
-        { error: '无效的目标收藏夹 id' },
-        { status: 400 },
-      )
+      return NextResponse.json({ error: '无效的目标收藏夹 id' }, { status: 400 })
     }
     if (!Number.isInteger(gameId) || gameId <= 0) {
       return NextResponse.json({ error: '无效的游戏 id' }, { status: 400 })
     }
     if (sourceCollectionId === targetCollectionId) {
-      return NextResponse.json(
-        { error: '目标收藏夹不能与来源一致' },
-        { status: 400 },
-      )
+      return NextResponse.json({ error: '目标收藏夹不能与来源一致' }, { status: 400 })
     }
 
     const target = await db
@@ -232,10 +211,7 @@ const moveGameToOtherCollection = async (
     })
   } catch (error) {
     console.error('Move game to other collection failed:', error)
-    return NextResponse.json(
-      { error: 'Failed to move game to other collection' },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: 'Failed to move game to other collection' }, { status: 500 })
   }
 }
 

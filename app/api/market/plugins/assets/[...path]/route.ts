@@ -14,14 +14,10 @@ const MIME_TYPES: Record<string, string> = {
 }
 
 function toSafeFilePath(pathSegments: string[]) {
-  const decodedSegments = pathSegments.map((segment) =>
-    decodeURIComponent(segment),
-  )
+  const decodedSegments = pathSegments.map((segment) => decodeURIComponent(segment))
 
   const requestedPath = normalize(join(ADDONS_DIR, ...decodedSegments))
-  const addonsRoot = normalize(
-    `${ADDONS_DIR}${process.platform === 'win32' ? '\\' : '/'}`,
-  )
+  const addonsRoot = normalize(`${ADDONS_DIR}${process.platform === 'win32' ? '\\' : '/'}`)
 
   if (!requestedPath.startsWith(addonsRoot)) {
     return null
@@ -30,10 +26,7 @@ function toSafeFilePath(pathSegments: string[]) {
   return requestedPath
 }
 
-export async function GET(
-  _request: Request,
-  context: { params: Promise<{ path: string[] }> },
-) {
+export async function GET(_request: Request, context: { params: Promise<{ path: string[] }> }) {
   const { path } = await context.params
 
   if (!path || path.length === 0) {
@@ -48,8 +41,7 @@ export async function GET(
 
   try {
     const file = await readFile(filePath)
-    const contentType =
-      MIME_TYPES[extname(filePath).toLowerCase()] || 'application/octet-stream'
+    const contentType = MIME_TYPES[extname(filePath).toLowerCase()] || 'application/octet-stream'
 
     return new Response(file, {
       headers: {

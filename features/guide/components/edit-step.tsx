@@ -128,7 +128,9 @@ export function EditStep({ stepId, onSuccess }: EditStepProps) {
 
           {/* 分组（可选） */}
           <div className="space-y-2">
-            <div className="text-sm font-medium">分组 <span className="text-muted-foreground">(可选)</span></div>
+            <div className="text-sm font-medium">
+              分组 <span className="text-muted-foreground">(可选)</span>
+            </div>
             <Input
               placeholder="例如：7月15日"
               value={group}
@@ -140,7 +142,9 @@ export function EditStep({ stepId, onSuccess }: EditStepProps) {
           {/* 前缀和后缀 */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <div className="text-sm font-medium">前缀 <span className="text-muted-foreground">(可选)</span></div>
+              <div className="text-sm font-medium">
+                前缀 <span className="text-muted-foreground">(可选)</span>
+              </div>
               <Input
                 placeholder="例如：★"
                 value={prefix}
@@ -149,7 +153,9 @@ export function EditStep({ stepId, onSuccess }: EditStepProps) {
               />
             </div>
             <div className="space-y-2">
-              <div className="text-sm font-medium">后缀 <span className="text-muted-foreground">(可选)</span></div>
+              <div className="text-sm font-medium">
+                后缀 <span className="text-muted-foreground">(可选)</span>
+              </div>
               <Input
                 placeholder="输入后缀..."
                 value={subfix}

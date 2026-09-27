@@ -212,22 +212,22 @@ export function BackgroundSection() {
         </div>
         <Switch
           checked={settings.customBackgroundEnabled}
-          onCheckedChange={(checked) =>
-            update({ customBackgroundEnabled: checked })
-          }
+          onCheckedChange={(checked) => update({ customBackgroundEnabled: checked })}
         />
       </div>
 
       <div className="space-y-3">
         <span className="text-sm font-medium">自定义背景图片</span>
-        <p className="text-muted-foreground text-xs">
-          移动端和PC端可以分别设置不同的背景图片。
-        </p>
+        <p className="text-muted-foreground text-xs">移动端和PC端可以分别设置不同的背景图片。</p>
 
         <Tabs defaultValue="pc" className="w-full">
           <TabsList className="w-full">
-            <TabsTrigger value="pc" className="flex-1">PC端</TabsTrigger>
-            <TabsTrigger value="mobile" className="flex-1">移动端</TabsTrigger>
+            <TabsTrigger value="pc" className="flex-1">
+              PC端
+            </TabsTrigger>
+            <TabsTrigger value="mobile" className="flex-1">
+              移动端
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="pc" className="mt-4 space-y-3">
@@ -291,9 +291,7 @@ export function BackgroundSection() {
       <div className="flex items-center justify-between gap-4">
         <div>
           <p className="text-sm font-medium">切换动画样式</p>
-          <p className="text-muted-foreground text-xs">
-            设置背景图片切换时的过渡效果。
-          </p>
+          <p className="text-muted-foreground text-xs">设置背景图片切换时的过渡效果。</p>
         </div>
         <div>
           <Select
@@ -321,18 +319,14 @@ export function BackgroundSection() {
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <span className="text-sm font-medium">过渡时长</span>
-          <span className="text-muted-foreground text-sm">
-            {settings.transitionDurationMs}ms
-          </span>
+          <span className="text-muted-foreground text-sm">{settings.transitionDurationMs}ms</span>
         </div>
         <Slider
           min={0}
           max={3000}
           step={50}
           value={[settings.transitionDurationMs]}
-          onValueChange={(value) =>
-            updateWithDebounce({ transitionDurationMs: value[0] ?? 0 })
-          }
+          onValueChange={(value) => updateWithDebounce({ transitionDurationMs: value[0] ?? 0 })}
         />
       </div>
     </div>

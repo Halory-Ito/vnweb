@@ -43,17 +43,10 @@ type YMGalVotesResponse = {
 const PAGE_SIZE = 50
 const MAX_ITEMS = 500
 
-const fetchYmgalUserVotes = async (
-  userId: string,
-  voteType: number,
-): Promise<YMGalVoteItem[]> => {
+const fetchYmgalUserVotes = async (userId: string, voteType: number): Promise<YMGalVoteItem[]> => {
   const items: YMGalVoteItem[] = []
 
-  for (
-    let pageNum = 1;
-    pageNum <= Math.ceil(MAX_ITEMS / PAGE_SIZE);
-    pageNum += 1
-  ) {
+  for (let pageNum = 1; pageNum <= Math.ceil(MAX_ITEMS / PAGE_SIZE); pageNum += 1) {
     const response = await axios.get<YMGalVotesResponse>(
       `${YMGAL_BASE_URL}/api/user/votes/${userId}`,
       {
@@ -90,10 +83,7 @@ const searchYmgalUserGames = async () => {
   try {
     const account = await getBoundThirdPartyAccount('ymgal')
     if (!account?.accountId) {
-      return NextResponse.json(
-        { error: '请先绑定 YMGal 账号' },
-        { status: 400 },
-      )
+      return NextResponse.json({ error: '请先绑定 YMGal 账号' }, { status: 400 })
     }
 
     // 同时获取想玩（voteType=1）和玩过（voteType=2）的游戏
@@ -118,13 +108,8 @@ const searchYmgalUserGames = async () => {
       .filter((item) => !item.hide)
       .map((item) => {
         const id = String(item.gid)
-        const name =
-          item.gameChineseName?.trim() ||
-          item.gameName?.trim() ||
-          `YMGal Game ${id}`
-        const coverUrl = item.mainImg?.trim()
-          ? `${YMGAL_MEDIA_BASE}${item.mainImg.trim()}`
-          : ''
+        const name = item.gameChineseName?.trim() || item.gameName?.trim() || `YMGal Game ${id}`
+        const coverUrl = item.mainImg?.trim() ? `${YMGAL_MEDIA_BASE}${item.mainImg.trim()}` : ''
 
         const noteParts: string[] = []
         if (item.voteType === 2) {

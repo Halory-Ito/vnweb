@@ -6,18 +6,12 @@ import { api } from '@/lib/request-utils'
  * 获取网易云音乐专辑详情和歌曲列表
  * 使用第三方镜像 API
  */
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params
 
     if (!id) {
-      return NextResponse.json(
-        { error: 'Missing id parameter' },
-        { status: 400 },
-      )
+      return NextResponse.json({ error: 'Missing id parameter' }, { status: 400 })
     }
 
     // 使用镜像 API 获取专辑详情
@@ -77,9 +71,7 @@ export async function GET(
 
         // 获取别名，优先使用 tns（翻译名称）
         const aliasValue =
-          (Array.isArray(song.tns) && song.tns.length > 0
-            ? song.tns.join(' / ')
-            : null) ||
+          (Array.isArray(song.tns) && song.tns.length > 0 ? song.tns.join(' / ') : null) ||
           (Array.isArray(song.alias) && song.alias.length > 0
             ? song.alias.filter(Boolean).join(' / ')
             : null)
@@ -118,10 +110,7 @@ export async function GET(
     })
   } catch (error) {
     console.error('Get album details failed:', error)
-    return NextResponse.json(
-      { error: 'Failed to get album details' },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: 'Failed to get album details' }, { status: 500 })
   }
 }
 

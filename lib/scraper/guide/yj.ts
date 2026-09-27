@@ -16,5 +16,5 @@ export function searchGuides(q: string, page: number = 1, pageSize: number = 12)
       'User-Agent':
         'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:152.0) Gecko/20100101 Firefox/152.0',
     },
-  }).then(res => res.data)
+  }).then((res) => res.data)
 }

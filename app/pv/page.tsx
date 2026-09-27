@@ -5,24 +5,29 @@ import Hls from 'hls.js'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 
-import { PvDeleteDialog } from './_ui/pv-delete-dialog'
-import { PvFormDialog } from './_ui/pv-form-dialog'
-import { PvManageContent } from './_ui/pv-manage-content'
-import { PvPlayerDialog } from './_ui/pv-player-dialog'
-import { PvSearchToolbar } from './_ui/pv-search-toolbar'
-import { isHlsUrl, isSteamVideoUrl, isVideoFileUrl, isVideoStreamUrl } from './_ui/utils'
 import {
   createPvManageItem,
   deletePvManageItem,
   getGameCardList,
   getPvManageList,
-  type PvManageItem,
   updatePvManageItem,
-} from '@/lib/game/game-utils'
-import { callHook } from '@/lib/plugins'
+} from '@/api'
 import { Pagination } from '@/components/custom-pagination'
+import { PvDeleteDialog } from '@/features/pv/components/pv-delete-dialog'
+import { PvFormDialog } from '@/features/pv/components/pv-form-dialog'
+import { PvManageContent } from '@/features/pv/components/pv-manage-content'
+import { PvPlayerDialog } from '@/features/pv/components/pv-player-dialog'
+import { PvSearchToolbar } from '@/features/pv/components/pv-search-toolbar'
+import {
+  isHlsUrl,
+  isSteamVideoUrl,
+  isVideoFileUrl,
+  isVideoStreamUrl,
+} from '@/features/pv/lib/pv-utils'
+import { callHook } from '@/lib/plugins'
 
-import type { GameOption, PvFormState, ViewMode } from './_ui/types'
+import type { GameOption, PvFormState, ViewMode } from '@/features/pv/types'
+import type { PvManageItem } from '@/types'
 
 const defaultForm: PvFormState = {
   gameId: '',

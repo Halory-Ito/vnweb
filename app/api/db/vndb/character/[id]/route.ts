@@ -56,20 +56,14 @@ const normalizeCharacterId = (rawId: string) => {
   return ''
 }
 
-const getCharacterById = async (
-  req: NextRequest,
-  context: { params: Promise<{ id: string }> },
-) => {
+const getCharacterById = async (req: NextRequest, context: { params: Promise<{ id: string }> }) => {
   try {
     const { id } = await context.params
     const characterId = normalizeCharacterId(id)
     const gameIdParam = Number(req.nextUrl.searchParams.get('gameId'))
 
     if (!characterId) {
-      return NextResponse.json(
-        { error: 'Invalid character id parameter' },
-        { status: 400 },
-      )
+      return NextResponse.json({ error: 'Invalid character id parameter' }, { status: 400 })
     }
 
     if (Number.isInteger(gameIdParam) && gameIdParam > 0) {
@@ -93,12 +87,7 @@ const getCharacterById = async (
           gender: CharacterTable.gender,
         })
         .from(CharacterTable)
-        .where(
-          and(
-            eq(CharacterTable.gameId, gameIdParam),
-            eq(CharacterTable.vndbId, characterId),
-          ),
-        )
+        .where(and(eq(CharacterTable.gameId, gameIdParam), eq(CharacterTable.vndbId, characterId)))
         .limit(1)
 
       const localCharacter = localRows[0]
@@ -107,10 +96,7 @@ const getCharacterById = async (
           ? (JSON.parse(localCharacter.sex) as [string | null, string | null])
           : null
         const gender = localCharacter.gender
-          ? (JSON.parse(localCharacter.gender) as [
-              string | null,
-              string | null,
-            ])
+          ? (JSON.parse(localCharacter.gender) as [string | null, string | null])
           : null
 
         return NextResponse.json({
@@ -140,10 +126,7 @@ const getCharacterById = async (
     }
 
     if (!/^c\d+$/i.test(characterId)) {
-      return NextResponse.json(
-        { error: 'Character not found' },
-        { status: 404 },
-      )
+      return NextResponse.json({ error: 'Character not found' }, { status: 404 })
     }
 
     const res = await VNDBClient.request({
@@ -163,10 +146,7 @@ const getCharacterById = async (
 
     const item = payload.results?.[0]
     if (!item) {
-      return NextResponse.json(
-        { error: 'Character not found' },
-        { status: 404 },
-      )
+      return NextResponse.json({ error: 'Character not found' }, { status: 404 })
     }
 
     return NextResponse.json({
@@ -209,10 +189,7 @@ const patchCharacterById = async (
     const characterId = normalizeCharacterId(id)
 
     if (!characterId) {
-      return NextResponse.json(
-        { error: 'Invalid character id parameter' },
-        { status: 400 },
-      )
+      return NextResponse.json({ error: 'Invalid character id parameter' }, { status: 400 })
     }
 
     const payload = (await req.json().catch(() => ({}))) as {
@@ -241,19 +218,11 @@ const patchCharacterById = async (
     const existing = await db
       .select({ id: CharacterTable.id })
       .from(CharacterTable)
-      .where(
-        and(
-          eq(CharacterTable.gameId, gameId),
-          eq(CharacterTable.vndbId, characterId),
-        ),
-      )
+      .where(and(eq(CharacterTable.gameId, gameId), eq(CharacterTable.vndbId, characterId)))
       .limit(1)
 
     if (!existing[0]) {
-      return NextResponse.json(
-        { error: 'Character not found' },
-        { status: 404 },
-      )
+      return NextResponse.json({ error: 'Character not found' }, { status: 404 })
     }
 
     const toNullableInt = (value: unknown) => {
@@ -271,38 +240,23 @@ const patchCharacterById = async (
       .update(CharacterTable)
       .set({
         name: typeof payload.name === 'string' ? payload.name.trim() : '',
-        original:
-          typeof payload.original === 'string' ? payload.original.trim() : '',
-        description:
-          typeof payload.description === 'string'
-            ? payload.description.trim()
-            : '',
-        imageUrl:
-          typeof payload.imageUrl === 'string' ? payload.imageUrl.trim() : '',
-        bloodType:
-          typeof payload.bloodType === 'string' ? payload.bloodType.trim() : '',
+        original: typeof payload.original === 'string' ? payload.original.trim() : '',
+        description: typeof payload.description === 'string' ? payload.description.trim() : '',
+        imageUrl: typeof payload.imageUrl === 'string' ? payload.imageUrl.trim() : '',
+        bloodType: typeof payload.bloodType === 'string' ? payload.bloodType.trim() : '',
         height: toNullableInt(payload.height),
         weight: toNullableInt(payload.weight),
         bust: toNullableInt(payload.bust),
         waist: toNullableInt(payload.waist),
         hips: toNullableInt(payload.hips),
         age: toNullableInt(payload.age),
-        birthdayMonth: payload.birthday
-          ? toNullableInt(payload.birthday[0])
-          : null,
-        birthdayDay: payload.birthday
-          ? toNullableInt(payload.birthday[1])
-          : null,
+        birthdayMonth: payload.birthday ? toNullableInt(payload.birthday[0]) : null,
+        birthdayDay: payload.birthday ? toNullableInt(payload.birthday[1]) : null,
         sex: payload.sex ? JSON.stringify(payload.sex) : '',
         gender: payload.gender ? JSON.stringify(payload.gender) : '',
         updatedAt: dayjs().toISOString(),
       })
-      .where(
-        and(
-          eq(CharacterTable.gameId, gameId),
-          eq(CharacterTable.vndbId, characterId),
-        ),
-      )
+      .where(and(eq(CharacterTable.gameId, gameId), eq(CharacterTable.vndbId, characterId)))
 
     return NextResponse.json({ data: { updated: true } })
   } catch (error) {

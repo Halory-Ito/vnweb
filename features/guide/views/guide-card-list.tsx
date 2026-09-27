@@ -6,10 +6,10 @@ import { motion } from 'motion/react'
 import { useRouter } from 'next/navigation'
 import { useMemo, useState } from 'react'
 
-import GuideCard from '@/features/guide/components/guide-card'
-import { getGuideListApi } from '@/features/guide/guide-api'
-import { fastContainerVariants, cardVariants } from '@/features/guide/data/motion'
 import { Pagination } from '@/components/custom-pagination'
+import GuideCard from '@/features/guide/components/guide-card'
+import { fastContainerVariants, cardVariants } from '@/features/guide/data/motion'
+import { getGuideListApi } from '@/features/guide/guide-api'
 
 export default function GuideCardList() {
   const router = useRouter()
@@ -59,10 +59,7 @@ export default function GuideCardList() {
       >
         {items.map((guide) => (
           <motion.div key={guide.id} variants={cardVariants}>
-            <GuideCard
-              guide={guide}
-              onClick={() => router.push('/guide/' + guide.gameId)}
-            />
+            <GuideCard guide={guide} onClick={() => router.push('/guide/' + guide.gameId)} />
           </motion.div>
         ))}
       </motion.div>

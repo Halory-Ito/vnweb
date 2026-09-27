@@ -53,15 +53,8 @@ export {
 
 // ── 内置插件工具函数 ──────────────────────────────────────
 export { isBilibiliUrl } from './builtin/bilibili-plugin'
-export {
-  toYouTubeEmbedUrl,
-  getYouTubeCover,
-  isYouTubeUrl,
-} from './builtin/youtube-plugin'
-export {
-  isSteamVideoUrl,
-  isVideoStreamUrl,
-} from './builtin/generic-video-plugin'
+export { toYouTubeEmbedUrl, getYouTubeCover, isYouTubeUrl } from './builtin/youtube-plugin'
+export { isSteamVideoUrl, isVideoStreamUrl } from './builtin/generic-video-plugin'
 
 // ── 设置 ──────────────────────────────────────────────────
 export {

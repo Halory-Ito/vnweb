@@ -9,14 +9,7 @@ type FontSource = 'system' | 'user'
 
 const getFontDirectories = () => {
   const systemDir = path.join(process.env.WINDIR || 'C:\\Windows', 'Fonts')
-  const userDir = path.join(
-    os.homedir(),
-    'AppData',
-    'Local',
-    'Microsoft',
-    'Windows',
-    'Fonts',
-  )
+  const userDir = path.join(os.homedir(), 'AppData', 'Local', 'Microsoft', 'Windows', 'Fonts')
 
   return [
     { dir: systemDir, source: 'system' as FontSource },
@@ -27,10 +20,7 @@ const getFontDirectories = () => {
 const listLocalFonts = async () => {
   try {
     if (process.platform !== 'win32') {
-      return NextResponse.json(
-        { error: '当前仅支持 Windows 字体目录扫描' },
-        { status: 400 },
-      )
+      return NextResponse.json({ error: '当前仅支持 Windows 字体目录扫描' }, { status: 400 })
     }
 
     const allFonts: Array<{

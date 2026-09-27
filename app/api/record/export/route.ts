@@ -131,9 +131,7 @@ const getRecordExport = async (params: GetRecordExportParams = {}) => {
       .filter((r): r is number => r !== null && r !== undefined && r > 0)
     const averageRating =
       ratings.length > 0
-        ? Number(
-            (ratings.reduce((a, b) => a + b, 0) / ratings.length).toFixed(1),
-          )
+        ? Number((ratings.reduce((a, b) => a + b, 0) / ratings.length).toFixed(1))
         : 0
 
     // 获取最后游玩日期（只保留年月日）
@@ -142,17 +140,12 @@ const getRecordExport = async (params: GetRecordExportParams = {}) => {
       .filter(Boolean)
       .sort()
       .reverse()
-    const lastPlayedDate = sortedDates[0]
-      ? formatDate(sortedDates[0]) || ''
-      : ''
+    const lastPlayedDate = sortedDates[0] ? formatDate(sortedDates[0]) || '' : ''
 
     // 获取 top 游戏
     const gamePlayData = records.reduce((acc: Map<number, number>, record) => {
       const gameId = Number(record.gameId)
-      acc.set(
-        gameId,
-        (acc.get(gameId) || 0) + Math.max(0, Number(record.playTime || 0)),
-      )
+      acc.set(gameId, (acc.get(gameId) || 0) + Math.max(0, Number(record.playTime || 0)))
       return acc
     }, new Map())
 
@@ -198,8 +191,7 @@ const getRecordExport = async (params: GetRecordExportParams = {}) => {
           if (!dateKey || !record.playTime) continue
           dailyTimes.set(
             dateKey,
-            (dailyTimes.get(dateKey) || 0) +
-              Math.max(0, Number(record.playTime)),
+            (dailyTimes.get(dateKey) || 0) + Math.max(0, Number(record.playTime)),
           )
         }
 
@@ -211,8 +203,7 @@ const getRecordExport = async (params: GetRecordExportParams = {}) => {
         const lastPlayAt = sortedDates[sortedDates.length - 1]
 
         // 单日最大游玩时长
-        const maxDailySeconds =
-          dailyTimesList.length > 0 ? Math.max(...dailyTimesList) : 0
+        const maxDailySeconds = dailyTimesList.length > 0 ? Math.max(...dailyTimesList) : 0
 
         // 平均每日游玩时长
         const avgDailySeconds =
@@ -263,10 +254,7 @@ const getRecordExport = async (params: GetRecordExportParams = {}) => {
     })
   } catch (error) {
     console.error('Get export report failed:', error)
-    return NextResponse.json(
-      { error: 'Failed to fetch export report' },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: 'Failed to fetch export report' }, { status: 500 })
   }
 }
 

@@ -10,7 +10,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 
-import type { QuoteManageItem } from '@/lib/game/game-utils'
+import type { QuoteManageItem } from '@/types'
 
 type QuoteDeleteDialogProps = {
   item: QuoteManageItem | null
@@ -30,18 +30,14 @@ export function QuoteDeleteDialog({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>确认删除</DialogTitle>
-          <DialogDescription>
-            确定要删除这条台词摘录吗？此操作无法撤销。
-          </DialogDescription>
+          <DialogDescription>确定要删除这条台词摘录吗？此操作无法撤销。</DialogDescription>
         </DialogHeader>
 
         {item && (
           <div className="bg-muted/50 rounded-lg p-4">
             <p className="text-sm">{item.content}</p>
             {item.characterName && (
-              <p className="text-muted-foreground mt-2 text-xs">
-                —— {item.characterName}
-              </p>
+              <p className="text-muted-foreground mt-2 text-xs">—— {item.characterName}</p>
             )}
           </div>
         )}
@@ -55,12 +51,7 @@ export function QuoteDeleteDialog({
           >
             取消
           </Button>
-          <Button
-            type="button"
-            variant="destructive"
-            onClick={onConfirm}
-            disabled={isSubmitting}
-          >
+          <Button type="button" variant="destructive" onClick={onConfirm} disabled={isSubmitting}>
             {isSubmitting ? '删除中...' : '确认删除'}
           </Button>
         </DialogFooter>

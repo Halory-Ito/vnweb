@@ -11,12 +11,12 @@ import {
   ScannerTable,
   relateWebsiteTable,
 } from '@/db/schema'
+import { mapBGMSubjectToGameInfo } from '@/features/game/import-api'
 import { db } from '@/lib/drizzle'
 import { localizeGameImageFields } from '@/lib/server/game-image-storage'
 import { BGMClient, SGDBClient } from '@/lib/vndb-client'
-import { mapBGMSubjectToGameInfo } from '@/lib/vndb-utils'
 
-import type { GameInfo } from '@/types/game-types'
+import type { GameInfo } from '@/types/game'
 
 type BGMSubject = {
   id?: number
@@ -44,8 +44,7 @@ const parseExcludeDirs = (value: string | null) =>
 
 const toSGDBGameInfo = (game?: SGDBGame, grids: SGDBImage[] = []): GameInfo => {
   const rawCover = grids[0]?.url
-  const cover =
-    typeof rawCover === 'string' ? rawCover : rawCover?.toString() || ''
+  const cover = typeof rawCover === 'string' ? rawCover : rawCover?.toString() || ''
   const releaseDate =
     typeof game?.release_date === 'number' && game.release_date > 0
       ? new Date(game.release_date * 1000).toISOString().slice(0, 10)
@@ -76,11 +75,7 @@ const toSGDBGameInfo = (game?: SGDBGame, grids: SGDBImage[] = []): GameInfo => {
   }
 }
 
-const collectDirectoriesByLevel = async (
-  root: string,
-  level: number,
-  excludes: string[],
-) => {
+const collectDirectoriesByLevel = async (root: string, level: number, excludes: string[]) => {
   const targetDepth = level + 1
   const queue: Array<{ dir: string; depth: number }> = [
     {
@@ -135,8 +130,7 @@ const collectDirectoriesByExe = async (root: string, excludes: string[]) => {
     const entries = await fs.readdir(current, { withFileTypes: true })
 
     const containsExe = entries.some(
-      (entry) =>
-        entry.isFile() && path.extname(entry.name).toLowerCase() === '.exe',
+      (entry) => entry.isFile() && path.extname(entry.name).toLowerCase() === '.exe',
     )
 
     if (containsExe) {
@@ -203,20 +197,14 @@ const fetchGameInfoByProvider = async (provider: string, id: string) => {
   if (provider === 'steamgriddb') {
     const gameId = Number(id)
     const game = (await SGDBClient.getGameById(gameId)) as SGDBGame
-    const grids = (await SGDBClient.getGridsById(
-      gameId,
-    )) as unknown as SGDBImage[]
+    const grids = (await SGDBClient.getGridsById(gameId)) as unknown as SGDBImage[]
     return toSGDBGameInfo(game, grids)
   }
 
   return null
 }
 
-const saveGameInfo = async (
-  gameInfo: GameInfo,
-  provider?: string,
-  externalId?: string,
-) => {
+const saveGameInfo = async (gameInfo: GameInfo, provider?: string, externalId?: string) => {
   const uniqueName = (gameInfo.nameCn || gameInfo.name || '').trim()
   if (!uniqueName) {
     return false
@@ -295,11 +283,7 @@ const saveGameInfo = async (
         externalId: normalizedExternalId,
       })
       .onConflictDoNothing({
-        target: [
-          GameIdMapTable.gameId,
-          GameIdMapTable.provider,
-          GameIdMapTable.externalId,
-        ],
+        target: [GameIdMapTable.gameId, GameIdMapTable.provider, GameIdMapTable.externalId],
       })
   }
 
@@ -319,10 +303,7 @@ const saveGameInfo = async (
         url,
       }
     })
-    .filter(
-      (item): item is { gameId: number; name: string; url: string } =>
-        item !== null,
-    )
+    .filter((item): item is { gameId: number; name: string; url: string } => item !== null)
 
   if (websites.length > 0) {
     await db.insert(relateWebsiteTable).values(websites)
@@ -331,10 +312,7 @@ const saveGameInfo = async (
   return true
 }
 
-const startScan = async (
-  _req: NextRequest,
-  context: { params: Promise<{ id: string }> },
-) => {
+const startScan = async (_req: NextRequest, context: { params: Promise<{ id: string }> }) => {
   try {
     const { id } = await context.params
     const scannerId = Number(id)
@@ -405,16 +383,9 @@ const startScan = async (
         const matchedId = await searchByProvider(scanner.provider, name)
         if (matchedId) {
           matchedCount += 1
-          const gameInfo = await fetchGameInfoByProvider(
-            scanner.provider,
-            matchedId,
-          )
+          const gameInfo = await fetchGameInfoByProvider(scanner.provider, matchedId)
           if (gameInfo) {
-            const inserted = await saveGameInfo(
-              gameInfo,
-              scanner.provider,
-              matchedId,
-            )
+            const inserted = await saveGameInfo(gameInfo, scanner.provider, matchedId)
             if (inserted) {
               addedCount += 1
             }
@@ -434,10 +405,7 @@ const startScan = async (
       const progress =
         uniqueCandidates.length === 0
           ? 100
-          : Math.min(
-              100,
-              Math.floor((processed / uniqueCandidates.length) * 100),
-            )
+          : Math.min(100, Math.floor((processed / uniqueCandidates.length) * 100))
 
       await db
         .update(ScannerTable)

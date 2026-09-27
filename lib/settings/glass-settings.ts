@@ -11,8 +11,7 @@ export const DEFAULT_GLASS_SETTINGS: GlassSettings = {
   opacity: 24,
 }
 
-const clamp = (value: number, min: number, max: number) =>
-  Math.min(max, Math.max(min, value))
+const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value))
 
 export function normalizeGlassSettings(
   input: Partial<GlassSettings> | GlassSettings,

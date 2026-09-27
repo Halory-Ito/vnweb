@@ -105,9 +105,7 @@ export function GlassSection() {
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <span className="text-sm font-medium">模糊度</span>
-          <span className="text-muted-foreground text-sm">
-            {settings.blur}px
-          </span>
+          <span className="text-muted-foreground text-sm">{settings.blur}px</span>
         </div>
         <Slider
           min={0}
@@ -121,9 +119,7 @@ export function GlassSection() {
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <span className="text-sm font-medium">透明度</span>
-          <span className="text-muted-foreground text-sm">
-            {settings.opacity}%
-          </span>
+          <span className="text-muted-foreground text-sm">{settings.opacity}%</span>
         </div>
         <Slider
           min={0}

@@ -15,9 +15,7 @@ export const DEFAULT_CHART_SETTINGS: ChartSettings = {
 // 从 API 读取图表设置
 export async function readChartSettings(): Promise<ChartSettings> {
   try {
-    const response = await api.get<{ data: ChartSettings }>(
-      '/settings/appearance/chart',
-    )
+    const response = await api.get<{ data: ChartSettings }>('/settings/appearance/chart')
     return response.data.data
   } catch {
     return DEFAULT_CHART_SETTINGS
@@ -25,9 +23,7 @@ export async function readChartSettings(): Promise<ChartSettings> {
 }
 
 // 通过 API 写入图表设置
-export async function writeChartSettings(
-  settings: ChartSettings,
-): Promise<void> {
+export async function writeChartSettings(settings: ChartSettings): Promise<void> {
   await api.post('/settings/appearance/chart', settings)
 }
 

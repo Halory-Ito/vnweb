@@ -2,6 +2,7 @@
 
 import {
   BoxIcon,
+  Gamepad2Icon,
   HomeIcon,
   TextQuoteIcon,
   MusicIcon,
@@ -35,7 +36,8 @@ type SidebarItem = {
 }
 
 const contentItems: SidebarItem[] = [
-  { title: '主页', href: '/game', icon: HomeIcon },
+  { title: '主页', href: '/', icon: HomeIcon },
+  { title: '游戏库', href: '/game', icon: Gamepad2Icon },
   { title: '记录', href: '/record', icon: BoxIcon },
   { title: '扫描', href: '/scan', icon: ScanIcon },
   { title: '攻略', href: '/guide', icon: MapIcon },
@@ -113,7 +115,7 @@ export default function AppSideBar() {
     >
       <SidebarHeader className="items-center pt-4">
         <Link
-          href="/game"
+          href="/"
           className="flex h-10 w-10 items-center justify-center rounded-md font-semibold"
           aria-label="VNWeb Logo"
         >
@@ -121,6 +123,7 @@ export default function AppSideBar() {
             src="/LOGO.png"
             alt="VNWeb Logo"
             width={36}
+            loading="eager"
             height={36}
             className="object-contain"
           />

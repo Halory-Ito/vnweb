@@ -15,18 +15,18 @@ import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts'
 
 import { fetchOverviewStatsApi } from './query-options'
 import {
-  ChartStatsCard,
-  ChartStatsCardProps,
-  RankStatsCard,
-  SimpleStatsCard,
-} from '@/components/record/stats-card'
-import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
   type ChartConfig,
 } from '@/components/ui/chart'
 import { useChartSettings } from '@/features/appearance/hooks/use-chart-settings'
+import { RankStatsCard } from '@/features/record/components/rank-stats-card'
+import {
+  ChartStatsCard,
+  ChartStatsCardProps,
+  SimpleStatsCard,
+} from '@/features/record/components/stats-card'
 
 export default function RecordOverview() {
   const isClient = typeof window !== 'undefined'

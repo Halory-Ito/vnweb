@@ -11,10 +11,7 @@ export function getRunningScanController(scannerId: number) {
   return runningScans.get(scannerId)
 }
 
-export function setRunningScanController(
-  scannerId: number,
-  controller: AbortController,
-) {
+export function setRunningScanController(scannerId: number, controller: AbortController) {
   runningScans.set(scannerId, controller)
 }
 
@@ -22,10 +19,7 @@ export function removeRunningScanController(scannerId: number) {
   runningScans.delete(scannerId)
 }
 
-export async function POST(
-  _req: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function POST(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params
     const scannerId = Number(id)
@@ -60,9 +54,6 @@ export async function POST(
     })
   } catch (error) {
     console.error('Stop scan failed:', error)
-    return NextResponse.json(
-      { error: (error as Error).message || '中断扫描失败' },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: (error as Error).message || '中断扫描失败' }, { status: 500 })
   }
 }

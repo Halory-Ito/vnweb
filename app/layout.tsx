@@ -14,7 +14,6 @@ import TanStackProvider from '@/components/providers/tanstack-provider'
 import { SidebarProvider } from '@/components/ui/sidebar'
 import { Toaster } from '@/components/ui/sonner'
 import { TooltipProvider } from '@/components/ui/tooltip'
-import { LXGWWenKai } from '@/fonts'
 
 export const metadata: Metadata = {
   // %s 会被子页面的 title 替换
@@ -31,7 +30,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="zh" className={LXGWWenKai.className} suppressHydrationWarning>
+    <html lang="zh" suppressHydrationWarning>
       <body>
         <TanStackProvider>
           <JotaiProvider>

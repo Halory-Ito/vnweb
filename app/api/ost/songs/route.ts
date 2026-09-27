@@ -9,10 +9,7 @@ export async function GET(request: NextRequest) {
     const ostId = request.nextUrl.searchParams.get('ostId')
 
     if (!ostId) {
-      return NextResponse.json(
-        { error: 'Missing ostId parameter' },
-        { status: 400 },
-      )
+      return NextResponse.json({ error: 'Missing ostId parameter' }, { status: 400 })
     }
 
     const parsedOstId = Number(ostId)
@@ -44,31 +41,17 @@ export async function GET(request: NextRequest) {
     })
   } catch (error) {
     console.error('Get ost songs failed:', error)
-    return NextResponse.json(
-      { error: 'Failed to get ost songs' },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: 'Failed to get ost songs' }, { status: 500 })
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const {
-      gameId,
-      ostId,
-      name,
-      url,
-      mediaType = '',
-      lyricsText = '',
-      lyricsPath = '',
-    } = body
+    const { gameId, ostId, name, url, mediaType = '', lyricsText = '', lyricsPath = '' } = body
 
     if (!gameId || !ostId || !name || !url) {
-      return NextResponse.json(
-        { error: 'Missing required fields' },
-        { status: 400 },
-      )
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
 
     const result = await db
@@ -87,9 +70,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ data: { item: result[0] } })
   } catch (error) {
     console.error('Create ost song failed:', error)
-    return NextResponse.json(
-      { error: 'Failed to create ost song' },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: 'Failed to create ost song' }, { status: 500 })
   }
 }

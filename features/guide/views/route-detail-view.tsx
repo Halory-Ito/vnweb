@@ -12,8 +12,8 @@ import { EditRoute } from '@/features/guide/components/edit-route'
 import { EndingCard } from '@/features/guide/components/ending-card'
 import { GuideDetailHeader } from '@/features/guide/components/guide-detail-header'
 import { ResetAllButton } from '@/features/guide/components/reset-all-botton'
-import { getRouteApi, getEndingsApi, updateGuideProgressApi } from '@/features/guide/guide-api'
 import { containerVariants, itemVariants, cardVariants } from '@/features/guide/data/motion'
+import { getRouteApi, getEndingsApi, updateGuideProgressApi } from '@/features/guide/guide-api'
 
 interface RouteDetailViewProps {
   gameId: number

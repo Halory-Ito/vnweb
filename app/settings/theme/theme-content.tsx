@@ -41,10 +41,7 @@ export default function ThemeContent() {
     void loadThemeCss()
   }, [])
 
-  const hasChanges = useMemo(
-    () => content !== savedContent,
-    [content, savedContent],
-  )
+  const hasChanges = useMemo(() => content !== savedContent, [content, savedContent])
 
   const handleSave = async () => {
     setIsSaving(true)
@@ -81,10 +78,7 @@ export default function ThemeContent() {
       />
 
       <div className="flex flex-wrap items-center gap-2">
-        <Button
-          onClick={() => void handleSave()}
-          disabled={isLoading || isSaving || !hasChanges}
-        >
+        <Button onClick={() => void handleSave()} disabled={isLoading || isSaving || !hasChanges}>
           {isSaving ? '保存中...' : '保存'}
         </Button>
         <Button

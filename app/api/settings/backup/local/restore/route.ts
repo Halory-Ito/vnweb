@@ -129,9 +129,6 @@ export async function POST(req: NextRequest) {
     })
   } catch (error) {
     console.error('Restore local backup failed:', error)
-    return NextResponse.json(
-      { error: (error as Error).message || '恢复备份失败' },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: (error as Error).message || '恢复备份失败' }, { status: 500 })
   }
 }

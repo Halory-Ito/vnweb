@@ -13,10 +13,7 @@ export async function GET(request: NextRequest) {
     const level = searchParams.get('level') || 'exhigh'
 
     if (!id) {
-      return NextResponse.json(
-        { error: 'Missing id parameter' },
-        { status: 400 },
-      )
+      return NextResponse.json({ error: 'Missing id parameter' }, { status: 400 })
     }
 
     // 解析多个 ID（用逗号分隔）
@@ -75,9 +72,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ data: urls })
   } catch (error) {
     console.error('Get song url failed:', error)
-    return NextResponse.json(
-      { error: 'Failed to get song url' },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: 'Failed to get song url' }, { status: 500 })
   }
 }

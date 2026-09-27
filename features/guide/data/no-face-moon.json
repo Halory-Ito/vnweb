@@ -1,1037 +1,1032 @@
 {
-    "0": {
-        "uid": "67c05353c30f2660f590abf2",
-        "vndb_id": "v50076",
-        "seoName": "",
-        "cover": "https://t.vndb.org/cv/45/84845.jpg",
-        "romaji": "kao-no-nai-tsuki-matsuyoi-no-soutsubaki",
-        "name": {
-            "zh-cn": "无颜之月-待宵的双椿-",
-            "en-us": "",
-            "ja-jp": "顔のない月-待宵の双椿-"
-        },
-        "developer": "ROOT",
-        "releaseDate": "2025-09-26",
-        "tags": [
-            "傲娇",
-            "馆",
-            "猎奇",
-            "NTR"
-        ],
-        "level": 2,
-        "tips": [
-            "流程图有重大剧透，不想被剧透的话就不要点击流程图功能",
-            "日记和角色介绍经常会变化，可以随时打开查看",
-            "游戏大致可以划分为【沙也加路线】、【知美&衣绪路线】、【泽口&由利子路线】、【铃菜路线】四个大的分支路线，每个分支路线下面还有小的分支路线和不同结局，全部完成后可以在标题画面开启【真结局路线】",
-            "每条线披露的信息量不同，可能出现一条线剧透另一条线的情况，所以建议按照下面的顺序进行攻略",
-            "善用Q-R功能回到上一个选项可以方便收集"
-        ],
-        "show": true,
-        "nsfw_content": false,
-        "views": 0,
-        "routes": [
-            {
-                "id": "route_1759916572122",
-                "name": "沙也加",
-                "endings": [
-                    {
-                        "id": "ending_1759922505574",
-                        "name": "没有终结的地下牢",
-                        "type": "normal",
-                        "steps": [
-                            {
-                                "id": "step_1759922507558",
-                                "type": "choice",
-                                "content": "【把所有地方都逛完 】【去见沙也加】",
-                                "group": "8/8 ",
-                                "subfix": "二周目开始可以跳过序章"
-                            },
-                            {
-                                "id": "step_1759922551573",
-                                "type": "choice",
-                                "content": "【去见沙也加】【真是个可爱的家伙】",
-                                "group": "8/10"
-                            },
-                            {
-                                "id": "step_1759922551754",
-                                "type": "choice",
-                                "content": "【去见沙也加】【去见沙也加】【有烟吗】【试着聊仪式的话题】",
-                                "group": "8/11"
-                            },
-                            {
-                                "id": "step_1759922551917",
-                                "type": "choice",
-                                "content": "【去见沙也加】【去见沙也加】",
-                                "group": "8/12"
-                            },
-                            {
-                                "id": "step_1759922552061",
-                                "type": "choice",
-                                "content": "【去见沙也加】【不去】",
-                                "group": "8/13"
-                            },
-                            {
-                                "id": "step_1759922552242",
-                                "type": "choice",
-                                "content": "【去见沙也加】【嘴对嘴送】【去见沙也加】",
-                                "group": "8/14 "
-                            },
-                            {
-                                "id": "step_1759922552511",
-                                "type": "choice",
-                                "content": "【去见沙也加】【不用勉强每天都做】【去见沙也加】",
-                                "group": "8/15"
-                            },
-                            {
-                                "id": "step_1759922552682",
-                                "type": "choice",
-                                "content": "【去见沙也加】",
-                                "group": "8/16"
-                            },
-                            {
-                                "id": "step_1759922552852",
-                                "type": "save",
-                                "content": "SAVE 1"
-                            },
-                            {
-                                "id": "step_1759922553288",
-                                "type": "choice",
-                                "content": "【试着利用一下家主的权力】"
-                            },
-                            {
-                                "id": "step_1759922880593",
-                                "type": "choice",
-                                "content": "每天两次【去见沙也加】",
-                                "group": "8/17-8/20"
-                            }
-                        ]
-                    },
-                    {
-                        "id": "ending_1759922908413",
-                        "name": "录像的内容",
-                        "type": "normal",
-                        "steps": [
-                            {
-                                "id": "step_1759922922915",
-                                "type": "load",
-                                "content": "LOAD 1"
-                            },
-                            {
-                                "id": "step_1759922925155",
-                                "type": "choice",
-                                "content": "【身体不好不要过于勉强自己】【说出可疑男子的事情】",
-                                "group": "8/16"
-                            },
-                            {
-                                "id": "step_1759922925315",
-                                "type": "choice",
-                                "content": "每天两次【去见沙也加】【暂且撤退】",
-                                "group": "8/17-8/20"
-                            },
-                            {
-                                "id": "step_1759922931180",
-                                "type": "note",
-                                "content": "注意：选【冲进去帮她】会进入提前透露过多信息的bad ending，且按照本攻略后面会有更合适的时机看到这段剧情，因此在这里不推荐"
-                            },
-                            {
-                                "id": "step_1759922932587",
-                                "type": "save",
-                                "content": "SAVE 2"
-                            },
-                            {
-                                "id": "step_1759922937432",
-                                "type": "choice",
-                                "content": "【让她服侍】【拥抱沙也加】",
-                                "group": "8/21 "
-                            },
-                            {
-                                "id": "step_1759922937604",
-                                "type": "choice",
-                                "content": "【让五平一个人去】"
-                            },
-                            {
-                                "id": "step_1759923100418",
-                                "type": "note",
-                                "content": "（注意：同上，不推荐在这里选择【一起去】）"
-                            }
-                        ]
-                    },
-                    {
-                        "id": "ending_1759923114114",
-                        "name": "幸存者的幸福",
-                        "type": "normal",
-                        "steps": [
-                            {
-                                "id": "step_1759923132347",
-                                "type": "load",
-                                "content": "LOAD 2"
-                            },
-                            {
-                                "id": "step_1759923134921",
-                                "type": "choice",
-                                "content": "【让她住手】【问她身体怎么样】",
-                                "group": "8/21"
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "id": "route_1760011020270",
-                "name": "知美&衣绪",
-                "endings": [
-                    {
-                        "id": "ending_1760013851971",
-                        "name": "最后的处方",
-                        "type": "normal",
-                        "steps": [
-                            {
-                                "id": "step_1760013858738",
-                                "type": "choice",
-                                "content": "从头开始【跳过序章】"
-                            },
-                            {
-                                "id": "step_1760013862249",
-                                "type": "choice",
-                                "content": "【去见知美】",
-                                "group": "8/10"
-                            },
-                            {
-                                "id": "step_1760013862429",
-                                "type": "choice",
-                                "content": "【去见知美】【去见知美】【试着聊仪式的话题】",
-                                "group": "8/11 "
-                            },
-                            {
-                                "id": "step_1760013862603",
-                                "type": "choice",
-                                "content": "【去见知美】【对知美认真工作的样子感到敬佩】【去见知美】",
-                                "group": "8/12 "
-                            },
-                            {
-                                "id": "step_1760013862748",
-                                "type": "choice",
-                                "content": "【去见知美】【不去】",
-                                "group": "8/13 "
-                            },
-                            {
-                                "id": "step_1760013862991",
-                                "type": "choice",
-                                "content": "【去见知美】【去见知美】",
-                                "group": "8/14 "
-                            },
-                            {
-                                "id": "step_1760013863313",
-                                "type": "save",
-                                "content": "SAVE 3"
-                            },
-                            {
-                                "id": "step_1760013863493",
-                                "type": "choice",
-                                "content": "【去见知美】【去见知美】【嗯…差不多…】",
-                                "group": "8/15 "
-                            },
-                            {
-                                "id": "step_1760013863662",
-                                "type": "choice",
-                                "content": "【去见知美】【去见知美】",
-                                "group": "8/16 "
-                            },
-                            {
-                                "id": "step_1760013863835",
-                                "type": "choice",
-                                "content": "【再等等看】【至少告诉我原因】【去见知美】【陪我喝酒】",
-                                "group": "8/17 "
-                            },
-                            {
-                                "id": "step_1760013864022",
-                                "type": "choice",
-                                "content": "【去见知美】【使用花洒】【不要再隐瞒了】",
-                                "group": "8/18 "
-                            },
-                            {
-                                "id": "step_1760013864183",
-                                "type": "choice",
-                                "content": "【使用】",
-                                "group": "8/19"
-                            },
-                            {
-                                "id": "step_1760013865583",
-                                "type": "choice",
-                                "content": "【去见知美】",
-                                "group": "8/20"
-                            },
-                            {
-                                "id": "step_1760013865761",
-                                "type": "choice",
-                                "content": "【稍微吓吓她】",
-                                "group": "8/21"
-                            },
-                            {
-                                "id": "step_1760014112838",
-                                "type": "save",
-                                "content": "SAVE 4"
-                            },
-                            {
-                                "id": "step_1760014117060",
-                                "type": "choice",
-                                "content": "【散步】【散步】【散步】"
-                            }
-                        ]
-                    },
-                    {
-                        "id": "ending_1760016000140",
-                        "name": "椿馆的袭击",
-                        "type": "normal",
-                        "steps": [
-                            {
-                                "id": "step_1760016007458",
-                                "type": "load",
-                                "content": "LOAD 4"
-                            },
-                            {
-                                "id": "step_1760016010700",
-                                "type": "choice",
-                                "content": "【去见知美】"
-                            },
-                            {
-                                "id": "step_1760016010867",
-                                "type": "choice",
-                                "content": "【去见知美】【呼叫知美】【拜托知美】"
-                            },
-                            {
-                                "id": "step_1760016011401",
-                                "type": "choice",
-                                "content": "【去见知美】【呼叫知美】【今天好好休息吧】"
-                            }
-                        ]
-                    },
-                    {
-                        "id": "ending_1760016136616",
-                        "name": "残缺者的幸福",
-                        "type": "normal",
-                        "steps": [
-                            {
-                                "id": "step_1760016159026",
-                                "type": "load",
-                                "content": "LOAD 4"
-                            },
-                            {
-                                "id": "step_1760016162169",
-                                "type": "choice",
-                                "content": "【去见知美】"
-                            },
-                            {
-                                "id": "step_1760016162541",
-                                "type": "choice",
-                                "content": "【去见知美】【去地下牢】"
-                            },
-                            {
-                                "id": "step_1760016162962",
-                                "type": "choice",
-                                "content": "【去见知美】【去地下牢】"
-                            }
-                        ]
-                    },
-                    {
-                        "id": "ending_1760016198325",
-                        "name": "在地下牢的结局",
-                        "type": "normal",
-                        "steps": [
-                            {
-                                "id": "step_1760016345452",
-                                "type": "load",
-                                "content": "LOAD 3"
-                            },
-                            {
-                                "id": "step_1760016352771",
-                                "type": "choice",
-                                "content": "【去见衣绪】【去见知美】【嗯…差不多…】",
-                                "group": "8/15"
-                            },
-                            {
-                                "id": "step_1760016352971",
-                                "type": "choice",
-                                "content": "【去见知美】【去见知美】",
-                                "group": "8/16"
-                            },
-                            {
-                                "id": "step_1760016353136",
-                                "type": "choice",
-                                "content": "【稍微去看看情况】【去见知美】【陪我喝酒】",
-                                "group": "8/17"
-                            },
-                            {
-                                "id": "step_1760016353293",
-                                "type": "choice",
-                                "content": "【去见知美】【插入】【看着我的眼睛再说一遍】",
-                                "group": "8/18"
-                            },
-                            {
-                                "id": "step_1760016353567",
-                                "type": "choice",
-                                "content": "【去见知美】【想让你陪陪我】",
-                                "group": "8/20"
-                            },
-                            {
-                                "id": "step_1760016353727",
-                                "type": "choice",
-                                "content": "【去见知美】【看知美摇晃的欧派】",
-                                "group": "8/21"
-                            },
-                            {
-                                "id": "step_1760016355859",
-                                "type": "save",
-                                "content": "SAVE 5"
-                            },
-                            {
-                                "id": "step_1760016356018",
-                                "type": "choice",
-                                "content": "【散步】【散步】"
-                            }
-                        ]
-                    },
-                    {
-                        "id": "ending_1760017067646",
-                        "name": "惨剧",
-                        "type": "normal",
-                        "steps": [
-                            {
-                                "id": "step_1760017080453",
-                                "type": "load",
-                                "content": "LOAD 5"
-                            },
-                            {
-                                "id": "step_1760017428877",
-                                "type": "choice",
-                                "content": "【去见知美】【让他们69】"
-                            },
-                            {
-                                "id": "step_1760017429076",
-                                "type": "choice",
-                                "content": "【去见知美】【和知美】【仪式之后的话…】"
-                            }
-                        ]
-                    },
-                    {
-                        "id": "ending_1760017459756",
-                        "name": "从椿馆逃离",
-                        "type": "good",
-                        "steps": [
-                            {
-                                "id": "step_1760017485967",
-                                "type": "choice",
-                                "content": "【去见知美】【做】"
-                            },
-                            {
-                                "id": "step_1760017486248",
-                                "type": "choice",
-                                "content": "【去见知美】【叫上衣绪】"
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "id": "route_1760017523721",
-                "name": "泽口&由利子",
-                "endings": [
-                    {
-                        "id": "ending_1760017568056",
-                        "name": "密探者的幸福",
-                        "type": "good",
-                        "steps": [
-                            {
-                                "id": "step_1760017574981",
-                                "type": "choice",
-                                "content": "从头开始【跳过序章】"
-                            },
-                            {
-                                "id": "step_1760017575219",
-                                "type": "choice",
-                                "content": "【散步】",
-                                "group": "8/10"
-                            },
-                            {
-                                "id": "step_1760017575838",
-                                "type": "choice",
-                                "content": "【散步】【散步】【试着聊初次见面时的话题】",
-                                "group": "8/11"
-                            },
-                            {
-                                "id": "step_1760017575997",
-                                "type": "choice",
-                                "content": "【散步】【散步】",
-                                "group": "8/12"
-                            },
-                            {
-                                "id": "step_1760017576137",
-                                "type": "choice",
-                                "content": "【散步】",
-                                "group": "8/13 "
-                            },
-                            {
-                                "id": "step_1760017576274",
-                                "type": "save",
-                                "content": "SAVE 6"
-                            },
-                            {
-                                "id": "step_1760017576414",
-                                "type": "choice",
-                                "content": "【不去】"
-                            },
-                            {
-                                "id": "step_1760017576570",
-                                "type": "choice",
-                                "content": "【散步】【散步】",
-                                "group": "8/14 "
-                            },
-                            {
-                                "id": "step_1760018496480",
-                                "type": "choice",
-                                "content": "【散步】【散步】",
-                                "group": "8/15"
-                            },
-                            {
-                                "id": "step_1760018501055",
-                                "type": "save",
-                                "content": "SAVE 7"
-                            },
-                            {
-                                "id": "step_1760018502846",
-                                "type": "choice",
-                                "content": "【散步】【回房间】【散步】",
-                                "group": "8/16"
-                            },
-                            {
-                                "id": "step_1760018504338",
-                                "type": "choice",
-                                "content": "【散步】【散步】",
-                                "group": "8/17"
-                            },
-                            {
-                                "id": "step_1760018504935",
-                                "type": "choice",
-                                "content": "【散步】【散步】",
-                                "group": "8/18 "
-                            },
-                            {
-                                "id": "step_1760018505522",
-                                "type": "choice",
-                                "content": "【散步】",
-                                "group": "8/19"
-                            }
-                        ]
-                    },
-                    {
-                        "id": "ending_1760018611235",
-                        "name": "越轨者的幸福",
-                        "type": "good",
-                        "steps": [
-                            {
-                                "id": "step_1760018623815",
-                                "type": "load",
-                                "content": "LOAD 7"
-                            },
-                            {
-                                "id": "step_1760018644953",
-                                "type": "choice",
-                                "content": "【去见铃菜】【散步】",
-                                "group": "8/16 "
-                            },
-                            {
-                                "id": "step_1760018645108",
-                                "type": "choice",
-                                "content": "【散步】【散步】",
-                                "group": "8/17 "
-                            },
-                            {
-                                "id": "step_1760018645305",
-                                "type": "choice",
-                                "content": "【散步】",
-                                "group": "8/18"
-                            },
-                            {
-                                "id": "step_1760018645575",
-                                "type": "choice",
-                                "content": "【去见由利子】",
-                                "group": "8/19"
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "id": "route_1760097023553",
-                "name": "铃菜",
-                "endings": [
-                    {
-                        "id": "ending_1760097041183",
-                        "name": "“我”的幸福",
-                        "type": "normal",
-                        "steps": [
-                            {
-                                "id": "step_1760097046452",
-                                "type": "choice",
-                                "content": "从头开始【跳过序章】"
-                            },
-                            {
-                                "id": "step_1760097046733",
-                                "type": "choice",
-                                "content": "【去见铃菜】",
-                                "group": "8/10"
-                            },
-                            {
-                                "id": "step_1760097046902",
-                                "type": "choice",
-                                "content": "【去见铃菜】【去见铃菜】【试着聊仪式的话题】",
-                                "group": "8/11"
-                            },
-                            {
-                                "id": "step_1760097047075",
-                                "type": "choice",
-                                "content": "【去见铃菜】",
-                                "group": "8/12"
-                            },
-                            {
-                                "id": "step_1760097047214",
-                                "type": "save",
-                                "content": "SAVE 8"
-                            },
-                            {
-                                "id": "step_1760097047383",
-                                "type": "choice",
-                                "content": "【去见铃菜】"
-                            },
-                            {
-                                "id": "step_1760097158419",
-                                "type": "choice",
-                                "content": "【去见铃菜】【出去】",
-                                "group": "8/13"
-                            },
-                            {
-                                "id": "step_1760097158578",
-                                "type": "choice",
-                                "content": "【去见铃菜】【麻烦】【去见铃菜】",
-                                "group": "8/14"
-                            },
-                            {
-                                "id": "step_1760097158731",
-                                "type": "choice",
-                                "content": "【去见铃菜】【试着抽抽看？】【去见铃菜】",
-                                "group": "8/15"
-                            },
-                            {
-                                "id": "step_1760097158988",
-                                "type": "save",
-                                "content": "SAVE 9"
-                            },
-                            {
-                                "id": "step_1760097159148",
-                                "type": "choice",
-                                "content": "【强行推倒在床上】"
-                            },
-                            {
-                                "id": "step_1760097159308",
-                                "type": "choice",
-                                "content": "【去见铃菜】【改变路线】【去见铃菜】【恶作剧】",
-                                "group": "8/16 "
-                            },
-                            {
-                                "id": "step_1760097159453",
-                                "type": "choice",
-                                "content": "【去见铃菜】【去见铃菜】",
-                                "group": "8/17"
-                            },
-                            {
-                                "id": "step_1760097159615",
-                                "type": "save",
-                                "content": "SAVE 10"
-                            },
-                            {
-                                "id": "step_1760097159759",
-                                "type": "choice",
-                                "content": "【放弃约会的邀请】"
-                            },
-                            {
-                                "id": "step_1760097159925",
-                                "type": "choice",
-                                "content": "【去见铃菜】【去见铃菜】【拜托知美】",
-                                "group": "8/18 "
-                            },
-                            {
-                                "id": "step_1760101602736",
-                                "type": "choice",
-                                "content": "【去见铃菜】【要是酒就好了】【去见铃菜】",
-                                "group": "8/19 "
-                            },
-                            {
-                                "id": "step_1760101602941",
-                                "type": "choice",
-                                "content": "【去见铃菜】【去见铃菜】【别得意忘形笨蛋】",
-                                "group": "8/20 "
-                            },
-                            {
-                                "id": "step_1760101603108",
-                                "type": "choice",
-                                "content": "【强硬地】【打招呼】【去见铃菜】【不打开开关】Q-R 【打开开关】"
-                            },
-                            {
-                                "id": "step_1760101603302",
-                                "type": "choice",
-                                "content": "【去见铃菜】【去见铃菜】【带来了好东西】"
-                            },
-                            {
-                                "id": "step_1760101603463",
-                                "type": "choice",
-                                "content": "【去见铃菜】【给她擦身体】"
-                            }
-                        ]
-                    },
-                    {
-                        "id": "ending_1760101674504",
-                        "name": "异形者的幸福",
-                        "type": "good",
-                        "steps": [
-                            {
-                                "id": "step_1760101720272",
-                                "type": "load",
-                                "content": "LOAD 10"
-                            },
-                            {
-                                "id": "step_1760101720433",
-                                "type": "choice",
-                                "content": "【继续约会的邀请】【坚持到最后吧】"
-                            },
-                            {
-                                "id": "step_1760101720597",
-                                "type": "choice",
-                                "content": "【去见铃菜】【去见铃菜】【我去帮你拿】【终于开始主动邀请我了吗】",
-                                "group": "8/18"
-                            },
-                            {
-                                "id": "step_1760101720764",
-                                "type": "choice",
-                                "content": "【去见铃菜】【要是酒就好了】【去见铃菜】",
-                                "group": "8/19 "
-                            },
-                            {
-                                "id": "step_1760101720933",
-                                "type": "choice",
-                                "content": "【去见铃菜】【去见铃菜】",
-                                "group": "8/20"
-                            },
-                            {
-                                "id": "step_1760101721107",
-                                "type": "choice",
-                                "content": "【温柔地】【去见铃菜】【只要你愿意的话…我…】Q-R 【回房间吧…】"
-                            },
-                            {
-                                "id": "step_1760101721302",
-                                "type": "choice",
-                                "content": "【是撒谎吧】 Q-R 【但我可不是没事】【去见铃菜】"
-                            },
-                            {
-                                "id": "step_1760101721561",
-                                "type": "choice",
-                                "content": "【去见铃菜】【能给我口吗】"
-                            },
-                            {
-                                "id": "step_1760101723076",
-                                "type": "choice",
-                                "content": "【去见铃菜】【让她休息】"
-                            }
-                        ]
-                    },
-                    {
-                        "id": "ending_1760101674644",
-                        "name": "梦一般的幸福",
-                        "type": "good",
-                        "steps": [
-                            {
-                                "id": "step_1760101797624",
-                                "type": "load",
-                                "content": "LOAD 9"
-                            },
-                            {
-                                "id": "step_1760101819091",
-                                "type": "choice",
-                                "content": "【撤退】"
-                            },
-                            {
-                                "id": "step_1760101820871",
-                                "type": "choice",
-                                "content": "【去见铃菜】【继续学习】【去见铃菜】【在耳边低语】",
-                                "group": "8/16 "
-                            },
-                            {
-                                "id": "step_1760101821139",
-                                "type": "choice",
-                                "content": "【去见铃菜】【去见铃菜】【继续约会的邀请】【那就放弃了吧】",
-                                "group": "8/17 "
-                            },
-                            {
-                                "id": "step_1760101823301",
-                                "type": "choice",
-                                "content": "【去见铃菜】【去见铃菜】【我去帮你拿】【也有可爱的地方嘛】",
-                                "group": "8/18"
-                            },
-                            {
-                                "id": "step_1760101823762",
-                                "type": "choice",
-                                "content": "【去见铃菜】【默默地喝】【去见铃菜】",
-                                "group": "8/19"
-                            },
-                            {
-                                "id": "step_1760101824208",
-                                "type": "choice",
-                                "content": "【去见铃菜】【去见铃菜】",
-                                "group": "8/20 "
-                            },
-                            {
-                                "id": "step_1760101824633",
-                                "type": "choice",
-                                "content": "【味道非常好闻】",
-                                "group": "8/21"
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "id": "route_1760101901144",
-                "name": "真结局",
-                "endings": [
-                    {
-                        "id": "ending_1760101909752",
-                        "name": "不可触碰之人",
-                        "type": "normal",
-                        "steps": [
-                            {
-                                "id": "step_1760101926727",
-                                "type": "choice",
-                                "content": "在标题画面选择【从真结局开始】"
-                            },
-                            {
-                                "id": "step_1760101927468",
-                                "type": "note",
-                                "content": "（这条路线会包括序章从头开始剧情，但加入了全新内容。新版为了保证能进入真结局，锁定了选项，跟着走就可以了。）"
-                            },
-                            {
-                                "id": "step_1760101927634",
-                                "type": "choice",
-                                "content": "【把所有地方都逛完 】【去见铃菜】",
-                                "group": "8/8"
-                            },
-                            {
-                                "id": "step_1760101927792",
-                                "type": "choice",
-                                "content": "【去见铃菜】",
-                                "group": "8/10 "
-                            },
-                            {
-                                "id": "step_1760101927938",
-                                "type": "choice",
-                                "content": "【去见铃菜】【去见铃菜】【试着聊仪式的话题】",
-                                "group": "8/11"
-                            },
-                            {
-                                "id": "step_1760101928099",
-                                "type": "choice",
-                                "content": "【去见铃菜】【去见铃菜】",
-                                "group": "8/12 "
-                            },
-                            {
-                                "id": "step_1760101928286",
-                                "type": "choice",
-                                "content": "【去见铃菜】【出去】",
-                                "group": "8/13"
-                            },
-                            {
-                                "id": "step_1760101928442",
-                                "type": "choice",
-                                "content": "【去见铃菜】【体面…吗】【去见铃菜】",
-                                "group": "8/14"
-                            },
-                            {
-                                "id": "step_1760101928623",
-                                "type": "choice",
-                                "content": "【去见铃菜】【心情会平静下来】【去见铃菜】【撤退】",
-                                "group": "8/15"
-                            },
-                            {
-                                "id": "step_1760101928796",
-                                "type": "choice",
-                                "content": "【去见铃菜】【继续学习】【去见铃菜】【在耳边低语】",
-                                "group": "8/16"
-                            },
-                            {
-                                "id": "step_1760101928964",
-                                "type": "choice",
-                                "content": "【散步】【散步】",
-                                "group": "8/17"
-                            },
-                            {
-                                "id": "step_1760101929109",
-                                "type": "choice",
-                                "content": "【去见铃菜】【去见铃菜】【继续约会的邀请】【那就放弃了吧】",
-                                "group": "8/18"
-                            },
-                            {
-                                "id": "step_1760102072985",
-                                "type": "choice",
-                                "content": "【散步】【去见铃菜】",
-                                "group": "8/19 "
-                            },
-                            {
-                                "id": "step_1760102073142",
-                                "type": "choice",
-                                "content": "【去见铃菜】【去见铃菜】",
-                                "group": "8/20"
-                            },
-                            {
-                                "id": "step_1760102093570",
-                                "type": "save",
-                                "content": "SAVE 11"
-                            },
-                            {
-                                "id": "step_1760102099007",
-                                "type": "choice",
-                                "content": "【不去】"
-                            }
-                        ],
-                        "requirements": "需要完成沙也加结局 【幸存者的幸福】、知美结局 【残缺者的幸福】、知美&衣绪结局 【从椿馆逃离】、泽口结局 【密探者的幸福】、由利子结局 【越轨者的幸福】、铃菜结局1 【异形者的幸福】、铃菜结局2 【梦一般的幸福】这7结局后才能开启真结局路线"
-                    },
-                    {
-                        "id": "ending_1760102113998",
-                        "name": "开始流动的时间",
-                        "type": "true",
-                        "steps": [
-                            {
-                                "id": "step_1760102119108",
-                                "type": "load",
-                                "content": "LOAD 11"
-                            },
-                            {
-                                "id": "step_1760102129667",
-                                "type": "choice",
-                                "content": "【去】【去别苑】"
-                            }
-                        ]
-                    },
-                    {
-                        "id": "ending_1760102156526",
-                        "name": "【场景回收】",
-                        "type": "normal",
-                        "steps": [
-                            {
-                                "id": "step_1760102167566",
-                                "type": "load",
-                                "content": "LOAD 6"
-                            },
-                            {
-                                "id": "step_1760102172114",
-                                "type": "choice",
-                                "content": "【去】【不出去】"
-                            },
-                            {
-                                "id": "step_1760102172453",
-                                "type": "choice",
-                                "content": "一直【散步】",
-                                "group": "8/14-8/20  "
-                            },
-                            {
-                                "id": "step_1760102173284",
-                                "type": "choice",
-                                "content": "【强硬地】",
-                                "group": "8/21 "
-                            },
-                            {
-                                "id": "step_1760102173824",
-                                "type": "choice",
-                                "content": "【保持沉默】【散步】",
-                                "group": "8/22"
-                            },
-                            {
-                                "id": "step_1760102174410",
-                                "type": "choice",
-                                "content": "【按下开关】【去见知美】【继续与铃菜通话】 Q-R 【决定疼爱知美】",
-                                "group": "8/23 "
-                            },
-                            {
-                                "id": "step_1760102176361",
-                                "type": "load",
-                                "content": "LOAD 8"
-                            },
-                            {
-                                "id": "step_1760102177394",
-                                "type": "choice",
-                                "content": "【去见沙也加】【有烟吗】"
-                            },
-                            {
-                                "id": "step_1760102177559",
-                                "type": "choice",
-                                "content": "【去见铃菜】【不去】",
-                                "group": "8/13"
-                            },
-                            {
-                                "id": "step_1760102177719",
-                                "type": "choice",
-                                "content": "【去见铃菜】【去见铃菜】",
-                                "group": "8/14"
-                            },
-                            {
-                                "id": "step_1760102177881",
-                                "type": "choice",
-                                "content": "【去见铃菜】【试着抽抽看？】【去见铃菜】",
-                                "group": "8/15"
-                            },
-                            {
-                                "id": "step_1760102178056",
-                                "type": "choice",
-                                "content": "【去见铃菜】【夸奖画】【去见铃菜】",
-                                "group": "8/16 "
-                            },
-                            {
-                                "id": "step_1760102178210",
-                                "type": "choice",
-                                "content": "【去见铃菜】【去见铃菜】【继续约会的邀请】【坚持到最后吧】",
-                                "group": "8/17"
-                            },
-                            {
-                                "id": "step_1760102178377",
-                                "type": "choice",
-                                "content": "【去见铃菜】【去见铃菜】",
-                                "group": "8/18"
-                            },
-                            {
-                                "id": "step_1760102178537",
-                                "type": "choice",
-                                "content": "【去见铃菜】【默默地喝】【去见铃菜】",
-                                "group": "8/19 "
-                            },
-                            {
-                                "id": "step_1760102178699",
-                                "type": "choice",
-                                "content": "【去见铃菜】【去见铃菜】【别得意忘形笨蛋】",
-                                "group": "8/20 "
-                            },
-                            {
-                                "id": "step_1760102178860",
-                                "type": "note",
-                                "content": "回收铃菜场景后结束"
-                            },
-                            {
-                                "id": "step_1760102179033",
-                                "type": "note",
-                                "content": "另外，在【场景回想】的最后一页有不同路线的新增场景/后日谈"
-                            }
-                        ]
-                    }
-                ]
-            }
-        ],
-        "updated_at": "2026-07-12T10:35:34.959Z",
-        "created_at": "2025-10-08T08:27:44.700Z"
-    }
+  "0": {
+    "uid": "67c05353c30f2660f590abf2",
+    "vndb_id": "v50076",
+    "seoName": "",
+    "cover": "https://t.vndb.org/cv/45/84845.jpg",
+    "romaji": "kao-no-nai-tsuki-matsuyoi-no-soutsubaki",
+    "name": {
+      "zh-cn": "无颜之月-待宵的双椿-",
+      "en-us": "",
+      "ja-jp": "顔のない月-待宵の双椿-"
+    },
+    "developer": "ROOT",
+    "releaseDate": "2025-09-26",
+    "tags": ["傲娇", "馆", "猎奇", "NTR"],
+    "level": 2,
+    "tips": [
+      "流程图有重大剧透，不想被剧透的话就不要点击流程图功能",
+      "日记和角色介绍经常会变化，可以随时打开查看",
+      "游戏大致可以划分为【沙也加路线】、【知美&衣绪路线】、【泽口&由利子路线】、【铃菜路线】四个大的分支路线，每个分支路线下面还有小的分支路线和不同结局，全部完成后可以在标题画面开启【真结局路线】",
+      "每条线披露的信息量不同，可能出现一条线剧透另一条线的情况，所以建议按照下面的顺序进行攻略",
+      "善用Q-R功能回到上一个选项可以方便收集"
+    ],
+    "show": true,
+    "nsfw_content": false,
+    "views": 0,
+    "routes": [
+      {
+        "id": "route_1759916572122",
+        "name": "沙也加",
+        "endings": [
+          {
+            "id": "ending_1759922505574",
+            "name": "没有终结的地下牢",
+            "type": "normal",
+            "steps": [
+              {
+                "id": "step_1759922507558",
+                "type": "choice",
+                "content": "【把所有地方都逛完 】【去见沙也加】",
+                "group": "8/8 ",
+                "subfix": "二周目开始可以跳过序章"
+              },
+              {
+                "id": "step_1759922551573",
+                "type": "choice",
+                "content": "【去见沙也加】【真是个可爱的家伙】",
+                "group": "8/10"
+              },
+              {
+                "id": "step_1759922551754",
+                "type": "choice",
+                "content": "【去见沙也加】【去见沙也加】【有烟吗】【试着聊仪式的话题】",
+                "group": "8/11"
+              },
+              {
+                "id": "step_1759922551917",
+                "type": "choice",
+                "content": "【去见沙也加】【去见沙也加】",
+                "group": "8/12"
+              },
+              {
+                "id": "step_1759922552061",
+                "type": "choice",
+                "content": "【去见沙也加】【不去】",
+                "group": "8/13"
+              },
+              {
+                "id": "step_1759922552242",
+                "type": "choice",
+                "content": "【去见沙也加】【嘴对嘴送】【去见沙也加】",
+                "group": "8/14 "
+              },
+              {
+                "id": "step_1759922552511",
+                "type": "choice",
+                "content": "【去见沙也加】【不用勉强每天都做】【去见沙也加】",
+                "group": "8/15"
+              },
+              {
+                "id": "step_1759922552682",
+                "type": "choice",
+                "content": "【去见沙也加】",
+                "group": "8/16"
+              },
+              {
+                "id": "step_1759922552852",
+                "type": "save",
+                "content": "SAVE 1"
+              },
+              {
+                "id": "step_1759922553288",
+                "type": "choice",
+                "content": "【试着利用一下家主的权力】"
+              },
+              {
+                "id": "step_1759922880593",
+                "type": "choice",
+                "content": "每天两次【去见沙也加】",
+                "group": "8/17-8/20"
+              }
+            ]
+          },
+          {
+            "id": "ending_1759922908413",
+            "name": "录像的内容",
+            "type": "normal",
+            "steps": [
+              {
+                "id": "step_1759922922915",
+                "type": "load",
+                "content": "LOAD 1"
+              },
+              {
+                "id": "step_1759922925155",
+                "type": "choice",
+                "content": "【身体不好不要过于勉强自己】【说出可疑男子的事情】",
+                "group": "8/16"
+              },
+              {
+                "id": "step_1759922925315",
+                "type": "choice",
+                "content": "每天两次【去见沙也加】【暂且撤退】",
+                "group": "8/17-8/20"
+              },
+              {
+                "id": "step_1759922931180",
+                "type": "note",
+                "content": "注意：选【冲进去帮她】会进入提前透露过多信息的bad ending，且按照本攻略后面会有更合适的时机看到这段剧情，因此在这里不推荐"
+              },
+              {
+                "id": "step_1759922932587",
+                "type": "save",
+                "content": "SAVE 2"
+              },
+              {
+                "id": "step_1759922937432",
+                "type": "choice",
+                "content": "【让她服侍】【拥抱沙也加】",
+                "group": "8/21 "
+              },
+              {
+                "id": "step_1759922937604",
+                "type": "choice",
+                "content": "【让五平一个人去】"
+              },
+              {
+                "id": "step_1759923100418",
+                "type": "note",
+                "content": "（注意：同上，不推荐在这里选择【一起去】）"
+              }
+            ]
+          },
+          {
+            "id": "ending_1759923114114",
+            "name": "幸存者的幸福",
+            "type": "normal",
+            "steps": [
+              {
+                "id": "step_1759923132347",
+                "type": "load",
+                "content": "LOAD 2"
+              },
+              {
+                "id": "step_1759923134921",
+                "type": "choice",
+                "content": "【让她住手】【问她身体怎么样】",
+                "group": "8/21"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "route_1760011020270",
+        "name": "知美&衣绪",
+        "endings": [
+          {
+            "id": "ending_1760013851971",
+            "name": "最后的处方",
+            "type": "normal",
+            "steps": [
+              {
+                "id": "step_1760013858738",
+                "type": "choice",
+                "content": "从头开始【跳过序章】"
+              },
+              {
+                "id": "step_1760013862249",
+                "type": "choice",
+                "content": "【去见知美】",
+                "group": "8/10"
+              },
+              {
+                "id": "step_1760013862429",
+                "type": "choice",
+                "content": "【去见知美】【去见知美】【试着聊仪式的话题】",
+                "group": "8/11 "
+              },
+              {
+                "id": "step_1760013862603",
+                "type": "choice",
+                "content": "【去见知美】【对知美认真工作的样子感到敬佩】【去见知美】",
+                "group": "8/12 "
+              },
+              {
+                "id": "step_1760013862748",
+                "type": "choice",
+                "content": "【去见知美】【不去】",
+                "group": "8/13 "
+              },
+              {
+                "id": "step_1760013862991",
+                "type": "choice",
+                "content": "【去见知美】【去见知美】",
+                "group": "8/14 "
+              },
+              {
+                "id": "step_1760013863313",
+                "type": "save",
+                "content": "SAVE 3"
+              },
+              {
+                "id": "step_1760013863493",
+                "type": "choice",
+                "content": "【去见知美】【去见知美】【嗯…差不多…】",
+                "group": "8/15 "
+              },
+              {
+                "id": "step_1760013863662",
+                "type": "choice",
+                "content": "【去见知美】【去见知美】",
+                "group": "8/16 "
+              },
+              {
+                "id": "step_1760013863835",
+                "type": "choice",
+                "content": "【再等等看】【至少告诉我原因】【去见知美】【陪我喝酒】",
+                "group": "8/17 "
+              },
+              {
+                "id": "step_1760013864022",
+                "type": "choice",
+                "content": "【去见知美】【使用花洒】【不要再隐瞒了】",
+                "group": "8/18 "
+              },
+              {
+                "id": "step_1760013864183",
+                "type": "choice",
+                "content": "【使用】",
+                "group": "8/19"
+              },
+              {
+                "id": "step_1760013865583",
+                "type": "choice",
+                "content": "【去见知美】",
+                "group": "8/20"
+              },
+              {
+                "id": "step_1760013865761",
+                "type": "choice",
+                "content": "【稍微吓吓她】",
+                "group": "8/21"
+              },
+              {
+                "id": "step_1760014112838",
+                "type": "save",
+                "content": "SAVE 4"
+              },
+              {
+                "id": "step_1760014117060",
+                "type": "choice",
+                "content": "【散步】【散步】【散步】"
+              }
+            ]
+          },
+          {
+            "id": "ending_1760016000140",
+            "name": "椿馆的袭击",
+            "type": "normal",
+            "steps": [
+              {
+                "id": "step_1760016007458",
+                "type": "load",
+                "content": "LOAD 4"
+              },
+              {
+                "id": "step_1760016010700",
+                "type": "choice",
+                "content": "【去见知美】"
+              },
+              {
+                "id": "step_1760016010867",
+                "type": "choice",
+                "content": "【去见知美】【呼叫知美】【拜托知美】"
+              },
+              {
+                "id": "step_1760016011401",
+                "type": "choice",
+                "content": "【去见知美】【呼叫知美】【今天好好休息吧】"
+              }
+            ]
+          },
+          {
+            "id": "ending_1760016136616",
+            "name": "残缺者的幸福",
+            "type": "normal",
+            "steps": [
+              {
+                "id": "step_1760016159026",
+                "type": "load",
+                "content": "LOAD 4"
+              },
+              {
+                "id": "step_1760016162169",
+                "type": "choice",
+                "content": "【去见知美】"
+              },
+              {
+                "id": "step_1760016162541",
+                "type": "choice",
+                "content": "【去见知美】【去地下牢】"
+              },
+              {
+                "id": "step_1760016162962",
+                "type": "choice",
+                "content": "【去见知美】【去地下牢】"
+              }
+            ]
+          },
+          {
+            "id": "ending_1760016198325",
+            "name": "在地下牢的结局",
+            "type": "normal",
+            "steps": [
+              {
+                "id": "step_1760016345452",
+                "type": "load",
+                "content": "LOAD 3"
+              },
+              {
+                "id": "step_1760016352771",
+                "type": "choice",
+                "content": "【去见衣绪】【去见知美】【嗯…差不多…】",
+                "group": "8/15"
+              },
+              {
+                "id": "step_1760016352971",
+                "type": "choice",
+                "content": "【去见知美】【去见知美】",
+                "group": "8/16"
+              },
+              {
+                "id": "step_1760016353136",
+                "type": "choice",
+                "content": "【稍微去看看情况】【去见知美】【陪我喝酒】",
+                "group": "8/17"
+              },
+              {
+                "id": "step_1760016353293",
+                "type": "choice",
+                "content": "【去见知美】【插入】【看着我的眼睛再说一遍】",
+                "group": "8/18"
+              },
+              {
+                "id": "step_1760016353567",
+                "type": "choice",
+                "content": "【去见知美】【想让你陪陪我】",
+                "group": "8/20"
+              },
+              {
+                "id": "step_1760016353727",
+                "type": "choice",
+                "content": "【去见知美】【看知美摇晃的欧派】",
+                "group": "8/21"
+              },
+              {
+                "id": "step_1760016355859",
+                "type": "save",
+                "content": "SAVE 5"
+              },
+              {
+                "id": "step_1760016356018",
+                "type": "choice",
+                "content": "【散步】【散步】"
+              }
+            ]
+          },
+          {
+            "id": "ending_1760017067646",
+            "name": "惨剧",
+            "type": "normal",
+            "steps": [
+              {
+                "id": "step_1760017080453",
+                "type": "load",
+                "content": "LOAD 5"
+              },
+              {
+                "id": "step_1760017428877",
+                "type": "choice",
+                "content": "【去见知美】【让他们69】"
+              },
+              {
+                "id": "step_1760017429076",
+                "type": "choice",
+                "content": "【去见知美】【和知美】【仪式之后的话…】"
+              }
+            ]
+          },
+          {
+            "id": "ending_1760017459756",
+            "name": "从椿馆逃离",
+            "type": "good",
+            "steps": [
+              {
+                "id": "step_1760017485967",
+                "type": "choice",
+                "content": "【去见知美】【做】"
+              },
+              {
+                "id": "step_1760017486248",
+                "type": "choice",
+                "content": "【去见知美】【叫上衣绪】"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "route_1760017523721",
+        "name": "泽口&由利子",
+        "endings": [
+          {
+            "id": "ending_1760017568056",
+            "name": "密探者的幸福",
+            "type": "good",
+            "steps": [
+              {
+                "id": "step_1760017574981",
+                "type": "choice",
+                "content": "从头开始【跳过序章】"
+              },
+              {
+                "id": "step_1760017575219",
+                "type": "choice",
+                "content": "【散步】",
+                "group": "8/10"
+              },
+              {
+                "id": "step_1760017575838",
+                "type": "choice",
+                "content": "【散步】【散步】【试着聊初次见面时的话题】",
+                "group": "8/11"
+              },
+              {
+                "id": "step_1760017575997",
+                "type": "choice",
+                "content": "【散步】【散步】",
+                "group": "8/12"
+              },
+              {
+                "id": "step_1760017576137",
+                "type": "choice",
+                "content": "【散步】",
+                "group": "8/13 "
+              },
+              {
+                "id": "step_1760017576274",
+                "type": "save",
+                "content": "SAVE 6"
+              },
+              {
+                "id": "step_1760017576414",
+                "type": "choice",
+                "content": "【不去】"
+              },
+              {
+                "id": "step_1760017576570",
+                "type": "choice",
+                "content": "【散步】【散步】",
+                "group": "8/14 "
+              },
+              {
+                "id": "step_1760018496480",
+                "type": "choice",
+                "content": "【散步】【散步】",
+                "group": "8/15"
+              },
+              {
+                "id": "step_1760018501055",
+                "type": "save",
+                "content": "SAVE 7"
+              },
+              {
+                "id": "step_1760018502846",
+                "type": "choice",
+                "content": "【散步】【回房间】【散步】",
+                "group": "8/16"
+              },
+              {
+                "id": "step_1760018504338",
+                "type": "choice",
+                "content": "【散步】【散步】",
+                "group": "8/17"
+              },
+              {
+                "id": "step_1760018504935",
+                "type": "choice",
+                "content": "【散步】【散步】",
+                "group": "8/18 "
+              },
+              {
+                "id": "step_1760018505522",
+                "type": "choice",
+                "content": "【散步】",
+                "group": "8/19"
+              }
+            ]
+          },
+          {
+            "id": "ending_1760018611235",
+            "name": "越轨者的幸福",
+            "type": "good",
+            "steps": [
+              {
+                "id": "step_1760018623815",
+                "type": "load",
+                "content": "LOAD 7"
+              },
+              {
+                "id": "step_1760018644953",
+                "type": "choice",
+                "content": "【去见铃菜】【散步】",
+                "group": "8/16 "
+              },
+              {
+                "id": "step_1760018645108",
+                "type": "choice",
+                "content": "【散步】【散步】",
+                "group": "8/17 "
+              },
+              {
+                "id": "step_1760018645305",
+                "type": "choice",
+                "content": "【散步】",
+                "group": "8/18"
+              },
+              {
+                "id": "step_1760018645575",
+                "type": "choice",
+                "content": "【去见由利子】",
+                "group": "8/19"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "route_1760097023553",
+        "name": "铃菜",
+        "endings": [
+          {
+            "id": "ending_1760097041183",
+            "name": "“我”的幸福",
+            "type": "normal",
+            "steps": [
+              {
+                "id": "step_1760097046452",
+                "type": "choice",
+                "content": "从头开始【跳过序章】"
+              },
+              {
+                "id": "step_1760097046733",
+                "type": "choice",
+                "content": "【去见铃菜】",
+                "group": "8/10"
+              },
+              {
+                "id": "step_1760097046902",
+                "type": "choice",
+                "content": "【去见铃菜】【去见铃菜】【试着聊仪式的话题】",
+                "group": "8/11"
+              },
+              {
+                "id": "step_1760097047075",
+                "type": "choice",
+                "content": "【去见铃菜】",
+                "group": "8/12"
+              },
+              {
+                "id": "step_1760097047214",
+                "type": "save",
+                "content": "SAVE 8"
+              },
+              {
+                "id": "step_1760097047383",
+                "type": "choice",
+                "content": "【去见铃菜】"
+              },
+              {
+                "id": "step_1760097158419",
+                "type": "choice",
+                "content": "【去见铃菜】【出去】",
+                "group": "8/13"
+              },
+              {
+                "id": "step_1760097158578",
+                "type": "choice",
+                "content": "【去见铃菜】【麻烦】【去见铃菜】",
+                "group": "8/14"
+              },
+              {
+                "id": "step_1760097158731",
+                "type": "choice",
+                "content": "【去见铃菜】【试着抽抽看？】【去见铃菜】",
+                "group": "8/15"
+              },
+              {
+                "id": "step_1760097158988",
+                "type": "save",
+                "content": "SAVE 9"
+              },
+              {
+                "id": "step_1760097159148",
+                "type": "choice",
+                "content": "【强行推倒在床上】"
+              },
+              {
+                "id": "step_1760097159308",
+                "type": "choice",
+                "content": "【去见铃菜】【改变路线】【去见铃菜】【恶作剧】",
+                "group": "8/16 "
+              },
+              {
+                "id": "step_1760097159453",
+                "type": "choice",
+                "content": "【去见铃菜】【去见铃菜】",
+                "group": "8/17"
+              },
+              {
+                "id": "step_1760097159615",
+                "type": "save",
+                "content": "SAVE 10"
+              },
+              {
+                "id": "step_1760097159759",
+                "type": "choice",
+                "content": "【放弃约会的邀请】"
+              },
+              {
+                "id": "step_1760097159925",
+                "type": "choice",
+                "content": "【去见铃菜】【去见铃菜】【拜托知美】",
+                "group": "8/18 "
+              },
+              {
+                "id": "step_1760101602736",
+                "type": "choice",
+                "content": "【去见铃菜】【要是酒就好了】【去见铃菜】",
+                "group": "8/19 "
+              },
+              {
+                "id": "step_1760101602941",
+                "type": "choice",
+                "content": "【去见铃菜】【去见铃菜】【别得意忘形笨蛋】",
+                "group": "8/20 "
+              },
+              {
+                "id": "step_1760101603108",
+                "type": "choice",
+                "content": "【强硬地】【打招呼】【去见铃菜】【不打开开关】Q-R 【打开开关】"
+              },
+              {
+                "id": "step_1760101603302",
+                "type": "choice",
+                "content": "【去见铃菜】【去见铃菜】【带来了好东西】"
+              },
+              {
+                "id": "step_1760101603463",
+                "type": "choice",
+                "content": "【去见铃菜】【给她擦身体】"
+              }
+            ]
+          },
+          {
+            "id": "ending_1760101674504",
+            "name": "异形者的幸福",
+            "type": "good",
+            "steps": [
+              {
+                "id": "step_1760101720272",
+                "type": "load",
+                "content": "LOAD 10"
+              },
+              {
+                "id": "step_1760101720433",
+                "type": "choice",
+                "content": "【继续约会的邀请】【坚持到最后吧】"
+              },
+              {
+                "id": "step_1760101720597",
+                "type": "choice",
+                "content": "【去见铃菜】【去见铃菜】【我去帮你拿】【终于开始主动邀请我了吗】",
+                "group": "8/18"
+              },
+              {
+                "id": "step_1760101720764",
+                "type": "choice",
+                "content": "【去见铃菜】【要是酒就好了】【去见铃菜】",
+                "group": "8/19 "
+              },
+              {
+                "id": "step_1760101720933",
+                "type": "choice",
+                "content": "【去见铃菜】【去见铃菜】",
+                "group": "8/20"
+              },
+              {
+                "id": "step_1760101721107",
+                "type": "choice",
+                "content": "【温柔地】【去见铃菜】【只要你愿意的话…我…】Q-R 【回房间吧…】"
+              },
+              {
+                "id": "step_1760101721302",
+                "type": "choice",
+                "content": "【是撒谎吧】 Q-R 【但我可不是没事】【去见铃菜】"
+              },
+              {
+                "id": "step_1760101721561",
+                "type": "choice",
+                "content": "【去见铃菜】【能给我口吗】"
+              },
+              {
+                "id": "step_1760101723076",
+                "type": "choice",
+                "content": "【去见铃菜】【让她休息】"
+              }
+            ]
+          },
+          {
+            "id": "ending_1760101674644",
+            "name": "梦一般的幸福",
+            "type": "good",
+            "steps": [
+              {
+                "id": "step_1760101797624",
+                "type": "load",
+                "content": "LOAD 9"
+              },
+              {
+                "id": "step_1760101819091",
+                "type": "choice",
+                "content": "【撤退】"
+              },
+              {
+                "id": "step_1760101820871",
+                "type": "choice",
+                "content": "【去见铃菜】【继续学习】【去见铃菜】【在耳边低语】",
+                "group": "8/16 "
+              },
+              {
+                "id": "step_1760101821139",
+                "type": "choice",
+                "content": "【去见铃菜】【去见铃菜】【继续约会的邀请】【那就放弃了吧】",
+                "group": "8/17 "
+              },
+              {
+                "id": "step_1760101823301",
+                "type": "choice",
+                "content": "【去见铃菜】【去见铃菜】【我去帮你拿】【也有可爱的地方嘛】",
+                "group": "8/18"
+              },
+              {
+                "id": "step_1760101823762",
+                "type": "choice",
+                "content": "【去见铃菜】【默默地喝】【去见铃菜】",
+                "group": "8/19"
+              },
+              {
+                "id": "step_1760101824208",
+                "type": "choice",
+                "content": "【去见铃菜】【去见铃菜】",
+                "group": "8/20 "
+              },
+              {
+                "id": "step_1760101824633",
+                "type": "choice",
+                "content": "【味道非常好闻】",
+                "group": "8/21"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "route_1760101901144",
+        "name": "真结局",
+        "endings": [
+          {
+            "id": "ending_1760101909752",
+            "name": "不可触碰之人",
+            "type": "normal",
+            "steps": [
+              {
+                "id": "step_1760101926727",
+                "type": "choice",
+                "content": "在标题画面选择【从真结局开始】"
+              },
+              {
+                "id": "step_1760101927468",
+                "type": "note",
+                "content": "（这条路线会包括序章从头开始剧情，但加入了全新内容。新版为了保证能进入真结局，锁定了选项，跟着走就可以了。）"
+              },
+              {
+                "id": "step_1760101927634",
+                "type": "choice",
+                "content": "【把所有地方都逛完 】【去见铃菜】",
+                "group": "8/8"
+              },
+              {
+                "id": "step_1760101927792",
+                "type": "choice",
+                "content": "【去见铃菜】",
+                "group": "8/10 "
+              },
+              {
+                "id": "step_1760101927938",
+                "type": "choice",
+                "content": "【去见铃菜】【去见铃菜】【试着聊仪式的话题】",
+                "group": "8/11"
+              },
+              {
+                "id": "step_1760101928099",
+                "type": "choice",
+                "content": "【去见铃菜】【去见铃菜】",
+                "group": "8/12 "
+              },
+              {
+                "id": "step_1760101928286",
+                "type": "choice",
+                "content": "【去见铃菜】【出去】",
+                "group": "8/13"
+              },
+              {
+                "id": "step_1760101928442",
+                "type": "choice",
+                "content": "【去见铃菜】【体面…吗】【去见铃菜】",
+                "group": "8/14"
+              },
+              {
+                "id": "step_1760101928623",
+                "type": "choice",
+                "content": "【去见铃菜】【心情会平静下来】【去见铃菜】【撤退】",
+                "group": "8/15"
+              },
+              {
+                "id": "step_1760101928796",
+                "type": "choice",
+                "content": "【去见铃菜】【继续学习】【去见铃菜】【在耳边低语】",
+                "group": "8/16"
+              },
+              {
+                "id": "step_1760101928964",
+                "type": "choice",
+                "content": "【散步】【散步】",
+                "group": "8/17"
+              },
+              {
+                "id": "step_1760101929109",
+                "type": "choice",
+                "content": "【去见铃菜】【去见铃菜】【继续约会的邀请】【那就放弃了吧】",
+                "group": "8/18"
+              },
+              {
+                "id": "step_1760102072985",
+                "type": "choice",
+                "content": "【散步】【去见铃菜】",
+                "group": "8/19 "
+              },
+              {
+                "id": "step_1760102073142",
+                "type": "choice",
+                "content": "【去见铃菜】【去见铃菜】",
+                "group": "8/20"
+              },
+              {
+                "id": "step_1760102093570",
+                "type": "save",
+                "content": "SAVE 11"
+              },
+              {
+                "id": "step_1760102099007",
+                "type": "choice",
+                "content": "【不去】"
+              }
+            ],
+            "requirements": "需要完成沙也加结局 【幸存者的幸福】、知美结局 【残缺者的幸福】、知美&衣绪结局 【从椿馆逃离】、泽口结局 【密探者的幸福】、由利子结局 【越轨者的幸福】、铃菜结局1 【异形者的幸福】、铃菜结局2 【梦一般的幸福】这7结局后才能开启真结局路线"
+          },
+          {
+            "id": "ending_1760102113998",
+            "name": "开始流动的时间",
+            "type": "true",
+            "steps": [
+              {
+                "id": "step_1760102119108",
+                "type": "load",
+                "content": "LOAD 11"
+              },
+              {
+                "id": "step_1760102129667",
+                "type": "choice",
+                "content": "【去】【去别苑】"
+              }
+            ]
+          },
+          {
+            "id": "ending_1760102156526",
+            "name": "【场景回收】",
+            "type": "normal",
+            "steps": [
+              {
+                "id": "step_1760102167566",
+                "type": "load",
+                "content": "LOAD 6"
+              },
+              {
+                "id": "step_1760102172114",
+                "type": "choice",
+                "content": "【去】【不出去】"
+              },
+              {
+                "id": "step_1760102172453",
+                "type": "choice",
+                "content": "一直【散步】",
+                "group": "8/14-8/20  "
+              },
+              {
+                "id": "step_1760102173284",
+                "type": "choice",
+                "content": "【强硬地】",
+                "group": "8/21 "
+              },
+              {
+                "id": "step_1760102173824",
+                "type": "choice",
+                "content": "【保持沉默】【散步】",
+                "group": "8/22"
+              },
+              {
+                "id": "step_1760102174410",
+                "type": "choice",
+                "content": "【按下开关】【去见知美】【继续与铃菜通话】 Q-R 【决定疼爱知美】",
+                "group": "8/23 "
+              },
+              {
+                "id": "step_1760102176361",
+                "type": "load",
+                "content": "LOAD 8"
+              },
+              {
+                "id": "step_1760102177394",
+                "type": "choice",
+                "content": "【去见沙也加】【有烟吗】"
+              },
+              {
+                "id": "step_1760102177559",
+                "type": "choice",
+                "content": "【去见铃菜】【不去】",
+                "group": "8/13"
+              },
+              {
+                "id": "step_1760102177719",
+                "type": "choice",
+                "content": "【去见铃菜】【去见铃菜】",
+                "group": "8/14"
+              },
+              {
+                "id": "step_1760102177881",
+                "type": "choice",
+                "content": "【去见铃菜】【试着抽抽看？】【去见铃菜】",
+                "group": "8/15"
+              },
+              {
+                "id": "step_1760102178056",
+                "type": "choice",
+                "content": "【去见铃菜】【夸奖画】【去见铃菜】",
+                "group": "8/16 "
+              },
+              {
+                "id": "step_1760102178210",
+                "type": "choice",
+                "content": "【去见铃菜】【去见铃菜】【继续约会的邀请】【坚持到最后吧】",
+                "group": "8/17"
+              },
+              {
+                "id": "step_1760102178377",
+                "type": "choice",
+                "content": "【去见铃菜】【去见铃菜】",
+                "group": "8/18"
+              },
+              {
+                "id": "step_1760102178537",
+                "type": "choice",
+                "content": "【去见铃菜】【默默地喝】【去见铃菜】",
+                "group": "8/19 "
+              },
+              {
+                "id": "step_1760102178699",
+                "type": "choice",
+                "content": "【去见铃菜】【去见铃菜】【别得意忘形笨蛋】",
+                "group": "8/20 "
+              },
+              {
+                "id": "step_1760102178860",
+                "type": "note",
+                "content": "回收铃菜场景后结束"
+              },
+              {
+                "id": "step_1760102179033",
+                "type": "note",
+                "content": "另外，在【场景回想】的最后一页有不同路线的新增场景/后日谈"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "updated_at": "2026-07-12T10:35:34.959Z",
+    "created_at": "2025-10-08T08:27:44.700Z"
+  }
 }

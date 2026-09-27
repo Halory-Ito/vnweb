@@ -22,14 +22,7 @@ const normalizePathForCompare = (value: string) =>
 
 const getAllowedDirectories = () => {
   const systemDir = path.join(process.env.WINDIR || 'C:\\Windows', 'Fonts')
-  const userDir = path.join(
-    os.homedir(),
-    'AppData',
-    'Local',
-    'Microsoft',
-    'Windows',
-    'Fonts',
-  )
+  const userDir = path.join(os.homedir(), 'AppData', 'Local', 'Microsoft', 'Windows', 'Fonts')
 
   return [systemDir, userDir]
 }
@@ -37,10 +30,7 @@ const getAllowedDirectories = () => {
 const importLocalFont = async (req: NextRequest) => {
   try {
     if (process.platform !== 'win32') {
-      return NextResponse.json(
-        { error: '当前仅支持 Windows 字体导入' },
-        { status: 400 },
-      )
+      return NextResponse.json({ error: '当前仅支持 Windows 字体导入' }, { status: 400 })
     }
 
     const body = (await req.json().catch(() => ({}))) as Payload
@@ -56,20 +46,14 @@ const importLocalFont = async (req: NextRequest) => {
     }
 
     const normalizedSourcePath = normalizePathForCompare(resolvedSourcePath)
-    const allowedDirectories = getAllowedDirectories().map((dir) =>
-      normalizePathForCompare(dir),
-    )
+    const allowedDirectories = getAllowedDirectories().map((dir) => normalizePathForCompare(dir))
     const isAllowed = allowedDirectories.some(
       (allowedDir) =>
-        normalizedSourcePath === allowedDir ||
-        normalizedSourcePath.startsWith(`${allowedDir}\\`),
+        normalizedSourcePath === allowedDir || normalizedSourcePath.startsWith(`${allowedDir}\\`),
     )
 
     if (!isAllowed) {
-      return NextResponse.json(
-        { error: '仅允许导入系统字体目录中的文件' },
-        { status: 400 },
-      )
+      return NextResponse.json({ error: '仅允许导入系统字体目录中的文件' }, { status: 400 })
     }
 
     await fs.access(resolvedSourcePath)
@@ -92,10 +76,7 @@ const importLocalFont = async (req: NextRequest) => {
     })
   } catch (error) {
     console.error('Import local font failed:', error)
-    return NextResponse.json(
-      { error: (error as Error).message || '导入字体失败' },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: (error as Error).message || '导入字体失败' }, { status: 500 })
   }
 }
 

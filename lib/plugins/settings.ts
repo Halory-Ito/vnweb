@@ -13,9 +13,7 @@ export function normalizePluginSettings(
   input: Partial<PluginSettings> | PluginSettings,
 ): PluginSettings {
   const disabled = Array.isArray(input.disabledPlugins)
-    ? input.disabledPlugins.filter(
-        (item): item is string => typeof item === 'string',
-      )
+    ? input.disabledPlugins.filter((item): item is string => typeof item === 'string')
     : []
   return { disabledPlugins: disabled }
 }
@@ -42,10 +40,7 @@ export function writePluginSettings(settings: PluginSettings) {
   )
 }
 
-export function isPluginEnabled(
-  pluginId: string,
-  settings?: PluginSettings,
-): boolean {
+export function isPluginEnabled(pluginId: string, settings?: PluginSettings): boolean {
   const s = settings ?? readPluginSettings()
   return !s.disabledPlugins.includes(pluginId)
 }
@@ -53,9 +48,7 @@ export function isPluginEnabled(
 export function setPluginEnabled(pluginId: string, enabled: boolean) {
   const settings = readPluginSettings()
   if (enabled) {
-    settings.disabledPlugins = settings.disabledPlugins.filter(
-      (id) => id !== pluginId,
-    )
+    settings.disabledPlugins = settings.disabledPlugins.filter((id) => id !== pluginId)
   } else if (!settings.disabledPlugins.includes(pluginId)) {
     settings.disabledPlugins.push(pluginId)
   }

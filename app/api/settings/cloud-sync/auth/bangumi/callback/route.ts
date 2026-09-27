@@ -2,28 +2,14 @@ import axios from 'axios'
 import dayjs from 'dayjs'
 import { NextRequest, NextResponse } from 'next/server'
 
-import {
-  getAppOrigin,
-  saveThirdPartyAccount,
-  validateOAuthState,
-} from '../../_shared'
-import {
-  NEXT_PUBLIC_BANGUMI_API_URL,
-  NEXT_PUBLIC_BANGUMI_BASE_URL,
-} from '@/app/config'
-import {
-  BANGUMI_OAUTH_CLIENT_ID,
-  BANGUMI_OAUTH_CLIENT_SECRET,
-} from '@/app/config'
+import { getAppOrigin, saveThirdPartyAccount, validateOAuthState } from '../../_shared'
+import { NEXT_PUBLIC_BANGUMI_API_URL, NEXT_PUBLIC_BANGUMI_BASE_URL } from '@/app/config'
+import { BANGUMI_OAUTH_CLIENT_ID, BANGUMI_OAUTH_CLIENT_SECRET } from '@/app/config'
 
 const TOKEN_URL = `${NEXT_PUBLIC_BANGUMI_BASE_URL}/oauth/access_token`
 const PROFILE_URL = `${NEXT_PUBLIC_BANGUMI_API_URL}/v0/me`
 
-const toSettingsUrl = (
-  req: NextRequest,
-  status: 'success' | 'failed',
-  reason?: string,
-) => {
+const toSettingsUrl = (req: NextRequest, status: 'success' | 'failed', reason?: string) => {
   const target = new URL('/settings', req.nextUrl.origin)
   target.searchParams.set('provider', 'bangumi')
   target.searchParams.set('status', status)
@@ -44,27 +30,17 @@ const bangumiCallback = async (req: NextRequest) => {
 
     const stateOk = await validateOAuthState('bangumi', state)
     if (!stateOk) {
-      return NextResponse.redirect(
-        toSettingsUrl(req, 'failed', 'invalid_state'),
-      )
+      return NextResponse.redirect(toSettingsUrl(req, 'failed', 'invalid_state'))
     }
 
-    const clientId =
-      process.env.BANGUMI_OAUTH_CLIENT_ID || BANGUMI_OAUTH_CLIENT_ID || ''
+    const clientId = process.env.BANGUMI_OAUTH_CLIENT_ID || BANGUMI_OAUTH_CLIENT_ID || ''
     const clientSecret =
-      process.env.BANGUMI_OAUTH_CLIENT_SECRET ||
-      BANGUMI_OAUTH_CLIENT_SECRET ||
-      ''
+      process.env.BANGUMI_OAUTH_CLIENT_SECRET || BANGUMI_OAUTH_CLIENT_SECRET || ''
     if (!clientId || !clientSecret) {
-      return NextResponse.redirect(
-        toSettingsUrl(req, 'failed', 'missing_config'),
-      )
+      return NextResponse.redirect(toSettingsUrl(req, 'failed', 'missing_config'))
     }
 
-    const callbackUrl = new URL(
-      '/api/settings/cloud-sync/auth/bangumi/callback',
-      getAppOrigin(req),
-    )
+    const callbackUrl = new URL('/api/settings/cloud-sync/auth/bangumi/callback', getAppOrigin(req))
 
     const tokenResponse = await axios.post(
       TOKEN_URL,
@@ -94,9 +70,7 @@ const bangumiCallback = async (req: NextRequest) => {
     const refreshToken = (tokenPayload.refresh_token || '').trim()
 
     if (!accessToken) {
-      return NextResponse.redirect(
-        toSettingsUrl(req, 'failed', 'missing_token'),
-      )
+      return NextResponse.redirect(toSettingsUrl(req, 'failed', 'missing_token'))
     }
 
     const profileResponse = await axios.get(PROFILE_URL, {
@@ -114,27 +88,17 @@ const bangumiCallback = async (req: NextRequest) => {
     }
 
     const accountId =
-      profile.username?.trim() ||
-      profile.nickname?.trim() ||
-      (profile.id ? String(profile.id) : '')
+      profile.username?.trim() || profile.nickname?.trim() || (profile.id ? String(profile.id) : '')
 
     if (!accountId) {
-      return NextResponse.redirect(
-        toSettingsUrl(req, 'failed', 'missing_account_id'),
-      )
+      return NextResponse.redirect(toSettingsUrl(req, 'failed', 'missing_account_id'))
     }
 
     const expiresAt = tokenPayload.expires_in
       ? dayjs().add(tokenPayload.expires_in, 'second').toISOString()
       : ''
 
-    await saveThirdPartyAccount(
-      'bangumi',
-      accountId,
-      accessToken,
-      refreshToken,
-      expiresAt,
-    )
+    await saveThirdPartyAccount('bangumi', accountId, accessToken, refreshToken, expiresAt)
 
     return NextResponse.redirect(toSettingsUrl(req, 'success'))
   } catch (error) {

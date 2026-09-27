@@ -21,8 +21,7 @@ export const BACKGROUND_SETTINGS_STORAGE_KEY = 'vnweb:background-settings'
 export const BACKGROUND_SETTINGS_EVENT = 'vnweb:background-settings-changed'
 
 export const DEFAULT_LAST_GAME_BACKGROUND_IMAGE = '/bg.png'
-export const DEFAULT_BACKGROUND_TRANSITION_STYLE: BackgroundTransitionStyle =
-  'center-fade'
+export const DEFAULT_BACKGROUND_TRANSITION_STYLE: BackgroundTransitionStyle = 'center-fade'
 export const DEFAULT_BACKGROUND_TRANSITION_DURATION_MS = 420
 
 export const BACKGROUND_TRANSITION_STYLE_OPTIONS: Array<{
@@ -64,13 +63,9 @@ export function normalizeBackgroundSettings(
   return {
     customBackgroundEnabled: Boolean(input.customBackgroundEnabled),
     customBackgroundImage:
-      typeof input.customBackgroundImage === 'string'
-        ? input.customBackgroundImage.trim()
-        : '',
+      typeof input.customBackgroundImage === 'string' ? input.customBackgroundImage.trim() : '',
     customBackgroundImagePc:
-      typeof input.customBackgroundImagePc === 'string'
-        ? input.customBackgroundImagePc.trim()
-        : '',
+      typeof input.customBackgroundImagePc === 'string' ? input.customBackgroundImagePc.trim() : '',
     customBackgroundImageMobile:
       typeof input.customBackgroundImageMobile === 'string'
         ? input.customBackgroundImageMobile.trim()
@@ -82,14 +77,11 @@ export function normalizeBackgroundSettings(
         : DEFAULT_LAST_GAME_BACKGROUND_IMAGE,
     transitionStyle:
       typeof input.transitionStyle === 'string' &&
-      TRANSITION_STYLE_SET.has(
-        input.transitionStyle as BackgroundTransitionStyle,
-      )
+      TRANSITION_STYLE_SET.has(input.transitionStyle as BackgroundTransitionStyle)
         ? (input.transitionStyle as BackgroundTransitionStyle)
         : DEFAULT_BACKGROUND_TRANSITION_STYLE,
     transitionDurationMs:
-      Number.isFinite(transitionDurationCandidate) &&
-      transitionDurationCandidate >= 0
+      Number.isFinite(transitionDurationCandidate) && transitionDurationCandidate >= 0
         ? Math.min(3000, Math.max(0, Math.round(transitionDurationCandidate)))
         : DEFAULT_BACKGROUND_TRANSITION_DURATION_MS,
   }
@@ -98,7 +90,9 @@ export function normalizeBackgroundSettings(
 // 获取当前设备对应的自定义背景图片
 export function getCurrentDeviceBackgroundImage(settings: BackgroundSettings): string {
   const device = getDeviceType()
-  return device === 'mobile' ? settings.customBackgroundImageMobile : settings.customBackgroundImagePc
+  return device === 'mobile'
+    ? settings.customBackgroundImageMobile
+    : settings.customBackgroundImagePc
 }
 
 export function readBackgroundSettings(): BackgroundSettings {

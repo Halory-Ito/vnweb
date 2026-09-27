@@ -1,9 +1,6 @@
 import { api } from '@/lib/request-utils'
 
-import type {
-  CharacterProviderPlugin,
-  NormalizedCharacterRow,
-} from '@/lib/plugins/types'
+import type { CharacterProviderPlugin, NormalizedCharacterRow } from '@/lib/plugins/types'
 
 // ── YMGal 响应类型 ────────────────────────────────────────
 
@@ -69,8 +66,7 @@ const getToken = async (): Promise<string> => {
     return cachedToken
   }
 
-  const { YMGAL_BASE_URL, YMGAL_CLIENT_ID, YMGAL_CLIENT_SECRET } =
-    await import('@/app/config')
+  const { YMGAL_BASE_URL, YMGAL_CLIENT_ID, YMGAL_CLIENT_SECRET } = await import('@/app/config')
 
   const res = await api.post(
     `${YMGAL_BASE_URL}/oauth/token`,
@@ -188,9 +184,7 @@ export const ymgalCharacterProvider: CharacterProviderPlugin = {
       .from(GameIdMapTable)
       .where(eq(GameIdMapTable.gameId, gameId))
 
-    const binding = idMaps.find(
-      (item) => item.provider.trim().toLowerCase() === 'ymgal',
-    )
+    const binding = idMaps.find((item) => item.provider.trim().toLowerCase() === 'ymgal')
 
     if (!binding) return null
 
@@ -205,10 +199,10 @@ export const ymgalCharacterProvider: CharacterProviderPlugin = {
     // 1. 获取游戏详情，拿到角色列表
     let gameRes: YMGalGameDetailResponse
     try {
-      gameRes = await ymgalOpenRequest<YMGalGameDetailResponse>(
-        '/open/archive',
-        { gid, type: 'game' },
-      )
+      gameRes = await ymgalOpenRequest<YMGalGameDetailResponse>('/open/archive', {
+        gid,
+        type: 'game',
+      })
     } catch (error) {
       console.error('YMGal: 获取游戏详情失败', { gameId, gid, error })
       return []
@@ -230,18 +224,17 @@ export const ymgalCharacterProvider: CharacterProviderPlugin = {
         // 获取角色详情
         let detail: YMGalCharacterDetail | undefined
         try {
-          const charRes = await ymgalOpenRequest<YMGalCharacterDetailResponse>(
-            '/open/archive',
-            { cid, type: 'character' },
-          )
+          const charRes = await ymgalOpenRequest<YMGalCharacterDetailResponse>('/open/archive', {
+            cid,
+            type: 'character',
+          })
           detail = charRes.data?.character
         } catch (error) {
           console.warn('YMGal: 获取角色详情失败', { gameId, cid, error })
         }
 
         // 构建角色数据
-        const name =
-          detail?.chineseName || detail?.name || basicInfo?.name || ''
+        const name = detail?.chineseName || detail?.name || basicInfo?.name || ''
         const original = detail?.name || basicInfo?.name || ''
         const description = detail?.introduction || ''
         const imageUrl = detail?.mainImg || basicInfo?.mainImg || ''

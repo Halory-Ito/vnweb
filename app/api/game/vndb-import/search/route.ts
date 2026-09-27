@@ -98,10 +98,7 @@ const searchVndbUserList = async () => {
           id,
           name: item.vn?.alttitle?.trim() || item.vn?.title?.trim() || id,
           date: item.vn?.released?.trim() || '',
-          coverUrl:
-            item.vn?.image?.url?.trim() ||
-            item.vn?.image?.thumbnail?.trim() ||
-            '',
+          coverUrl: item.vn?.image?.url?.trim() || item.vn?.image?.thumbnail?.trim() || '',
           note: labels.join(' / '),
           alreadyImported: importedIdSet.has(id),
         }

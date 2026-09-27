@@ -54,10 +54,7 @@ export async function POST(req: NextRequest) {
     // 验证目录是否存在（如果启用了存档备份）
     if (config.enabled && config.directory) {
       if (!fs.existsSync(config.directory)) {
-        return NextResponse.json(
-          { error: '指定的存档目录不存在' },
-          { status: 400 },
-        )
+        return NextResponse.json({ error: '指定的存档目录不存在' }, { status: 400 })
       }
     }
 

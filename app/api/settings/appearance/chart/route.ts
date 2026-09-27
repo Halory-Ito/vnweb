@@ -22,10 +22,7 @@ async function readChartSettings(): Promise<ChartSettings> {
 
   const opacity = Number(chart['opacity'])
   return {
-    color:
-      typeof chart['color'] === 'string'
-        ? chart['color']
-        : DEFAULT_CHART_SETTINGS.color,
+    color: typeof chart['color'] === 'string' ? chart['color'] : DEFAULT_CHART_SETTINGS.color,
     opacity: Number.isFinite(opacity)
       ? Math.min(100, Math.max(0, Math.round(opacity)))
       : DEFAULT_CHART_SETTINGS.opacity,
@@ -63,10 +60,10 @@ export async function POST(req: NextRequest) {
     }
 
     // 只更新 settings.appearance.chart，不影响其他属性
-    await updateConfigSection(
-      ['settings', 'appearance', 'chart'],
-      { color: current.color, opacity: current.opacity },
-    )
+    await updateConfigSection(['settings', 'appearance', 'chart'], {
+      color: current.color,
+      opacity: current.opacity,
+    })
 
     return NextResponse.json({ data: current })
   } catch (error) {

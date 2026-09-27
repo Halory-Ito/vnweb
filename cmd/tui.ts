@@ -5,14 +5,9 @@ import fs from 'node:fs'
 import path from 'node:path'
 import readline from 'node:readline'
 
-import {
-  CollectionGameTable,
-  CollectionTable,
-  GameInfoTable,
-  GamePlayTable,
-} from '../db/schema'
+import { CollectionGameTable, CollectionTable, GameInfoTable, GamePlayTable } from '../db/schema'
+import { finalizeGameSession } from '../features/game/lib/game-session-utils'
 import { db } from '../lib/drizzle'
-import { finalizeGameSession } from '../lib/game/game-session-utils'
 
 type GameRow = {
   id: number
@@ -39,9 +34,7 @@ const formatDuration = (seconds: number) => {
   const h = Math.floor(value / 3600)
   const m = Math.floor((value % 3600) / 60)
   const s = value % 60
-  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(
-    s,
-  ).padStart(2, '0')}`
+  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
 }
 
 const formatDateOnly = (value: string) => {
@@ -101,10 +94,7 @@ const renderPaginatedGameTable = (
 const getGames = async (keyword?: string) => {
   const text = (keyword ?? '').trim()
   const whereClause = text
-    ? or(
-        like(GameInfoTable.name, `%${text}%`),
-        like(GameInfoTable.nameCn, `%${text}%`),
-      )
+    ? or(like(GameInfoTable.name, `%${text}%`), like(GameInfoTable.nameCn, `%${text}%`))
     : undefined
 
   const query = db
@@ -175,11 +165,7 @@ const searchGames = async (keyword: string, page: number, pageSize: number) => {
   renderPaginatedGameTable(rows, page, pageSize, `搜索: ${text}`)
 }
 
-const openCollection = async (
-  collectionInput: string,
-  page: number,
-  pageSize: number,
-) => {
+const openCollection = async (collectionInput: string, page: number, pageSize: number) => {
   const input = collectionInput.trim()
   if (!input) {
     console.log('请提供收藏夹名称，例如: vnweb open 我的收藏')
@@ -192,11 +178,7 @@ const openCollection = async (
   const collections = await db
     .select({ id: CollectionTable.id, name: CollectionTable.name })
     .from(CollectionTable)
-    .where(
-      byId
-        ? eq(CollectionTable.id, collectionId)
-        : eq(CollectionTable.name, input),
-    )
+    .where(byId ? eq(CollectionTable.id, collectionId) : eq(CollectionTable.name, input))
     .limit(1)
 
   const collection = collections[0]
@@ -277,9 +259,7 @@ const startGame = async (gameIdText?: string) => {
   }
 
   const latestGame = launchedRows.sort(
-    (a, b) =>
-      new Date(b.lastLaunchedAt!).getTime() -
-      new Date(a.lastLaunchedAt!).getTime(),
+    (a, b) => new Date(b.lastLaunchedAt!).getTime() - new Date(a.lastLaunchedAt!).getTime(),
   )[0]
   console.log(`快速启动最近游戏: ${latestGame.nameCn || latestGame.name}`)
   await launchGameRow(latestGame)
@@ -351,8 +331,7 @@ const launchGameRow = async (game: {
   const startTimer = () => {
     tickStartedAt = Date.now()
     timer = setInterval(() => {
-      elapsed =
-        accumulatedElapsed + Math.floor((Date.now() - tickStartedAt) / 1000)
+      elapsed = accumulatedElapsed + Math.floor((Date.now() - tickStartedAt) / 1000)
       process.stdout.write(`\r本次计时: ${formatDuration(elapsed)}  `)
     }, 1000)
   }
@@ -362,8 +341,7 @@ const launchGameRow = async (game: {
       clearInterval(timer)
       timer = null
     }
-    elapsed =
-      accumulatedElapsed + Math.floor((Date.now() - tickStartedAt) / 1000)
+    elapsed = accumulatedElapsed + Math.floor((Date.now() - tickStartedAt) / 1000)
     accumulatedElapsed = elapsed
     process.stdout.write('\n')
   }
@@ -426,10 +404,7 @@ const launchGameRow = async (game: {
 const main = async () => {
   const program = new Command()
 
-  program
-    .name('vnweb')
-    .description('vnweb 游戏库命令行管理工具')
-    .version('1.0.0')
+  program.name('vnweb').description('vnweb 游戏库命令行管理工具').version('1.0.0')
 
   const listCmd = program.command('list').description('列出游戏或收藏夹资源')
 
@@ -457,15 +432,9 @@ const main = async () => {
     .argument('<keyword...>', '搜索关键字，支持空格分隔')
     .option('-p, --page <page>', '页码，默认 1', '1')
     .option('-s, --size <size>', '每页条数，默认 20', '20')
-    .action(
-      async (keywordParts: string[], opts: { page: string; size: string }) => {
-        await searchGames(
-          keywordParts.join(' '),
-          Number(opts.page),
-          Number(opts.size),
-        )
-      },
-    )
+    .action(async (keywordParts: string[], opts: { page: string; size: string }) => {
+      await searchGames(keywordParts.join(' '), Number(opts.page), Number(opts.size))
+    })
 
   program
     .command('open')
@@ -473,15 +442,9 @@ const main = async () => {
     .argument('<collection_name...>', '收藏夹名称或 ID')
     .option('-p, --page <page>', '页码，默认 1', '1')
     .option('-s, --size <size>', '每页条数，默认 20', '20')
-    .action(
-      async (nameParts: string[], opts: { page: string; size: string }) => {
-        await openCollection(
-          nameParts.join(' '),
-          Number(opts.page),
-          Number(opts.size),
-        )
-      },
-    )
+    .action(async (nameParts: string[], opts: { page: string; size: string }) => {
+      await openCollection(nameParts.join(' '), Number(opts.page), Number(opts.size))
+    })
 
   program
     .command('start')

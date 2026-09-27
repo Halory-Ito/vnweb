@@ -52,10 +52,7 @@ export async function POST(_req: NextRequest) {
     const archive = archiver('zip', { zlib: { level: 9 } })
 
     // 设置响应头
-    const timestamp = new Date()
-      .toISOString()
-      .replace(/[:.]/g, '-')
-      .slice(0, 19)
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19)
     const fileName = `vnweb-backup-${timestamp}.zip`
 
     const chunks: Uint8Array[] = []
@@ -124,9 +121,6 @@ export async function POST(_req: NextRequest) {
     })
   } catch (error) {
     console.error('Export backup failed:', error)
-    return NextResponse.json(
-      { error: (error as Error).message || '导出备份失败' },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: (error as Error).message || '导出备份失败' }, { status: 500 })
   }
 }

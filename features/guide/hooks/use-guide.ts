@@ -65,9 +65,7 @@ export function useGuide(guideData: GuideData | null, gameId: number) {
       const newEndingFinished = updatedSteps.every((s) => s.finished)
 
       const updatedEndings = parentRoute.endings.map((e) =>
-        e.id === parentEnding!.id
-          ? { ...e, finished: newEndingFinished, steps: updatedSteps }
-          : e,
+        e.id === parentEnding!.id ? { ...e, finished: newEndingFinished, steps: updatedSteps } : e,
       )
       const newRouteFinished = updatedEndings.every((e) => e.finished)
 
@@ -109,9 +107,7 @@ export function useGuide(guideData: GuideData | null, gameId: number) {
       })
 
       try {
-        await Promise.all(
-          updates.map((u) => updateGuideProgressApi(gameId, u)),
-        )
+        await Promise.all(updates.map((u) => updateGuideProgressApi(gameId, u)))
       } catch {
         queryClient.invalidateQueries({ queryKey: ['guide', gameId] })
       } finally {
@@ -126,53 +122,35 @@ export function useGuide(guideData: GuideData | null, gameId: number) {
   )
 
   // 计算结局完成进度
-  const getEndingProgress = useCallback(
-    (ending: Ending) => {
-      const total = ending.steps.length
-      const completed = ending.steps.filter((s) => s.finished).length
-      return {
-        total,
-        completed,
-        percentage: total > 0 ? Math.round((completed / total) * 100) : 0,
-      }
-    },
-    [],
-  )
+  const getEndingProgress = useCallback((ending: Ending) => {
+    const total = ending.steps.length
+    const completed = ending.steps.filter((s) => s.finished).length
+    return {
+      total,
+      completed,
+      percentage: total > 0 ? Math.round((completed / total) * 100) : 0,
+    }
+  }, [])
 
   // 计算路线完成进度
-  const getRouteProgress = useCallback(
-    (route: Route) => {
-      const totalSteps = route.endings.reduce(
-        (sum, ending) => sum + ending.steps.length,
-        0,
-      )
-      const completedStepsCount = route.endings.reduce((sum, ending) => {
-        return sum + ending.steps.filter((s) => s.finished).length
-      }, 0)
-      return {
-        total: totalSteps,
-        completed: completedStepsCount,
-        percentage:
-          totalSteps > 0
-            ? Math.round((completedStepsCount / totalSteps) * 100)
-            : 0,
-      }
-    },
-    [],
-  )
+  const getRouteProgress = useCallback((route: Route) => {
+    const totalSteps = route.endings.reduce((sum, ending) => sum + ending.steps.length, 0)
+    const completedStepsCount = route.endings.reduce((sum, ending) => {
+      return sum + ending.steps.filter((s) => s.finished).length
+    }, 0)
+    return {
+      total: totalSteps,
+      completed: completedStepsCount,
+      percentage: totalSteps > 0 ? Math.round((completedStepsCount / totalSteps) * 100) : 0,
+    }
+  }, [])
 
   // 计算总体完成进度
   const getTotalProgress = useCallback(() => {
     if (!guideData) return { total: 0, completed: 0, percentage: 0 }
 
     const totalSteps = guideData.routes.reduce((sum, route) => {
-      return (
-        sum +
-        route.endings.reduce(
-          (endingSum, ending) => endingSum + ending.steps.length,
-          0,
-        )
-      )
+      return sum + route.endings.reduce((endingSum, ending) => endingSum + ending.steps.length, 0)
     }, 0)
     const completedStepsCount = guideData.routes.reduce((sum, route) => {
       return (
@@ -185,10 +163,7 @@ export function useGuide(guideData: GuideData | null, gameId: number) {
     return {
       total: totalSteps,
       completed: completedStepsCount,
-      percentage:
-        totalSteps > 0
-          ? Math.round((completedStepsCount / totalSteps) * 100)
-          : 0,
+      percentage: totalSteps > 0 ? Math.round((completedStepsCount / totalSteps) * 100) : 0,
     }
   }, [guideData])
 

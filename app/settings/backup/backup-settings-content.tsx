@@ -17,7 +17,8 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
-import { selectDirectory } from '@/lib/game/scan-utils'
+import { WebDAVBackupPanel } from '@/features/backup'
+import { selectDirectory } from '@/features/game/lib/scan-utils'
 import { api } from '@/lib/request-utils'
 
 type LocalBackup = {
@@ -36,8 +37,7 @@ type GameSaveConfig = {
 function formatSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
-  if (bytes < 1024 * 1024 * 1024)
-    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+  if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
   return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)} GB`
 }
 
@@ -84,13 +84,10 @@ export default function BackupSettingsContent() {
     headers: Record<string, string>,
     fallbackFileName: string,
   ) => {
-    const contentDisposition =
-      headers['content-disposition'] || headers['Content-Disposition']
+    const contentDisposition = headers['content-disposition'] || headers['Content-Disposition']
     let fileName = fallbackFileName
     if (contentDisposition) {
-      const match = contentDisposition.match(
-        /filename\*?=(?:UTF-8''|"?)([^";]+)/i,
-      )
+      const match = contentDisposition.match(/filename\*?=(?:UTF-8''|"?)([^";]+)/i)
       if (match?.[1]) {
         fileName = decodeURIComponent(match[1].replace(/"/g, ''))
       }
@@ -150,9 +147,7 @@ export default function BackupSettingsContent() {
     importFileInputRef.current?.click()
   }
 
-  const handleImportFileChange = async (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
+  const handleImportFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const input = event.currentTarget
     const file = event.target.files?.[0]
     if (!file) {
@@ -197,9 +192,7 @@ export default function BackupSettingsContent() {
     if (!restoreTargetId) return
 
     try {
-      await api.post(
-        `/settings/backup/local/restore?id=${encodeURIComponent(restoreTargetId)}`,
-      )
+      await api.post(`/settings/backup/local/restore?id=${encodeURIComponent(restoreTargetId)}`)
       toast.success('备份恢复成功，页面将重新加载')
       setTimeout(() => {
         window.location.reload()
@@ -217,9 +210,7 @@ export default function BackupSettingsContent() {
     if (!deleteTargetId) return
 
     try {
-      await api.delete(
-        `/settings/backup/local?id=${encodeURIComponent(deleteTargetId)}`,
-      )
+      await api.delete(`/settings/backup/local?id=${encodeURIComponent(deleteTargetId)}`)
       await queryClient.invalidateQueries({ queryKey: ['local-backups'] })
       toast.success('备份已删除')
     } catch (error) {
@@ -261,6 +252,9 @@ export default function BackupSettingsContent() {
 
   return (
     <div className="space-y-6">
+      {/* WebDAV 备份 */}
+      <WebDAVBackupPanel />
+
       {/* 游戏存档设置 */}
       <div className="dark:border-input dark:bg-input/20 space-y-6 rounded-xl border p-6">
         <div>
@@ -273,14 +267,9 @@ export default function BackupSettingsContent() {
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm font-medium">启用游戏存档备份</p>
-            <p className="text-muted-foreground text-xs">
-              游戏结束后自动复制存档到指定目录
-            </p>
+            <p className="text-muted-foreground text-xs">游戏结束后自动复制存档到指定目录</p>
           </div>
-          <Switch
-            checked={gameSaveEnabled}
-            onCheckedChange={setGameSaveEnabled}
-          />
+          <Switch checked={gameSaveEnabled} onCheckedChange={setGameSaveEnabled} />
         </div>
 
         <div className="space-y-2">
@@ -327,9 +316,7 @@ export default function BackupSettingsContent() {
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm font-medium">创建备份</p>
-            <p className="text-muted-foreground text-xs">
-              立即创建一个本地备份
-            </p>
+            <p className="text-muted-foreground text-xs">立即创建一个本地备份</p>
           </div>
           <Button
             type="button"
@@ -354,9 +341,7 @@ export default function BackupSettingsContent() {
                   className="flex items-center justify-between rounded-md border px-3 py-2"
                 >
                   <div className="min-w-0">
-                    <div className="truncate text-sm font-medium">
-                      {backup.name}
-                    </div>
+                    <div className="truncate text-sm font-medium">{backup.name}</div>
                     <div className="text-muted-foreground flex items-center gap-2 text-xs">
                       <span>
                         {backup.createdAt
@@ -402,9 +387,7 @@ export default function BackupSettingsContent() {
       <div className="dark:border-input dark:bg-input/20 space-y-6 rounded-xl border p-6">
         <div>
           <p className="text-base font-semibold">导出备份</p>
-          <p className="text-muted-foreground mt-1 text-sm">
-            导出您的游戏数据库和本地资源文件。
-          </p>
+          <p className="text-muted-foreground mt-1 text-sm">导出您的游戏数据库和本地资源文件。</p>
         </div>
 
         <div className="space-y-4">
@@ -456,9 +439,7 @@ export default function BackupSettingsContent() {
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm font-medium">导入 ZIP</p>
-            <p className="text-muted-foreground text-xs">
-              上传 ZIP 格式的备份文件进行恢复。
-            </p>
+            <p className="text-muted-foreground text-xs">上传 ZIP 格式的备份文件进行恢复。</p>
           </div>
           <div>
             <input
@@ -514,9 +495,7 @@ export default function BackupSettingsContent() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>确认删除备份</DialogTitle>
-            <DialogDescription>
-              删除后无法恢复，确定要删除这个备份吗？
-            </DialogDescription>
+            <DialogDescription>删除后无法恢复，确定要删除这个备份吗？</DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button
@@ -529,11 +508,7 @@ export default function BackupSettingsContent() {
             >
               取消
             </Button>
-            <Button
-              type="button"
-              variant="destructive"
-              onClick={() => void handleDeleteBackup()}
-            >
+            <Button type="button" variant="destructive" onClick={() => void handleDeleteBackup()}>
               确认删除
             </Button>
           </DialogFooter>

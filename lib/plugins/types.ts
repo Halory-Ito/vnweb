@@ -1,4 +1,4 @@
-import type { GameInfo } from '@/types/game-types'
+import type { GameInfo } from '@/types/game'
 
 // ═══════════════════════════════════════════════════════════
 //  基础插件清单
@@ -21,11 +21,7 @@ export interface PluginManifest {
 //  Hook 类型系统
 // ═══════════════════════════════════════════════════════════
 
-export type HookId =
-  | 'pv:resolve-url'
-  | 'pv:parse-url'
-  | 'pv:video-resolve'
-  | 'game:enrich-metadata'
+export type HookId = 'pv:resolve-url' | 'pv:parse-url' | 'pv:video-resolve' | 'game:enrich-metadata'
 
 export type HookHandler<TInput = unknown, TOutput = unknown> = (
   ctx: TInput,
@@ -99,10 +95,7 @@ export interface FeaturePlugin extends PluginManifest {
   onActivate?(): void | Promise<void>
   onDeactivate?(): void | Promise<void>
   handlers: {
-    [K in HookId]?: HookHandler<
-      HookTypeMap[K]['input'],
-      HookTypeMap[K]['output']
-    >
+    [K in HookId]?: HookHandler<HookTypeMap[K]['input'], HookTypeMap[K]['output']>
   }
 }
 
@@ -110,10 +103,7 @@ export interface FeaturePlugin extends PluginManifest {
 //  数据源插件（兼容现有 Provider 接口）
 // ═══════════════════════════════════════════════════════════
 
-export type ProviderCapability =
-  | 'manual-search'
-  | 'bulk-import'
-  | 'account-bind'
+export type ProviderCapability = 'manual-search' | 'bulk-import' | 'account-bind'
 
 export type GameSearchItem = {
   id: string
@@ -156,16 +146,10 @@ export interface ProviderPlugin extends PluginManifest {
   capabilities: ProviderCapability[]
   accountProviderId?: string
 
-  searchByName?(
-    keyword: string,
-    offset: number,
-    limit: number,
-  ): Promise<GameSearchResult>
+  searchByName?(keyword: string, offset: number, limit: number): Promise<GameSearchResult>
   getById?(id: string): Promise<GameInfo | null>
   searchCollection?(): Promise<BulkImportResult>
-  searchByUid?(
-    uid: string,
-  ): Promise<{ total: number; items: SteamOwnedGameItem[] }>
+  searchByUid?(uid: string): Promise<{ total: number; items: SteamOwnedGameItem[] }>
   importOneByUid?(payload: {
     uid: string
     appid: number
