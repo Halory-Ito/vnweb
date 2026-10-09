@@ -18,4 +18,5 @@ export {
 } from './components/import'
 export type { GameImportDialogProps } from './components/import'
 export { SortSelect } from './components/sort-select'
+export { GameWebMcpTools } from './webmcp'
 export { default as GameInfo } from './views/game-info'

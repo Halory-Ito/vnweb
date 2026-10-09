@@ -14,6 +14,7 @@ import TanStackProvider from '@/components/providers/tanstack-provider'
 import { SidebarProvider } from '@/components/ui/sidebar'
 import { Toaster } from '@/components/ui/sonner'
 import { TooltipProvider } from '@/components/ui/tooltip'
+import { GameWebMcpTools } from '@/features/game/webmcp'
 
 export const metadata: Metadata = {
   // %s 会被子页面的 title 替换
@@ -44,6 +45,7 @@ export default function RootLayout({
                 <SidebarProvider>
                   <TooltipProvider>
                     <AppLayout>{children}</AppLayout>
+                    <GameWebMcpTools />
                     <Toaster />
                   </TooltipProvider>
                 </SidebarProvider>

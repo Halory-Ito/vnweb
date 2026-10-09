@@ -1,0 +1,1 @@
+export { ensureWebMcpRuntime } from './runtime'

@@ -175,6 +175,9 @@ export const updateGameInfoById = async (
   payload: Partial<{
     date: string
     cover: string
+    bg: string
+    icon: string
+    logo: string
     summary: string
     name: string
     nameCn: string
