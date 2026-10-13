@@ -1,5 +1,6 @@
 export { default as RecordExportPanel } from './components/record-export-panel'
 export { default as RecordPeriodPanel } from './components/record-period-panel'
+export { default as RecordOverview } from './views/record-overview'
 export { ChartStatsCard, SimpleStatsCard } from './components/stats-card'
 export { RankStatsCard } from './components/rank-stats-card'
 export type { ChartStatsCardProps, StatsCardProps } from './components/stats-card'

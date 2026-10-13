@@ -1,14 +1,17 @@
-import RecordOverview from './overview/page'
+import { Metadata } from 'next'
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import RecordExportPanel from '@/features/record/components/record-export-panel'
-import RecordPeriodPanel from '@/features/record/components/record-period-panel'
+import { RecordExportPanel, RecordOverview, RecordPeriodPanel } from '@/features/record'
+
+export const metadata: Metadata = {
+  title: '游戏记录',
+}
+
+export const dynamic = 'force-dynamic'
 
 export default function Record() {
   return (
-    <Tabs
-      defaultValue="overview"
-      className="max-h-[calc(100vh-144px)] w-full overflow-y-scroll p-4"
-    >
+    <Tabs defaultValue="overview" className="max-h-[calc(100vh-70px)] w-full overflow-y-scroll p-4">
       <TabsList className="dark:bg-transparent">
         <TabsTrigger value="overview">总览</TabsTrigger>
         <TabsTrigger value="year">年报</TabsTrigger>
