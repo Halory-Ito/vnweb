@@ -23,6 +23,7 @@
 - 如需要自定义组件，需要使用 tailwind css v4 语法来编写样式
 - 避免卡片组件内又嵌套一层卡片组件
 - 避免在组件中增加`secondary`内容，保持组件内容简洁
+- 每一次对页面进行改动时，务必要注意使用响应式布局，并且样式风格要和已有的代码保持一致
 
 # API 层
 
@@ -63,3 +64,13 @@ export function actionObjectApi() {
 # 错误修复
 
 如果遇到修复错误的任务，优先查看 `errors.md`，每修复一个错误，就要将该错误从`errors.md`中删除
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->
