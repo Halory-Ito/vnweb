@@ -44,6 +44,19 @@
         "active": true,
         "dir": "D:\\Cache\\GameSaveDir"
       }
+    },
+    "agent": {
+      "configs": [
+        {
+          "id": "example",
+          "name": "DeepSeek",
+          "baseUrl": "https://api.deepseek.com/v1",
+          "apiKey": "sk-xxx",
+          "model": "deepseek-chat",
+          "systemPrompt": ""
+        }
+      ],
+      "activeConfigId": "example"
     }
   }
 }

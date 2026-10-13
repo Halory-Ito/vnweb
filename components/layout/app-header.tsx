@@ -21,6 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { AgentDrawer } from '@/features/agent'
 import GameAddButton from '@/features/game/components/import/game-add-button'
 import { GAME_PLAY_STATUS_OPTIONS, getGamePlayStatusLabel } from '@/features/game/lib/game-status'
 
@@ -445,6 +446,7 @@ export default function AppHeader() {
       <div className="flex gap-4">
         <R18Switch />
         <ThemeSwitch />
+        <AgentDrawer />
       </div>
     </div>
   )
