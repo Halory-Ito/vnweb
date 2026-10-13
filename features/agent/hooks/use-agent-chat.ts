@@ -3,6 +3,7 @@
 import { useCallback, useRef, useState } from 'react'
 
 import { streamAgentChatApi } from '@/api'
+import { buildUserContent } from '@/features/agent/lib/chat-attachments'
 import { toToolRun } from '@/features/agent/lib/chat-types'
 import {
   executeWebMcpTool,
@@ -11,6 +12,7 @@ import {
   toAgentToolDefinitions,
 } from '@/webmcp/lib'
 
+import type { AgentChatAttachment } from '@/features/agent/lib/chat-attachments'
 import type { AgentChatUiMessage } from '@/features/agent/lib/chat-types'
 import type { AgentChatMessage } from '@/types/agent'
 
@@ -54,9 +56,9 @@ export function useAgentChat({ configId }: UseAgentChatOptions) {
   }, [])
 
   const send = useCallback(
-    async (text: string) => {
+    async (text: string, attachments: AgentChatAttachment[] = []) => {
       const input = text.trim()
-      if (!input || isStreaming || !configId) {
+      if ((!input && attachments.length === 0) || isStreaming || !configId) {
         return
       }
 
@@ -66,12 +68,22 @@ export function useAgentChat({ configId }: UseAgentChatOptions) {
       abortRef.current = abortController
 
       // 仅在整体成功结束时提交到历史，中断的轮次不会进入后续上下文
-      const working: AgentChatMessage[] = [...historyRef.current, { role: 'user', content: input }]
+      const working: AgentChatMessage[] = [
+        ...historyRef.current,
+        { role: 'user', content: buildUserContent(input, attachments) },
+      ]
       const assistantIds: string[] = []
 
       setMessages((prev) => [
         ...prev,
-        { id: createMessageId(), role: 'user', content: input, reasoning: '', toolRuns: [] },
+        {
+          id: createMessageId(),
+          role: 'user',
+          content: input,
+          reasoning: '',
+          toolRuns: [],
+          attachments: attachments.length > 0 ? attachments : undefined,
+        },
       ])
 
       try {

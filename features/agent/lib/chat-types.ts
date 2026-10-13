@@ -1,5 +1,6 @@
 // Agent 对话 UI 内部类型（仅模块内使用）
 
+import type { AgentChatAttachment } from './chat-attachments'
 import type { AgentToolCall } from '@/types/agent'
 
 export type AgentToolRunStatus = 'running' | 'success' | 'error'
@@ -20,6 +21,8 @@ export type AgentChatUiMessage = {
   content: string
   reasoning: string
   toolRuns: AgentToolRun[]
+  /** 用户消息携带的附件 */
+  attachments?: AgentChatAttachment[]
   error?: string
   stopped?: boolean
 }

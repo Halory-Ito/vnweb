@@ -2,6 +2,7 @@
 
 import dynamic from 'next/dynamic'
 
+import { AgentChatAttachments } from './agent-chat-attachments'
 import { AgentToolRunCard } from './agent-tool-run-card'
 import { Spinner } from '@/components/ui/spinner'
 
@@ -34,10 +35,17 @@ export function AgentChatMessage({
 }) {
   if (message.role === 'user') {
     return (
-      <div className="flex justify-end">
-        <div className="bg-primary text-primary-foreground max-w-[85%] rounded-2xl px-3.5 py-2 break-words whitespace-pre-wrap">
-          <ChatMarkdown content={message.content} variant="user" />
-        </div>
+      <div className="flex flex-col items-end gap-2">
+        <AgentChatAttachments
+          attachments={message.attachments ?? []}
+          className="max-w-[85%] justify-end"
+        />
+
+        {message.content ? (
+          <div className="bg-primary text-primary-foreground max-w-[85%] rounded-2xl px-3.5 py-2 break-words whitespace-pre-wrap">
+            <ChatMarkdown content={message.content} variant="user" />
+          </div>
+        ) : null}
       </div>
     )
   }

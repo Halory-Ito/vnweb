@@ -126,7 +126,9 @@ export function AgentChatPanel({
                 <BotIcon />
               </EmptyMedia>
               <EmptyTitle>开始对话</EmptyTitle>
-              <EmptyDescription>可以试试「帮我添加游戏」或「导出摘录为 XLSX」</EmptyDescription>
+              <EmptyDescription>
+                可以试试「帮我添加游戏」或「导出摘录为 XLSX」，也可以附带图片或文本文件提问
+              </EmptyDescription>
             </EmptyHeader>
           </Empty>
         ) : (
@@ -140,7 +142,7 @@ export function AgentChatPanel({
         isStreaming={chat.isStreaming}
         disabled={configs.length === 0 || !activeConfigId}
         toolHint={chat.enableTools ? `工具调用已开启 · ${toolCount} 个工具` : '工具调用已关闭'}
-        onSend={(text) => void chat.send(text)}
+        onSend={(text, attachments) => void chat.send(text, attachments)}
         onStop={chat.stop}
       />
     </div>

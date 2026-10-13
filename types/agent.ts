@@ -34,10 +34,15 @@ export type AgentToolCall = {
   }
 }
 
+/** OpenAI 兼容的多模态内容片段 */
+export type AgentChatContentPart =
+  | { type: 'text'; text: string }
+  | { type: 'image_url'; image_url: { url: string } }
+
 /** OpenAI 兼容的对话消息 */
 export type AgentChatMessage = {
   role: AgentChatRole
-  content: string | null
+  content: string | AgentChatContentPart[] | null
   tool_calls?: AgentToolCall[]
   tool_call_id?: string
 }
