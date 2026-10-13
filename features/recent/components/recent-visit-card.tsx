@@ -40,7 +40,7 @@ export default function RecentVisitCard({ item }: RecentVisitCardProps) {
             alt={title}
             fill
             sizes="(min-width: 640px) 148px, 45vw"
-            loading="lazy"
+            loading="eager"
             className="h-full w-full object-cover transition-transform duration-500 md:group-hover:scale-110"
             onError={() => setImageError(true)}
           />

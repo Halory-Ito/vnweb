@@ -1,4 +1,5 @@
-export { default as RecentHome } from './views/recent-home'
+export { default as RecentVisitsSection } from './views/recent-visits-section'
+export { default as RecentVisitsSkeleton } from './components/recent-visits-skeleton'
 export { useRecordVisit } from './hooks/use-record-visit'
 export { useRecentVisits } from './hooks/use-recent-visits'
 export { RECENT_VISIT_LABELS } from './lib/visit-types'

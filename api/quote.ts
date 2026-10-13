@@ -138,3 +138,12 @@ export const getQuotesByCharacterId = async (characterId: string) => {
   })
   return (response.data as { data: { items: QuoteManageItem[] } }).data
 }
+
+export const getRandomQuoteApi = async (params?: { includeNsfw?: boolean }) => {
+  const response = await api.get('/quote/random', {
+    params: {
+      includeNsfw: params?.includeNsfw ?? true,
+    },
+  })
+  return (response.data as { data: { item: QuoteManageItem | null } }).data.item
+}

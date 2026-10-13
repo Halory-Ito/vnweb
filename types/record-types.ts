@@ -1,3 +1,37 @@
+export type RecordPlayHeatmapDay = {
+  date: string
+  seconds: number
+  hours: number
+}
+
+export type RecordPlayHeatmap = {
+  startDate: string
+  endDate: string
+  days: RecordPlayHeatmapDay[]
+  totalSeconds: number
+  totalHours: number
+  activeDays: number
+}
+
+export type RecordHeatmapPeriod = {
+  year: number
+  months: number[]
+}
+
+export type RecordHeatmapPeriods = {
+  periods: RecordHeatmapPeriod[]
+  latest: { year: number; month: number } | null
+}
+
+export type RecordPlayHeatmapMonth = {
+  year: number
+  month: number
+  days: RecordPlayHeatmapDay[]
+  totalSeconds: number
+  totalHours: number
+  activeDays: number
+}
+
 export type RecordOverviewStats = {
   totalGames: number
   totalPlayTime: number
