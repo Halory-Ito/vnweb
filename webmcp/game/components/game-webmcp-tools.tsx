@@ -1,7 +1,7 @@
 'use client'
 
-import { useAddGameTool } from '@/features/game/webmcp/hooks/use-add-game-tool'
-import { ensureWebMcpRuntime } from '@/lib/webmcp'
+import { useAddGameTool } from '@/webmcp/game/hooks/use-add-game-tool'
+import { ensureWebMcpRuntime } from '@/webmcp/lib'
 
 // 在 useWebMCP 注册工具前安装 WebMCP 运行时（浏览器原生缺失时使用 polyfill）
 ensureWebMcpRuntime()

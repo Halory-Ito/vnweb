@@ -1,6 +1,6 @@
 'use client'
 
-import { ensureWebMcpRuntime } from '@/lib/webmcp'
+import { ensureWebMcpRuntime } from './runtime'
 
 import type { AgentToolDefinition } from '@/types/agent'
 

@@ -1,6 +1,6 @@
 'use client'
 
-import { PlusIcon } from 'lucide-react'
+import { FileSpreadsheetIcon, Loader2Icon, PlusIcon } from 'lucide-react'
 import { motion } from 'motion/react'
 
 import { Button } from '@/components/ui/button'
@@ -25,16 +25,20 @@ const itemVariants = {
 
 type QuoteToolAreaProps = {
   keywordInput: string
+  isExporting: boolean
   onKeywordInputChange: (value: string) => void
   onSearch: () => void
   onCreate: () => void
+  onExport: () => void
 }
 
 export function QuoteToolArea({
   keywordInput,
+  isExporting,
   onKeywordInputChange,
   onSearch,
   onCreate,
+  onExport,
 }: QuoteToolAreaProps) {
   return (
     <motion.div
@@ -76,6 +80,14 @@ export function QuoteToolArea({
         <Button type="button" onClick={onCreate} variant="outline">
           <PlusIcon />
           添加摘录
+        </Button>
+      </motion.div>
+
+      {/* 导出按钮 */}
+      <motion.div variants={itemVariants}>
+        <Button type="button" onClick={onExport} variant="outline" disabled={isExporting}>
+          {isExporting ? <Loader2Icon className="animate-spin" /> : <FileSpreadsheetIcon />}
+          {isExporting ? '导出中...' : '导出 XLSX'}
         </Button>
       </motion.div>
     </motion.div>

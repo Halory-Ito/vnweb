@@ -11,18 +11,15 @@ import {
   getGameInfoByIdApi,
   searchGameByNameApi,
 } from '@/features/game/import-api'
-import {
-  ADD_GAME_TOOL_NAME,
-  addGameToolInputSchema,
-} from '@/features/game/webmcp/lib/add-game-tool-schema'
+import { getManualSearchProviderOptions } from '@/lib/providers'
+import { ADD_GAME_TOOL_NAME, addGameToolInputSchema } from '@/webmcp/game/lib/add-game-tool-schema'
 import {
   DEFAULT_GAME_IMAGE_SOURCE,
   GAME_IMAGE_ASSET_LABEL_MAP,
   GAME_IMAGE_ASSET_TYPES,
   fetchGameImages,
   type GameImages,
-} from '@/features/game/webmcp/lib/fetch-game-images'
-import { getManualSearchProviderOptions } from '@/lib/providers'
+} from '@/webmcp/game/lib/fetch-game-images'
 
 import type { GameInfo } from '@/types'
 

@@ -13,10 +13,12 @@ import {
   updateQuoteManageItem,
 } from '@/api'
 import { QuoteDeleteDialog } from '@/features/quote/components/quote-delete-dialog'
+import { QuoteExportDialog } from '@/features/quote/components/quote-export-dialog'
 import { QuoteFormDialog } from '@/features/quote/components/quote-form-dialog'
 import { QuoteManageContent } from '@/features/quote/components/quote-manage-content'
 import { QuotePagination } from '@/features/quote/components/quote-pagination'
 import { QuoteToolArea } from '@/features/quote/components/quote-tool-area'
+import { useQuoteExportDialog } from '@/features/quote/hooks/use-quote-export-dialog'
 import { useDebounce } from '@/hooks/use-debounce'
 
 import type { GameOption, QuoteFormState } from '@/features/quote/types'
@@ -68,7 +70,6 @@ export default function QuotePage() {
     data: quoteData,
     isLoading,
     isRefetching,
-    refetch,
   } = useQuery({
     queryKey: ['quote-manage', debouncedKeyword],
     queryFn: () =>
@@ -96,6 +97,8 @@ export default function QuotePage() {
       })),
     [gameCards],
   )
+
+  const exportDialog = useQuoteExportDialog(gameOptions)
 
   const openCreateDialog = () => {
     setEditingItem(null)
@@ -203,12 +206,14 @@ export default function QuotePage() {
       <motion.div variants={itemVariants}>
         <QuoteToolArea
           keywordInput={keywordInput}
+          isExporting={exportDialog.isExporting}
           onKeywordInputChange={(value: string) => {
             setKeywordInput(value)
             setPage(1)
           }}
           onSearch={handleSearch}
           onCreate={openCreateDialog}
+          onExport={exportDialog.openDialog}
         />
       </motion.div>
 
@@ -262,6 +267,21 @@ export default function QuotePage() {
           }
         }}
         onConfirm={() => void handleDelete()}
+      />
+
+      <QuoteExportDialog
+        open={exportDialog.open}
+        gameOptions={gameOptions}
+        selectedGameIds={exportDialog.selectedGameIds}
+        method={exportDialog.method}
+        isExporting={exportDialog.isExporting}
+        allSelected={exportDialog.allSelected}
+        someSelected={exportDialog.someSelected}
+        onOpenChange={exportDialog.setOpen}
+        onToggleGame={exportDialog.toggleGame}
+        onToggleAll={exportDialog.toggleAll}
+        onMethodChange={exportDialog.setMethod}
+        onSubmit={() => void exportDialog.submit()}
       />
     </motion.div>
   )

@@ -83,6 +83,44 @@ export const deleteQuoteManageItem = async (id: number) => {
   }
 }
 
+const resolveDownloadFileName = (headers: Record<string, unknown>, fallback: string) => {
+  const contentDisposition =
+    (headers['content-disposition'] as string | undefined) ??
+    (headers['Content-Disposition'] as string | undefined)
+
+  if (!contentDisposition) {
+    return fallback
+  }
+
+  const match = contentDisposition.match(/filename\*?=(?:UTF-8''|"?)([^";]+)/i)
+  return match?.[1] ? decodeURIComponent(match[1].replace(/"/g, '')) : fallback
+}
+
+export const exportQuoteXlsxApi = async (params?: {
+  keyword?: string
+  dateFrom?: string
+  dateTo?: string
+  gameIds?: number[]
+}) => {
+  const response = await api.get('/quote/export-xlsx', {
+    params: {
+      keyword: params?.keyword ?? '',
+      dateFrom: params?.dateFrom ?? '',
+      dateTo: params?.dateTo ?? '',
+      gameIds: params?.gameIds?.length ? params.gameIds.join(',') : '',
+    },
+    responseType: 'blob',
+  })
+
+  const count = Number(response.headers['x-export-count']) || 0
+  const fileName = resolveDownloadFileName(
+    response.headers as Record<string, unknown>,
+    'vnweb-quotes.xlsx',
+  )
+
+  return { blob: response.data as Blob, fileName, count }
+}
+
 export const getGameQuotesByGameId = async (gameId: number) => {
   const response = await api.get('/quote', {
     params: {

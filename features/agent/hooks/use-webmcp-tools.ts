@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react'
 
-import { listWebMcpTools } from '@/features/agent/lib/webmcp-client'
+import { listWebMcpTools } from '@/webmcp/lib'
 
 export type WebMcpToolsStatus = 'loading' | 'ready' | 'error'
 

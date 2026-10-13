@@ -9,7 +9,7 @@ import {
   listWebMcpTools,
   parseToolCallArguments,
   toAgentToolDefinitions,
-} from '@/features/agent/lib/webmcp-client'
+} from '@/webmcp/lib'
 
 import type { AgentChatUiMessage } from '@/features/agent/lib/chat-types'
 import type { AgentChatMessage } from '@/types/agent'
