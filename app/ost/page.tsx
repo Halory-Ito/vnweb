@@ -7,7 +7,6 @@ import { toast } from 'sonner'
 import {
   createOstManageItem,
   deleteOstManageItem,
-  getGameCardList,
   getOstManageList,
   updateOstManageItem,
 } from '@/api'
@@ -48,12 +47,6 @@ export default function OSTPage() {
   // Pagination state
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
-
-  // 获取游戏列表用于表单
-  const { data: gameCards = [] } = useQuery({
-    queryKey: ['game-cards'],
-    queryFn: () => getGameCardList(),
-  })
 
   const {
     data: ostData,
@@ -111,11 +104,6 @@ export default function OSTPage() {
 
   const handleSearch = () => {
     // 筛选逻辑在 useMemo 中处理，这里不需要额外操作
-  }
-
-  const handleReset = () => {
-    setKeywordInput('')
-    setPage(1)
   }
 
   const handleSubmit = async (data: {
@@ -212,14 +200,8 @@ export default function OSTPage() {
     }
   }
 
-  // 游戏选项
-  const gameOptions = gameCards.map((game) => ({
-    id: String(game.id),
-    label: game.title,
-  }))
-
   return (
-    <div className="max-h-[calc(100vh-70px)] w-full space-y-6 overflow-x-hidden overflow-y-scroll p-6">
+    <div className="max-h-[calc(100vh-70px)] w-full space-y-4 overflow-x-hidden overflow-y-scroll p-4">
       <OstSearchToolbar
         keywordInput={keywordInput}
         onKeywordInputChange={(value) => {

@@ -44,7 +44,7 @@ export default function PVPage() {
   const [editingItem, setEditingItem] = useState<PvManageItem | null>(null)
   const [playingItem, setPlayingItem] = useState<PvManageItem | null>(null)
   const [form, setForm] = useState<PvFormState>(defaultForm)
-  const [viewMode, setViewMode] = useState<ViewMode>('grid')
+  const [viewMode] = useState<ViewMode>('grid')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [videoEl, setVideoEl] = useState<HTMLVideoElement | null>(null)
   const hlsRef = useRef<Hls | null>(null)
@@ -69,7 +69,6 @@ export default function PVPage() {
     data: pvData,
     isLoading,
     isRefetching,
-    refetch,
   } = useQuery({
     queryKey: ['pv-manage', keyword],
     queryFn: () =>
@@ -341,7 +340,7 @@ export default function PVPage() {
   }
 
   return (
-    <div className="max-h-[calc(100vh-70px)] w-full space-y-6 overflow-x-hidden overflow-y-scroll p-6">
+    <div className="max-h-[calc(100vh-70px)] w-full space-y-4 overflow-x-hidden overflow-y-scroll p-4">
       <PvSearchToolbar
         keywordInput={keywordInput}
         onKeywordInputChange={(value) => {

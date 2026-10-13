@@ -159,7 +159,7 @@ export default function Scan() {
   const [progress, setProgress] = useState(0)
   const [failedItems, setFailedItems] = useState<ScanErrorItem[]>([])
   const [scanDirectories, setScanDirectories] = useState<ScanDirectoryItem[]>([])
-  const [isLoadingScanners, setIsLoadingScanners] = useState(false)
+  const [, setIsLoadingScanners] = useState(false)
 
   const [failedDialogOpen, setFailedDialogOpen] = useState(false)
   const [globalSettingOpen, setGlobalSettingOpen] = useState(false)
@@ -568,7 +568,7 @@ export default function Scan() {
   }
 
   return (
-    <div className="space-y-4 p-4 sm:p-6">
+    <div className="max-h-[calc(100vh-70px)] w-full space-y-4 overflow-x-hidden overflow-y-scroll p-4">
       <Card variant="outline" className="py-4">
         <CardContent className="px-4">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
