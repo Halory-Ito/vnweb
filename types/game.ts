@@ -65,6 +65,15 @@ export type GameCardListItem = {
   status: number
 }
 
+/** 「按名称或 vndb_id 匹配本地游戏」的结果条目 */
+export type GameResolveItem = {
+  id: number
+  name: string
+  nameCn: string
+  cover: string
+  title: string
+}
+
 export type GameSearchImageItem = {
   id: number
   url: string

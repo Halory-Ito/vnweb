@@ -8,6 +8,7 @@ import {
   getEndingsApi,
   getEndingApi,
   getStepsApi,
+  validateGuideJson,
   GuideEndingWithProgress,
   GuideListItem,
 } from './guide-api'
@@ -30,4 +31,5 @@ export {
   getEndingsApi,
   getEndingApi,
   getStepsApi,
+  validateGuideJson,
 }

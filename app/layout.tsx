@@ -15,6 +15,7 @@ import { SidebarProvider } from '@/components/ui/sidebar'
 import { Toaster } from '@/components/ui/sonner'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { GameWebMcpTools } from '@/webmcp/game'
+import { GuideWebMcpTools } from '@/webmcp/guide'
 import { QuoteWebMcpTools } from '@/webmcp/quote'
 
 export const metadata: Metadata = {
@@ -47,6 +48,7 @@ export default function RootLayout({
                   <TooltipProvider>
                     <AppLayout>{children}</AppLayout>
                     <GameWebMcpTools />
+                    <GuideWebMcpTools />
                     <QuoteWebMcpTools />
                     <Toaster />
                   </TooltipProvider>

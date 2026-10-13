@@ -4,6 +4,7 @@ import type {
   GameCardListItem,
   GameDetail,
   GameFilterState,
+  GameResolveItem,
   GameRuntime,
   GameSearchImageItem,
   GameSidebarProps,
@@ -34,6 +35,17 @@ export const getGameFilterOptions = async () => {
 export const getGameById = async (id: string) => {
   const response = await api.get(`/game/${id}`)
   return (response.data as { data: GameDetail }).data
+}
+
+/** 按游戏名称（中文名/原名/别名）或 vndb_id 在本地游戏库中匹配游戏 */
+export const resolveGameIdApi = async (keyword: string, params?: { includeNsfw?: boolean }) => {
+  const response = await api.get<{ data: { items: GameResolveItem[] } }>('/game/resolve', {
+    params: {
+      keyword,
+      includeNsfw: params?.includeNsfw ?? true,
+    },
+  })
+  return response.data.data.items
 }
 
 export const getGameRuntimeById = async (id: number) => {
