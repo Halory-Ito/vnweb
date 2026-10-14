@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -104,6 +105,9 @@ export function PvFormDialog({
       <DialogContent className="sm:max-w-xl">
         <DialogHeader>
           <DialogTitle>{editingItem ? '编辑 PV' : '新增 PV'}</DialogTitle>
+          <DialogDescription className="sr-only">
+            填写 PV 所属游戏、名称、链接等信息
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-3">

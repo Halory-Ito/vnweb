@@ -5,6 +5,7 @@ import { useCallback, useRef, useState } from 'react'
 import { streamAgentChatApi } from '@/api'
 import { buildUserContent } from '@/features/agent/lib/chat-attachments'
 import { toToolRun } from '@/features/agent/lib/chat-types'
+import { isAgentToolUi } from '@/features/agent/lib/tool-ui'
 import {
   executeWebMcpTool,
   listWebMcpTools,
@@ -14,6 +15,7 @@ import {
 
 import type { AgentChatAttachment } from '@/features/agent/lib/chat-attachments'
 import type { AgentChatUiMessage } from '@/features/agent/lib/chat-types'
+import type { AgentToolUi } from '@/features/agent/lib/tool-ui'
 import type { AgentChatMessage } from '@/types/agent'
 
 /** 单次提问允许的最大工具调用轮数 */
@@ -23,6 +25,16 @@ const createMessageId = () =>
   typeof crypto !== 'undefined' && 'randomUUID' in crypto
     ? crypto.randomUUID()
     : `${Date.now()}-${Math.random().toString(16).slice(2)}`
+
+/** 从工具结果字符串里提取生成式 UI 描述（没有或格式不对则返回 undefined） */
+const parseToolUi = (raw: string): AgentToolUi | undefined => {
+  try {
+    const parsed = JSON.parse(raw) as { ui?: unknown }
+    return isAgentToolUi(parsed?.ui) ? parsed.ui : undefined
+  } catch {
+    return undefined
+  }
+}
 
 type UseAgentChatOptions = {
   configId: string
@@ -136,11 +148,12 @@ export function useAgentChat({ configId }: UseAgentChatOptions) {
               try {
                 const args = parseToolCallArguments(toolCall.function.arguments)
                 toolContent = await executeWebMcpTool(toolCall.function.name, args)
+                const ui = parseToolUi(toolContent)
                 patchMessage(assistantId, (message) => ({
                   ...message,
                   toolRuns: message.toolRuns.map((run) =>
                     run.id === toolCall.id
-                      ? { ...run, status: 'success', result: toolContent }
+                      ? { ...run, status: 'success', result: toolContent, ui }
                       : run,
                   ),
                 }))

@@ -35,6 +35,7 @@ import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -388,6 +389,9 @@ export default function GameHome() {
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
             <DialogTitle>新建合集</DialogTitle>
+            <DialogDescription className="sr-only">
+              输入合集名称后创建，创建完成后可把游戏加入该合集
+            </DialogDescription>
           </DialogHeader>
           <Input
             value={newCollectionName}

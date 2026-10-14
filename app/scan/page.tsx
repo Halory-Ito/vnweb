@@ -21,6 +21,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -661,6 +662,7 @@ export default function Scan() {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>失败列表</DialogTitle>
+            <DialogDescription className="sr-only">查看本次扫描中失败的项目</DialogDescription>
           </DialogHeader>
           <div className="max-h-64 space-y-2 overflow-y-auto">
             {isLoadingErrors ? (
@@ -702,6 +704,9 @@ export default function Scan() {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>全局设置</DialogTitle>
+            <DialogDescription className="sr-only">
+              配置扫描的全局选项，例如排除路径
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
             <div className="flex gap-2">
@@ -770,6 +775,7 @@ export default function Scan() {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>添加扫描目录列表</DialogTitle>
+            <DialogDescription className="sr-only">添加一个用于扫描的目录路径</DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
             <div className="flex gap-2">
@@ -854,6 +860,7 @@ export default function Scan() {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>修改扫描目录</DialogTitle>
+            <DialogDescription className="sr-only">修改该扫描目录的路径</DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
             <div className="flex gap-2">

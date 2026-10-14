@@ -22,6 +22,7 @@ import {
   Sheet,
   SheetClose,
   SheetContent,
+  SheetDescription,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
@@ -76,6 +77,9 @@ export default function MobileNav() {
             />
             <span>VNWeb</span>
           </SheetTitle>
+          <SheetDescription className="sr-only">
+            站点主导航，包含主页、游戏库、记录、扫描、攻略、PV、OST、摘录与设置等入口
+          </SheetDescription>
         </SheetHeader>
         <nav className="flex-1 overflow-y-auto p-4">
           <ul className="flex flex-col gap-1">

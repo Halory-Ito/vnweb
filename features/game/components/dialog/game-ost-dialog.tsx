@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -22,6 +23,7 @@ export default function GameOSTDialog({ gameId, open, onOpenChange }: GameOSTDia
       <DialogContent className="sm:max-w-4xl">
         <DialogHeader>
           <DialogTitle>修改游戏OST</DialogTitle>
+          <DialogDescription className="sr-only">管理该游戏关联的 OST 曲目</DialogDescription>
         </DialogHeader>
 
         <GameMediaManager gameId={gameId} mediaType="ost" />

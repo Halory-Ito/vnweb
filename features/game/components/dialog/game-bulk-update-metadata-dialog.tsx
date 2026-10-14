@@ -11,6 +11,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -186,6 +187,9 @@ export default function GameBulkUpdateMetadataDialog({
       <DialogContent className="sm:max-w-3xl">
         <DialogHeader>
           <DialogTitle>批量更新元数据</DialogTitle>
+          <DialogDescription className="sr-only">
+            从指定数据源批量更新所选游戏的元数据
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">

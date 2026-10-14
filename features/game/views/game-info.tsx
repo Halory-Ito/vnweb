@@ -318,7 +318,7 @@ export default function GameInfo({ game, initialTab }: GameInfoProps) {
 
           <div>
             <Tabs value={currentTab} onValueChange={handleTabChange} className="mx-auto w-full">
-              <div className="scrollbar-none -mx-4 overflow-x-auto px-4 md:mx-0 md:px-0">
+              <div className="-mx-4 scrollbar-none overflow-x-auto px-4 md:mx-0 md:px-0">
                 <TabsList className="mx-auto w-max dark:bg-transparent">
                   <TabsTrigger value="overview">概览</TabsTrigger>
                   <TabsTrigger value="characters">相关人物</TabsTrigger>

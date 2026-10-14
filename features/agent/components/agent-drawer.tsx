@@ -11,6 +11,7 @@ import {
   Drawer,
   DrawerClose,
   DrawerContent,
+  DrawerDescription,
   DrawerHeader,
   DrawerTitle,
 } from '@/components/ui/drawer'
@@ -48,6 +49,9 @@ export function AgentDrawer() {
         <DrawerContent className="gap-0" style={{ width: 'min(100vw, 32rem)', maxWidth: 'none' }}>
           <DrawerHeader className="flex-row items-center justify-between gap-0 border-b p-4">
             <DrawerTitle>AI 助手</DrawerTitle>
+            <DrawerDescription className="sr-only">
+              AI 助手面板：查看 WebMCP 工具、与模型对话、管理模型配置
+            </DrawerDescription>
             <DrawerClose asChild>
               <Button variant="ghost" size="icon-sm" aria-label="关闭">
                 <XIcon />

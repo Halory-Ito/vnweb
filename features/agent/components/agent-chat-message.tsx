@@ -29,9 +29,11 @@ function ReasoningBlock({ text, streaming }: { text: string; streaming: boolean 
 export function AgentChatMessage({
   message,
   isStreaming,
+  onFollowUp,
 }: {
   message: AgentChatUiMessage
   isStreaming: boolean
+  onFollowUp: (text: string) => void
 }) {
   if (message.role === 'user') {
     return (
@@ -68,7 +70,7 @@ export function AgentChatMessage({
       ) : null}
 
       {message.toolRuns.map((run) => (
-        <AgentToolRunCard key={run.id} run={run} />
+        <AgentToolRunCard key={run.id} run={run} onFollowUp={onFollowUp} disabled={isStreaming} />
       ))}
 
       {message.stopped ? <div className="text-muted-foreground text-xs">已停止生成</div> : null}

@@ -16,6 +16,7 @@ import { Toaster } from '@/components/ui/sonner'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { GameWebMcpTools } from '@/webmcp/game'
 import { GuideWebMcpTools } from '@/webmcp/guide'
+import { OstWebMcpTools } from '@/webmcp/ost'
 import { QuoteWebMcpTools } from '@/webmcp/quote'
 
 export const metadata: Metadata = {
@@ -49,6 +50,7 @@ export default function RootLayout({
                     <AppLayout>{children}</AppLayout>
                     <GameWebMcpTools />
                     <GuideWebMcpTools />
+                    <OstWebMcpTools />
                     <QuoteWebMcpTools />
                     <Toaster />
                   </TooltipProvider>

@@ -5,14 +5,12 @@ import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { useWebMCP } from 'usewebmcp'
 
-import { resolveGameIdApi } from '@/api'
 import { getGuideApi, importGuideApi, validateGuideJson } from '@/features/guide'
 import {
   IMPORT_GUIDE_TOOL_NAME,
   importGuideToolInputSchema,
 } from '@/webmcp/guide/lib/import-guide-tool-schema'
-
-import type { GameResolveItem } from '@/types'
+import { resolveTargetGame } from '@/webmcp/lib'
 
 /** 把 guide 参数（对象或 JSON 字符串）解析为通过校验的攻略数据 */
 const parseGuide = (raw: unknown) => {
@@ -39,37 +37,6 @@ const parseGuide = (raw: unknown) => {
     const detail = issue?.message ? `${path}${issue.message}` : (error as Error).message
     throw new Error(`攻略数据不符合格式：${detail}`)
   }
-}
-
-type ResolveTargetResult =
-  | { ok: true; game: GameResolveItem }
-  | { ok: false; reason: 'game-not-found' | 'multiple-matches'; message: string }
-
-/** 在本地游戏库中定位目标游戏：0 个 / 多个都返回可读原因，交给模型纠正后重试 */
-const resolveTargetGame = async (keyword: string): Promise<ResolveTargetResult> => {
-  const candidates = await resolveGameIdApi(keyword)
-
-  if (candidates.length === 0) {
-    return {
-      ok: false,
-      reason: 'game-not-found',
-      message: `游戏库中未找到「${keyword}」，请确认游戏名称或 vndb_id 是否正确，或先把该游戏添加到游戏库`,
-    }
-  }
-
-  if (candidates.length > 1) {
-    const list = candidates
-      .slice(0, 5)
-      .map((item, index) => `${index + 1}. ${item.title}（id ${item.id}）`)
-      .join('；')
-    return {
-      ok: false,
-      reason: 'multiple-matches',
-      message: `「${keyword}」匹配到多个游戏，请用更精确的名称或 vndb_id 重新指定：${list}`,
-    }
-  }
-
-  return { ok: true, game: candidates[0] }
 }
 
 const countSteps = (routes: ReturnType<typeof validateGuideJson>['routes']) =>

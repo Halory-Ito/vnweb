@@ -29,6 +29,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -352,6 +353,9 @@ export default function GameCharacters({ gameId }: GameCharactersProps) {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>角色同步设置</DialogTitle>
+            <DialogDescription className="sr-only">
+              选择角色数据来源并填写游戏 ID，用于同步角色信息
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
             <div className="space-y-1">

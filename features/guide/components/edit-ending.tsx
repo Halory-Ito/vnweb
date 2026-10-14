@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -104,6 +105,7 @@ export function EditEnding({ endingId, gameId, onSuccess }: EditEndingProps) {
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>编辑结局</DialogTitle>
+          <DialogDescription className="sr-only">修改结局名称等信息</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">

@@ -101,6 +101,45 @@ export type GuideListItem = {
   percentage: number
 }
 
+// 下拉用：路线选项（带所属攻略名）
+export type GuideRouteOption = {
+  id: string
+  name: string
+  guideId: number
+  guideName: string
+}
+
+// 下拉用：结局选项（带所属路线与攻略名）
+export type GuideEndingOption = {
+  id: string
+  name: string
+  type: string
+  routeId: number
+  routeName: string
+  guideId: number
+  guideName: string
+}
+
+export type CreateRouteParams = {
+  guideId: number
+  name: string
+}
+
+export type CreateEndingParams = {
+  routeId: number
+  name: string
+  type: string
+}
+
+export type CreateStepParams = {
+  endingId: number
+  type: string
+  content: string
+  group?: string
+  prefix?: string
+  subfix?: string
+}
+
 // 搜索攻略
 export async function searchGuidesApi(
   keyword: string,
@@ -163,6 +202,56 @@ export async function updateRouteSortApi(
     url: '/guide/route/sort',
     data: { routes },
   })
+}
+
+// 新增路线
+export async function createRouteApi(params: CreateRouteParams): Promise<{ id: string }> {
+  const res = await api.request({
+    method: 'POST',
+    url: '/guide/route',
+    data: params,
+  })
+  return res.data
+}
+
+// 获取路线下拉选项（可按攻略过滤）
+export async function getRouteOptionsApi(guideId?: number): Promise<GuideRouteOption[]> {
+  const res = await api.request({
+    method: 'GET',
+    url: '/guide/routes',
+    params: guideId ? { guideId } : undefined,
+  })
+  return res.data
+}
+
+// 新增结局
+export async function createEndingApi(params: CreateEndingParams): Promise<{ id: string }> {
+  const res = await api.request({
+    method: 'POST',
+    url: '/guide/ending',
+    data: params,
+  })
+  return res.data
+}
+
+// 获取结局下拉选项（可按攻略过滤）
+export async function getEndingOptionsApi(guideId?: number): Promise<GuideEndingOption[]> {
+  const res = await api.request({
+    method: 'GET',
+    url: '/guide/endings',
+    params: guideId ? { guideId } : undefined,
+  })
+  return res.data
+}
+
+// 新增步骤
+export async function createStepApi(params: CreateStepParams): Promise<{ id: string }> {
+  const res = await api.request({
+    method: 'POST',
+    url: '/guide/step',
+    data: params,
+  })
+  return res.data
 }
 
 // 获取路线信息
@@ -270,6 +359,16 @@ export async function updateGuideApi(
     url: `/guide/${gameId}`,
     data,
   })
+}
+
+// 删除攻略（支持批量）
+export async function deleteGuidesApi(ids: number[]): Promise<{ deleted: number }> {
+  const res = await api.request({
+    method: 'DELETE',
+    url: '/guide',
+    params: { ids: ids.join(',') },
+  })
+  return res.data
 }
 
 // 获取游戏角色列表

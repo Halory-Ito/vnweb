@@ -10,7 +10,12 @@ const nextConfig: NextConfig = {
   logging: {
     incomingRequests: false, // 关闭请求日志
   },
-  allowedDevOrigins: ['http://localhost:8999', 'http://192.168.1.6:8999', 'http://192.168.1.6'],
+  allowedDevOrigins: [
+    'http://localhost:8999',
+    'http://192.168.1.6:8999',
+    'http://192.168.1.6',
+    '10.180.55.235',
+  ],
   images: {
     remotePatterns: [
       {

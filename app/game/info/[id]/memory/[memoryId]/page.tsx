@@ -28,6 +28,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -465,6 +466,9 @@ export default function GameMemoryDetailPage() {
         <DialogContent className="sm:max-w-xl">
           <DialogHeader>
             <DialogTitle>编辑游戏回忆</DialogTitle>
+            <DialogDescription className="sr-only">
+              修改回忆的截图、内容与日期等信息
+            </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-5">

@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -55,6 +56,9 @@ export function AgentConfigDialog({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{draft.id ? '编辑模型配置' : '新增模型配置'}</DialogTitle>
+          <DialogDescription className="sr-only">
+            填写 OpenAI 兼容的接口地址、API Key 与模型名称，可先测试连接再保存
+          </DialogDescription>
         </DialogHeader>
 
         <FieldGroup className="gap-4">

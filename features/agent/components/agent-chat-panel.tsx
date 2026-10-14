@@ -133,7 +133,12 @@ export function AgentChatPanel({
           </Empty>
         ) : (
           chat.messages.map((message) => (
-            <AgentChatMessage key={message.id} message={message} isStreaming={chat.isStreaming} />
+            <AgentChatMessage
+              key={message.id}
+              message={message}
+              isStreaming={chat.isStreaming}
+              onFollowUp={(text) => void chat.send(text)}
+            />
           ))
         )}
       </div>

@@ -5,6 +5,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -55,6 +56,7 @@ export function QuoteExportDialog({
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>导出摘录</DialogTitle>
+          <DialogDescription className="sr-only">选择游戏与导出方式后导出摘录</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-5">

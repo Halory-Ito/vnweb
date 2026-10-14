@@ -51,10 +51,7 @@ const settingsItems: SettingsProps = [
 
 export default function Settings() {
   return (
-    <Tabs
-      defaultValue={settingsItems[0].value}
-      className="max-h-[calc(100vh-144px)] w-full overflow-y-scroll"
-    >
+    <Tabs defaultValue={settingsItems[0].value} className="w-full">
       <TabsList className="dark:bg-transparent">
         {settingsItems.map((item) => (
           <TabsTrigger key={item.value} value={item.value}>
@@ -63,7 +60,7 @@ export default function Settings() {
         ))}
       </TabsList>
       {settingsItems.map((item) => (
-        <TabsContent key={item.value} value={item.value} className="pb-4">
+        <TabsContent key={item.value} value={item.value}>
           {item.comp}
         </TabsContent>
       ))}

@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -220,6 +221,7 @@ export default function GameMemory({ gameId }: GameMemoryProps) {
         <DialogContent className="sm:max-w-xl">
           <DialogHeader>
             <DialogTitle>新增游戏回忆</DialogTitle>
+            <DialogDescription className="sr-only">上传截图并填写回忆内容与日期</DialogDescription>
           </DialogHeader>
 
           <div className="space-y-5">

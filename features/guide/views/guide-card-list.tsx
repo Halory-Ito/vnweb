@@ -8,8 +8,10 @@ import { useMemo, useState } from 'react'
 
 import { Pagination } from '@/components/custom-pagination'
 import GuideCard from '@/features/guide/components/guide-card'
+import GuideSelectionToolbar from '@/features/guide/components/guide-selection-toolbar'
 import { fastContainerVariants, cardVariants } from '@/features/guide/data/motion'
 import { getGuideListApi } from '@/features/guide/guide-api'
+import { useGuideSelection } from '@/features/guide/hooks/use-guide-selection'
 
 export default function GuideCardList() {
   const router = useRouter()
@@ -21,6 +23,16 @@ export default function GuideCardList() {
   // Pagination state
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(20)
+
+  const {
+    selectedIds,
+    isDeleting,
+    isSelectionMode,
+    toggleSelect,
+    clearSelection,
+    selectAll,
+    deleteSelected,
+  } = useGuideSelection()
 
   const allItems = guides ?? []
   const total = allItems.length
@@ -59,7 +71,13 @@ export default function GuideCardList() {
       >
         {items.map((guide) => (
           <motion.div key={guide.id} variants={cardVariants}>
-            <GuideCard guide={guide} onClick={() => router.push('/guide/' + guide.gameId)} />
+            <GuideCard
+              guide={guide}
+              selectionMode={isSelectionMode}
+              isSelected={selectedIds.includes(guide.id)}
+              onToggleSelect={toggleSelect}
+              onClick={() => router.push('/guide/' + guide.gameId)}
+            />
           </motion.div>
         ))}
       </motion.div>
@@ -76,6 +94,17 @@ export default function GuideCardList() {
         }}
         pageSizeOptions={['10', '20', '40', '80']}
       />
+
+      {isSelectionMode ? (
+        <GuideSelectionToolbar
+          selectedCount={selectedIds.length}
+          totalCount={total}
+          isDeleting={isDeleting}
+          onSelectAll={() => selectAll(allItems.map((item) => item.id))}
+          onClear={clearSelection}
+          onConfirmDelete={deleteSelected}
+        />
+      ) : null}
     </div>
   )
 }

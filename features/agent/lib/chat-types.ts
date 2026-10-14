@@ -1,6 +1,7 @@
 // Agent 对话 UI 内部类型（仅模块内使用）
 
 import type { AgentChatAttachment } from './chat-attachments'
+import type { AgentToolUi } from './tool-ui'
 import type { AgentToolCall } from '@/types/agent'
 
 export type AgentToolRunStatus = 'running' | 'success' | 'error'
@@ -12,6 +13,8 @@ export type AgentToolRun = {
   arguments: string
   status: AgentToolRunStatus
   result?: string
+  /** 工具结果里携带的生成式 UI 描述（有则在卡片上渲染可交互界面） */
+  ui?: AgentToolUi
 }
 
 /** 对话面板中展示的一条消息 */

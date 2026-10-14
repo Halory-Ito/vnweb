@@ -2,7 +2,13 @@
 
 import { ExternalLinkIcon } from 'lucide-react'
 
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 
 import type { PvItem, PvPlayerMode } from '../types'
 
@@ -28,6 +34,9 @@ export function PvPlayerDialog({
       <DialogContent className="w-[92vw] max-w-5xl">
         <DialogHeader>
           <DialogTitle>{item?.name || '播放 PV'}</DialogTitle>
+          <DialogDescription className="sr-only">
+            播放所选 PV，支持直接播放与内嵌播放
+          </DialogDescription>
         </DialogHeader>
 
         {mode === 'direct' ? (

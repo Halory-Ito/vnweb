@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -74,6 +75,7 @@ export default function GameRatingDialog({
       <DialogContent className="sm:max-w-sm">
         <DialogHeader>
           <DialogTitle>我的评分</DialogTitle>
+          <DialogDescription className="sr-only">设置该游戏的评分（0-10）</DialogDescription>
         </DialogHeader>
 
         <Input

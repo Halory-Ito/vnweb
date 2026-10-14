@@ -1,6 +1,13 @@
 export { GameWebMcpTools } from './components/game-webmcp-tools'
 export { useAddGameTool } from './hooks/use-add-game-tool'
+export { useSyncCharactersTool } from './hooks/use-sync-characters-tool'
+export { useSyncPvTool } from './hooks/use-sync-pv-tool'
 export { ADD_GAME_TOOL_NAME, addGameToolInputSchema } from './lib/add-game-tool-schema'
+export {
+  SYNC_CHARACTERS_TOOL_NAME,
+  syncCharactersToolInputSchema,
+} from './lib/sync-characters-tool-schema'
+export { SYNC_PV_TOOL_NAME, syncPvToolInputSchema } from './lib/sync-pv-tool-schema'
 export {
   DEFAULT_GAME_IMAGE_SOURCE,
   GAME_IMAGE_ASSET_LABEL_MAP,

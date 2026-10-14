@@ -1,20 +1,19 @@
 'use client'
 
-import { useQuery } from '@tanstack/react-query'
 import { Flag, Loader2 } from 'lucide-react'
-import { useState } from 'react'
-import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import {
   Select,
   SelectContent,
@@ -22,63 +21,26 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { api } from '@/lib/request-utils'
-
-type Route = {
-  id: string
-  name: string
-}
+import { useAddEndingDialog } from '@/features/guide/hooks/use-add-ending-dialog'
 
 export default function AddEnding() {
-  const [open, setOpen] = useState(false)
-  const [name, setName] = useState('')
-  const [type, setType] = useState('normal')
-  const [selectedRouteId, setSelectedRouteId] = useState('')
-  const [isSubmitting, setIsSubmitting] = useState(false)
-
-  // 获取路线列表
-  const { data: routes = [] } = useQuery<Route[]>({
-    queryKey: ['guide-routes'],
-    queryFn: () => api.get('/guide/routes'),
-    enabled: open,
-  })
-
-  const handleSubmit = async () => {
-    if (!name.trim()) {
-      toast.error('请输入结局名称')
-      return
-    }
-    if (!selectedRouteId) {
-      toast.error('请选择路线')
-      return
-    }
-
-    setIsSubmitting(true)
-    try {
-      await api.post('/guide/ending', {
-        name: name.trim(),
-        type,
-        routeId: selectedRouteId,
-      })
-      toast.success('结局添加成功')
-      setOpen(false)
-      resetForm()
-    } catch (error) {
-      console.error('添加结局失败:', error)
-      toast.error('添加结局失败，请稍后重试')
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
-
-  const resetForm = () => {
-    setName('')
-    setType('normal')
-    setSelectedRouteId('')
-  }
+  const {
+    open,
+    handleOpenChange,
+    routes,
+    name,
+    setName,
+    type,
+    setType,
+    selectedRouteId,
+    setSelectedRouteId,
+    canSubmit,
+    isSubmitting,
+    submit,
+  } = useAddEndingDialog()
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <Button type="button" variant="outline" className="h-10 gap-2">
           <Flag className="h-4 w-4" />
@@ -88,39 +50,46 @@ export default function AddEnding() {
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>新增结局</DialogTitle>
+          <DialogDescription className="sr-only">选择所属路线并填写结局信息</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
           {/* 选择路线 */}
           <div className="space-y-2">
-            <div className="text-sm font-medium">所属路线</div>
+            <Label>所属路线</Label>
             <Select value={selectedRouteId} onValueChange={setSelectedRouteId}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="请选择路线" />
               </SelectTrigger>
               <SelectContent>
-                {routes.map((route) => (
-                  <SelectItem key={route.id} value={route.id}>
-                    {route.name}
+                {routes.length === 0 ? (
+                  <SelectItem value="__empty__" disabled>
+                    暂无路线，请先新增路线
                   </SelectItem>
-                ))}
+                ) : (
+                  routes.map((route) => (
+                    <SelectItem key={route.id} value={route.id}>
+                      {route.guideName} - {route.name}
+                    </SelectItem>
+                  ))
+                )}
               </SelectContent>
             </Select>
           </div>
 
           {/* 结局名称 */}
           <div className="space-y-2">
-            <div className="text-sm font-medium">结局名称</div>
+            <Label>结局名称</Label>
             <Input
               placeholder="输入结局名称..."
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(event) => setName(event.target.value)}
             />
           </div>
 
           {/* 结局类型 */}
           <div className="space-y-2">
-            <div className="text-sm font-medium">结局类型</div>
+            <Label>结局类型</Label>
             <Select value={type} onValueChange={setType}>
               <SelectTrigger className="w-full">
                 <SelectValue />
@@ -139,16 +108,12 @@ export default function AddEnding() {
           <Button
             type="button"
             variant="outline"
-            onClick={() => setOpen(false)}
+            onClick={() => handleOpenChange(false)}
             disabled={isSubmitting}
           >
             取消
           </Button>
-          <Button
-            type="button"
-            onClick={handleSubmit}
-            disabled={!name.trim() || !selectedRouteId || isSubmitting}
-          >
+          <Button type="button" onClick={() => void submit()} disabled={!canSubmit || isSubmitting}>
             {isSubmitting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />

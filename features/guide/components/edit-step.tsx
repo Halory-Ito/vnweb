@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -96,6 +97,7 @@ export function EditStep({ stepId, onSuccess }: EditStepProps) {
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>编辑步骤</DialogTitle>
+          <DialogDescription className="sr-only">修改步骤类型与内容</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">

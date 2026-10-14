@@ -1,20 +1,19 @@
 'use client'
 
-import { useQuery } from '@tanstack/react-query'
 import { Footprints, Loader2 } from 'lucide-react'
-import { useState } from 'react'
-import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import {
   Select,
   SelectContent,
@@ -22,73 +21,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { api } from '@/lib/request-utils'
+import { useAddStepDialog } from '@/features/guide/hooks/use-add-step-dialog'
 
-type Ending = {
-  id: string
-  name: string
-  routeName: string
-}
+const STEP_TYPE_OPTIONS = [
+  { value: 'choice', label: '选项' },
+  { value: 'save', label: '存档' },
+  { value: 'load', label: '读档' },
+  { value: 'note', label: '备注' },
+]
 
 export default function AddStep() {
-  const [open, setOpen] = useState(false)
-  const [type, setType] = useState('choice')
-  const [content, setContent] = useState('')
-  const [group, setGroup] = useState('')
-  const [prefix, setPrefix] = useState('')
-  const [subfix, setSubfix] = useState('')
-  const [selectedEndingId, setSelectedEndingId] = useState('')
-  const [isSubmitting, setIsSubmitting] = useState(false)
-
-  // 获取结局列表
-  const { data: endings = [] } = useQuery<Ending[]>({
-    queryKey: ['guide-endings'],
-    queryFn: () => api.get('/guide/endings'),
-    enabled: open,
-  })
-
-  const handleSubmit = async () => {
-    if (!content.trim()) {
-      toast.error('请输入步骤内容')
-      return
-    }
-    if (!selectedEndingId) {
-      toast.error('请选择结局')
-      return
-    }
-
-    setIsSubmitting(true)
-    try {
-      await api.post('/guide/step', {
-        type,
-        content: content.trim(),
-        group: group.trim() || undefined,
-        prefix: prefix.trim() || undefined,
-        subfix: subfix.trim() || undefined,
-        endingId: selectedEndingId,
-      })
-      toast.success('步骤添加成功')
-      setOpen(false)
-      resetForm()
-    } catch (error) {
-      console.error('添加步骤失败:', error)
-      toast.error('添加步骤失败，请稍后重试')
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
-
-  const resetForm = () => {
-    setType('choice')
-    setContent('')
-    setGroup('')
-    setPrefix('')
-    setSubfix('')
-    setSelectedEndingId('')
-  }
+  const { open, handleOpenChange, endings, form, setField, canSubmit, isSubmitting, submit } =
+    useAddStepDialog()
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <Button type="button" variant="outline" className="h-10 gap-2">
           <Footprints className="h-4 w-4" />
@@ -98,84 +45,94 @@ export default function AddStep() {
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>新增步骤</DialogTitle>
+          <DialogDescription className="sr-only">
+            选择所属结局并填写步骤类型与内容
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
           {/* 选择结局 */}
           <div className="space-y-2">
-            <div className="text-sm font-medium">所属结局</div>
-            <Select value={selectedEndingId} onValueChange={setSelectedEndingId}>
+            <Label>所属结局</Label>
+            <Select value={form.endingId} onValueChange={(value) => setField('endingId', value)}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="请选择结局" />
               </SelectTrigger>
               <SelectContent>
-                {endings.map((ending) => (
-                  <SelectItem key={ending.id} value={ending.id}>
-                    {ending.routeName} - {ending.name}
+                {endings.length === 0 ? (
+                  <SelectItem value="__empty__" disabled>
+                    暂无结局，请先新增结局
                   </SelectItem>
-                ))}
+                ) : (
+                  endings.map((ending) => (
+                    <SelectItem key={ending.id} value={ending.id}>
+                      {ending.guideName} - {ending.routeName} - {ending.name}
+                    </SelectItem>
+                  ))
+                )}
               </SelectContent>
             </Select>
           </div>
 
           {/* 步骤类型 */}
           <div className="space-y-2">
-            <div className="text-sm font-medium">步骤类型</div>
-            <Select value={type} onValueChange={setType}>
+            <Label>步骤类型</Label>
+            <Select value={form.type} onValueChange={(value) => setField('type', value)}>
               <SelectTrigger className="w-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="choice">选项</SelectItem>
-                <SelectItem value="save">存档</SelectItem>
-                <SelectItem value="load">读档</SelectItem>
-                <SelectItem value="note">备注</SelectItem>
+                {STEP_TYPE_OPTIONS.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
 
           {/* 步骤内容 */}
           <div className="space-y-2">
-            <div className="text-sm font-medium">步骤内容</div>
+            <Label>步骤内容</Label>
             <Input
               placeholder="输入步骤内容..."
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
+              value={form.content}
+              onChange={(event) => setField('content', event.target.value)}
             />
           </div>
 
           {/* 分组（可选） */}
           <div className="space-y-2">
-            <div className="text-sm font-medium">
+            <Label>
               分组 <span className="text-muted-foreground">(可选)</span>
-            </div>
+            </Label>
             <Input
               placeholder="例如：7月15日"
-              value={group}
-              onChange={(e) => setGroup(e.target.value)}
+              value={form.group}
+              onChange={(event) => setField('group', event.target.value)}
             />
           </div>
 
           {/* 前缀和后缀 */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <div className="text-sm font-medium">
+              <Label>
                 前缀 <span className="text-muted-foreground">(可选)</span>
-              </div>
+              </Label>
               <Input
                 placeholder="例如：★"
-                value={prefix}
-                onChange={(e) => setPrefix(e.target.value)}
+                value={form.prefix}
+                onChange={(event) => setField('prefix', event.target.value)}
               />
             </div>
             <div className="space-y-2">
-              <div className="text-sm font-medium">
+              <Label>
                 后缀 <span className="text-muted-foreground">(可选)</span>
-              </div>
+              </Label>
               <Input
                 placeholder="输入后缀..."
-                value={subfix}
-                onChange={(e) => setSubfix(e.target.value)}
+                value={form.subfix}
+                onChange={(event) => setField('subfix', event.target.value)}
               />
             </div>
           </div>
@@ -185,16 +142,12 @@ export default function AddStep() {
           <Button
             type="button"
             variant="outline"
-            onClick={() => setOpen(false)}
+            onClick={() => handleOpenChange(false)}
             disabled={isSubmitting}
           >
             取消
           </Button>
-          <Button
-            type="button"
-            onClick={handleSubmit}
-            disabled={!content.trim() || !selectedEndingId || isSubmitting}
-          >
+          <Button type="button" onClick={() => void submit()} disabled={!canSubmit || isSubmitting}>
             {isSubmitting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />

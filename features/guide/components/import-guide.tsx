@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -66,6 +67,9 @@ export default function ImportGuide() {
         <DialogContent className="w-[calc(100vw-2rem)] sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle>导入攻略</DialogTitle>
+            <DialogDescription className="sr-only">
+              通过搜索或粘贴 JSON 数据导入攻略
+            </DialogDescription>
           </DialogHeader>
 
           <Tabs

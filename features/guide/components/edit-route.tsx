@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -74,6 +75,7 @@ export function EditRoute({ routeId, onSuccess }: EditRouteProps) {
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>编辑路线</DialogTitle>
+          <DialogDescription className="sr-only">修改路线名称</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">

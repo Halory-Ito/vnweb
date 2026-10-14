@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -100,6 +101,7 @@ export function EditGuide({ gameId, onSuccess }: EditGuideProps) {
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>编辑攻略</DialogTitle>
+          <DialogDescription className="sr-only">修改攻略名称等信息</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">

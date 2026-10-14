@@ -17,6 +17,7 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -129,6 +130,7 @@ export function RankStatsCard({
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>{title}</DialogTitle>
+            <DialogDescription className="sr-only">查看完整的{title}排名列表</DialogDescription>
           </DialogHeader>
 
           <div className="max-h-[60vh] overflow-y-auto pr-1">

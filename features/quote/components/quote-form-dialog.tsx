@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -100,6 +101,7 @@ export function QuoteFormDialog({
       <DialogContent className="sm:max-w-xl">
         <DialogHeader>
           <DialogTitle>{editingId ? '编辑摘录' : '添加摘录'}</DialogTitle>
+          <DialogDescription className="sr-only">填写摘录所属游戏、内容与出处</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">

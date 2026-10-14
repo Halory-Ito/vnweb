@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -239,6 +240,7 @@ export default function GamePlayTimeDialog({
       <DialogContent className="sm:max-w-3xl">
         <DialogHeader>
           <DialogTitle>游玩时间</DialogTitle>
+          <DialogDescription className="sr-only">添加或调整该游戏的游玩时间记录</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
