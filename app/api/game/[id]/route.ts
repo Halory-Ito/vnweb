@@ -15,6 +15,7 @@ import {
   relateWebsiteTable,
 } from '@/db/schema'
 import { db } from '@/lib/drizzle'
+import { ensureGameCompletionSchema, resolveCompletedAt } from '@/lib/server/game-completion'
 import { localizeGameImageFieldsInBackground } from '@/lib/server/game-image-storage'
 import { syncVndbCharactersByGameId } from '@/lib/server/vndb-character-sync'
 
@@ -543,26 +544,32 @@ const updateGame = async (req: NextRequest, context: { params: Promise<{ id: str
       return NextResponse.json({ error: 'Invalid status' }, { status: 400 })
     }
 
+    await ensureGameCompletionSchema()
+
     const playRows = await db
       .select({
         id: GamePlayTable.id,
+        completedAt: GamePlayTable.completedAt,
       })
       .from(GamePlayTable)
       .where(eq(GamePlayTable.gameId, gameId))
       .limit(1)
 
     const play = playRows[0]
+    const completedAt = resolveCompletedAt(nextStatus, play?.completedAt)
     if (play) {
       await db
         .update(GamePlayTable)
         .set({
           status: nextStatus,
+          completedAt,
         })
         .where(eq(GamePlayTable.id, play.id))
     } else {
       await db.insert(GamePlayTable).values({
         gameId,
         status: nextStatus,
+        completedAt,
       })
     }
 

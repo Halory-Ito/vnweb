@@ -4,6 +4,7 @@ import { AlertCircle, CalendarDaysIcon, FlameIcon, TimerIcon, TrophyIcon } from 
 
 import DashboardSkeleton from '../components/dashboard-skeleton'
 import EmptyLibrary from '../components/empty-library'
+import GoalSection from '../components/goal-section'
 import PlayHeatmap from '../components/play-heatmap'
 import RandomQuote from '../components/random-quote'
 import StatStrip from '../components/stat-strip'
@@ -99,8 +100,10 @@ export default function DashboardHome() {
   return (
     <div className="max-h-[calc(100vh-80px)] w-full overflow-x-hidden overflow-y-auto p-3 sm:p-4">
       <div className="space-y-4">
-        <WelcomeBar />
+        {/*<WelcomeBar />*/}
         <StatStrip items={statItems} />
+
+        <GoalSection />
 
         <div className="grid grid-cols-1 items-start gap-4 xl:grid-cols-5">
           {/* 左栏：最近访问 + 随机摘录 */}
