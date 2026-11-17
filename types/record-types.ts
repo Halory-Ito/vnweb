@@ -32,6 +32,11 @@ export type RecordPlayHeatmapMonth = {
   activeDays: number
 }
 
+export type RecordPlayHeatmapYear = {
+  year: number
+  totalSeconds: number
+}
+
 export type RecordOverviewStats = {
   totalGames: number
   totalPlayTime: number

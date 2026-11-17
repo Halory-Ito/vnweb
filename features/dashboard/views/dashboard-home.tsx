@@ -120,6 +120,7 @@ export default function DashboardHome() {
           <div className="order-1 xl:order-none xl:col-span-2">
             <PlayHeatmap
               data={heatmap.month.data}
+              year={heatmap.year}
               periods={heatmap.periods}
               period={heatmap.period}
               isLoading={heatmap.month.isLoading}

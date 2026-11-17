@@ -59,7 +59,7 @@ export default function MobileNav() {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button variant="outline" size="icon" className="shrink-0">
+        <Button variant="outline" size="icon-lg" className="shrink-0">
           <MenuIcon className="h-5 w-5" />
           <span className="sr-only">打开菜单</span>
         </Button>

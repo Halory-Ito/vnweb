@@ -32,7 +32,7 @@ export default function GoalSection() {
   return (
     <div className="w-full space-y-4">
       <SectionHeader icon={TargetIcon} title="目标" />
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4">
         <GoalCard
           title="每日游玩时长"
           icon={<TimerIcon className="size-4" />}

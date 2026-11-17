@@ -1,11 +1,24 @@
+'use client'
+
+import { useRecentVisitLayout } from '../hooks/use-recent-visit-layout'
+import { RECENT_VISIT_GRID_CLASS } from '../lib/recent-visit-layout'
 import { Skeleton } from '@/components/ui/skeleton'
 
-export default function RecentVisitsSkeleton() {
+import type { Ref } from 'react'
+
+type RecentVisitsSkeletonProps = {
+  count?: number
+  containerRef?: Ref<HTMLDivElement>
+}
+
+export default function RecentVisitsSkeleton({ count, containerRef }: RecentVisitsSkeletonProps) {
+  const layout = useRecentVisitLayout()
+
   return (
-    <div className="w-full space-y-4">
-      <Skeleton className="h-[58px] w-full rounded-xl" />
-      <div className="grid grid-cols-[repeat(auto-fill,minmax(128px,1fr))] gap-2.5 sm:gap-3">
-        {Array.from({ length: 8 }).map((_, index) => (
+    <div className="w-full space-y-4" aria-hidden="true">
+      <Skeleton className="h-11 w-full rounded-xl" />
+      <div ref={containerRef ?? layout.containerRef} className={RECENT_VISIT_GRID_CLASS}>
+        {Array.from({ length: count ?? layout.columnCount }).map((_, index) => (
           <div key={index} className="w-full space-y-1.5">
             <Skeleton className="aspect-3/4 w-full rounded-lg" />
             <Skeleton className="mx-auto h-4 w-3/4" />

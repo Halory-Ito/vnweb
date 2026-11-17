@@ -1,10 +1,15 @@
 'use client'
 
-import { keepPreviousData, useQuery } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { useMemo, useState } from 'react'
 
 import { calcCurrentStreak } from '../lib/heatmap-utils'
-import { getPlayHeatmapApi, getPlayHeatmapMonthApi, getPlayHeatmapPeriodsApi } from '@/api'
+import {
+  getPlayHeatmapApi,
+  getPlayHeatmapMonthApi,
+  getPlayHeatmapPeriodsApi,
+  getPlayHeatmapYearApi,
+} from '@/api'
 
 const HEATMAP_DAYS = 365
 
@@ -32,7 +37,13 @@ export function usePlayHeatmap() {
     queryKey: ['play-heatmap-month', period?.year ?? null, period?.month ?? null],
     queryFn: () => getPlayHeatmapMonthApi({ year: period?.year, month: period?.month }),
     enabled: Boolean(period),
-    placeholderData: keepPreviousData,
+    staleTime: 60_000,
+  })
+
+  const yearQuery = useQuery({
+    queryKey: ['play-heatmap-year', period?.year ?? null],
+    queryFn: () => getPlayHeatmapYearApi(period!.year),
+    enabled: Boolean(period),
     staleTime: 60_000,
   })
 
@@ -56,6 +67,11 @@ export function usePlayHeatmap() {
     periods,
     period,
     selectPeriod: (year: number, month: number) => setSelectedPeriod({ year, month }),
+    year: {
+      data: yearQuery.data,
+      isFetching: yearQuery.isFetching,
+      isError: yearQuery.isError,
+    },
     month: {
       data: monthQuery.data,
       isLoading: monthQuery.isLoading,

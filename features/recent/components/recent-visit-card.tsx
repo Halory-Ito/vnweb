@@ -12,9 +12,10 @@ import type { RecentVisitItem } from '@/types'
 
 type RecentVisitCardProps = {
   item: RecentVisitItem
+  sizes: string
 }
 
-export default function RecentVisitCard({ item }: RecentVisitCardProps) {
+export default function RecentVisitCard({ item, sizes }: RecentVisitCardProps) {
   const [imageError, setImageError] = useState(false)
   const title = item.gameNameCn || item.gameName || '未命名游戏'
   const typeLabel = RECENT_VISIT_LABELS[item.type]
@@ -24,7 +25,7 @@ export default function RecentVisitCard({ item }: RecentVisitCardProps) {
     <Link
       href={item.href}
       title={visitedTime ? `${title} · ${typeLabel} · ${visitedTime}` : `${title} · ${typeLabel}`}
-      className="group relative flex w-full flex-col items-center transition-all duration-300 md:hover:-translate-y-1"
+      className="group relative flex w-full min-w-0 flex-col items-center transition-all duration-300 md:hover:-translate-y-1"
     >
       <div className="relative aspect-3/4 w-full overflow-hidden rounded-lg shadow-lg transition-all duration-300 md:group-hover:shadow-2xl">
         <div className="bg-primary/20 pointer-events-none absolute -inset-4 opacity-0 blur-3xl transition-opacity duration-500 md:group-hover:opacity-60" />
@@ -39,7 +40,7 @@ export default function RecentVisitCard({ item }: RecentVisitCardProps) {
             src={item.gameCover}
             alt={title}
             fill
-            sizes="(min-width: 640px) 148px, 45vw"
+            sizes={sizes}
             loading="eager"
             className="h-full w-full object-cover transition-transform duration-500 md:group-hover:scale-110"
             onError={() => setImageError(true)}

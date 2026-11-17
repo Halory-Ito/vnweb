@@ -5,6 +5,7 @@ import type {
   RecordOverviewStats,
   RecordPlayHeatmap,
   RecordPlayHeatmapMonth,
+  RecordPlayHeatmapYear,
 } from '@/types'
 
 export const getRecordOverviewStatsApi = async () => {
@@ -33,6 +34,16 @@ export const getPlayHeatmapMonthApi = async (params?: { year?: number; month?: n
       year: params?.year ?? '',
       month: params?.month ?? '',
     },
+  })
+
+  return response.data.data
+}
+
+export async function getPlayHeatmapYearApi(year: number) {
+  const response = await api.request<{ data: RecordPlayHeatmapYear }>({
+    method: 'GET',
+    url: '/record/year-report',
+    params: { year },
   })
 
   return response.data.data

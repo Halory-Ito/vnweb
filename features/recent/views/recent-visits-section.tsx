@@ -6,16 +6,23 @@ import Link from 'next/link'
 import RecentVisitCard from '../components/recent-visit-card'
 import RecentVisitsSkeleton from '../components/recent-visits-skeleton'
 import { useRecentVisits } from '../hooks/use-recent-visits'
-import { Badge } from '@/components/ui/badge'
+import { RECENT_VISIT_GRID_CLASS } from '../lib/recent-visit-layout'
 import { Button } from '@/components/ui/button'
 
 export default function RecentVisitsSection() {
-  const { data, isLoading, isError, refetch, isRefetching } = useRecentVisits()
-
-  const items = data?.items ?? []
+  const {
+    items,
+    containerRef,
+    columnCount,
+    imageSizes,
+    isLoading,
+    isError,
+    refetch,
+    isRefetching,
+  } = useRecentVisits()
 
   if (isLoading) {
-    return <RecentVisitsSkeleton />
+    return <RecentVisitsSkeleton count={columnCount} containerRef={containerRef} />
   }
 
   if (isError) {
@@ -51,9 +58,6 @@ export default function RecentVisitsSection() {
       <div className="bg-background dark:bg-input/30 dark:border-input flex items-center gap-2 rounded-xl px-3 py-2">
         <HistoryIcon size={24} />
         <div className="text-lg font-bold">最近访问</div>
-        <Badge variant="outline" className="m-0">
-          共 {items.length} 项
-        </Badge>
       </div>
 
       {items.length === 0 ? (
@@ -72,9 +76,9 @@ export default function RecentVisitsSection() {
           </Button>
         </div>
       ) : (
-        <div className="grid grid-cols-[repeat(auto-fill,minmax(174px,1fr))] gap-2.5 sm:gap-3">
+        <div ref={containerRef} className={RECENT_VISIT_GRID_CLASS}>
           {items.map((item) => (
-            <RecentVisitCard key={item.id} item={item} />
+            <RecentVisitCard key={item.id} item={item} sizes={imageSizes} />
           ))}
         </div>
       )}

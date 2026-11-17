@@ -1,17 +1,12 @@
 'use client'
 
-import dayjs from 'dayjs'
 import { Loader2Icon } from 'lucide-react'
-import { useMemo } from 'react'
 
-import {
-  buildMonthCells,
-  getHeatmapLevel,
-  getHeatmapThresholds,
-  HEATMAP_LEVEL_ALPHAS,
-} from '../lib/heatmap-utils'
+import { useHeatmapCalendar } from '../hooks/use-heatmap-calendar'
+import { getHeatmapLevel } from '../lib/heatmap-utils'
 import HeatmapDayCell from './heatmap-day-cell'
 import HeatmapSkeleton from './heatmap-skeleton'
+import HeatmapStats from './heatmap-stats'
 import {
   Select,
   SelectContent,
@@ -23,12 +18,13 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { useChartSettings } from '@/features/appearance/hooks/use-chart-settings'
 import { cn } from '@/lib/utils'
 
-import type { RecordHeatmapPeriod, RecordPlayHeatmapMonth } from '@/types'
+import type { RecordHeatmapPeriod, RecordPlayHeatmapMonth, RecordPlayHeatmapYear } from '@/types'
 
 const WEEKDAY_LABELS = ['一', '二', '三', '四', '五', '六', '日']
 
 type PlayHeatmapProps = {
   data?: RecordPlayHeatmapMonth
+  year: { data?: RecordPlayHeatmapYear; isError: boolean; isFetching: boolean }
   periods: RecordHeatmapPeriod[]
   period: { year: number; month: number } | null
   isLoading: boolean
@@ -39,6 +35,7 @@ type PlayHeatmapProps = {
 
 export default function PlayHeatmap({
   data,
+  year,
   periods,
   period,
   isLoading,
@@ -48,10 +45,12 @@ export default function PlayHeatmap({
 }: PlayHeatmapProps) {
   const { color } = useChartSettings()
 
-  const days = data?.days ?? []
-  const cells = useMemo(() => buildMonthCells(days), [days])
-  const thresholds = useMemo(() => getHeatmapThresholds(days), [days])
-  const todayKey = dayjs().format('YYYY-MM-DD')
+  const { cells, thresholds, todayKey, months, selectYear, selectMonth } = useHeatmapCalendar({
+    data,
+    periods,
+    period,
+    onSelectPeriod,
+  })
 
   if (!period) {
     if (isLoading) {
@@ -64,24 +63,10 @@ export default function PlayHeatmap({
     )
   }
 
-  const months = periods.find((item) => item.year === period.year)?.months ?? [period.month]
-
-  const handleYearChange = (value: string) => {
-    const nextYear = Number(value)
-    const nextMonths = periods.find((item) => item.year === nextYear)?.months ?? []
-    if (nextMonths.length === 0) {
-      return
-    }
-    const nextMonth = nextMonths.includes(period.month)
-      ? period.month
-      : nextMonths[nextMonths.length - 1]
-    onSelectPeriod(nextYear, nextMonth)
-  }
-
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-2">
-        <Select value={String(period.year)} onValueChange={handleYearChange}>
+        <Select value={String(period.year)} onValueChange={selectYear}>
           <SelectTrigger size="sm" className="w-24" aria-label="选择年份">
             <SelectValue />
           </SelectTrigger>
@@ -94,10 +79,7 @@ export default function PlayHeatmap({
           </SelectContent>
         </Select>
 
-        <Select
-          value={String(period.month)}
-          onValueChange={(value) => onSelectPeriod(period.year, Number(value))}
-        >
+        <Select value={String(period.month)} onValueChange={selectMonth}>
           <SelectTrigger size="sm" className="w-20" aria-label="选择月份">
             <SelectValue />
           </SelectTrigger>
@@ -110,8 +92,17 @@ export default function PlayHeatmap({
           </SelectContent>
         </Select>
 
-        {isFetching ? <Loader2Icon className="text-muted-foreground size-4 animate-spin" /> : null}
+        {isFetching || year.isFetching ? (
+          <Loader2Icon className="text-muted-foreground size-4 animate-spin" aria-label="加载中" />
+        ) : null}
       </div>
+
+      <HeatmapStats
+        yearSeconds={year.data?.totalSeconds}
+        monthSeconds={data?.totalSeconds}
+        isYearError={year.isError}
+        isMonthError={isError}
+      />
 
       {!data ? (
         isError ? (

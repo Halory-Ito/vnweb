@@ -3,17 +3,29 @@
 import { useQuery } from '@tanstack/react-query'
 import { useAtom } from 'jotai'
 
+import { RECENT_VISIT_FETCH_LIMIT } from '../lib/recent-visit-layout'
+import { useRecentVisitLayout } from './use-recent-visit-layout'
 import { getRecentVisits } from '@/api'
 import { showNsfwAtom } from '@/atom/global'
 
-/** 主页只展示最近 5 条访问记录 */
-export const RECENT_VISIT_LIMIT = 5
-
 export function useRecentVisits() {
   const [showNsfw] = useAtom(showNsfwAtom)
+  const layout = useRecentVisitLayout()
 
-  return useQuery({
-    queryKey: ['recent-visits', showNsfw],
-    queryFn: () => getRecentVisits({ includeNsfw: showNsfw, limit: RECENT_VISIT_LIMIT }),
+  const query = useQuery({
+    queryKey: ['recent-visits', showNsfw, RECENT_VISIT_FETCH_LIMIT],
+    queryFn: () => getRecentVisits({ includeNsfw: showNsfw, limit: RECENT_VISIT_FETCH_LIMIT }),
   })
+
+  const items = query.data?.items.slice(0, layout.columnCount) ?? []
+  const visibleColumns = Math.max(1, items.length)
+  const cardWidth = (layout.width - layout.gap * (visibleColumns - 1)) / visibleColumns
+
+  return {
+    ...query,
+    ...layout,
+    items,
+    imageSizes: `${Math.max(1, Math.ceil(cardWidth))}px`,
+    isLoading: query.isLoading || layout.width === 0,
+  }
 }

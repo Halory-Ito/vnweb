@@ -22,7 +22,7 @@ import { useAgentConfig } from '@/features/agent/hooks/use-agent-config'
 import { useWebMcpTools } from '@/features/agent/hooks/use-webmcp-tools'
 
 /** 全局 AI 助手入口：Header 图标按钮 + 右侧抽屉（WebMCP / 对话 / 配置） */
-export function AgentDrawer() {
+export function AgentDrawer({ triggerClassName }: { triggerClassName?: string }) {
   const [open, setOpen] = useState(false)
   const [tab, setTab] = useState('chat')
 
@@ -38,7 +38,13 @@ export function AgentDrawer() {
     <>
       <Tooltip>
         <TooltipTrigger asChild>
-          <Button variant="outline" size="icon" aria-label="AI 助手" onClick={() => setOpen(true)}>
+          <Button
+            variant="outline"
+            size="icon"
+            className={triggerClassName}
+            aria-label="AI 助手"
+            onClick={() => setOpen(true)}
+          >
             <BotIcon />
           </Button>
         </TooltipTrigger>

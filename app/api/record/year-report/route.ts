@@ -17,7 +17,12 @@ const toHours = (seconds: number) => Number((seconds / 3600).toFixed(2))
 const getYearReport = async (req: NextRequest) => {
   try {
     const offset = parseOffset(req.nextUrl.searchParams.get('offset'))
-    const start = dayjs().add(offset, 'year').startOf('year')
+    const yearParam = Number(req.nextUrl.searchParams.get('year'))
+    const year =
+      Number.isInteger(yearParam) && yearParam >= 1970 && yearParam <= 9999
+        ? yearParam
+        : dayjs().add(offset, 'year').year()
+    const start = dayjs(`${year}-01-01`).startOf('year')
     const end = start.endOf('year')
 
     const records = await db
@@ -131,6 +136,8 @@ const getYearReport = async (req: NextRequest) => {
     return NextResponse.json({
       data: {
         offset,
+        year,
+        totalSeconds: Array.from(monthSeconds.values()).reduce((sum, seconds) => sum + seconds, 0),
         yearLabel: `${start.format('YYYY年')}`,
         monthlyStats,
         distributionByType: toDistribution(typeBucket),

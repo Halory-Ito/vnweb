@@ -2,6 +2,7 @@
 
 import { PencilIcon } from 'lucide-react'
 
+import GoalProgressRing from './goal-progress-ring'
 import { Button } from '@/components/ui/button'
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
@@ -24,11 +25,13 @@ export default function GoalCard({
   onEdit,
 }: GoalCardProps) {
   return (
-    <Card variant="outline" className="w-full">
-      <CardHeader>
-        <CardTitle>{title}</CardTitle>
-        <CardAction className="flex items-center gap-1">
-          <span className="text-muted-foreground">{icon}</span>
+    <Card variant="outline" className="w-full min-w-0 gap-3 py-3 md:gap-6 md:py-6">
+      <CardHeader className="flex items-center justify-center gap-1 px-3 md:grid md:items-start md:justify-normal md:gap-2 md:px-6">
+        <CardTitle className="text-center text-xs leading-5 md:text-left md:text-base md:leading-none">
+          {title}
+        </CardTitle>
+        <CardAction className="hidden items-center gap-1 md:flex">
+          <span className="text-muted-foreground hidden md:inline-flex">{icon}</span>
           <Button
             type="button"
             variant="ghost"
@@ -41,13 +44,34 @@ export default function GoalCard({
           </Button>
         </CardAction>
       </CardHeader>
-      <CardContent className="space-y-3">
-        <div className="flex items-baseline justify-between gap-2">
-          <span className="text-2xl">{currentText}</span>
-          <span className="text-muted-foreground text-sm">目标 {targetText}</span>
+      <CardContent className="px-3 md:px-6">
+        <div className="space-y-2 md:hidden">
+          <Button
+            type="button"
+            variant="ghost"
+            className="mx-auto block h-auto w-full max-w-28 rounded-full p-0"
+            aria-label={`编辑${title}`}
+            aria-description={`${currentText}，目标 ${targetText}，已完成 ${percent}%`}
+            aria-haspopup="dialog"
+            onClick={onEdit}
+          >
+            <GoalProgressRing
+              title={title}
+              currentText={currentText}
+              targetText={targetText}
+              percent={percent}
+            />
+          </Button>
+          <div className="text-muted-foreground text-center text-xs">目标 {targetText}</div>
         </div>
-        <Progress value={percent} />
-        <div className="text-muted-foreground text-right text-xs">已完成 {percent}%</div>
+        <div className="hidden space-y-3 md:block">
+          <div className="flex items-baseline justify-between gap-2">
+            <span className="text-2xl">{currentText}</span>
+            <span className="text-muted-foreground text-sm">目标 {targetText}</span>
+          </div>
+          <Progress value={percent} />
+          <div className="text-muted-foreground text-right text-xs">已完成 {percent}%</div>
+        </div>
       </CardContent>
     </Card>
   )
