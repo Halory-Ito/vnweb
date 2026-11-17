@@ -13,11 +13,11 @@ export const searchOstToolInputSchema = {
     keyword: {
       type: 'string',
       description:
-        '显式指定搜索词（专辑名）；留空时自动使用该游戏在库中的名称搜索（网易云用中文名、khinsider 用原名，第一个没结果会自动换另一个再试）',
+        '显式指定搜索词（专辑名）；留空时自动使用该游戏在库中的名称搜索（优先用中文名，第一个没结果会自动换另一个再试）',
     },
     source: {
       type: 'string',
-      description: '音源：khinsider（默认，欧美同人/Galgame 专辑较全）或 netease（网易云音乐）',
+      description: '音源：meting-api（唯一音源；通过网易云搜索专辑，曲目由 Meting API 提供）',
     },
   },
   required: ['game'],

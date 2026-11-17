@@ -26,8 +26,9 @@ export const YMGAL_BASE_URL = 'https://www.ymgal.games'
 export const YMGAL_OAUTH_CLIENT_ID = process.env.YMGAL_OAUTH_CLIENT_ID || 'vnweb'
 export const YMGAL_OAUTH_CLIENT_SECRET = process.env.YMGAL_OAUTH_CLIENT_SECRET || ''
 
-// Your Netease Cloud Music API Base URL, learn more at https://github.com/NeteaseCloudMusicApiEnhanced/api-enhanced
-export const NETEASE_API_BASE = 'https://music.mcseekeri.com'
+// Meting API：地址与可选请求鉴权；返回的歌曲 URL 签名保持原样
+export const METING_API_BASE = process.env.METING_API_BASE || 'https://api.i-meto.com/meting/api'
+export const METING_API_AUTH = process.env.METING_API_AUTH || ''
 
-// Your Netease Cloud Music API Cookie, just need to set the MUSIC_U value
-export const NETEASE_COOKIE = 'MUSIC_U%3D00...'
+// 网易云专辑搜索与元数据接口；音频与歌词仍由 Meting 提供
+export const NETEASE_API_BASE = process.env.NETEASE_API_BASE || 'https://music.163.com/api'

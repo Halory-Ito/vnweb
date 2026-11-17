@@ -1,4 +1,4 @@
-// 「导入游戏 OST 专辑」WebMCP 工具的定义
+// 「导入游戏 OST 条目」WebMCP 工具的定义
 export const IMPORT_OST_TOOL_NAME = 'import_game_ost'
 
 // usewebmcp 使用 JSON Schema（非 Zod），并由 schema 字面量推导 execute 的入参类型
@@ -12,12 +12,12 @@ export const importOstToolInputSchema = {
     },
     source: {
       type: 'string',
-      description: '音源：khinsider 或 netease；应与 search_game_ost 返回的专辑 source 一致',
+      description: '音源：meting-api；应与 search_game_ost 返回的专辑 source 一致',
     },
     albumId: {
       type: 'string',
       description:
-        '单张专辑 ID：netease 为数字专辑 id（如 12345），khinsider 为专辑页 slug 或完整 URL（直接用 search_game_ost 返回的 id 即可）。只传 albumId 且不传 songIndexes 时【不会写库】，而是返回曲目选择卡片让用户勾选',
+        'OST 引用：如 netease:album:32311、tencent:album:12345；仅接受专辑引用（直接用 search_game_ost 返回的 id 即可）。只传 albumId 且不传 songIndexes 时【不会写库】，而是返回曲目选择卡片让用户勾选',
     },
     albumIds: {
       type: 'array',

@@ -23,10 +23,7 @@ export const fetchAlbumDetails = async (
 
   try {
     const albumRef = normalizeAlbumRef(source, rawRef)
-    const details = await getAlbumDetails(
-      source,
-      source === 'netease' ? Number(albumRef) : albumRef,
-    )
+    const details = await getAlbumDetails(source, albumRef)
     return { ok: true, shortRef, details }
   } catch (error) {
     return {
@@ -44,7 +41,7 @@ export const buildAlbumSongs = (details: UnifiedAlbumDetails, songIndexes?: numb
   return indexes
     .map((index) => details.songs[index - 1])
     .filter((song) => Boolean(song))
-    .map((song) => ({ name: song.name, url: song.url }))
+    .map((song) => ({ name: song.name, url: song.url, lyricsPath: song.lyricsPath }))
 }
 
 /** 把专辑（整张或指定曲目）写入该游戏的 OST 列表 */

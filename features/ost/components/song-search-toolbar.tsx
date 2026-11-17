@@ -1,6 +1,6 @@
 'use client'
 
-import { ArrowLeftRightIcon, PlusIcon, RotateCcwIcon, SearchIcon } from 'lucide-react'
+import { PlusIcon, RotateCcwIcon, SearchIcon } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group'
@@ -11,7 +11,6 @@ type SongSearchToolbarProps = {
   onSearch: () => void
   onReset: () => void
   onCreate: () => void
-  onConvert: () => void
 }
 
 export function SongSearchToolbar({
@@ -20,36 +19,32 @@ export function SongSearchToolbar({
   onSearch,
   onReset,
   onCreate,
-  onConvert,
 }: SongSearchToolbarProps) {
   return (
-    <div className="flex items-center justify-between">
-      <div className="flex items-center gap-2">
-        <InputGroup className="max-w-xs">
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-wrap items-center gap-2">
+        <InputGroup className="flex-1 sm:w-64 sm:flex-initial">
           <InputGroupInput
             onKeyDown={(e) => {
               if (e.key === 'Enter') onSearch()
             }}
             onChange={(e) => onKeywordInputChange(e.target.value)}
             value={keywordInput}
-            placeholder="搜索歌曲..."
+            placeholder="搜索歌曲名称..."
           />
           <InputGroupAddon>
             <SearchIcon />
           </InputGroupAddon>
         </InputGroup>
 
-        <Button variant="outline" onClick={onReset} className="w-full sm:w-auto">
+        <Button type="button" variant="outline" className="rounded-full" onClick={onReset}>
           <RotateCcwIcon />
           重置
         </Button>
       </div>
-      <div className="flex items-center gap-2">
-        <Button onClick={onConvert} variant={'outline'}>
-          <ArrowLeftRightIcon />
-          <span>转换信息</span>
-        </Button>
-        <Button onClick={onCreate} variant={'outline'}>
+
+      <div className="flex flex-wrap items-center gap-2">
+        <Button type="button" onClick={onCreate} variant="outline" className="rounded-full">
           <PlusIcon />
           <span>添加歌曲</span>
         </Button>

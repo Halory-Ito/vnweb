@@ -3,7 +3,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import fs from 'node:fs'
 import path from 'node:path'
 
-import { NETEASE_API_BASE } from '@/app/config'
 import { GameInfoTable, GameOstTable, GameOstSongsTable } from '@/db/schema'
 import { db } from '@/lib/drizzle'
 import { api } from '@/lib/request-utils'
@@ -200,26 +199,7 @@ const createOst = async (req: NextRequest) => {
     if (payload.songs && payload.songs.length > 0) {
       const songValues = await Promise.all(
         payload.songs.map(async (song) => {
-          let lyricsText = normalizeText(song.lyricsText || '')
-
-          // 如果是网易云资源且没有提供 lyricsText，则从歌词服务获取
-          if (resource === 'netease' && !lyricsText && song.url.includes('?id=')) {
-            const match = song.url.match(/[?&]id=(\d+)/)
-            if (match) {
-              const songId = match[1]
-              try {
-                const lyricResponse = await api.get(`${NETEASE_API_BASE}/lyric`, {
-                  params: { id: songId },
-                })
-                const lyricData = lyricResponse.data
-                if (lyricData.lrc?.lyric) {
-                  lyricsText = lyricData.lrc.lyric
-                }
-              } catch (err) {
-                console.error('Failed to fetch lyric for song:', song.name, err)
-              }
-            }
-          }
+          const lyricsText = normalizeText(song.lyricsText || '')
 
           return {
             gameId,
@@ -228,7 +208,7 @@ const createOst = async (req: NextRequest) => {
             url: normalizeText(song.url),
             mediaType: normalizeText(song.mediaType || ''),
             lyricsText,
-            lyricsPath: '',
+            lyricsPath: normalizeText(song.lyricsPath || ''),
             createdAt: now,
             updatedAt: now,
           }

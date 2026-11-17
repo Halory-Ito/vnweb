@@ -63,6 +63,7 @@ export const createOstManageItem = async (payload: {
     name: string
     url: string
     mediaType?: string
+    lyricsPath?: string
   }>
 }) => {
   const response = await api.post('/ost', payload)

@@ -1,12 +1,13 @@
 import type { MusicSource } from '@/features/ost/types'
 
-export const OST_SOURCES: MusicSource[] = ['khinsider', 'netease']
+export const OST_SOURCES: MusicSource[] = ['meting-api']
 
-export const DEFAULT_OST_SOURCE: MusicSource = 'khinsider'
+export const DEFAULT_OST_SOURCE: MusicSource = 'meting-api'
 
 export const OST_SOURCE_LABEL: Record<MusicSource, string> = {
   khinsider: 'Khinsider',
   netease: '网易云音乐',
+  'meting-api': 'Meting API',
 }
 
 /** 搜索结果最多回传多少张专辑，避免工具结果与上下文过长 */
@@ -47,8 +48,8 @@ export const resolveOstSource = (raw?: string): ResolveOstSourceResult => {
   if (!value) {
     return { ok: true, source: DEFAULT_OST_SOURCE }
   }
-  if (value === 'khinsider' || value === 'netease') {
-    return { ok: true, source: value }
+  if (value === 'meting-api' || value === 'netease') {
+    return { ok: true, source: 'meting-api' }
   }
   return { ok: false, invalid: value }
 }
@@ -56,7 +57,7 @@ export const resolveOstSource = (raw?: string): ResolveOstSourceResult => {
 /** 规范化为接口可直接使用的专辑引用：netease 用数字 id，khinsider 用完整 URL */
 export const normalizeAlbumRef = (source: MusicSource, raw: string): string => {
   const value = raw.trim()
-  if (source === 'netease' || /^https?:\/\//i.test(value)) {
+  if (source === 'netease' || source === 'meting-api' || /^https?:\/\//i.test(value)) {
     return value
   }
   return `${KHINSIDER_ALBUM_PREFIX}${value.replace(/^\/+/, '')}`
@@ -65,7 +66,7 @@ export const normalizeAlbumRef = (source: MusicSource, raw: string): string => {
 /** 回传给模型、写进追问文案用的简短引用：netease 是数字 id，khinsider 是专辑页 slug */
 export const toShortAlbumRef = (source: MusicSource, raw: string): string => {
   const value = raw.trim()
-  if (source === 'netease') {
+  if (source === 'netease' || source === 'meting-api') {
     return value
   }
   return value.split('/').filter(Boolean).pop() ?? value

@@ -29,6 +29,12 @@ import {
   readGlassSettings,
 } from '@/lib/settings/glass-settings'
 
+const toCssBackgroundImage = (url: string) => {
+  if (!url) return 'none'
+  const escaped = url.replace(/\\/g, '\\\\').replace(/"/g, '\\"')
+  return `url("${escaped}")`
+}
+
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [bg, setBg] = useAtom(bgAtom)
   const { resolvedTheme } = useTheme()
@@ -116,12 +122,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   }, [])
 
   const isGameInfoPage = pathname.startsWith('/game/info/')
+  const isOstManagePage = pathname.startsWith('/ost')
 
   // 获取当前设备对应的自定义背景
   const currentDeviceCustomBackground = getCurrentDeviceBackgroundImage(backgroundSettings)
 
   useEffect(() => {
-    if (isGameInfoPage) {
+    if (isGameInfoPage || isOstManagePage) {
       return
     }
 
@@ -136,13 +143,14 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     currentDeviceCustomBackground,
     backgroundSettings.lastGameBackgroundImage,
     isGameInfoPage,
+    isOstManagePage,
     setBg,
   ])
 
   const nonGameInfoBackground = backgroundSettings.customBackgroundEnabled
     ? currentDeviceCustomBackground || bg
     : bg
-  const activeBackground = isGameInfoPage ? bg : nonGameInfoBackground
+  const activeBackground = isGameInfoPage || isOstManagePage ? bg : nonGameInfoBackground
 
   useEffect(() => {
     setTransitionStyle(backgroundSettings.transitionStyle)
@@ -218,17 +226,19 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <>
           {previousBackground && isBgTransitioning ? (
             <div
+              key={`prev-${previousBackground}`}
               className={`app-bg-image-layer pointer-events-none absolute inset-0 z-0 ${exitClassByStyle[transitionStyle]}`}
               style={{
-                backgroundImage: `url(${previousBackground})`,
+                backgroundImage: toCssBackgroundImage(previousBackground),
                 animationDuration: `${transitionDurationMs}ms`,
               }}
             />
           ) : null}
           <div
+            key={displayBackground || 'empty-bg'}
             className={`app-bg-image-layer pointer-events-none absolute inset-0 z-0 ${isBgTransitioning ? enterClassByStyle[transitionStyle] : ''}`}
             style={{
-              backgroundImage: displayBackground ? `url(${displayBackground})` : 'none',
+              backgroundImage: toCssBackgroundImage(displayBackground),
               animationDuration: `${transitionDurationMs}ms`,
             }}
           />

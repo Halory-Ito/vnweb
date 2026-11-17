@@ -28,6 +28,7 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Slider } from '@/components/ui/slider'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { getMetingDetails } from '@/features/ost/ost-api'
 import { api } from '@/lib/request-utils'
 
 // --- 工具函数：Hex 转 RGBA ---
@@ -333,21 +334,15 @@ export default function GameOST({ gameId, cover, title }: GameOSTProps) {
   }
 
   // 获取网易云歌曲真实 URL
-  const fetchNeteaseSongUrl = async (songUrl: string, level: string = 'exhigh') => {
+  const fetchNeteaseSongUrl = async (songUrl: string) => {
     // 从 URL 中提取歌曲 ID，例如：/song/url/v1?id=2155422575&level=exhigh
     const match = songUrl.match(/[?&]id=(\d+)/)
     if (!match) return songUrl
 
     const songId = match[1]
     try {
-      const response = await api.get(`/ost/netease/song/url`, {
-        params: { id: songId, level },
-      })
-      const data = response.data
-      if (data.data && data.data.length > 0 && data.data[0].url) {
-        return data.data[0].url
-      }
-      return songUrl
+      const details = await getMetingDetails({ server: 'netease', type: 'song', id: songId })
+      return details.songs[0]?.url || songUrl
     } catch {
       return songUrl
     }

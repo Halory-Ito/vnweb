@@ -24,15 +24,15 @@ import {
 } from '@/webmcp/ost/lib/ost-tool-shared'
 
 const DESCRIPTION = [
-  '把 OST 专辑（及其曲目）导入指定游戏的 OST 列表。',
-  'game 传游戏名称或 vndb_id；source / albumId(s) 用 search_game_ost 返回的值（khinsider 的 albumId 可传专辑页 slug 或完整 URL，netease 传数字 id）。',
+  '把 OST 条目（及其曲目）导入指定游戏的 OST 列表。',
+  'game 传游戏名称或 vndb_id；source / albumId(s) 用 search_game_ost 返回的值（albumId 传Meting 引用（如 netease:album:32311；仅接受专辑引用））。',
   '两种用法：①【多张一次导入】用户在卡片上勾选多张专辑后，把它们的 id 全部放进 albumIds，工具会逐张拉取并导入每张专辑的【全部曲目】（某一张失败或重复不会中断其它专辑）；',
   '②【单张 + 挑曲目】只传 albumId 且不传 songIndexes 时【不会写库】，而是返回曲目选择卡片让用户勾选（默认全选），用户选完后会以「这些曲目」追问，此时再带上 songIndexes（从 1 开始，与卡片顺序一致）调用即可完成导入。',
   '默认会跳过该游戏已有的同名 OST（结果里回报 already-imported），只有用户明确要求「再导一次」时才传 allowDuplicate=true。曲目只保存远程 URL，不下载音频文件。',
 ].join('')
 
 /**
- * 注册「导入游戏 OST 专辑」工具：
+ * 注册「导入游戏 OST 条目」工具：
  * 多张专辑（albumIds）→ 逐张整张导入，单张失败/重复不影响其它；
  * 单张专辑（albumId）→ 未指定 songIndexes 时返回曲目选择卡片（不写库），指定后按所选曲目入库。
  */
