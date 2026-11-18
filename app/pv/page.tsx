@@ -12,11 +12,9 @@ import {
   getPvManageList,
   updatePvManageItem,
 } from '@/api'
-import { Pagination } from '@/components/custom-pagination'
 import { PvDeleteDialog } from '@/features/pv/components/pv-delete-dialog'
 import { PvFormDialog } from '@/features/pv/components/pv-form-dialog'
 import { PvManageContent } from '@/features/pv/components/pv-manage-content'
-import { PvPlayerDialog } from '@/features/pv/components/pv-player-dialog'
 import { PvSearchToolbar } from '@/features/pv/components/pv-search-toolbar'
 import {
   isHlsUrl,
@@ -49,9 +47,8 @@ export default function PVPage() {
   const [videoEl, setVideoEl] = useState<HTMLVideoElement | null>(null)
   const hlsRef = useRef<Hls | null>(null)
 
-  // Pagination state
-  const [page, setPage] = useState(1)
-  const [pageSize, setPageSize] = useState(10)
+  // 胶片带渐进加载数量
+  const [visibleCount, setVisibleCount] = useState(12)
 
   const disposeHls = () => {
     if (hlsRef.current) {
@@ -79,12 +76,8 @@ export default function PVPage() {
 
   const allItems = pvData?.items ?? []
   const total = allItems.length
-  const totalPages = Math.max(1, Math.ceil(total / pageSize))
-  const currentPage = Math.min(page, totalPages)
-  const items = useMemo(
-    () => allItems.slice((currentPage - 1) * pageSize, currentPage * pageSize),
-    [allItems, currentPage, pageSize],
-  )
+  const items = useMemo(() => allItems.slice(0, visibleCount), [allItems, visibleCount])
+  const hasMore = items.length < total
 
   const gameOptions = useMemo<GameOption[]>(
     () =>
@@ -340,40 +333,33 @@ export default function PVPage() {
   }
 
   return (
-    <div className="max-h-[calc(100vh-70px)] w-full space-y-4 overflow-x-hidden overflow-y-scroll p-4">
+    <div className="max-h-[calc(100vh-70px)] w-full space-y-5 overflow-x-hidden overflow-y-scroll p-4 sm:p-5">
       <PvSearchToolbar
         keywordInput={keywordInput}
         onKeywordInputChange={(value) => {
           setKeywordInput(value)
-          setPage(1)
+          setVisibleCount(12)
         }}
         onSearch={() => {
           setKeyword(keywordInput.trim())
-          setPage(1)
+          setVisibleCount(12)
         }}
         onCreate={openCreateDialog}
       />
 
       <PvManageContent
         items={items}
+        totalCount={total}
+        hasMore={hasMore}
+        activeItem={playingItem}
+        resolvedVideo={resolvedVideo}
         isLoading={isLoading}
         isRefetching={isRefetching}
-        viewMode={viewMode}
-        onPlay={setPlayingItem}
+        onSelect={setPlayingItem}
+        onLoadMore={() => setVisibleCount((prev) => prev + 12)}
+        onVideoRef={setVideoEl}
         onEdit={openEditDialog}
         onDelete={setPendingDelete}
-      />
-
-      <Pagination
-        page={currentPage}
-        pageSize={pageSize}
-        total={total}
-        totalPages={totalPages}
-        onPageChange={setPage}
-        onPageSizeChange={(newSize) => {
-          setPageSize(newSize)
-          setPage(1)
-        }}
       />
 
       <PvFormDialog
@@ -420,25 +406,6 @@ export default function PVPage() {
           }
         }}
         onConfirm={() => void handleDelete()}
-      />
-
-      <PvPlayerDialog
-        item={playingItem}
-        mode={playingMode}
-        embedUrl={playingEmbedUrl}
-        videoRef={setVideoEl}
-        onOpenChange={(open) => {
-          if (!open) {
-            // 暂停视频并清理资源
-            if (videoEl) {
-              videoEl.pause()
-              videoEl.src = ''
-            }
-            disposeHls()
-            setPlayingItem(null)
-          }
-        }}
-        onVideoError={handleVideoError}
       />
     </div>
   )

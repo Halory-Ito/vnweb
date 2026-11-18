@@ -34,9 +34,9 @@ export function SongManageContent({
 }: SongManageContentProps) {
   if (isLoading) {
     return (
-      <div className="space-y-2.5 rounded-2xl border-2 p-4">
-        {Array.from({ length: 6 }).map((_, i) => (
-          <Skeleton key={i} className="h-12 w-full rounded-xl" />
+      <div className="grid grid-cols-1 gap-2 rounded-2xl border-2 p-4 md:grid-cols-2 xl:grid-cols-3">
+        {Array.from({ length: 9 }).map((_, i) => (
+          <Skeleton key={i} className="h-13 w-full rounded-xl" />
         ))}
       </div>
     )
@@ -65,7 +65,7 @@ export function SongManageContent({
         </div>
       ) : null}
 
-      <div className="space-y-1">
+      <div className="grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-3">
         {items.map((item, index) => (
           <SongTrackRow
             key={item.id}

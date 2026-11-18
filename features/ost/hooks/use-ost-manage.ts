@@ -49,7 +49,14 @@ export function useOstManage() {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [pendingDelete, setPendingDelete] = useState<OstItem | null>(null)
   const [editingItem, setEditingItem] = useState<OstItem | null>(null)
-  const [selectedId, setSelectedId] = useState<number | null>(null)
+  const [selectedId, setSelectedId] = useState<number | null>(() => {
+    if (typeof window === 'undefined') return null
+    const saved = window.sessionStorage.getItem('ost-last-selected-id')
+    if (!saved) return null
+    window.sessionStorage.removeItem('ost-last-selected-id')
+    const parsed = Number(saved)
+    return Number.isFinite(parsed) ? parsed : null
+  })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [keywordInput, setKeywordInputState] = useState('')
   const [page, setPage] = useState(1)
@@ -98,7 +105,7 @@ export function useOstManage() {
   )
 
   const selectedItem = useMemo(
-    () => items.find((item) => item.id === selectedId) ?? items[0] ?? null,
+    () => items.find((item) => item.id === selectedId) ?? null,
     [items, selectedId],
   )
 

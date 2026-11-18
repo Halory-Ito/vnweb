@@ -49,7 +49,7 @@ export function QuoteToolArea({
     >
       <motion.div className="relative flex-1 sm:max-w-md" variants={itemVariants}>
         <Input
-          className="rounded-full pr-4 pl-10"
+          className="pr-4 pl-10"
           placeholder="搜一搜游戏名 / 台词 / 角色..."
           value={keywordInput}
           onChange={(event) => onKeywordInputChange(event.target.value)}

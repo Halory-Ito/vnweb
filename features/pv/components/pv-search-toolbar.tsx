@@ -19,7 +19,7 @@ export function PvSearchToolbar({
   onCreate,
 }: PvSearchToolbarProps) {
   return (
-    <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       {/* 搜索框 */}
       <div className="relative flex-1 sm:max-w-md">
         <Input

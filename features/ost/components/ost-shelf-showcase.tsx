@@ -58,6 +58,11 @@ export function OstShelfShowcase({ item, onEdit, onDelete }: OstShelfShowcasePro
     setTilt({ rotateX: 0, rotateY: 0 })
   }, [])
 
+  const saveLastSelected = useCallback(() => {
+    if (!itemId || typeof window === 'undefined') return
+    window.sessionStorage.setItem('ost-last-selected-id', String(itemId))
+  }, [itemId])
+
   if (!item) {
     return null
   }
@@ -106,7 +111,7 @@ export function OstShelfShowcase({ item, onEdit, onDelete }: OstShelfShowcasePro
               </motion.div>
 
               {/* 唱片盒封面本体（与曲目列表页共享 layoutId） */}
-              <Link href={detailHref} prefetch className="block">
+              <Link href={detailHref} prefetch onClick={saveLastSelected} className="block">
                 <motion.div
                   layoutId={`ost-cover-${item.id}`}
                   transition={{ type: 'spring', stiffness: 320, damping: 30 }}
@@ -165,7 +170,7 @@ export function OstShelfShowcase({ item, onEdit, onDelete }: OstShelfShowcasePro
                 className="rounded-full"
                 asChild
               >
-                <Link href={detailHref} prefetch>
+                <Link href={detailHref} prefetch onClick={saveLastSelected}>
                   <ExternalLinkIcon className="size-3.5" />
                   打开曲目列表
                 </Link>

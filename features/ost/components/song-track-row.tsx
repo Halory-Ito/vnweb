@@ -49,7 +49,7 @@ export const SongTrackRow = memo(function SongTrackRow({
         'group flex items-center gap-3 rounded-xl border px-3 py-2.5 transition-all sm:px-4',
         isActive
           ? 'border-primary/70 bg-primary/5 shadow-xs'
-          : 'border-transparent hover:border-border hover:bg-muted/35',
+          : 'border-border/60 bg-background/40 hover:border-border hover:bg-muted/35',
       )}
     >
       {/* 音轨序号 / 播放按钮 */}
@@ -61,7 +61,7 @@ export const SongTrackRow = memo(function SongTrackRow({
           'flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-full border text-xs font-mono transition-colors',
           isActive
             ? 'border-primary bg-primary text-primary-foreground'
-            : 'border-border bg-background group-hover:border-primary/60',
+            : 'border-border bg-muted/50 text-muted-foreground group-hover:border-primary/60 group-hover:text-foreground',
         )}
       >
         {isActive && isBuffering ? (
