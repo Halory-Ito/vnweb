@@ -62,6 +62,7 @@ next-env.d.ts
 /public/fonts/*_*.woff2
 /assets/**
 /local.db
+/backups
 
 
 # vitepress

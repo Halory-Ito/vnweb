@@ -122,6 +122,14 @@ vnweb 是一个面向视觉小说与本地单机游戏整理场景的 Web 管理
 - **npm**（仓库附带 `package-lock.json`）
 - **Windows**：推荐。项目包含本地字体读取、游戏进程监控、本地图标提取、资源管理器选目录等能力，当前实现明显偏向 Windows 桌面环境
 
+### Windows 一键初始化
+
+克隆仓库后双击根目录的 `init.bat`，会依次完成：检查 Node.js / npm → 生成缺失的 `.env`、`app/config.ts`、`app/config.json` → `npm install` → 初始化数据库 → `npm run build` → 将项目目录加入用户 `PATH`。
+
+> ⚠️ 若已存在数据库文件（默认 `local.db`，可由 `.env` 的 `DB_FILE_NAME` 指定），脚本会先将其连同 `-wal` / `-shm` 文件移动到 `backups/db/<名称>-<时间戳>.db`，再创建一个全新的空数据库。运行前请先关闭 vnweb 服务与 Drizzle Studio。
+
+如需手动安装，请参考下方步骤。
+
 ### 安装与配置
 
 1. 克隆仓库
