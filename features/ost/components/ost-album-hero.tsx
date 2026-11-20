@@ -96,11 +96,6 @@ export function OstAlbumHero({
               {gameTitle}
             </Badge>
           ) : null}
-          {ostItem?.resource ? (
-            <Badge variant="outline" className="rounded-full px-2.5 py-0.5 text-xs uppercase">
-              {ostItem.resource}
-            </Badge>
-          ) : null}
           <Badge variant="outline" className="rounded-full px-2.5 py-0.5 text-xs">
             <Music2Icon className="size-3" />
             {songCount} 首曲目

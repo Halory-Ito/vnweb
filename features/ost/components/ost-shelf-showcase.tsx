@@ -140,19 +140,16 @@ export function OstShelfShowcase({ item, onEdit, onDelete }: OstShelfShowcasePro
 
           {/* 唱片信息与快捷操作 */}
           <div className="min-w-0 flex-1 space-y-3 text-center sm:text-left">
-            <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-start">
-              <Badge variant="outline" className="rounded-full px-2.5 py-0.5 text-xs">
-                已从唱片架抽出
-              </Badge>
-              {gameTitle ? (
+            {gameTitle ? (
+              <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-start">
                 <Badge
                   variant="outline"
                   className="max-w-full truncate rounded-full px-2.5 py-0.5 text-xs"
                 >
                   {gameTitle}
                 </Badge>
-              ) : null}
-            </div>
+              </div>
+            ) : null}
 
             <motion.h2
               layoutId={`ost-title-${item.id}`}
@@ -163,13 +160,7 @@ export function OstShelfShowcase({ item, onEdit, onDelete }: OstShelfShowcasePro
             </motion.h2>
 
             <div className="flex flex-wrap items-center justify-center gap-2 pt-1 sm:justify-start">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="rounded-full"
-                asChild
-              >
+              <Button type="button" variant="outline" size="sm" className="rounded-full" asChild>
                 <Link href={detailHref} prefetch onClick={saveLastSelected}>
                   <ExternalLinkIcon className="size-3.5" />
                   打开曲目列表
