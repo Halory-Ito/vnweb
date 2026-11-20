@@ -39,3 +39,13 @@ export async function getOstAlbumDetails(id: string): Promise<UnifiedAlbumDetail
   })
   return response.data.data
 }
+
+export async function fetchLyricTextApi(url: string, signal?: AbortSignal): Promise<string> {
+  const response = await api.request<string>({
+    method: 'GET',
+    url,
+    responseType: 'text',
+    signal,
+  })
+  return typeof response.data === 'string' ? response.data : ''
+}
