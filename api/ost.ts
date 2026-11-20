@@ -92,6 +92,9 @@ export const updateOstManageItem = async (
   }
 }
 
+export const deleteOstManageItems = (ids: number[]) =>
+  api.request({ method: 'delete', url: '/ost/batch', data: { ids } })
+
 export const deleteOstManageItem = async (id: number) => {
   const response = await api.delete(`/ost/${id}`)
   return response.data as {

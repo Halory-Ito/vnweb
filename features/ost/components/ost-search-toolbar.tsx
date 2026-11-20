@@ -5,11 +5,15 @@ import { PlusIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 
+import type { ReactNode } from 'react'
+
 type OstSearchToolbarProps = {
   keywordInput: string
   onKeywordInputChange: (value: string) => void
   onSearch: () => void
   onCreate: () => void
+  batchControls: ReactNode
+  isSelecting: boolean
 }
 
 export function OstSearchToolbar({
@@ -17,6 +21,8 @@ export function OstSearchToolbar({
   onKeywordInputChange,
   onSearch,
   onCreate,
+  batchControls,
+  isSelecting,
 }: OstSearchToolbarProps) {
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -49,10 +55,15 @@ export function OstSearchToolbar({
       </div>
 
       {/* 新增按钮 */}
-      <Button type="button" onClick={onCreate} variant="outline">
-        <PlusIcon />
-        新增 OST
-      </Button>
+      <div className="flex flex-wrap items-center gap-2">
+        {batchControls}
+        {!isSelecting && (
+          <Button type="button" onClick={onCreate} variant="outline">
+            <PlusIcon />
+            新增 OST
+          </Button>
+        )}
+      </div>
     </div>
   )
 }

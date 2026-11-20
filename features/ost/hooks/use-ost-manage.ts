@@ -61,7 +61,10 @@ export function useOstManage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [keywordInput, setKeywordInputState] = useState('')
   const [page, setPage] = useState(1)
-  const [pageSize, setPageSizeState] = useState(18)
+  const [pageDirection, setPageDirection] = useState(0)
+  const [recordsPerTier, setRecordsPerTierState] = useState(10)
+  const [tierCount, setTierCountState] = useState(2)
+  const pageSize = recordsPerTier * tierCount
 
   const {
     data: ostData,
@@ -131,13 +134,26 @@ export function useOstManage() {
 
   const setKeywordInput = useCallback((value: string) => {
     setKeywordInputState(value)
+    setPageDirection(0)
     setPage(1)
   }, [])
 
-  const setPageSize = useCallback((newSize: number) => {
-    setPageSizeState(newSize)
+  const setRecordsPerTier = useCallback((count: number) => {
+    setRecordsPerTierState(count)
+    setPageDirection(0)
     setPage(1)
   }, [])
+
+  const setTierCount = useCallback((count: number) => {
+    setTierCountState(count)
+    setPageDirection(0)
+    setPage(1)
+  }, [])
+
+  const changePage = (nextPage: number) => {
+    setPageDirection(Math.sign(nextPage - currentPage))
+    setPage(nextPage)
+  }
 
   const openCreateDialog = useCallback(() => {
     setEditingItem(null)
@@ -209,11 +225,15 @@ export function useOstManage() {
     keywordInput,
     setKeywordInput,
     page: currentPage,
+    pageDirection: page === currentPage ? pageDirection : 0,
     pageSize,
+    recordsPerTier,
+    tierCount,
     total,
     totalPages,
-    setPage,
-    setPageSize,
+    setPage: changePage,
+    setRecordsPerTier,
+    setTierCount,
     items,
     selectedItem,
     selectItem,

@@ -16,6 +16,8 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 
+import type { ReactNode } from 'react'
+
 type PaginationProps = {
   page: number
   pageSize: number
@@ -24,6 +26,10 @@ type PaginationProps = {
   onPageChange: (page: number) => void
   onPageSizeChange: (pageSize: number) => void
   pageSizeOptions?: string[]
+  itemUnit?: string
+  itemName?: string
+  extraControls?: ReactNode
+  sizeSelection?: { label: string; value: number }
 }
 
 const DEFAULT_PAGE_SIZE_OPTIONS = ['10', '20', '50', '100']
@@ -36,27 +42,38 @@ export function Pagination({
   onPageChange,
   onPageSizeChange,
   pageSizeOptions = DEFAULT_PAGE_SIZE_OPTIONS,
+  itemUnit = '条',
+  itemName = '',
+  extraControls,
+  sizeSelection,
 }: PaginationProps) {
   const startItem = total > 0 ? (page - 1) * pageSize + 1 : 0
   const endItem = Math.min(page * pageSize, total)
+  const sizeLabel = sizeSelection?.label ?? '每页'
 
   return (
     <div className="flex flex-col items-center gap-4 px-2 py-4 sm:flex-row sm:justify-between">
       {/* 统计信息 */}
       <div className="text-muted-foreground text-sm">
-        显示 {startItem}-{endItem} 条，共 {total} 条
+        {total === 0 && itemName
+          ? `共 0 ${itemUnit}${itemName}`
+          : `显示 ${startItem}-${endItem} ${itemUnit}，共 ${total} ${itemUnit}${itemName}`}
       </div>
 
       {/* 分页控制 */}
       <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4">
+        {extraControls}
         {/* 每页条数选择 */}
         <div className="flex items-center gap-2">
-          <span className="text-muted-foreground text-sm">每页</span>
+          <span className="text-muted-foreground text-sm">{sizeLabel}</span>
           <Select
-            value={String(pageSize)}
+            value={String(sizeSelection?.value ?? pageSize)}
             onValueChange={(value) => onPageSizeChange(Number(value))}
           >
-            <SelectTrigger className="h-8 w-20">
+            <SelectTrigger
+              className="h-8 w-20"
+              aria-label={itemName ? `${sizeLabel}${itemName}数量` : `${sizeLabel}条数`}
+            >
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -67,7 +84,7 @@ export function Pagination({
               ))}
             </SelectContent>
           </Select>
-          <span className="text-muted-foreground text-sm">条</span>
+          <span className="text-muted-foreground text-sm">{itemUnit}</span>
         </div>
 
         {/* 页码导航 */}
@@ -76,6 +93,7 @@ export function Pagination({
             variant="outline"
             size="icon"
             className="size-8"
+            aria-label="首页"
             onClick={() => onPageChange(1)}
             disabled={page === 1}
           >
@@ -85,6 +103,7 @@ export function Pagination({
             variant="outline"
             size="icon"
             className="size-8"
+            aria-label="上一页"
             onClick={() => onPageChange(page - 1)}
             disabled={page === 1}
           >
@@ -99,6 +118,7 @@ export function Pagination({
             variant="outline"
             size="icon"
             className="size-8"
+            aria-label="下一页"
             onClick={() => onPageChange(page + 1)}
             disabled={page === totalPages}
           >
@@ -108,6 +128,7 @@ export function Pagination({
             variant="outline"
             size="icon"
             className="size-8"
+            aria-label="末页"
             onClick={() => onPageChange(totalPages)}
             disabled={page === totalPages}
           >
