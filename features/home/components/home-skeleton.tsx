@@ -2,7 +2,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 
 export default function GameHomeSkeleton() {
   return (
-    <div className="max-h-[calc(100vh-70px)] w-full space-y-12 overflow-x-hidden overflow-y-scroll p-4">
+    <div className="max-h-[100cqh] w-full space-y-12 overflow-x-hidden overflow-y-scroll p-4">
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <Skeleton className="h-8 w-24" />

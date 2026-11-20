@@ -11,7 +11,7 @@ export const dynamic = 'force-dynamic'
 
 export default function Record() {
   return (
-    <Tabs defaultValue="overview" className="max-h-[calc(100vh-70px)] w-full overflow-y-scroll p-4">
+    <Tabs defaultValue="overview" className="max-h-[100cqh] w-full overflow-y-scroll p-4">
       <TabsList className="dark:bg-transparent">
         <TabsTrigger value="overview">总览</TabsTrigger>
         <TabsTrigger value="year">年报</TabsTrigger>

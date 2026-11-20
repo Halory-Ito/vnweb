@@ -90,7 +90,7 @@ export default function DashboardHome() {
 
   if (games.cards.length === 0) {
     return (
-      <div className="max-h-[calc(100vh-80px)] w-full space-y-4 overflow-x-hidden overflow-y-auto p-3 sm:p-4">
+      <div className="max-h-[100cqh] w-full space-y-4 overflow-x-hidden overflow-y-auto p-3 sm:p-4">
         <WelcomeBar />
         <EmptyLibrary />
       </div>
@@ -98,7 +98,7 @@ export default function DashboardHome() {
   }
 
   return (
-    <div className="max-h-[calc(100vh-80px)] w-full overflow-x-hidden overflow-y-auto p-3 sm:p-4">
+    <div className="max-h-[100cqh] w-full overflow-x-hidden overflow-y-auto p-3 sm:p-4">
       <div className="space-y-4">
         {/*<WelcomeBar />*/}
         <StatStrip items={statItems} />

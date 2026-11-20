@@ -20,7 +20,7 @@ export default function GameLayout({ children }: { children: React.ReactNode }) 
           >
             <GameSidebar />
           </ResizablePanel>
-          <ResizableHandle className="h-[calc(100vh-70px)]" />
+          <ResizableHandle className="h-full" />
           <ResizablePanel className="min-w-0 overflow-x-hidden" defaultSize="75%">
             {children}
           </ResizablePanel>

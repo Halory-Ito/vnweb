@@ -77,7 +77,7 @@ export default function GameGuideView({ gameId }: { gameId: number }) {
   const totalProgress = getTotalProgress()
 
   return (
-    <div className="max-h-[calc(100vh-144px)] w-full space-y-4 overflow-y-auto p-4">
+    <div className="max-h-[calc(100cqh-4.625rem)] w-full space-y-4 overflow-y-auto p-4">
       {/* 颜色提示 */}
       <Card variant="outline">
         <CardHeader className="py-3">

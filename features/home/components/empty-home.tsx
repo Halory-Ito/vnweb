@@ -14,8 +14,8 @@ export default function GameHomeEmptyState({
   children,
 }: GameHomeEmptyStateProps) {
   return (
-    <div className="max-h-[calc(100vh-70px)] w-full overflow-x-hidden overflow-y-scroll p-4">
-      <div className="flex min-h-[calc(100vh-102px)] items-center justify-center">
+    <div className="max-h-[100cqh] w-full overflow-x-hidden overflow-y-scroll p-4">
+      <div className="flex min-h-[calc(100cqh-2rem)] items-center justify-center">
         <div className="bg-background/80 w-full max-w-xl rounded-2xl border px-6 py-10 text-center shadow-sm backdrop-blur-sm md:px-8">
           <div className="bg-muted text-muted-foreground mx-auto mb-4 flex size-14 items-center justify-center rounded-full border">
             <Icon className="size-7" />

@@ -3,7 +3,7 @@ import { RecentVisitsSkeleton } from '@/features/recent'
 
 export default function DashboardSkeleton() {
   return (
-    <div className="max-h-[calc(100vh-80px)] w-full overflow-hidden p-3 sm:p-4">
+    <div className="max-h-[100cqh] w-full overflow-hidden p-3 sm:p-4">
       <div className="space-y-4">
         <div className="space-y-2">
           <Skeleton className="h-7 w-28" />

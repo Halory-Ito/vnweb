@@ -198,7 +198,7 @@ export function EndingDetailView({ gameId, routeId, endingId }: EndingDetailView
 
   return (
     <motion.div
-      className="max-h-[calc(100vh-70px)] w-full space-y-4 overflow-y-auto p-4"
+      className="max-h-[100cqh] w-full space-y-4 overflow-y-auto p-4"
       variants={containerVariants}
       initial="hidden"
       animate="visible"

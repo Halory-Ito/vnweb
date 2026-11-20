@@ -1,4 +1,4 @@
-export { AgentDrawer } from './components/agent-drawer'
+export { AgentDrawer, AgentDrawerTrigger } from './components/agent-drawer'
 export { isAgentToolUi } from './lib/tool-ui'
 export type {
   AgentToolUi,

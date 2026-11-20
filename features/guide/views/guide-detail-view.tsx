@@ -110,7 +110,7 @@ export function GuideDetailView({ gameId }: GuideDetailViewProps) {
 
   return (
     <motion.div
-      className="max-h-[calc(100vh-70px)] w-full space-y-5 overflow-y-auto p-4"
+      className="max-h-[100cqh] w-full space-y-5 overflow-y-auto p-4"
       variants={containerVariants}
       initial="hidden"
       animate="visible"

@@ -315,10 +315,7 @@ export default function GameMemoryDetailPage() {
   const editableImageUrl = imagePreviewUrl || item?.imageUrl || ''
 
   return (
-    <div
-      ref={scrollContainerRef}
-      className="mx-auto max-h-[calc(100vh-70px)] w-full overflow-y-auto"
-    >
+    <div ref={scrollContainerRef} className="mx-auto max-h-[100cqh] w-full overflow-y-auto">
       <div className="relative mx-auto w-full max-w-7xl px-4 pt-4 pb-12 md:px-6">
         <div
           className={`grid gap-6 ${hasToc ? 'lg:grid-cols-[minmax(0,1fr)_280px]' : 'lg:grid-cols-1'}`}

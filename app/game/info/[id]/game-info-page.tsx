@@ -73,8 +73,8 @@ type GameInfoEmptyStateProps = {
 
 function GameInfoEmptyState({ icon: Icon, title, description, children }: GameInfoEmptyStateProps) {
   return (
-    <div className="mx-auto max-h-[calc(100vh-70px)] w-full overflow-y-auto">
-      <div className="flex min-h-[calc(100vh-70px)] items-center justify-center p-4 md:p-6">
+    <div className="mx-auto max-h-[100cqh] w-full overflow-y-auto">
+      <div className="flex min-h-[100cqh] items-center justify-center p-4 md:p-6">
         <div className="bg-background/80 w-full max-w-xl rounded-2xl border px-6 py-10 text-center shadow-sm backdrop-blur-sm md:px-8">
           <div className="bg-muted text-muted-foreground mx-auto mb-4 flex size-14 items-center justify-center rounded-full border">
             <Icon className="size-7" />
@@ -115,7 +115,7 @@ export default function GameInfoPage() {
 
   if (isLoading) {
     return (
-      <div className="mx-auto max-h-[calc(100vh-70px)] w-full overflow-y-auto">
+      <div className="mx-auto max-h-[100cqh] w-full overflow-y-auto">
         <GameInfoSkeleton />
       </div>
     )
@@ -158,7 +158,7 @@ export default function GameInfoPage() {
   }
 
   return (
-    <div className="mx-auto max-h-[calc(100vh-70px)] w-full overflow-y-auto">
+    <div className="mx-auto max-h-[100cqh] w-full overflow-y-auto">
       <GameInfo game={data} />
     </div>
   )

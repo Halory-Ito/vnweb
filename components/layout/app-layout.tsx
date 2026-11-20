@@ -5,9 +5,9 @@ import { useTheme } from 'next-themes'
 import { usePathname } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 
-import AppHeader from './app-header'
-import AppSideBar from './app-sidebar'
+import AppLayoutContent from './app-layout-content'
 import { bgAtom } from '@/atom/global'
+import { useAppAppearance } from '@/hooks/use-app-appearance'
 import {
   BACKGROUND_SETTINGS_EVENT,
   BACKGROUND_SETTINGS_STORAGE_KEY,
@@ -16,18 +16,6 @@ import {
   getCurrentDeviceBackgroundImage,
   readBackgroundSettings,
 } from '@/lib/settings/background-settings'
-import {
-  applyFontSettingsToDocument,
-  FONT_SETTINGS_EVENT,
-  FONT_SETTINGS_STORAGE_KEY,
-  readFontSettings,
-} from '@/lib/settings/font-settings'
-import {
-  applyGlassSettingsToDocument,
-  GLASS_SETTINGS_EVENT,
-  GLASS_SETTINGS_STORAGE_KEY,
-  readGlassSettings,
-} from '@/lib/settings/glass-settings'
 
 const toCssBackgroundImage = (url: string) => {
   if (!url) return 'none'
@@ -36,6 +24,7 @@ const toCssBackgroundImage = (url: string) => {
 }
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
+  useAppAppearance()
   const [bg, setBg] = useAtom(bgAtom)
   const { resolvedTheme } = useTheme()
   const pathname = usePathname()
@@ -78,48 +67,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       window.removeEventListener('storage', handleStorage)
     }
   }, [setBg])
-
-  useEffect(() => {
-    const syncGlassSettings = () => {
-      applyGlassSettingsToDocument(readGlassSettings())
-    }
-
-    const handleStorage = (event: StorageEvent) => {
-      if (event.key === GLASS_SETTINGS_STORAGE_KEY) {
-        syncGlassSettings()
-      }
-    }
-
-    syncGlassSettings()
-    window.addEventListener(GLASS_SETTINGS_EVENT, syncGlassSettings)
-    window.addEventListener('storage', handleStorage)
-
-    return () => {
-      window.removeEventListener(GLASS_SETTINGS_EVENT, syncGlassSettings)
-      window.removeEventListener('storage', handleStorage)
-    }
-  }, [])
-
-  useEffect(() => {
-    const syncFontSettings = () => {
-      void applyFontSettingsToDocument(readFontSettings())
-    }
-
-    const handleStorage = (event: StorageEvent) => {
-      if (event.key === FONT_SETTINGS_STORAGE_KEY) {
-        syncFontSettings()
-      }
-    }
-
-    syncFontSettings()
-    window.addEventListener(FONT_SETTINGS_EVENT, syncFontSettings)
-    window.addEventListener('storage', handleStorage)
-
-    return () => {
-      window.removeEventListener(FONT_SETTINGS_EVENT, syncFontSettings)
-      window.removeEventListener('storage', handleStorage)
-    }
-  }, [])
 
   const isGameInfoPage = pathname.startsWith('/game/info/')
   const isOstManagePage = pathname.startsWith('/ost')
@@ -221,7 +168,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   }, [])
 
   return (
-    <div className="relative flex h-screen w-screen overflow-hidden">
+    <div className="relative flex h-dvh w-full overflow-hidden">
       {mounted && resolvedTheme === 'dark' ? (
         <>
           {previousBackground && isBgTransitioning ? (
@@ -252,15 +199,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
       <div className="app-glass-overlay pointer-events-none absolute inset-0 z-10" />
 
-      <div className="relative z-20 flex h-full w-full overflow-hidden">
-        <div className="hidden md:block">
-          <AppSideBar />
-        </div>
-        <div className="flex flex-1 flex-col overflow-hidden">
-          <AppHeader />
-          <div className="flex-1 overflow-hidden">{children}</div>
-        </div>
-      </div>
+      <AppLayoutContent>{children}</AppLayoutContent>
     </div>
   )
 }

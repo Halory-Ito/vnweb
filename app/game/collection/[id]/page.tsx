@@ -81,7 +81,7 @@ function CollectionEmptyState({
   children,
 }: CollectionEmptyStateProps) {
   return (
-    <div className="h-[calc(100vh-70px)] w-full overflow-y-auto p-4">
+    <div className="h-[100cqh] w-full overflow-y-auto p-4">
       <div className="flex min-h-full items-center justify-center">
         <div className="bg-background/80 w-full max-w-xl rounded-2xl border px-6 py-10 text-center shadow-sm backdrop-blur-sm md:px-8">
           <div className="bg-muted text-muted-foreground mx-auto mb-4 flex size-14 items-center justify-center rounded-full border">
@@ -102,7 +102,7 @@ function CollectionEmptyState({
 
 function CollectionDetailSkeleton() {
   return (
-    <div className="h-[calc(100vh-70px)] w-full overflow-y-auto p-4">
+    <div className="h-[100cqh] w-full overflow-y-auto p-4">
       <div className="mb-4 flex items-center gap-4">
         <Skeleton className="h-8 w-56" />
         <Skeleton className="h-8 w-24" />
@@ -390,7 +390,7 @@ export default function CollectionDetailPage() {
   }
 
   return (
-    <div className="h-[calc(100vh-70px)] w-full overflow-y-auto p-4">
+    <div className="h-[100cqh] w-full overflow-y-auto p-4">
       <div className="mb-4 flex items-center gap-4">
         <div className="text-2xl font-bold">{collection.name}</div>
         <div className="text-xl font-bold">排序依据:</div>

@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 
 export default function OverviewPage() {
   return (
-    <div className="max-h-[calc(100vh-70px)] w-full space-y-4 overflow-y-scroll p-4">
+    <div className="max-h-[100cqh] w-full space-y-4 overflow-y-scroll p-4">
       <RecordOverview />
     </div>
   )

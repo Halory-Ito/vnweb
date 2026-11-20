@@ -1,21 +1,10 @@
 'use client'
 
-import {
-  BoxIcon,
-  Gamepad2Icon,
-  HomeIcon,
-  TextQuoteIcon,
-  MusicIcon,
-  PuzzleIcon,
-  ScanIcon,
-  SettingsIcon,
-  VideoIcon,
-  MapIcon,
-} from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
+import { isActivePath, primaryNavigation, settingsNavigation } from './app-navigation'
 import {
   Sidebar,
   SidebarContent,
@@ -28,38 +17,15 @@ import {
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
 
-type SidebarItem = {
-  title: string
-  href: string
-  icon?: React.ElementType
-  iconSrc?: string
-}
-
-const contentItems: SidebarItem[] = [
-  { title: '主页', href: '/', icon: HomeIcon },
-  { title: '游戏库', href: '/game', icon: Gamepad2Icon },
-  { title: '记录', href: '/record', icon: BoxIcon },
-  { title: '扫描', href: '/scan', icon: ScanIcon },
-  { title: '攻略', href: '/guide', icon: MapIcon },
-  { title: 'PV', href: '/pv', icon: VideoIcon },
-  { title: 'OST', href: '/ost', icon: MusicIcon },
-  { title: '摘录', href: '/quote', icon: TextQuoteIcon },
-]
-
-const footerItems: SidebarItem[] = [
-  // { title: '游戏主页', href: '/game/home', icon: UserIcon },
-  // { title: '插件市场', href: '/market', icon: ShoppingBasketIcon },
-  { title: '设置', href: '/settings', icon: SettingsIcon },
-]
-
-const isActivePath = (pathname: string, href: string) => {
-  if (href === '/') return pathname === '/'
-  return pathname === href || pathname.startsWith(`${href}/`)
-}
-
 const SIDEBAR_BUTTON_SIZE = 'h-10 w-10'
 
-function SidebarIconButton({ item, pathname }: { item: SidebarItem; pathname: string }) {
+function SidebarIconButton({
+  item,
+  pathname,
+}: {
+  item: (typeof primaryNavigation)[number]
+  pathname: string
+}) {
   const Icon = item.icon
   const isActive = isActivePath(pathname, item.href)
 
@@ -78,23 +44,13 @@ function SidebarIconButton({ item, pathname }: { item: SidebarItem; pathname: st
                 : 'hover:bg-sidebar-accent/60',
             )}
           >
-            <Link href={item.href} aria-label={item.title} className="justify-center">
-              {item.iconSrc ? (
-                <div className="bg-muted relative size-4 overflow-hidden rounded-xs">
-                  <Image
-                    src={item.iconSrc}
-                    alt={item.title}
-                    fill
-                    sizes="16px"
-                    unoptimized
-                    className="object-cover"
-                  />
-                </div>
-              ) : Icon ? (
-                <Icon />
-              ) : (
-                <PuzzleIcon />
-              )}
+            <Link
+              href={item.href}
+              aria-label={item.title}
+              aria-current={isActive ? 'page' : undefined}
+              className="justify-center"
+            >
+              <Icon />
               <span className="sr-only">{item.title}</span>
             </Link>
           </SidebarMenuButton>
@@ -132,7 +88,7 @@ export default function AppSideBar() {
 
       <SidebarContent className="p-4">
         <SidebarMenu className="flex flex-col items-center justify-center">
-          {contentItems.map((item) => (
+          {primaryNavigation.map((item) => (
             <SidebarIconButton key={item.title} item={item} pathname={pathname} />
           ))}
         </SidebarMenu>
@@ -140,9 +96,7 @@ export default function AppSideBar() {
 
       <SidebarFooter className="items-center pb-4">
         <SidebarMenu className="gap-4 p-4">
-          {footerItems.map((item) => (
-            <SidebarIconButton key={item.title} item={item} pathname={pathname} />
-          ))}
+          <SidebarIconButton item={settingsNavigation} pathname={pathname} />
         </SidebarMenu>
       </SidebarFooter>
     </Sidebar>

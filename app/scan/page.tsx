@@ -569,7 +569,7 @@ export default function Scan() {
   }
 
   return (
-    <div className="max-h-[calc(100vh-70px)] w-full space-y-4 overflow-x-hidden overflow-y-scroll p-4">
+    <div className="max-h-[100cqh] w-full space-y-4 overflow-x-hidden overflow-y-scroll p-4">
       <Card variant="outline" className="py-4">
         <CardContent className="px-4">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">

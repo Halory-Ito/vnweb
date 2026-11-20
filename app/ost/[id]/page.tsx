@@ -19,7 +19,7 @@ export default function SongPage({ params }: { params: Promise<{ id: string }> }
   const player = useSongPlayer(manage.filteredItems, manage.ostItem ?? undefined)
 
   return (
-    <div className="max-h-[calc(100vh-70px)] w-full space-y-5 overflow-x-hidden overflow-y-scroll p-4 pb-40 sm:p-5 sm:pb-40">
+    <div className="max-h-[100cqh] w-full space-y-5 overflow-x-hidden overflow-y-scroll p-4 pb-40 sm:p-5 sm:pb-40">
       <OstAlbumHero
         ostId={ostId}
         ostItem={manage.ostItem}

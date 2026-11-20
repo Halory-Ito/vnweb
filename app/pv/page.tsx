@@ -333,7 +333,7 @@ export default function PVPage() {
   }
 
   return (
-    <div className="max-h-[calc(100vh-70px)] w-full space-y-5 overflow-x-hidden overflow-y-scroll p-4 sm:p-5">
+    <div className="max-h-[100cqh] w-full space-y-5 overflow-x-hidden overflow-y-scroll p-4 sm:p-5">
       <PvSearchToolbar
         keywordInput={keywordInput}
         onKeywordInputChange={(value) => {
