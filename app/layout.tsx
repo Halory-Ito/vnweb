@@ -1,8 +1,10 @@
 import dayjs from 'dayjs'
+import { Metadata } from 'next'
 
 import '@/app/globals.css'
-import { Metadata } from 'next'
 import { ThemeProvider } from 'next-themes'
+
+import { GlobalSongPlayer } from '@/features/ost/components/global-song-player'
 import 'dayjs/locale/zh-cn' // 导入本地化语言
 
 dayjs.locale('zh-cn') // 使用本地化语言
@@ -52,6 +54,7 @@ export default function RootLayout({
                     <GuideWebMcpTools />
                     <OstWebMcpTools />
                     <QuoteWebMcpTools />
+                    <GlobalSongPlayer />
                     <Toaster />
                   </TooltipProvider>
                 </SidebarProvider>

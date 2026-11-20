@@ -8,7 +8,6 @@ import { SongDeleteDialog } from '@/features/ost/components/song-delete-dialog'
 import { SongFormDialog } from '@/features/ost/components/song-form-dialog'
 import { SongLyricDialog } from '@/features/ost/components/song-lyric-dialog'
 import { SongManageContent } from '@/features/ost/components/song-manage-content'
-import { SongMiniPlayer } from '@/features/ost/components/song-mini-player'
 import { SongSearchToolbar } from '@/features/ost/components/song-search-toolbar'
 import { useSongManage } from '@/features/ost/hooks/use-song-manage'
 import { useSongPlayer } from '@/features/ost/hooks/use-song-player'
@@ -17,15 +16,15 @@ export default function SongPage({ params }: { params: Promise<{ id: string }> }
   const resolvedParams = use(params)
   const ostId = Number(resolvedParams.id)
   const manage = useSongManage(ostId)
-  const player = useSongPlayer(manage.filteredItems, manage.ostItem?.resource)
+  const player = useSongPlayer(manage.filteredItems, manage.ostItem ?? undefined)
 
   return (
-    <div className="max-h-[calc(100vh-70px)] w-full space-y-5 overflow-x-hidden overflow-y-scroll p-4 sm:p-5">
+    <div className="max-h-[calc(100vh-70px)] w-full space-y-5 overflow-x-hidden overflow-y-scroll p-4 pb-40 sm:p-5 sm:pb-40">
       <OstAlbumHero
         ostId={ostId}
         ostItem={manage.ostItem}
         songCount={manage.filteredItems.length}
-        isPlaying={player.isPlaying}
+        isPlaying={player.isPlaying && manage.filteredItems.some((item) => item.id === player.id)}
         onPlayAll={() => {
           const first = manage.filteredItems[0]
           if (first) void player.playSong(first)
@@ -50,7 +49,7 @@ export default function SongPage({ params }: { params: Promise<{ id: string }> }
           items={manage.filteredItems}
           isLoading={manage.isLoading}
           isRefetching={manage.isRefetching}
-          playingSongId={player.currentSong?.id ?? null}
+          playingSongId={player.id}
           isPlaying={player.isPlaying}
           isBuffering={player.isBuffering}
           onPlay={(item) => void player.playSong(item)}
@@ -59,24 +58,6 @@ export default function SongPage({ params }: { params: Promise<{ id: string }> }
           onPreviewLyric={manage.setLyricPreviewItem}
         />
       </motion.div>
-
-      <SongMiniPlayer
-        song={player.currentSong}
-        isPlaying={player.isPlaying}
-        isBuffering={player.isBuffering}
-        currentTime={player.currentTime}
-        duration={player.duration}
-        volume={player.volume}
-        onTogglePlay={() => {
-          if (player.currentSong) void player.playSong(player.currentSong)
-        }}
-        onPrev={player.playPrev}
-        onNext={player.playNext}
-        onSeek={player.seek}
-        onVolumeChange={player.setVolume}
-        onPreviewLyric={manage.setLyricPreviewItem}
-        onClose={player.stop}
-      />
 
       <SongFormDialog
         open={manage.dialogOpen}

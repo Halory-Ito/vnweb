@@ -141,8 +141,13 @@ const getOst = async (req: NextRequest, { params }: { params: Promise<{ id: stri
         resource: GameOstTable.resource,
         createdAt: GameOstTable.createdAt,
         updatedAt: GameOstTable.updatedAt,
+        gameName: GameInfoTable.name,
+        gameNameCn: GameInfoTable.nameCn,
+        gameCover: GameInfoTable.cover,
+        gameBg: GameInfoTable.bg,
       })
       .from(GameOstTable)
+      .leftJoin(GameInfoTable, eq(GameOstTable.gameId, GameInfoTable.id))
       .where(eq(GameOstTable.id, ostId))
       .limit(1)
 

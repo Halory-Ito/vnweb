@@ -63,7 +63,7 @@ export default function GameInfo({ game, initialTab }: GameInfoProps) {
               <GamePV gameId={game.id} />
             </TabsContent>
             <TabsContent value="ost">
-              <GameOST gameId={game.id} cover={game.cover} title={info.title} />
+              <GameOST key={game.id} gameId={game.id} cover={game.cover} bg={game.bg} />
             </TabsContent>
             <TabsContent value="record">
               <GameRecord gameId={game.id} />

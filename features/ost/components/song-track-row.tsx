@@ -58,7 +58,7 @@ export const SongTrackRow = memo(function SongTrackRow({
         onClick={() => onPlay(item)}
         aria-label={isActive && isPlaying ? '暂停' : '播放'}
         className={cn(
-          'flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-full border text-xs font-mono transition-colors',
+          'flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-full border text-xs transition-colors',
           isActive
             ? 'border-primary bg-primary text-primary-foreground'
             : 'border-border bg-muted/50 text-muted-foreground group-hover:border-primary/60 group-hover:text-foreground',
@@ -97,51 +97,9 @@ export const SongTrackRow = memo(function SongTrackRow({
         </div>
       </button>
 
-      {/* 右侧状态与悬浮操作 */}
-      <div className="flex shrink-0 items-center gap-1.5">
+      {/* 右侧悬浮操作 */}
+      <div className="flex shrink-0 items-center gap-0.5 sm:opacity-0 sm:transition-opacity sm:group-hover:opacity-100 sm:focus-within:opacity-100">
         {hasLyric ? (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                type="button"
-                variant="outline"
-                size="xs"
-                className="rounded-full text-[11px]"
-                onClick={() => onPreviewLyric(item)}
-              >
-                <FileTextIcon className="size-3" />
-                <span className="hidden sm:inline">歌词</span>
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>查看歌词</TooltipContent>
-          </Tooltip>
-        ) : null}
-
-        <div className="flex items-center gap-0.5 sm:opacity-0 sm:transition-opacity sm:group-hover:opacity-100 sm:focus-within:opacity-100">
-          {item.url ? (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon-xs"
-                  className="rounded-full"
-                  asChild
-                >
-                  <a
-                    href={item.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label="打开音频源链接"
-                  >
-                    <ExternalLinkIcon className="size-3.5" />
-                  </a>
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>音频源链接</TooltipContent>
-            </Tooltip>
-          ) : null}
-
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
@@ -149,31 +107,71 @@ export const SongTrackRow = memo(function SongTrackRow({
                 variant="ghost"
                 size="icon-xs"
                 className="rounded-full"
-                onClick={() => onEdit(item)}
-                aria-label="编辑曲目"
+                onClick={() => onPreviewLyric(item)}
+                aria-label="查看歌词"
               >
-                <PencilIcon className="size-3.5" />
+                <FileTextIcon className="size-3.5" />
               </Button>
             </TooltipTrigger>
-            <TooltipContent>编辑</TooltipContent>
+            <TooltipContent>查看歌词</TooltipContent>
           </Tooltip>
+        ) : null}
 
+        {item.url ? (
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
                 type="button"
                 variant="ghost"
                 size="icon-xs"
-                className="text-destructive hover:text-destructive rounded-full"
-                onClick={() => onDelete(item)}
-                aria-label="删除曲目"
+                className="rounded-full"
+                asChild
               >
-                <Trash2Icon className="size-3.5" />
+                <a
+                  href={item.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="打开音频源链接"
+                >
+                  <ExternalLinkIcon className="size-3.5" />
+                </a>
               </Button>
             </TooltipTrigger>
-            <TooltipContent>删除</TooltipContent>
+            <TooltipContent>音频源链接</TooltipContent>
           </Tooltip>
-        </div>
+        ) : null}
+
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-xs"
+              className="rounded-full"
+              onClick={() => onEdit(item)}
+              aria-label="编辑曲目"
+            >
+              <PencilIcon className="size-3.5" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>编辑</TooltipContent>
+        </Tooltip>
+
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-xs"
+              className="text-destructive hover:text-destructive rounded-full"
+              onClick={() => onDelete(item)}
+              aria-label="删除曲目"
+            >
+              <Trash2Icon className="size-3.5" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>删除</TooltipContent>
+        </Tooltip>
       </div>
     </div>
   )
