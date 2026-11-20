@@ -24,3 +24,16 @@ export type OstSongItem = {
   createdAt?: string
   updatedAt?: string
 }
+
+export type OstCreateAlbum = {
+  name: string
+  cover: string
+  resource?: string
+  songs?: Array<{
+    name: string
+    url: string
+    mediaType?: string
+    lyricsText?: string
+    lyricsPath?: string
+  }>
+}

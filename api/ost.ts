@@ -1,6 +1,6 @@
 import { api } from '@/lib/request-utils'
 
-import type { OstManageItem, OstSongItem } from '@/types/ost'
+import type { OstCreateAlbum, OstManageItem, OstSongItem } from '@/types/ost'
 
 export const getOstManageList = async (params?: { keyword?: string; gameId?: number }) => {
   const response = await api.get('/ost', {
@@ -54,18 +54,7 @@ export const deleteOstSong = async (id: number) => {
   return response.data
 }
 
-export const createOstManageItem = async (payload: {
-  gameId: number
-  name: string
-  cover: string
-  resource?: string
-  songs?: Array<{
-    name: string
-    url: string
-    mediaType?: string
-    lyricsPath?: string
-  }>
-}) => {
+export const createOstManageItem = async (payload: OstCreateAlbum & { gameId: number }) => {
   const response = await api.post('/ost', payload)
   return response.data as {
     data: {
@@ -81,6 +70,9 @@ export const createOstManageItem = async (payload: {
     }
   }
 }
+
+export const createOstManageAlbums = (payload: { gameId: number; albums: OstCreateAlbum[] }) =>
+  api.request({ method: 'post', url: '/ost', data: payload })
 
 export const updateOstManageItem = async (
   id: number,

@@ -7,6 +7,8 @@ import { GameInfoTable, GameOstTable, GameOstSongsTable } from '@/db/schema'
 import { db } from '@/lib/drizzle'
 import { api } from '@/lib/request-utils'
 
+import type { OstCreateAlbum } from '@/types/ost'
+
 const normalizeText = (value: unknown) => {
   if (typeof value !== 'string') {
     return ''
@@ -135,30 +137,23 @@ const downloadCoverToLocal = async (
 
 const createOst = async (req: NextRequest) => {
   try {
-    const payload = (await req.json().catch(() => ({}))) as {
-      gameId?: number
-      name?: string
-      cover?: string
-      resource?: string
-      songs?: Array<{
-        name: string
-        url: string
-        mediaType?: string
-        lyricsText?: string
-        lyricsPath?: string
-      }>
-    }
+    const payload = (await req.json().catch(() => null)) as
+      | (Partial<OstCreateAlbum> & { gameId?: number })
+      | { gameId?: number; albums: OstCreateAlbum[] }
+      | null
 
-    const gameId = Number(payload.gameId)
-    const name = normalizeText(payload.name)
-    const cover = normalizeText(payload.cover)
-    const resource = normalizeText(payload.resource || 'khinsider')
-
-    if (!Number.isInteger(gameId) || gameId <= 0) {
+    const gameId = Number(payload?.gameId)
+    if (!payload || !Number.isInteger(gameId) || gameId <= 0) {
       return NextResponse.json({ error: '无效的游戏 id' }, { status: 400 })
     }
 
-    if (!name || !cover) {
+    const isBatch = 'albums' in payload
+    const albums = isBatch ? payload.albums : [payload]
+    if (
+      !Array.isArray(albums) ||
+      !albums.length ||
+      albums.some((album) => !normalizeText(album?.name) || !normalizeText(album?.cover))
+    ) {
       return NextResponse.json({ error: '游戏、OST名称和封面不能为空' }, { status: 400 })
     }
 
@@ -173,56 +168,42 @@ const createOst = async (req: NextRequest) => {
     }
 
     const now = new Date().toISOString()
-    const inserted = await db
-      .insert(GameOstTable)
-      .values({
-        gameId,
-        name,
-        cover,
-        resource,
-        createdAt: now,
-        updatedAt: now,
-      })
-      .returning({
-        id: GameOstTable.id,
-        gameId: GameOstTable.gameId,
-        name: GameOstTable.name,
-        cover: GameOstTable.cover,
-        resource: GameOstTable.resource,
-        createdAt: GameOstTable.createdAt,
-        updatedAt: GameOstTable.updatedAt,
-      })
-
-    const ostId = inserted[0].id
-
-    // 如果有歌曲列表，则同时保存到 game_ost_songs 表
-    if (payload.songs && payload.songs.length > 0) {
-      const songValues = await Promise.all(
-        payload.songs.map(async (song) => {
-          const lyricsText = normalizeText(song.lyricsText || '')
-
-          return {
+    const items = await db.transaction(async (tx) => {
+      const created = []
+      for (const album of albums) {
+        const [item] = await tx
+          .insert(GameOstTable)
+          .values({
             gameId,
-            ostId,
-            name: normalizeText(song.name),
-            url: normalizeText(song.url),
-            mediaType: normalizeText(song.mediaType || ''),
-            lyricsText,
-            lyricsPath: normalizeText(song.lyricsPath || ''),
+            name: normalizeText(album.name),
+            cover: normalizeText(album.cover),
+            resource: normalizeText(album.resource || 'khinsider'),
             createdAt: now,
             updatedAt: now,
-          }
-        }),
-      )
+          })
+          .returning()
 
-      await db.insert(GameOstSongsTable).values(songValues)
-    }
-
-    return NextResponse.json({
-      data: {
-        item: inserted[0],
-      },
+        if (album.songs?.length) {
+          await tx.insert(GameOstSongsTable).values(
+            album.songs.map((song) => ({
+              gameId,
+              ostId: item.id,
+              name: normalizeText(song.name),
+              url: normalizeText(song.url),
+              mediaType: normalizeText(song.mediaType),
+              lyricsText: normalizeText(song.lyricsText),
+              lyricsPath: normalizeText(song.lyricsPath),
+              createdAt: now,
+              updatedAt: now,
+            })),
+          )
+        }
+        created.push(item)
+      }
+      return created
     })
+
+    return NextResponse.json({ data: isBatch ? { items } : { item: items[0] } })
   } catch (error) {
     console.error('Create ost failed:', error)
     return NextResponse.json({ error: 'Failed to create ost' }, { status: 500 })

@@ -1,6 +1,8 @@
 import { ImageIcon } from 'lucide-react'
+import { useState } from 'react'
 
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   Dialog,
   DialogContent,
@@ -29,10 +31,16 @@ export function OstSearchResultsDialog({
   results: UnifiedSearchResult[]
   open: boolean
   onOpenChange: (open: boolean) => void
-  onSelect: (album: UnifiedSearchResult) => void
+  onSelect: (albums: UnifiedSearchResult[]) => void
 }) {
+  const [selected, setSelected] = useState<UnifiedSearchResult[]>([])
+  const close = () => {
+    setSelected([])
+    onOpenChange(false)
+  }
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={(value) => (value ? onOpenChange(value) : close())}>
       <DialogContent className="flex max-h-[85dvh] flex-col overflow-hidden sm:max-w-4xl">
         <DialogHeader>
           <DialogTitle>搜索结果</DialogTitle>
@@ -42,16 +50,29 @@ export function OstSearchResultsDialog({
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-12">选择</TableHead>
                 <TableHead className="w-20">封面</TableHead>
                 <TableHead>专辑名称</TableHead>
                 <TableHead>艺术家</TableHead>
                 <TableHead>曲目数</TableHead>
-                <TableHead className="w-20">操作</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {results.map((album) => (
                 <TableRow key={`${album.source}-${album.id}`}>
+                  <TableCell>
+                    <Checkbox
+                      aria-label={`选择 ${album.name}`}
+                      checked={selected.includes(album)}
+                      onCheckedChange={(checked) =>
+                        setSelected((previous) =>
+                          checked === true
+                            ? [...previous, album]
+                            : previous.filter((item) => item !== album),
+                        )
+                      }
+                    />
+                  </TableCell>
                   <TableCell>
                     {album.cover ? (
                       <img
@@ -70,19 +91,23 @@ export function OstSearchResultsDialog({
                   </TableCell>
                   <TableCell>{album.artist || '-'}</TableCell>
                   <TableCell>{album.songCount ?? '-'}</TableCell>
-                  <TableCell>
-                    <Button variant="outline" size="sm" onClick={() => onSelect(album)}>
-                      选择
-                    </Button>
-                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <Button variant="outline" onClick={close}>
             取消
+          </Button>
+          <Button
+            disabled={!selected.length}
+            onClick={() => {
+              close()
+              onSelect(results.filter((album) => selected.includes(album)))
+            }}
+          >
+            确认选择（{selected.length}）
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -6,7 +6,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 
 import {
-  createOstManageItem,
+  createOstManageAlbums,
   deleteOstManageItem,
   getOstManageList,
   updateOstManageItem,
@@ -18,6 +18,7 @@ import {
   readBackgroundSettings,
 } from '@/lib/settings/background-settings'
 
+import type { OstFormSubmission } from './use-ost-form'
 import type { OstItem } from '@/features/ost/types'
 import type { OstManageItem } from '@/types'
 
@@ -156,51 +157,21 @@ export function useOstManage() {
   }, [])
 
   const handleSubmit = useCallback(
-    async (data: {
-      gameId: number
-      name: string
-      cover: string
-      resource?: string
-      songs?: Array<{ name: string; url: string; duration?: string }>
-    }) => {
+    async (data: OstFormSubmission) => {
       if (!Number.isInteger(data.gameId) || data.gameId <= 0) {
         toast.error('请选择游戏')
         return
       }
-      if (!data.name.trim() || !data.cover.trim()) {
-        toast.error('OST 名称和封面不能为空')
-        return
-      }
-
-      const songCount = data.songs?.length ?? 0
-      const progressToastId = toast.loading(
-        songCount > 0 ? `正在保存 ${songCount} 首歌曲...` : '正在保存 OST...',
-        { duration: 30000 },
-      )
+      const progressToastId = toast.loading('正在保存 OST...', { duration: 30000 })
 
       setIsSubmitting(true)
       try {
-        if (editingItem) {
-          await updateOstManageItem(editingItem.id, {
-            gameId: data.gameId,
-            name: data.name.trim(),
-            cover: data.cover.trim(),
-            resource: data.resource,
-          })
+        if ('albums' in data) {
+          await createOstManageAlbums(data)
+          toast.success(`已添加 ${data.albums.length} 张 OST 专辑`, { id: progressToastId })
+        } else if (editingItem) {
+          await updateOstManageItem(editingItem.id, data)
           toast.success('OST 已更新', { id: progressToastId })
-        } else {
-          await createOstManageItem({
-            gameId: data.gameId,
-            name: data.name.trim(),
-            cover: data.cover.trim(),
-            resource: data.resource,
-            songs: data.songs,
-          })
-          toast.success('OST 已创建', {
-            id: progressToastId,
-            description: songCount > 0 ? `已保存 ${songCount} 首歌曲` : undefined,
-            duration: 5000,
-          })
         }
 
         setDialogOpen(false)
