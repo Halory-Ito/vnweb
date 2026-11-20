@@ -60,7 +60,7 @@ export const QuoteNoteCard = memo(function QuoteNoteCard({
       <span
         aria-hidden="true"
         className={cn(
-          'pointer-events-none absolute top-2 left-3.5 font-serif text-5xl leading-none select-none',
+          'pointer-events-none absolute top-2 left-3.5 text-5xl leading-none select-none',
           theme.accent,
         )}
       >

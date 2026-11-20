@@ -291,7 +291,7 @@ export default function ProxyPage() {
                 placeholder="输入要测试的URL"
                 value={testUrl}
                 onChange={(e) => setTestUrl(e.target.value)}
-                className="font-mono text-sm"
+                className="text-sm"
               />
             </div>
             <Button
@@ -362,7 +362,7 @@ export default function ProxyPage() {
                         </p>
                         <p>延迟: {testResult.latency}ms</p>
                         {testResult.proxy && (
-                          <p className="mt-1 font-mono text-xs break-all">
+                          <p className="mt-1 text-xs break-all">
                             代理: {testResult.proxy}
                           </p>
                         )}

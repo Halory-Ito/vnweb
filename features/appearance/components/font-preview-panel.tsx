@@ -82,7 +82,7 @@ export function FontPreviewPanel({ fontPath, fontWeight, label }: FontPreviewPan
         <span className="text-muted-foreground truncate">
           {isReady ? label : '正在加载字体...'}
         </span>
-        <span className="text-muted-foreground/70 shrink-0 font-mono">
+        <span className="text-muted-foreground/70 shrink-0">
           {browserFamily ?? (isReady ? 'local file' : '')}
         </span>
       </div>

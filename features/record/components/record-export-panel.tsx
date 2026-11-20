@@ -383,7 +383,7 @@ export default function RecordExportPanel() {
                   <Input
                     value={config.backgroundColor}
                     onChange={(e) => handleBackgroundColorChange(e.target.value)}
-                    className="flex-1 font-mono text-sm"
+                    className="flex-1 text-sm"
                   />
                 </div>
               </div>
@@ -401,7 +401,7 @@ export default function RecordExportPanel() {
                   <Input
                     value={config.titleColor}
                     onChange={(e) => handleTitleColorChange(e.target.value)}
-                    className="flex-1 font-mono text-sm"
+                    className="flex-1 text-sm"
                   />
                 </div>
               </div>

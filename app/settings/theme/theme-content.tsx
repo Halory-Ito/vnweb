@@ -71,7 +71,7 @@ export default function ThemeContent() {
       <Textarea
         value={content}
         onChange={(event) => setContent(event.target.value)}
-        className="min-h-105 font-mono text-xs leading-5"
+        className="min-h-105 text-xs leading-5"
         spellCheck={false}
         disabled={isLoading || isSaving}
         placeholder={isLoading ? '正在读取主题文件...' : '请输入 CSS 内容'}

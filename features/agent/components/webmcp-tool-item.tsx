@@ -25,7 +25,7 @@ export function WebMcpToolItem({ tool }: { tool: WebMCP.RegisteredTool }) {
         </span>
         <span className="min-w-0 flex-1">
           <span className="block truncate text-sm font-medium">{tool.title || tool.name}</span>
-          <span className="text-muted-foreground block truncate font-mono text-xs">
+          <span className="text-muted-foreground block truncate text-xs">
             {tool.name}
           </span>
         </span>
@@ -48,7 +48,7 @@ export function WebMcpToolItem({ tool }: { tool: WebMCP.RegisteredTool }) {
         {schema ? (
           <div>
             <div className="text-muted-foreground mb-1 text-[11px]">入参 Schema</div>
-            <pre className="bg-muted/50 max-h-48 overflow-auto rounded-md p-2 font-mono text-[11px]">
+            <pre className="bg-muted/50 max-h-48 overflow-auto rounded-md p-2 text-[11px]">
               {schema}
             </pre>
           </div>

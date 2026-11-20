@@ -142,7 +142,7 @@ export function PvTheaterStage({
                   </Badge>
                   <Badge
                     variant="outline"
-                    className="bg-background/70 rounded-full font-mono text-[11px] backdrop-blur-xs"
+                    className="bg-background/70 rounded-full text-[11px] backdrop-blur-xs"
                   >
                     {getHostname(item.url)}
                   </Badge>

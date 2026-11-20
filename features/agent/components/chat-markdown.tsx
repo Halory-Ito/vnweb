@@ -13,8 +13,8 @@ function createComponents(variant: ChatMarkdownVariant): Components {
   const isUser = variant === 'user'
 
   const inlineCodeClass = isUser
-    ? 'bg-primary-foreground/20 rounded px-1 py-0.5 font-mono text-[0.85em]'
-    : 'bg-muted rounded px-1 py-0.5 font-mono text-[0.85em]'
+    ? 'bg-primary-foreground/20 rounded px-1 py-0.5 text-[0.85em]'
+    : 'bg-muted rounded px-1 py-0.5 text-[0.85em]'
 
   const linkClass = isUser
     ? 'text-primary-foreground underline underline-offset-2 hover:opacity-80'

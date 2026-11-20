@@ -530,7 +530,7 @@ export default function GameMemoryDetailPage() {
               <Textarea
                 value={description}
                 onChange={(event) => setDescription(event.target.value)}
-                className="min-h-32 resize-none font-mono text-sm"
+                className="min-h-32 resize-none text-sm"
                 placeholder="记录你的游戏体验，支持 Markdown 语法..."
               />
             </div>
@@ -696,13 +696,13 @@ const mdxComponents = {
     const isInline = !className
     if (isInline) {
       return (
-        <code className="bg-muted text-primary rounded px-1.5 py-0.5 font-mono text-[0.9em]">
+        <code className="bg-muted text-primary rounded px-1.5 py-0.5 text-[0.9em]">
           {children}
         </code>
       )
     }
     return (
-      <code className={`${className} bg-transparent p-0 font-mono text-sm leading-relaxed`}>
+      <code className={`${className} bg-transparent p-0 text-sm leading-relaxed`}>
         {children}
       </code>
     )

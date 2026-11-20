@@ -287,7 +287,7 @@ export default function GameMemory({ gameId }: GameMemoryProps) {
               <Textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className="min-h-32 resize-none font-mono text-sm"
+                className="min-h-32 resize-none text-sm"
                 placeholder="记录你的游戏体验，支持 Markdown 语法..."
               />
             </div>

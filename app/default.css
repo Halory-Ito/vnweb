@@ -115,10 +115,10 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
-  /* 使用 CSS 通用字体族，让 serif / sans-serif / monospace 跟随浏览器的字体设置 */
-  --font-sans: sans-serif;
-  --font-serif: serif;
-  --font-mono: monospace;
+  /* 统一使用设置中自定义的全局字体，不区分 sans / serif / mono */
+  --font-sans: var(--app-font-family);
+  --font-serif: var(--app-font-family);
+  --font-mono: var(--app-font-family);
 }
 
 @layer base {
@@ -130,5 +130,11 @@
     font-family: var(--app-font-family);
     font-size: var(--app-font-size);
     font-weight: var(--app-font-weight);
+  }
+  code,
+  kbd,
+  samp,
+  pre {
+    font-family: inherit;
   }
 }

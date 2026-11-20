@@ -92,7 +92,7 @@ export function PvPlaylistPanel({
                     {item.name}
                   </p>
                   <p className="text-muted-foreground truncate text-xs">{gameTitle}</p>
-                  <p className="text-muted-foreground/80 truncate font-mono text-[11px]">
+                  <p className="text-muted-foreground/80 truncate text-[11px]">
                     {getHostname(item.url)}
                   </p>
                 </div>

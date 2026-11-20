@@ -139,7 +139,7 @@ export function PvFilmstrip({
                       <PlayIcon className="size-6" />
                     </div>
                   )}
-                  <span className="bg-background/80 absolute top-2 left-2 rounded-full border px-2 py-0.5 font-mono text-[10px] backdrop-blur-xs">
+                  <span className="bg-background/80 absolute top-2 left-2 rounded-full border px-2 py-0.5 text-[10px] backdrop-blur-xs">
                     #{String(idx + 1).padStart(2, '0')}
                   </span>
                 </div>
@@ -150,7 +150,7 @@ export function PvFilmstrip({
                   </p>
                   <div className="flex items-center justify-between gap-2 text-xs">
                     <span className="text-muted-foreground truncate">{gameTitle}</span>
-                    <span className="text-muted-foreground/80 shrink-0 font-mono text-[10px]">
+                    <span className="text-muted-foreground/80 shrink-0 text-[10px]">
                       {getHostname(item.url)}
                     </span>
                   </div>
