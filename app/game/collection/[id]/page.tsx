@@ -1,10 +1,11 @@
 'use client'
 
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { useAtom } from 'jotai'
+import { useAtom, useAtomValue } from 'jotai'
 import {
   AlertCircle,
   ArrowDownIcon,
+  ArrowLeftIcon,
   ArrowUpIcon,
   CheckIcon,
   FolderPlusIcon,
@@ -26,7 +27,7 @@ import {
   moveGameToCollection,
   removeGameFromCollection,
 } from '@/api'
-import { selectedGameIdsAtom } from '@/atom/global'
+import { selectedGameIdsAtom, showNsfwAtom } from '@/atom/global'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -61,11 +62,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { EmptyArtwork } from '@/components/ui/empty-artwork'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import GameBulkUpdateMetadataDialog from '@/features/game/components/dialog/game-bulk-update-metadata-dialog'
 import GameCard from '@/features/game/components/game-card'
 import { SortSelect } from '@/features/game/components/sort-select'
+import GameHomeGrid from '@/features/home/components/game-home-grid'
 
 type CollectionEmptyStateProps = {
   icon: typeof AlertCircle
@@ -131,6 +134,7 @@ export default function CollectionDetailPage() {
   const [order, setOrder] = useState<string>('asc')
   const [orderBy, setOrderBy] = useState<string>('add_date')
   const [selectedGameIds, setSelectedGameIds] = useAtom(selectedGameIdsAtom)
+  const showNsfw = useAtomValue(showNsfwAtom)
   const [isAddingToCollection, setIsAddingToCollection] = useState(false)
   const [isDeletingGames, setIsDeletingGames] = useState(false)
   const [isDeletingSingleGame, setIsDeletingSingleGame] = useState(false)
@@ -158,10 +162,14 @@ export default function CollectionDetailPage() {
 
   const collection = collections.find((item) => item.id === collectionId)
   const otherCollections = collections.filter((item) => item.id !== collectionId)
+  const visibleGames = useMemo(
+    () => (collection?.games ?? []).filter((game) => showNsfw || !game.nsfw),
+    [collection, showNsfw],
+  )
 
   const collectionGameIds = useMemo(
-    () => (collection ? collection.games.map((item) => String(item.id)) : []),
-    [collection],
+    () => visibleGames.map((item) => String(item.id)),
+    [visibleGames],
   )
   const collectionGameIdSet = useMemo(() => new Set(collectionGameIds), [collectionGameIds])
 
@@ -173,11 +181,7 @@ export default function CollectionDetailPage() {
   const selectionMode = selectedInCollection.length > 0
 
   const sortedGames = useMemo(() => {
-    if (!collection) {
-      return []
-    }
-
-    const games = [...collection.games]
+    const games = [...visibleGames]
     games.sort((a, b) => {
       let compare = 0
       switch (orderBy) {
@@ -204,7 +208,7 @@ export default function CollectionDetailPage() {
     })
 
     return games
-  }, [collection, order, orderBy])
+  }, [visibleGames, order, orderBy])
 
   const refreshAll = async () => {
     await queryClient.invalidateQueries({ queryKey: ['collections'] })
@@ -390,14 +394,19 @@ export default function CollectionDetailPage() {
   }
 
   return (
-    <div className="h-[100cqh] w-full overflow-y-auto p-4">
-      <div className="mb-4 flex items-center gap-4">
-        <div className="text-2xl font-bold">{collection.name}</div>
-        <div className="text-xl font-bold">排序依据:</div>
+    <div className="@container/library h-[100cqh] w-full min-w-0 overflow-y-auto p-3 sm:p-4">
+      <div className="mb-4 flex flex-wrap items-center gap-2">
+        <Button asChild variant="outline" size="icon" aria-label="返回游戏库">
+          <Link href="/game/home">
+            <ArrowLeftIcon />
+          </Link>
+        </Button>
+        <h1 className="mr-auto min-w-0 text-lg font-bold wrap-anywhere">{collection.name}</h1>
         <SortSelect orderBy={orderBy} setOrderBy={setOrderBy} />
         <Button
           variant="outline"
           size="icon"
+          aria-label={order === 'asc' ? '切换为降序' : '切换为升序'}
           onClick={() => setOrder(order === 'asc' ? 'desc' : 'asc')}
         >
           {order === 'asc' ? <ArrowDownIcon /> : <ArrowUpIcon />}
@@ -405,9 +414,12 @@ export default function CollectionDetailPage() {
       </div>
 
       {sortedGames.length === 0 ? (
-        <div className="text-muted-foreground rounded-md border p-4 text-sm">收藏夹暂无游戏</div>
+        <div className="text-muted-foreground flex flex-col items-center gap-2 py-10 text-center text-sm">
+          <EmptyArtwork />
+          <p>文件夹内暂无游戏</p>
+        </div>
       ) : (
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-8">
+        <GameHomeGrid>
           {sortedGames.map((game) => (
             <ContextMenu key={game.linkId}>
               <ContextMenuTrigger asChild>
@@ -461,7 +473,7 @@ export default function CollectionDetailPage() {
               </ContextMenuContent>
             </ContextMenu>
           ))}
-        </div>
+        </GameHomeGrid>
       )}
 
       {selectionMode ? (

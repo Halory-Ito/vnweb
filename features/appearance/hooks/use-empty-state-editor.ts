@@ -3,31 +3,15 @@
 import { useRef, useState } from 'react'
 import { toast } from 'sonner'
 
+import { isAppearanceImageUrl, readLocalAppearanceImage } from '@/lib/settings/appearance-image'
 import {
-  EMPTY_STATE_IMAGE_TYPES,
-  EMPTY_STATE_MAX_IMAGE_BYTES,
   EMPTY_STATE_MAX_ITEMS,
-  isEmptyStateImageUrl,
   updateEmptyStateSettings,
 } from '@/lib/settings/empty-state-settings'
 
 import type { EmptyStateSettings } from '@/lib/settings/empty-state-settings'
 
 type ItemKey = 'kaomoji' | 'images'
-
-function readImage(file: File) {
-  if (!EMPTY_STATE_IMAGE_TYPES.includes(file.type))
-    throw new Error('请选择 PNG、JPEG、WebP、GIF 或 AVIF 图片。')
-  if (file.size === 0 || file.size > EMPTY_STATE_MAX_IMAGE_BYTES)
-    throw new Error('每张本地图片须小于或等于 256 KB。')
-  return new Promise<string>((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onload = () => resolve(String(reader.result))
-    reader.onerror = () => reject(new Error('无法读取图片。'))
-    reader.onabort = () => reject(new Error('图片读取已取消。'))
-    reader.readAsDataURL(file)
-  })
-}
 
 export function saveEmptyStateSettings(
   update: (current: EmptyStateSettings) => EmptyStateSettings,
@@ -58,7 +42,7 @@ export function useEmptyStateEditor(itemKey: ItemKey) {
   function addDraft() {
     const value = draft.trim()
     if (!value) return
-    if (itemKey === 'images' && !isEmptyStateImageUrl(value)) {
+    if (itemKey === 'images' && !isAppearanceImageUrl(value)) {
       toast.error('请输入 HTTP、HTTPS 图片链接或站内图片路径。')
       return
     }
@@ -74,7 +58,7 @@ export function useEmptyStateEditor(itemKey: ItemKey) {
     setIsReading(true)
     try {
       const selected = Array.from(files)
-      addItems(await Promise.all(selected.map(readImage)))
+      addItems(await Promise.all(selected.map(readLocalAppearanceImage)))
     } catch (error) {
       toast.error(error instanceof Error ? error.message : '无法读取图片。')
     } finally {

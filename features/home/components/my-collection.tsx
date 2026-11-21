@@ -1,6 +1,7 @@
 import { BookMarkedIcon, CheckIcon, Trash2Icon, XIcon } from 'lucide-react'
 
 import AreaHeader from './area-header'
+import GameHomeGrid from './game-home-grid'
 import { getCollections } from '@/api'
 import { Button } from '@/components/ui/button'
 import GameCard from '@/features/game/components/game-card'
@@ -46,10 +47,10 @@ const MyColletion = ({
   }
 
   return (
-    <div className="h-full w-full">
-      <div className="bg-background dark:bg-input/30 dark:border-input mb-4 flex flex-col gap-3 rounded-xl p-3 sm:flex-row sm:items-center sm:justify-between">
+    <section className="min-w-0 space-y-3">
+      <div className="bg-background dark:bg-input/30 dark:border-input flex flex-wrap items-center justify-between gap-2 rounded-xl p-3">
         <AreaHeader icon={BookMarkedIcon} title="我的收藏" count={items.length} />
-        <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+        <div className="flex flex-wrap items-center gap-2">
           {collectionSelectionMode ? (
             <>
               <Button
@@ -77,11 +78,13 @@ const MyColletion = ({
               <div className="text-sm font-medium">已选择 {selectedCollectionIds.length} 项</div>
             </>
           ) : (
-            <div className="text-muted-foreground text-xs">可按住 Ctrl 或 ⌘ 点击选择收藏夹</div>
+            <div className="text-muted-foreground hidden text-xs @min-[36rem]/library:block [@media(hover:none)]:hidden">
+              可按住 Ctrl 或 ⌘ 点击选择收藏夹
+            </div>
           )}
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+      <GameHomeGrid>
         {items.map((item) => (
           <GameCard
             key={item.id}
@@ -94,8 +97,8 @@ const MyColletion = ({
             onToggleSelect={onToggleSelectCollection}
           />
         ))}
-      </div>
-    </div>
+      </GameHomeGrid>
+    </section>
   )
 }
 

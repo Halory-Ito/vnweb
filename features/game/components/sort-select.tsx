@@ -20,7 +20,7 @@ export function SortSelect({ orderBy, setOrderBy }: SortSelectProps) {
     <FieldGroup className="w-36">
       <Field>
         <Select defaultValue={orderBy} onValueChange={setOrderBy}>
-          <SelectTrigger>
+          <SelectTrigger aria-label="排序依据">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>

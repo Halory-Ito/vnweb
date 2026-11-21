@@ -63,6 +63,8 @@ export type GameCardListItem = {
   playTime: number
   rating: number
   status: number
+  developer?: string
+  publisher?: string
 }
 
 /** 「按名称或 vndb_id 匹配本地游戏」的结果条目 */

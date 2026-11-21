@@ -13,7 +13,7 @@ import {
   InputGroupButton,
   InputGroupInput,
 } from '@/components/ui/input-group'
-import { EMPTY_STATE_IMAGE_TYPES } from '@/lib/settings/empty-state-settings'
+import { APPEARANCE_IMAGE_TYPES } from '@/lib/settings/appearance-image'
 
 type EmptyStateListEditorProps = {
   itemKey: 'kaomoji' | 'images'
@@ -61,7 +61,7 @@ export default function EmptyStateListEditor({ itemKey, items }: EmptyStateListE
                 ref={editor.inputRef}
                 type="file"
                 multiple
-                accept={EMPTY_STATE_IMAGE_TYPES.join(',')}
+                accept={APPEARANCE_IMAGE_TYPES.join(',')}
                 hidden
                 onChange={(event) => {
                   if (event.currentTarget.files) void editor.addFiles(event.currentTarget.files)

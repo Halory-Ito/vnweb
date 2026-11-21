@@ -14,13 +14,13 @@ export const gamePlayStatusLabelMap: Record<number, string> = {
 
 // 状态指示点颜色默认值由 `lib/settings/status-settings.ts` 提供，可在「设置 - 外观」中自定义
 
-const normalizeStatus = (status?: number | null) => {
+export function normalizeGamePlayStatus(status?: number | null): GamePlayStatus {
   const value = Number(status)
-  return gamePlayStatusLabelMap[value] ? value : 0
+  return gamePlayStatusLabelMap[value] ? (value as GamePlayStatus) : 0
 }
 
 export const getGamePlayStatusLabel = (status?: number | null) =>
-  gamePlayStatusLabelMap[normalizeStatus(status)]
+  gamePlayStatusLabelMap[normalizeGamePlayStatus(status)]
 
 export const getGamePlayStatusOptions = () =>
   GAME_PLAY_STATUS_OPTIONS.map((status) => ({

@@ -4,6 +4,7 @@ export type CollectionGameItem = {
   name: string
   cover: string
   icon: string
+  nsfw?: number
   date: string
   addedAt: string
   lastRunAt: string

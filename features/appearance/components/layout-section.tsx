@@ -2,8 +2,11 @@
 
 import { useAtom } from 'jotai'
 
+import FolderPaletteEditor from './folder-palette-editor'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
+import GameLibraryLayoutSelect from '@/features/game/components/game-library-layout-select'
+import LibraryGroupSelect from '@/features/home/components/library-group-select'
 import { borderlessAtom, useLayoutVisibility } from '@/hooks/use-layout-visibility'
 
 export function LayoutSection() {
@@ -30,6 +33,15 @@ export function LayoutSection() {
         <Label htmlFor="borderless">无边框</Label>
         <Switch id="borderless" checked={borderless} onCheckedChange={setBorderless} />
       </div>
+      <div className="flex min-h-8 flex-wrap items-center justify-between gap-3">
+        <Label htmlFor="game-library-layout">游戏库布局</Label>
+        <GameLibraryLayoutSelect id="game-library-layout" />
+      </div>
+      <div className="flex min-h-8 flex-wrap items-center justify-between gap-3">
+        <Label htmlFor="game-library-group">网格分类依据</Label>
+        <LibraryGroupSelect id="game-library-group" />
+      </div>
+      <FolderPaletteEditor />
     </section>
   )
 }

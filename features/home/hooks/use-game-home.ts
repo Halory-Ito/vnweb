@@ -3,9 +3,10 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAtom } from 'jotai'
 import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 
+import { getLibraryFolderKeys } from '../lib/library-grouping'
 import {
   addGameToCollection,
   batchMarkNsfw,
@@ -17,6 +18,8 @@ import {
 } from '@/api'
 import { selectedGameIdsAtom, showNsfwAtom } from '@/atom/global'
 
+import type { LibraryGroup } from '../lib/library-grouping'
+
 function getErrorMessage(error: unknown, fallback: string) {
   const err = error as {
     response?: { data?: { error?: string } }
@@ -25,10 +28,18 @@ function getErrorMessage(error: unknown, fallback: string) {
   return err.response?.data?.error || err.message || fallback
 }
 
-export function useGameHome() {
+export function useGameHome({
+  groupBy,
+  folderKey,
+  foldersOnly,
+}: {
+  groupBy: LibraryGroup
+  folderKey?: string
+  foldersOnly: boolean
+}) {
   const router = useRouter()
   const queryClient = useQueryClient()
-  const [selectedGameIds, setSelectedGameIds] = useAtom(selectedGameIdsAtom)
+  const [storedSelectedGameIds, setSelectedGameIds] = useAtom(selectedGameIdsAtom)
   const [showNsfw] = useAtom(showNsfwAtom)
 
   const [isAddingToCollection, setIsAddingToCollection] = useState(false)
@@ -58,15 +69,24 @@ export function useGameHome() {
     .filter((game) => game.status === 1)
     .sort((a, b) => (Date.parse(b.lastRunAt) || 0) - (Date.parse(a.lastRunAt) || 0))
   const collections = collectionsQuery.data ?? []
-  const allGameIds = gameCards.map((item) => item.id)
+  const visibleGames = useMemo(() => {
+    const games = gameCardsQuery.data ?? []
+    if (foldersOnly) return []
+    return folderKey === undefined
+      ? games
+      : games.filter((game) => getLibraryFolderKeys(game, groupBy).includes(folderKey))
+  }, [groupBy, folderKey, foldersOnly, gameCardsQuery.data])
+  const allGameIds = useMemo(() => visibleGames.map((item) => item.id), [visibleGames])
+  const visibleIds = useMemo(() => new Set(allGameIds), [allGameIds])
+  const selectedGameIds = storedSelectedGameIds.filter((id) => visibleIds.has(id))
 
   useEffect(() => {
-    const allGameIdSet = new Set(allGameIds)
+    if (!gameCardsQuery.data) return
     setSelectedGameIds((prev) => {
-      const next = prev.filter((id) => allGameIdSet.has(id))
+      const next = prev.filter((id) => visibleIds.has(id))
       return next.length === prev.length ? prev : next
     })
-  }, [allGameIds, setSelectedGameIds])
+  }, [gameCardsQuery.data, setSelectedGameIds, visibleIds])
 
   useEffect(() => {
     const allCollectionIdSet = new Set(collections.map((item) => `collection-${item.id}`))
@@ -122,14 +142,44 @@ export function useGameHome() {
   }
 
   const handleCreateCollectionAndAdd = async () => {
+    if (isAddingToCollection) return
     const collectionName = newCollectionName.trim()
     if (!collectionName) {
       toast.error('请输入新合集名称')
       return
     }
-    await handleAddToCollection(collectionName)
-    setCreateCollectionOpen(false)
-    setNewCollectionName('')
+    if (selectedGameIds.length > 0) {
+      await handleAddToCollection(collectionName)
+      setCreateCollectionOpen(false)
+      setNewCollectionName('')
+      return
+    }
+
+    if (collections.some(({ name }) => name === collectionName)) {
+      toast.error('已存在同名文件夹')
+      return
+    }
+
+    setIsAddingToCollection(true)
+    try {
+      await createCollection(collectionName)
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['collections'] }),
+        queryClient.invalidateQueries({ queryKey: ['game-sidebar'] }),
+      ])
+      setCreateCollectionOpen(false)
+      setNewCollectionName('')
+      toast.success('已新建文件夹')
+    } catch (error) {
+      toast.error(getErrorMessage(error, '新建文件夹失败'))
+    } finally {
+      setIsAddingToCollection(false)
+    }
+  }
+
+  const handleRequestDeleteCollection = (id: number) => {
+    setSelectedCollectionIds([`collection-${id}`])
+    setDeleteCollectionsConfirmOpen(true)
   }
 
   const handleDeleteGames = async () => {
@@ -209,6 +259,7 @@ export function useGameHome() {
     gameCardsQuery,
     collectionsQuery,
     gameCards,
+    visibleGames,
     playingGames,
     collections,
     allGameIds,
@@ -243,5 +294,6 @@ export function useGameHome() {
     handleDeleteGames,
     handleBatchNsfw,
     handleDeleteCollections,
+    handleRequestDeleteCollection,
   }
 }

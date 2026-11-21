@@ -130,9 +130,11 @@ export function HomeActionDialogs({
       <Dialog open={createCollectionOpen} onOpenChange={onCreateCollectionOpenChange}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>新建合集并添加</DialogTitle>
+            <DialogTitle>{selectedCount > 0 ? '新建合集并添加' : '新建文件夹'}</DialogTitle>
             <DialogDescription>
-              将当前选中的 {selectedCount} 个游戏添加到新合集中。
+              {selectedCount > 0
+                ? `将当前选中的 ${selectedCount} 个游戏添加到新合集中。`
+                : '输入用于分类游戏的文件夹名称。'}
             </DialogDescription>
           </DialogHeader>
           <Input
@@ -140,7 +142,7 @@ export function HomeActionDialogs({
             value={newCollectionName}
             onChange={(e) => onNewCollectionNameChange(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === 'Enter') {
+              if (e.key === 'Enter' && !e.nativeEvent.isComposing && !isAddingToCollection) {
                 onCreateCollectionAndAdd()
               }
             }}
@@ -153,8 +155,12 @@ export function HomeActionDialogs({
             >
               取消
             </Button>
-            <Button type="button" disabled={isAddingToCollection} onClick={onCreateCollectionAndAdd}>
-              {isAddingToCollection ? '创建中...' : '创建并添加'}
+            <Button
+              type="button"
+              disabled={isAddingToCollection}
+              onClick={onCreateCollectionAndAdd}
+            >
+              {isAddingToCollection ? '创建中…' : selectedCount > 0 ? '创建并添加' : '创建'}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -171,10 +177,7 @@ export function HomeActionDialogs({
         onOpenChange={onMergeDialogOpenChange}
         gameIds={selectedGameIds}
         gameNames={Object.fromEntries(
-          selectedGameIds.map((id) => [
-            id,
-            gameCards.find((g) => g.id === id)?.title || id,
-          ]),
+          selectedGameIds.map((id) => [id, gameCards.find((g) => g.id === id)?.title || id]),
         )}
         onMergeComplete={onClearSelection}
       />

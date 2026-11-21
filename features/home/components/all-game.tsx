@@ -3,15 +3,23 @@ import { useState } from 'react'
 
 import { GameCardsData, SelectableGameProps } from '../views/game-home'
 import AreaHeader from './area-header'
+import GameHomeGrid from './game-home-grid'
 import { Button } from '@/components/ui/button'
 import GameCard from '@/features/game/components/game-card'
 import { SortSelect } from '@/features/game/components/sort-select'
 
 type AllGameProps = SelectableGameProps & {
   gameCards: GameCardsData
+  title?: string
 }
 
-const AllGame = ({ gameCards, selectedGameIds, selectionMode, onToggleSelect }: AllGameProps) => {
+const AllGame = ({
+  gameCards,
+  title = '所有游戏',
+  selectedGameIds,
+  selectionMode,
+  onToggleSelect,
+}: AllGameProps) => {
   const [order, setOrder] = useState<string>('asc')
   const [orderBy, setOrderBy] = useState<string>('add_date')
 
@@ -42,12 +50,14 @@ const AllGame = ({ gameCards, selectedGameIds, selectionMode, onToggleSelect }: 
     return order === 'asc' ? compare : -compare
   })
   return (
-    <div className="h-full w-full">
-      <div className="bg-background dark:bg-input/30 dark:border-input mb-4 flex flex-col gap-3 rounded-xl p-3 sm:flex-row sm:items-center sm:justify-between">
-        <AreaHeader icon={Gamepad2Icon} title="所有游戏" count={items.length} />
+    <section className="min-w-0 space-y-3">
+      <div className="bg-background dark:bg-input/30 dark:border-input flex flex-wrap items-center justify-between gap-2 rounded-xl p-3">
+        <AreaHeader icon={Gamepad2Icon} title={title} count={items.length} />
 
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-muted-foreground text-sm font-medium">排序依据</span>
+          <span className="text-muted-foreground hidden text-sm font-medium @min-[36rem]/library:inline">
+            排序依据
+          </span>
           <SortSelect orderBy={orderBy} setOrderBy={setOrderBy} />
           <Button
             variant="outline"
@@ -64,7 +74,7 @@ const AllGame = ({ gameCards, selectedGameIds, selectionMode, onToggleSelect }: 
           </Button>
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+      <GameHomeGrid>
         {items.map((item) => (
           <GameCard
             key={item.id}
@@ -75,8 +85,8 @@ const AllGame = ({ gameCards, selectedGameIds, selectionMode, onToggleSelect }: 
             onToggleSelect={onToggleSelect}
           />
         ))}
-      </div>
-    </div>
+      </GameHomeGrid>
+    </section>
   )
 }
 

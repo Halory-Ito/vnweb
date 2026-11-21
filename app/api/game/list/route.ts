@@ -15,6 +15,8 @@ const getGameCardList = async (req: NextRequest) => {
         name: GameInfoTable.name,
         nameCn: GameInfoTable.nameCn,
         cover: GameInfoTable.cover,
+        developer: GameInfoTable.developer,
+        publisher: GameInfoTable.publisher,
         date: GameInfoTable.date,
         createdAt: GameInfoTable.createdAt,
       })
@@ -53,6 +55,8 @@ const getGameCardList = async (req: NextRequest) => {
         id: String(game.id),
         title: game.nameCn || game.name,
         cover: game.cover || '/cover/wa2.jpg',
+        developer: game.developer,
+        publisher: game.publisher,
         publishAt: game.date || '',
         lastRunAt: play?.lastLaunchedAt || '',
         addedAt: game.createdAt || '',

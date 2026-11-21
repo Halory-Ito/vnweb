@@ -1,58 +1,25 @@
+import GameHomeGrid from './game-home-grid'
 import { Skeleton } from '@/components/ui/skeleton'
 
 export default function GameHomeSkeleton() {
   return (
-    <div className="max-h-[100cqh] w-full space-y-12 overflow-x-hidden overflow-y-scroll p-4">
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <Skeleton className="h-8 w-24" />
-          <div className="flex gap-2">
-            <Skeleton className="size-9" />
-            <Skeleton className="size-9" />
+    <div className="@container/library max-h-[100cqh] w-full min-w-0 space-y-6 overflow-hidden p-3 sm:space-y-8 sm:p-4">
+      {[2, 2, 8].map((count, section) => (
+        <div key={section} className="space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl p-3">
+            <Skeleton className="h-6 w-24" />
+            {section === 2 ? <Skeleton className="h-9 w-36" /> : null}
           </div>
+          <GameHomeGrid>
+            {Array.from({ length: count }, (_, index) => (
+              <div key={index} className="space-y-2 p-1">
+                <Skeleton className="aspect-3/4 w-full rounded-lg" />
+                <Skeleton className="mx-auto h-4 w-3/4" />
+              </div>
+            ))}
+          </GameHomeGrid>
         </div>
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8">
-          <Skeleton className="aspect-3/4 w-full" />
-          <Skeleton className="aspect-3/4 w-full" />
-          <Skeleton className="aspect-3/4 w-full" />
-          <Skeleton className="aspect-3/4 w-full" />
-        </div>
-      </div>
-
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <Skeleton className="h-8 w-24" />
-          <div className="flex gap-2">
-            <Skeleton className="size-9" />
-            <Skeleton className="size-9" />
-          </div>
-        </div>
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-8">
-          <Skeleton className="aspect-3/4 w-full" />
-          <Skeleton className="aspect-3/4 w-full" />
-          <Skeleton className="aspect-3/4 w-full" />
-          <Skeleton className="aspect-3/4 w-full" />
-        </div>
-      </div>
-
-      <div className="space-y-4">
-        <div className="mb-4 flex items-center space-x-4">
-          <Skeleton className="h-8 w-24" />
-          <Skeleton className="h-8 w-24" />
-          <Skeleton className="h-9 w-44" />
-          <Skeleton className="size-9" />
-        </div>
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-8">
-          <Skeleton className="aspect-3/4 w-full" />
-          <Skeleton className="aspect-3/4 w-full" />
-          <Skeleton className="aspect-3/4 w-full" />
-          <Skeleton className="aspect-3/4 w-full" />
-          <Skeleton className="aspect-3/4 w-full" />
-          <Skeleton className="aspect-3/4 w-full" />
-          <Skeleton className="aspect-3/4 w-full" />
-          <Skeleton className="aspect-3/4 w-full" />
-        </div>
-      </div>
+      ))}
     </div>
   )
 }

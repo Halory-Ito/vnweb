@@ -79,7 +79,7 @@ export default function GameCard(props: GameCardProps) {
             className={`bg-background/60 absolute top-4 left-4 z-20 flex size-7 items-center justify-center rounded-full border-2 transition-all ${
               isSelected
                 ? 'border-primary bg-primary text-primary-foreground scale-100 opacity-100'
-                : 'scale-90 opacity-0 md:group-hover:scale-100 md:group-hover:opacity-100'
+                : '[@media(hover:hover)_and_(pointer:fine)]:[.group:not(:hover)_&:not(:focus-visible)]:opacity-0'
             }`}
             onClick={handleToggleSelect}
             aria-label={isSelected ? '取消选择' : '选择'}
@@ -126,8 +126,8 @@ export default function GameCard(props: GameCardProps) {
                   </span>
                 </div>
                 <div className="flex items-center gap-1.5 rounded-md bg-black/60 px-2 py-1">
-                  <CalendarDaysIcon className="size-3 text-white/80" />
-                  <span className="text-xs text-white/90">
+                  <CalendarDaysIcon className="size-3 shrink-0 text-white/80" />
+                  <span className="text-xs break-all text-white/90">
                     {formatLastRunDate(props.lastRunAt)}
                   </span>
                 </div>
@@ -174,7 +174,7 @@ export default function GameCard(props: GameCardProps) {
 
         <div className="mt-2.5 w-full px-1">
           <h3
-            className="md:group-hover:text-primary truncate text-center text-sm leading-5 font-medium tracking-wide transition-colors"
+            className="md:group-hover:text-primary line-clamp-2 text-center text-sm leading-5 font-medium wrap-anywhere transition-colors"
             title={props.title}
           >
             {props.title}

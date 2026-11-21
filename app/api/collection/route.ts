@@ -5,6 +5,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { CollectionGameTable, CollectionTable, GameInfoTable, GamePlayTable } from '@/db/schema'
 import { db } from '@/lib/drizzle'
 
+import type { CollectionGameItem } from '@/types'
+
 export const dynamic = 'force-dynamic'
 
 type CreateCollectionPayload = {
@@ -35,6 +37,7 @@ const getCollections = async () => {
         gameName: GameInfoTable.name,
         gameCover: GameInfoTable.cover,
         gameIcon: GameInfoTable.icon,
+        gameNsfw: GameInfoTable.nsfw,
         gameDate: GameInfoTable.date,
         gameAddedAt: GameInfoTable.createdAt,
         gameLastRunAt: GamePlayTable.lastLaunchedAt,
@@ -47,22 +50,7 @@ const getCollections = async () => {
       .leftJoin(GamePlayTable, eq(CollectionGameTable.gameId, GamePlayTable.gameId))
       .orderBy(desc(CollectionGameTable.id))
 
-    const grouped = new Map<
-      number,
-      Array<{
-        linkId: number
-        id: number
-        name: string
-        cover: string
-        icon: string
-        date: string
-        addedAt: string
-        lastRunAt: string
-        playTime: number
-        rating: number
-        status: number
-      }>
-    >()
+    const grouped = new Map<number, CollectionGameItem[]>()
 
     for (const link of links) {
       const current = grouped.get(link.collectionId) ?? []
@@ -72,6 +60,7 @@ const getCollections = async () => {
         name: link.gameName,
         cover: link.gameCover || '',
         icon: link.gameIcon || '',
+        nsfw: link.gameNsfw,
         date: link.gameDate || '',
         addedAt: link.gameAddedAt || '',
         lastRunAt: link.gameLastRunAt || '',

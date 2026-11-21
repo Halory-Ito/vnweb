@@ -2,6 +2,7 @@ import { Gamepad2Icon } from 'lucide-react'
 
 import { GameCardsData, SelectableGameProps } from '../views/game-home'
 import AreaHeader from './area-header'
+import GameHomeGrid from './game-home-grid'
 import GameCard from '@/features/game/components/game-card'
 type PlayingGamesProps = SelectableGameProps & {
   items: GameCardsData
@@ -18,11 +19,11 @@ const PlayingGames = ({
   }
 
   return (
-    <div className="h-full w-full">
-      <div className="bg-background dark:bg-input/30 dark:border-input mb-4 flex items-center justify-between rounded-xl p-3">
+    <section className="min-w-0 space-y-3">
+      <div className="bg-background dark:bg-input/30 dark:border-input flex items-center rounded-xl p-3">
         <AreaHeader icon={Gamepad2Icon} title="正在游玩" count={items.length} />
       </div>
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+      <GameHomeGrid>
         {items.map((item) => (
           <GameCard
             key={item.id}
@@ -33,8 +34,8 @@ const PlayingGames = ({
             onToggleSelect={onToggleSelect}
           />
         ))}
-      </div>
-    </div>
+      </GameHomeGrid>
+    </section>
   )
 }
 

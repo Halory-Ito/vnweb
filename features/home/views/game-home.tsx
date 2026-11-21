@@ -1,18 +1,26 @@
 'use client'
 
-import { AlertCircle } from 'lucide-react'
+import { useAtomValue } from 'jotai'
+import { AlertCircle, ArrowLeftIcon } from 'lucide-react'
 import Link from 'next/link'
 
 import GameHomeEmptyState from '../components/empty-home'
 import { HomeActionDialogs } from '../components/home-action-dialogs'
+import LibraryFolders from '../components/library-folders'
 import SelectedMenu from '../components/selected-menu'
 import { useGameHome } from '../hooks/use-game-home'
+import { getLibraryFolderTitle } from '../lib/library-grouping'
 import { getGameCardList } from '@/api'
 import { Button } from '@/components/ui/button'
+import { Empty, EmptyDescription, EmptyTitle } from '@/components/ui/empty'
 import AllGame from '@/features/home/components/all-game'
 import GameHomeSkeleton from '@/features/home/components/home-skeleton'
 import MyColletion from '@/features/home/components/my-collection'
 import PlayingGames from '@/features/home/components/playing-games'
+import { gameLibraryGroupAtom } from '@/lib/settings/game-library-group'
+import { gameLibraryLayoutAtom } from '@/lib/settings/game-library-layout'
+
+import type { LibraryGroup } from '../lib/library-grouping'
 
 export type SelectableGameProps = {
   selectedGameIds: string[]
@@ -22,8 +30,21 @@ export type SelectableGameProps = {
 
 export type GameCardsData = Awaited<ReturnType<typeof getGameCardList>>
 
-export default function GameHome() {
-  const home = useGameHome()
+export default function GameHome({
+  groupBy: linkedGroup,
+  folderKey,
+}: {
+  groupBy: LibraryGroup
+  folderKey?: string
+}) {
+  const layout = useAtomValue(gameLibraryLayoutAtom)
+  const preferredGroup = useAtomValue(gameLibraryGroupAtom)
+  const activeFolder = layout === 'grid' ? folderKey : undefined
+  const groupBy = activeFolder === undefined ? preferredGroup : linkedGroup
+  const foldersOnly = layout === 'grid' && activeFolder === undefined
+  const folderTitle =
+    activeFolder === undefined ? undefined : getLibraryFolderTitle(groupBy, activeFolder)
+  const home = useGameHome({ groupBy, folderKey: activeFolder, foldersOnly })
 
   if (home.gameCardsQuery.isLoading || home.collectionsQuery.isLoading) {
     return <GameHomeSkeleton />
@@ -56,7 +77,7 @@ export default function GameHome() {
     )
   }
 
-  if (home.gameCards.length === 0 && home.collections.length === 0) {
+  if (layout === 'mixed' && home.gameCards.length === 0 && home.collections.length === 0) {
     return (
       <GameHomeEmptyState
         title="暂无游戏"
@@ -70,28 +91,62 @@ export default function GameHome() {
   }
 
   return (
-    <div className="max-h-[100cqh] w-full space-y-12 overflow-x-hidden overflow-y-scroll p-4">
-      <PlayingGames
-        items={home.playingGames}
-        selectedGameIds={home.selectedGameIds}
-        selectionMode={home.selectionMode}
-        onToggleSelect={home.handleToggleSelect}
-      />
-      <MyColletion
-        collections={home.collections}
-        selectedCollectionIds={home.selectedCollectionIds}
-        isDeletingCollections={home.isDeletingCollections}
-        onToggleSelectCollection={home.handleToggleCollectionSelect}
-        onClearCollectionSelection={home.handleClearCollectionSelection}
-        onSelectAllCollections={home.handleSelectAllCollections}
-        onOpenDeleteCollections={() => home.setDeleteCollectionsConfirmOpen(true)}
-      />
-      <AllGame
-        gameCards={home.gameCards}
-        selectedGameIds={home.selectedGameIds}
-        selectionMode={home.selectionMode}
-        onToggleSelect={home.handleToggleSelect}
-      />
+    <div className="@container/library max-h-[100cqh] w-full min-w-0 space-y-6 overflow-x-hidden overflow-y-auto p-3 sm:space-y-8 sm:p-4">
+      {activeFolder !== undefined ? (
+        <Button asChild variant="outline" size="sm">
+          <Link href="/game/home">
+            <ArrowLeftIcon /> 返回文件夹
+          </Link>
+        </Button>
+      ) : null}
+      {foldersOnly ? (
+        <LibraryFolders
+          games={home.gameCards}
+          collections={home.collections}
+          groupBy={groupBy}
+          onCreate={() => home.setCreateCollectionOpen(true)}
+          onDelete={home.handleRequestDeleteCollection}
+        />
+      ) : activeFolder !== undefined ? (
+        home.visibleGames.length ? (
+          <AllGame
+            title={folderTitle}
+            gameCards={home.visibleGames}
+            selectedGameIds={home.selectedGameIds}
+            selectionMode={home.selectionMode}
+            onToggleSelect={home.handleToggleSelect}
+          />
+        ) : (
+          <Empty className="min-h-44">
+            <EmptyTitle>{folderTitle}</EmptyTitle>
+            <EmptyDescription>该分类下暂无游戏</EmptyDescription>
+          </Empty>
+        )
+      ) : (
+        <>
+          <PlayingGames
+            items={home.playingGames}
+            selectedGameIds={home.selectedGameIds}
+            selectionMode={home.selectionMode}
+            onToggleSelect={home.handleToggleSelect}
+          />
+          <MyColletion
+            collections={home.collections}
+            selectedCollectionIds={home.selectedCollectionIds}
+            isDeletingCollections={home.isDeletingCollections}
+            onToggleSelectCollection={home.handleToggleCollectionSelect}
+            onClearCollectionSelection={home.handleClearCollectionSelection}
+            onSelectAllCollections={home.handleSelectAllCollections}
+            onOpenDeleteCollections={() => home.setDeleteCollectionsConfirmOpen(true)}
+          />
+          <AllGame
+            gameCards={home.gameCards}
+            selectedGameIds={home.selectedGameIds}
+            selectionMode={home.selectionMode}
+            onToggleSelect={home.handleToggleSelect}
+          />
+        </>
+      )}
 
       {home.selectionMode ? (
         <SelectedMenu

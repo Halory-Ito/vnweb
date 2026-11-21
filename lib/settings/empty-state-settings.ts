@@ -1,3 +1,5 @@
+import { isAppearanceImageSource } from './appearance-image'
+
 export type EmptyStateMode = 'kaomoji' | 'image'
 
 export type EmptyStateSettings = {
@@ -9,29 +11,10 @@ export type EmptyStateSettings = {
 export const EMPTY_STATE_KEY = 'vnweb:empty-state-settings'
 export const EMPTY_STATE_EVENT = 'vnweb:empty-state-settings-changed'
 export const EMPTY_STATE_MAX_ITEMS = 20
-export const EMPTY_STATE_MAX_IMAGE_BYTES = 256 * 1024
-export const EMPTY_STATE_IMAGE_TYPES = [
-  'image/png',
-  'image/jpeg',
-  'image/webp',
-  'image/gif',
-  'image/avif',
-]
 export const DEFAULT_EMPTY_STATE: EmptyStateSettings = {
   mode: 'kaomoji',
   kaomoji: ['(｡•́︿•̀｡)', '(´・ω・`)', '(・ω・)ノ'],
   images: [],
-}
-
-export function isEmptyStateImageUrl(value: string) {
-  if (value.length > 2048 || value.includes('\\')) return false
-  if (value.startsWith('/') && !value.startsWith('//')) return true
-  try {
-    const url = new URL(value)
-    return (url.protocol === 'https:' || url.protocol === 'http:') && !url.username && !url.password
-  } catch {
-    return false
-  }
 }
 
 export function readEmptyStateSnapshot() {
@@ -59,13 +42,7 @@ export function parseEmptyStateSettings(raw: string | null): EmptyStateSettings 
     return {
       mode: settings?.mode === 'image' ? 'image' : 'kaomoji',
       kaomoji: getList(settings?.kaomoji, (value) => Boolean(value.trim()) && value.length <= 64),
-      images: getList(
-        settings?.images,
-        (value) =>
-          isEmptyStateImageUrl(value) ||
-          (value.length <= Math.ceil(EMPTY_STATE_MAX_IMAGE_BYTES / 3) * 4 + 32 &&
-            /^data:image\/(?:png|jpeg|webp|gif|avif);base64,[a-z\d+/]+={0,2}$/i.test(value)),
-      ),
+      images: getList(settings?.images, isAppearanceImageSource),
     }
   } catch {
     return DEFAULT_EMPTY_STATE
