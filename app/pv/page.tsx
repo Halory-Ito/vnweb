@@ -7,14 +7,17 @@ import { PvManageContent } from '@/features/pv/components/pv-manage-content'
 import { PvPlayerDialog } from '@/features/pv/components/pv-player-dialog'
 import { PvSearchToolbar } from '@/features/pv/components/pv-search-toolbar'
 import { usePvManage } from '@/features/pv/hooks/use-pv-manage'
+import { cn } from '@/lib/utils'
 
 import type { PvMetadata } from '@/types/pv'
 
 export default function PVPage() {
   const pv = usePvManage()
+  const hasCategories = pv.categories.length > 0
   const formProps = {
     form: pv.form,
     gameOptions: pv.gameOptions,
+    categories: pv.categories,
     isSubmitting: pv.isSubmitting,
     onGameIdChange: (gameId: string) => pv.setForm((current) => ({ ...current, gameId })),
     onNameChange: (name: string) => pv.setForm((current) => ({ ...current, name })),
@@ -27,31 +30,43 @@ export default function PVPage() {
       <PvSearchToolbar
         keyword={pv.keyword}
         filters={pv.filters}
+        activeFilterCount={pv.activeFilterCount}
         options={pv.filterOptions}
+        total={pv.total}
         onSearch={pv.updateKeyword}
         onFilter={pv.updateFilter}
+        onResetFilters={pv.resetFilters}
         onCreate={pv.openCreate}
       />
-      <div className="grid min-h-0 flex-1 grid-rows-[auto_minmax(0,1fr)] items-start gap-4 md:grid-cols-[9rem_minmax(0,1fr)] md:grid-rows-[minmax(0,1fr)]">
+      <div
+        className={cn(
+          'grid min-h-0 flex-1 items-start gap-4',
+          hasCategories
+            ? 'grid-rows-[auto_minmax(0,1fr)] md:grid-cols-[10rem_minmax(0,1fr)] md:grid-rows-[minmax(0,1fr)]'
+            : 'grid-rows-[minmax(0,1fr)]',
+        )}
+      >
         <PvCategoryList
           categories={pv.categories}
           category={pv.category}
+          counts={pv.categoryCounts}
           onChange={pv.updateCategory}
         />
         <div
           role="region"
           aria-label="PV 展示区"
-          tabIndex={0}
-          className="focus-visible:outline-ring min-h-0 min-w-0 self-stretch overflow-x-hidden overflow-y-auto overscroll-contain"
+          className="min-h-0 min-w-0 self-stretch overflow-x-hidden overflow-y-auto overscroll-contain px-1 pt-1.5 pb-4"
         >
           <PvManageContent
             items={pv.items}
-            total={pv.total}
+            activeCategory={pv.category}
             hasMore={pv.hasMore}
             isLoading={pv.query.isLoading}
             isError={pv.query.isError}
             onRetry={() => void pv.query.refetch()}
-            onSelect={pv.openPreview}
+            onSelect={(item) => pv.openPreview(item, false)}
+            onEdit={(item) => pv.openPreview(item, true)}
+            onDelete={pv.setPendingDelete}
             onLoadMore={pv.loadMore}
           />
         </div>
@@ -70,6 +85,8 @@ export default function PVPage() {
         <PvPlayerDialog
           {...formProps}
           item={pv.activeItem}
+          editing={pv.editingPreview}
+          onEditingChange={pv.setEditingPreview}
           onClose={pv.closePreview}
           onSave={() => void pv.save()}
           onDelete={() => pv.setPendingDelete(pv.activeItem)}

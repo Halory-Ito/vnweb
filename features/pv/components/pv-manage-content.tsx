@@ -2,43 +2,45 @@
 
 import { FilmIcon } from 'lucide-react'
 
-import { formatPvDuration, getPvCategoryLabel, PV_FILTERS } from '../lib/pv-library'
-import { PvCover } from './pv-cover'
-import { Badge } from '@/components/ui/badge'
+import { PvGridCard } from './pv-grid-card'
 import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 
+import type { PvCategoryFilter } from '../lib/pv-library'
 import type { PvItem } from '../types'
 
 type Props = {
   items: PvItem[]
-  total: number
+  activeCategory: PvCategoryFilter
   hasMore: boolean
   isLoading: boolean
   isError: boolean
   onRetry: () => void
   onSelect: (item: PvItem) => void
+  onEdit: (item: PvItem) => void
+  onDelete: (item: PvItem) => void
   onLoadMore: () => void
 }
 
 export function PvManageContent({
   items,
-  total,
+  activeCategory,
   hasMore,
   isLoading,
   isError,
   onRetry,
   onSelect,
+  onEdit,
+  onDelete,
   onLoadMore,
 }: Props) {
-  const layout = 'grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4'
+  const layout = 'grid min-w-0 grid-cols-1 gap-3.5 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4'
 
   if (isLoading)
     return (
       <div className={layout} aria-label="正在加载 PV">
         {Array.from({ length: 6 }, (_, index) => (
-          <Skeleton key={index} className="aspect-video" />
+          <Skeleton key={index} className="aspect-video rounded-xl" />
         ))}
       </div>
     )
@@ -62,59 +64,18 @@ export function PvManageContent({
     )
 
   return (
-    <section aria-label="PV 列表" className="flex min-w-0 flex-col gap-3">
-      <p className="text-muted-foreground text-xs" aria-live="polite">
-        共 {total} 条 PV
-      </p>
+    <section aria-label="PV 列表" className="flex min-w-0 flex-col gap-4">
       <ul className={layout}>
-        {items.map((item) => (
+        {items.map((item, index) => (
           <li key={item.id} className="min-w-0">
-            <Card
-              variant="outline"
-              className="group hover:border-ring/50 relative h-full gap-0 overflow-hidden p-0 transition-colors"
-            >
-              <Button
-                variant="ghost"
-                aria-label={`预览并编辑 ${item.name}`}
-                aria-haspopup="dialog"
-                onClick={() => onSelect(item)}
-                className="absolute inset-0 z-10 size-full rounded-xl hover:bg-transparent focus-visible:ring-inset"
-              />
-              <div className="flex h-full flex-col">
-                <div className="relative shrink-0">
-                  <PvCover item={item} />
-                  <span className="bg-background/90 absolute right-2 bottom-2 rounded border px-1.5 py-0.5 text-[10px] tabular-nums">
-                    {formatPvDuration(item.metadata?.duration)}
-                  </span>
-                </div>
-                <div className="flex min-w-0 flex-col gap-2 p-3">
-                  <h2 className="line-clamp-2 text-sm font-medium" title={item.name}>
-                    {item.name}
-                  </h2>
-                  <p className="text-muted-foreground truncate text-xs">
-                    {item.gameNameCn || item.gameName}
-                  </p>
-                  <div className="flex flex-wrap gap-1">
-                    <Badge variant="outline">
-                      {getPvCategoryLabel(item.metadata?.category ?? 'uncategorized')}
-                    </Badge>
-                    {PV_FILTERS.map(({ key, label }) => {
-                      const value = item.metadata?.[key]
-                      return value ? (
-                        <Badge
-                          key={key}
-                          variant="outline"
-                          title={`${label}：${value}`}
-                          className="max-w-full"
-                        >
-                          <span className="truncate">{value}</span>
-                        </Badge>
-                      ) : null
-                    })}
-                  </div>
-                </div>
-              </div>
-            </Card>
+            <PvGridCard
+              item={item}
+              index={index}
+              activeCategory={activeCategory}
+              onSelect={onSelect}
+              onEdit={onEdit}
+              onDelete={onDelete}
+            />
           </li>
         ))}
       </ul>

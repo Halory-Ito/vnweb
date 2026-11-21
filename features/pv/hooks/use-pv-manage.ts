@@ -39,6 +39,7 @@ export function usePvManage() {
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
   const [creating, setCreating] = useState(false)
   const [activeId, setActiveId] = useState<number | null>(null)
+  const [editingPreview, setEditingPreview] = useState(false)
   const [pendingDelete, setPendingDelete] = useState<PvItem | null>(null)
   const [form, setForm] = useState(DEFAULT_FORM)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -70,6 +71,20 @@ export function usePvManage() {
     () => filterPvs(searched, activeCategory, filters),
     [searched, activeCategory, filters],
   )
+  const categoryCounts = useMemo(() => {
+    const byCategory: Record<string, number> = {}
+    let uncategorized = 0
+    for (const item of searched) {
+      const name = getPvCategoryName(item.metadata?.category)
+      if (name) {
+        byCategory[name] = (byCategory[name] ?? 0) + 1
+      } else {
+        uncategorized += 1
+      }
+    }
+    return { total: searched.length, uncategorized, byCategory }
+  }, [searched])
+  const activeFilterCount = useMemo(() => Object.values(filters).filter(Boolean).length, [filters])
   const filterOptions = useMemo(
     () =>
       Object.fromEntries(
@@ -108,12 +123,17 @@ export function usePvManage() {
     setVisibleCount(PAGE_SIZE)
   }
 
+  function resetFilters() {
+    setFilters(EMPTY_PV_FILTERS)
+    setVisibleCount(PAGE_SIZE)
+  }
+
   function openCreate() {
     setForm(DEFAULT_FORM)
     setCreating(true)
   }
 
-  function openPreview(item: PvItem) {
+  function openPreview(item: PvItem, startEditing = false) {
     setForm({
       gameId: String(item.gameId),
       name: item.name,
@@ -123,6 +143,7 @@ export function usePvManage() {
         category: getPvCategoryName(item.metadata?.category),
       },
     })
+    setEditingPreview(startEditing)
     setActiveId(item.id)
   }
 
@@ -216,19 +237,27 @@ export function usePvManage() {
     keyword,
     category: activeCategory,
     categories,
+    categoryCounts,
     filters,
+    activeFilterCount,
     filterOptions,
     updateKeyword,
     updateCategory,
     updateFilter,
+    resetFilters,
     items: filtered.slice(0, visibleCount),
     total: filtered.length,
     hasMore: visibleCount < filtered.length,
     loadMore: () => setVisibleCount((count) => count + PAGE_SIZE),
     query,
     activeItem,
+    editingPreview,
+    setEditingPreview,
     openPreview,
-    closePreview: () => setActiveId(null),
+    closePreview: () => {
+      setActiveId(null)
+      setEditingPreview(false)
+    },
     creating,
     openCreate,
     setCreating,

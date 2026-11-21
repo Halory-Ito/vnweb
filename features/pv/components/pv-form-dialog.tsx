@@ -26,6 +26,7 @@ type PvFormDialogProps = {
   open: boolean
   form: PvFormState
   gameOptions: GameOption[]
+  categories?: string[]
   isSubmitting: boolean
   onOpenChange: (open: boolean) => void
   onGameIdChange: (value: string) => void
@@ -39,6 +40,7 @@ export function PvFormDialog({
   open,
   form,
   gameOptions,
+  categories = [],
   isSubmitting,
   onOpenChange,
   onGameIdChange,
@@ -77,7 +79,11 @@ export function PvFormDialog({
             onNameChange={onNameChange}
             onUrlChange={useUpload ? undefined : onUrlChange}
           />
-          <PvMetadataFields value={form.metadata} onChange={onMetadataChange} />
+          <PvMetadataFields
+            value={form.metadata}
+            categories={categories}
+            onChange={onMetadataChange}
+          />
 
           <div className="flex items-center gap-2">
             <Switch id="upload-mode" checked={useUpload} onCheckedChange={setUseUpload} />

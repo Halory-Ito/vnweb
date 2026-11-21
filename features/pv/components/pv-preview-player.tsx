@@ -1,7 +1,7 @@
-import { ExternalLinkIcon, Loader2Icon, PlayIcon } from 'lucide-react'
+import { Loader2Icon, PlayIcon } from 'lucide-react'
 import { useState } from 'react'
 
-import { getPlayableUrl, usePvPlayback, usePvVideo } from '../hooks/use-pv-playback'
+import { usePvPlayback, usePvVideo } from '../hooks/use-pv-playback'
 import { PvCover } from './pv-cover'
 import { Button } from '@/components/ui/button'
 
@@ -67,39 +67,31 @@ export function PvPlayback({
 
 export function PvPreviewPlayer({
   item,
+  autoPlayOnMount = true,
   onDuration,
 }: {
   item: PvItem
+  autoPlayOnMount?: boolean
   onDuration: (duration: number) => void
 }) {
-  const [playing, setPlaying] = useState(false)
-  const link = getPlayableUrl(item.url)
+  const [playing, setPlaying] = useState(autoPlayOnMount)
+
   return (
-    <div className="flex min-w-0 flex-col gap-3">
-      <div className="bg-muted relative grid aspect-video overflow-hidden rounded-xl border">
-        {playing ? (
-          <PvPlayback item={item} autoPlay onDuration={onDuration} />
-        ) : (
-          <>
-            <PvCover item={item} className="absolute inset-0 size-full" />
-            <Button
-              type="button"
-              onClick={() => setPlaying(true)}
-              className="z-10 m-auto rounded-full"
-            >
-              <PlayIcon />
-              播放预览
-            </Button>
-          </>
-        )}
-      </div>
-      {link && (
-        <Button variant="outline" size="sm" asChild className="self-start">
-          <a href={link} target="_blank" rel="noreferrer">
-            <ExternalLinkIcon />
-            打开原始链接
-          </a>
-        </Button>
+    <div className="bg-muted relative grid aspect-video min-w-0 overflow-hidden rounded-xl border">
+      {playing ? (
+        <PvPlayback item={item} autoPlay onDuration={onDuration} />
+      ) : (
+        <>
+          <PvCover item={item} className="absolute inset-0 size-full" />
+          <Button
+            type="button"
+            onClick={() => setPlaying(true)}
+            className="z-10 m-auto rounded-full"
+          >
+            <PlayIcon />
+            播放预览
+          </Button>
+        </>
       )}
     </div>
   )
