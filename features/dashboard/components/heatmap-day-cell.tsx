@@ -2,7 +2,6 @@
 
 import { formatHeatmapDayLabel, formatPlayDuration } from '../lib/format-utils'
 import { HEATMAP_LEVEL_ALPHAS } from '../lib/heatmap-utils'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
 
 import type { RecordPlayHeatmapDay } from '@/types'
@@ -12,35 +11,39 @@ type HeatmapDayCellProps = {
   level: number
   color: string
   isToday: boolean
+  isSelected: boolean
+  onSelect: () => void
 }
 
-export default function HeatmapDayCell({ day, level, color, isToday }: HeatmapDayCellProps) {
+export default function HeatmapDayCell({
+  day,
+  level,
+  color,
+  isToday,
+  isSelected,
+  onSelect,
+}: HeatmapDayCellProps) {
+  const dayLabel = formatHeatmapDayLabel(day.date)
+  const duration = day.seconds > 0 ? formatPlayDuration(day.seconds) : '无游玩记录'
+
   return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <div
-          className={cn(
-            'flex aspect-square items-center justify-center rounded-md text-xs tabular-nums transition-colors sm:text-sm',
-            level === 0
-              ? 'bg-muted text-muted-foreground'
-              : level >= 3
-                ? 'text-white'
-                : 'text-foreground',
-            isToday && 'ring-primary ring-2 ring-offset-1 ring-offset-background',
-          )}
-          style={
-            level > 0
-              ? { backgroundColor: `${color}${HEATMAP_LEVEL_ALPHAS[level - 1]}` }
-              : undefined
-          }
-        >
-          {Number(day.date.slice(-2))}
-        </div>
-      </TooltipTrigger>
-      <TooltipContent side="top">
-        <div>{formatHeatmapDayLabel(day.date)}</div>
-        <div>{day.seconds > 0 ? formatPlayDuration(day.seconds) : '无游玩记录'}</div>
-      </TooltipContent>
-    </Tooltip>
+    <button
+      type="button"
+      aria-label={`${dayLabel}，${duration}`}
+      aria-current={isToday ? 'date' : undefined}
+      aria-pressed={isSelected}
+      onClick={onSelect}
+      className={cn(
+        'relative grid h-9 min-w-0 place-items-center rounded-md text-sm tabular-nums hover:brightness-110 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-ring sm:h-10',
+        level === 0 && 'bg-muted text-muted-foreground',
+        isSelected && 'ring-foreground ring-2 ring-inset font-semibold',
+      )}
+      style={
+        level > 0 ? { backgroundColor: `${color}${HEATMAP_LEVEL_ALPHAS[level - 1]}` } : undefined
+      }
+    >
+      {Number(day.date.slice(-2))}
+      {isToday ? <span className="absolute bottom-1 size-1 rounded-full bg-current" /> : null}
+    </button>
   )
 }

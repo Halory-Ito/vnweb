@@ -36,6 +36,7 @@ const getYearReport = async (req: NextRequest) => {
     const monthSeconds = new Map<number, number>()
     const monthActiveDaySet = new Map<number, Set<string>>()
     const gameSeconds = new Map<number, number>()
+    const daySeconds = new Map<string, number>()
 
     for (let month = 1; month <= 12; month += 1) {
       monthSeconds.set(month, 0)
@@ -57,8 +58,10 @@ const getYearReport = async (req: NextRequest) => {
       }
 
       const month = date.month() + 1
+      const dateKey = date.format('YYYY-MM-DD')
+      daySeconds.set(dateKey, (daySeconds.get(dateKey) ?? 0) + seconds)
       monthSeconds.set(month, (monthSeconds.get(month) || 0) + seconds)
-      monthActiveDaySet.get(month)?.add(date.format('YYYY-MM-DD'))
+      monthActiveDaySet.get(month)?.add(dateKey)
 
       const gameId = Number(item.gameId || 0)
       if (gameId > 0) {
@@ -137,6 +140,11 @@ const getYearReport = async (req: NextRequest) => {
       data: {
         offset,
         year,
+        days: Array.from({ length: end.diff(start, 'day') + 1 }, (_, index) => {
+          const date = start.add(index, 'day').format('YYYY-MM-DD')
+          const seconds = daySeconds.get(date) ?? 0
+          return { date, seconds, hours: toHours(seconds) }
+        }),
         totalSeconds: Array.from(monthSeconds.values()).reduce((sum, seconds) => sum + seconds, 0),
         yearLabel: `${start.format('YYYY年')}`,
         monthlyStats,

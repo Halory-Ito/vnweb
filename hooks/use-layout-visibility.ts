@@ -10,6 +10,7 @@ const booleanStorage = unstable_withStorageValidator(
 
 const sidebarHiddenAtom = atomWithStorage('vnweb.layout.sidebar-hidden', false, booleanStorage)
 const headerHiddenAtom = atomWithStorage('vnweb.layout.header-hidden', false, booleanStorage)
+export const borderlessAtom = atomWithStorage('vnweb.layout.borderless', false, booleanStorage)
 
 export function useLayoutVisibility() {
   const [sidebarHidden, setSidebarHidden] = useAtom(sidebarHiddenAtom)

@@ -54,6 +54,9 @@ export function useGameHome() {
   })
 
   const gameCards = gameCardsQuery.data ?? []
+  const playingGames = gameCards
+    .filter((game) => game.status === 1)
+    .sort((a, b) => (Date.parse(b.lastRunAt) || 0) - (Date.parse(a.lastRunAt) || 0))
   const collections = collectionsQuery.data ?? []
   const allGameIds = gameCards.map((item) => item.id)
 
@@ -206,6 +209,7 @@ export function useGameHome() {
     gameCardsQuery,
     collectionsQuery,
     gameCards,
+    playingGames,
     collections,
     allGameIds,
     selectedGameIds,

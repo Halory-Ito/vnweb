@@ -7,6 +7,20 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Hide decorative borders without changing dimensions or functional outlines. */
+:root[data-borderless]
+  :where([class~='border'], [class*='border-'], [class*='divide-'] > *):not(
+    :where(
+      :focus-visible,
+      [aria-invalid='true'],
+      .animate-spin,
+      [data-slot='checkbox'],
+      [data-slot='radio-group-item']
+    )
+  ) {
+  border-color: transparent;
+}
+
 .app-bg-image-layer {
   background-position: center;
   background-repeat: no-repeat;

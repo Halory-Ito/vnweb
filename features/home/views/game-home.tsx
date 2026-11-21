@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button'
 import AllGame from '@/features/home/components/all-game'
 import GameHomeSkeleton from '@/features/home/components/home-skeleton'
 import MyColletion from '@/features/home/components/my-collection'
-import RecentGame from '@/features/home/components/recent-game'
+import PlayingGames from '@/features/home/components/playing-games'
 
 export type SelectableGameProps = {
   selectedGameIds: string[]
@@ -72,8 +72,8 @@ export default function GameHome() {
 
   return (
     <div className="max-h-[100cqh] w-full space-y-12 overflow-x-hidden overflow-y-scroll p-4">
-      <RecentGame
-        gameCards={home.gameCards}
+      <PlayingGames
+        items={home.playingGames}
         selectedGameIds={home.selectedGameIds}
         selectionMode={home.selectionMode}
         onToggleSelect={home.handleToggleSelect}

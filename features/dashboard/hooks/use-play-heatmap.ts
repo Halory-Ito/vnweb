@@ -1,15 +1,11 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
+import dayjs from 'dayjs'
 import { useMemo, useState } from 'react'
 
 import { calcCurrentStreak } from '../lib/heatmap-utils'
-import {
-  getPlayHeatmapApi,
-  getPlayHeatmapMonthApi,
-  getPlayHeatmapPeriodsApi,
-  getPlayHeatmapYearApi,
-} from '@/api'
+import { getPlayHeatmapApi, getPlayHeatmapPeriodsApi, getPlayHeatmapYearApi } from '@/api'
 
 const HEATMAP_DAYS = 365
 
@@ -28,22 +24,17 @@ export function usePlayHeatmap() {
     staleTime: 60_000,
   })
 
-  const periods = periodsQuery.data?.periods ?? []
-  const [selectedPeriod, setSelectedPeriod] = useState<{ year: number; month: number } | null>(null)
-  const period = selectedPeriod ?? periodsQuery.data?.latest ?? null
-
-  // 选中月份的每日数据
-  const monthQuery = useQuery({
-    queryKey: ['play-heatmap-month', period?.year ?? null, period?.month ?? null],
-    queryFn: () => getPlayHeatmapMonthApi({ year: period?.year, month: period?.month }),
-    enabled: Boolean(period),
-    staleTime: 60_000,
-  })
+  const currentYear = dayjs().year()
+  const recordedPeriods = periodsQuery.data?.periods ?? []
+  const periods = recordedPeriods.some((period) => period.year === currentYear)
+    ? recordedPeriods
+    : [{ year: currentYear, months: [] }, ...recordedPeriods]
+  const [selectedYear, setSelectedYear] = useState<number | null>(null)
+  const activeYear = selectedYear ?? currentYear
 
   const yearQuery = useQuery({
-    queryKey: ['play-heatmap-year', period?.year ?? null],
-    queryFn: () => getPlayHeatmapYearApi(period!.year),
-    enabled: Boolean(period),
+    queryKey: ['play-heatmap-year', activeYear],
+    queryFn: () => getPlayHeatmapYearApi(activeYear),
     staleTime: 60_000,
   })
 
@@ -65,18 +56,12 @@ export function usePlayHeatmap() {
     weekSeconds,
     currentStreak,
     periods,
-    period,
-    selectPeriod: (year: number, month: number) => setSelectedPeriod({ year, month }),
+    activeYear,
+    selectYear: setSelectedYear,
     year: {
       data: yearQuery.data,
       isFetching: yearQuery.isFetching,
       isError: yearQuery.isError,
-    },
-    month: {
-      data: monthQuery.data,
-      isLoading: monthQuery.isLoading,
-      isFetching: monthQuery.isFetching,
-      isError: monthQuery.isError,
     },
   }
 }

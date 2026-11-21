@@ -1,8 +1,11 @@
+import { cn } from '@/lib/utils'
+
 type GoalProgressRingProps = {
   title: string
   currentText: string
   targetText: string
   percent: number
+  progressColor: string
 }
 
 export default function GoalProgressRing({
@@ -10,6 +13,7 @@ export default function GoalProgressRing({
   currentText,
   targetText,
   percent,
+  progressColor,
 }: GoalProgressRingProps) {
   return (
     <div
@@ -23,10 +27,10 @@ export default function GoalProgressRing({
     >
       <svg
         viewBox="0 0 100 100"
-        className="absolute inset-0 size-full -rotate-90"
+        className={cn('absolute inset-0 size-full -rotate-90', progressColor)}
         aria-hidden="true"
       >
-        <circle cx={50} cy={50} r={44} strokeWidth={6} className="stroke-primary/20 fill-none" />
+        <circle cx={50} cy={50} r={44} strokeWidth={6} className="fill-none stroke-current/20" />
         <circle
           cx={50}
           cy={50}
@@ -37,12 +41,12 @@ export default function GoalProgressRing({
           strokeDasharray={100}
           strokeDashoffset={100 - percent}
           visibility={percent === 0 ? 'hidden' : 'visible'}
-          className="stroke-primary fill-none"
+          className="fill-none stroke-current"
         />
       </svg>
-      <div className="space-y-0.5 px-3 text-center tabular-nums">
-        <div className="text-base leading-5 font-medium">{currentText}</div>
-        <div className="text-muted-foreground text-xs">{percent}%</div>
+      <div className="w-[78%] space-y-0.5 text-center whitespace-normal tabular-nums">
+        <div className="text-lg leading-tight font-semibold">{currentText}</div>
+        <div className="text-muted-foreground text-xs leading-tight">/ {targetText}</div>
       </div>
     </div>
   )

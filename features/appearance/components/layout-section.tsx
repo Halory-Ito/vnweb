@@ -1,11 +1,14 @@
 'use client'
 
+import { useAtom } from 'jotai'
+
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
-import { useLayoutVisibility } from '@/hooks/use-layout-visibility'
+import { borderlessAtom, useLayoutVisibility } from '@/hooks/use-layout-visibility'
 
 export function LayoutSection() {
   const { sidebarHidden, setSidebarHidden, headerHidden, setHeaderHidden } = useLayoutVisibility()
+  const [borderless, setBorderless] = useAtom(borderlessAtom)
 
   return (
     <section
@@ -22,6 +25,10 @@ export function LayoutSection() {
       <div className="flex min-h-8 items-center justify-between gap-3">
         <Label htmlFor="hide-header">隐藏顶栏</Label>
         <Switch id="hide-header" checked={headerHidden} onCheckedChange={setHeaderHidden} />
+      </div>
+      <div className="flex min-h-8 items-center justify-between gap-3">
+        <Label htmlFor="borderless">无边框</Label>
+        <Switch id="borderless" checked={borderless} onCheckedChange={setBorderless} />
       </div>
     </section>
   )

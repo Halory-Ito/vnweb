@@ -1,6 +1,6 @@
 'use client'
 
-import { TargetIcon, TimerIcon, TrophyIcon } from 'lucide-react'
+import { TimerIcon, TrophyIcon } from 'lucide-react'
 import { useState } from 'react'
 
 import { useGoals } from '../hooks/use-goals'
@@ -8,7 +8,6 @@ import { formatPlayDuration } from '../lib/format-utils'
 import { DEFAULT_GOAL_SETTINGS, calcGoalPercent } from '../lib/goal-utils'
 import GoalCard from './goal-card'
 import GoalEditDialog from './goal-edit-dialog'
-import SectionHeader from './section-header'
 
 import type { GoalSettings } from '@/types'
 
@@ -30,8 +29,7 @@ export default function GoalSection() {
   }
 
   return (
-    <div className="w-full space-y-4">
-      <SectionHeader icon={TargetIcon} title="目标" />
+    <div className="w-full">
       <div className="grid grid-cols-2 gap-3 sm:gap-4">
         <GoalCard
           title="每日游玩时长"

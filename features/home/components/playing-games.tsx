@@ -1,23 +1,18 @@
-import { HistoryIcon } from 'lucide-react'
+import { Gamepad2Icon } from 'lucide-react'
 
 import { GameCardsData, SelectableGameProps } from '../views/game-home'
 import AreaHeader from './area-header'
 import GameCard from '@/features/game/components/game-card'
-type RecentGameProps = SelectableGameProps & {
-  gameCards: GameCardsData
+type PlayingGamesProps = SelectableGameProps & {
+  items: GameCardsData
 }
 
-const RecentGame = ({
-  gameCards,
+const PlayingGames = ({
+  items,
   selectedGameIds,
   selectionMode,
   onToggleSelect,
-}: RecentGameProps) => {
-  const items: GameCardProps[] = gameCards
-    .filter((item) => item.lastRunAt)
-    .sort((a, b) => new Date(b.lastRunAt).getTime() - new Date(a.lastRunAt).getTime())
-    .slice(0, 6)
-
+}: PlayingGamesProps) => {
   if (items.length === 0) {
     return null
   }
@@ -25,7 +20,7 @@ const RecentGame = ({
   return (
     <div className="h-full w-full">
       <div className="bg-background dark:bg-input/30 dark:border-input mb-4 flex items-center justify-between rounded-xl p-3">
-        <AreaHeader icon={HistoryIcon} title="最近游戏" count={items.length} />
+        <AreaHeader icon={Gamepad2Icon} title="正在游玩" count={items.length} />
       </div>
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
         {items.map((item) => (
@@ -43,4 +38,4 @@ const RecentGame = ({
   )
 }
 
-export default RecentGame
+export default PlayingGames

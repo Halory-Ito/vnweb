@@ -1,3 +1,10 @@
+export type RecordDayGame = {
+  gameId: number
+  title: string
+  seconds: number
+  recordCount: number
+}
+
 export type RecordPlayHeatmapDay = {
   date: string
   seconds: number
@@ -35,6 +42,7 @@ export type RecordPlayHeatmapMonth = {
 export type RecordPlayHeatmapYear = {
   year: number
   totalSeconds: number
+  days: RecordPlayHeatmapDay[]
 }
 
 export type RecordOverviewStats = {

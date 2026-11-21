@@ -13,7 +13,6 @@ import { useDashboardGames } from '../hooks/use-dashboard-games'
 import { usePlayHeatmap } from '../hooks/use-play-heatmap'
 import { useRandomQuote } from '../hooks/use-random-quote'
 import { Button } from '@/components/ui/button'
-import { RecentVisitsSection } from '@/features/recent'
 
 import type { StatsCardProps } from '@/features/record'
 
@@ -100,36 +99,22 @@ export default function DashboardHome() {
   return (
     <div className="max-h-[100cqh] w-full overflow-x-hidden overflow-y-auto p-3 sm:p-4">
       <div className="space-y-4">
-        {/*<WelcomeBar />*/}
+        <RandomQuote
+          quote={randomQuote.quote}
+          isLoading={randomQuote.isLoading}
+          isError={randomQuote.isError}
+        />
         <StatStrip items={statItems} />
 
         <GoalSection />
 
-        <div className="grid grid-cols-1 items-start gap-4 xl:grid-cols-5">
-          {/* 左栏：最近访问 + 随机摘录 */}
-          <div className="order-2 space-y-4 xl:order-none xl:col-span-3">
-            <RecentVisitsSection />
-            <RandomQuote
-              quote={randomQuote.quote}
-              isLoading={randomQuote.isLoading}
-              isError={randomQuote.isError}
-            />
-          </div>
-
-          {/* 右栏：游玩热力图 */}
-          <div className="order-1 xl:order-none xl:col-span-2">
-            <PlayHeatmap
-              data={heatmap.month.data}
-              year={heatmap.year}
-              periods={heatmap.periods}
-              period={heatmap.period}
-              isLoading={heatmap.month.isLoading}
-              isFetching={heatmap.month.isFetching}
-              isError={heatmap.month.isError}
-              onSelectPeriod={heatmap.selectPeriod}
-            />
-          </div>
-        </div>
+        <PlayHeatmap
+          key={heatmap.activeYear}
+          year={heatmap.year}
+          periods={heatmap.periods}
+          activeYear={heatmap.activeYear}
+          onSelectYear={heatmap.selectYear}
+        />
       </div>
     </div>
   )

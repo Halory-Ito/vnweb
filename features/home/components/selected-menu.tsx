@@ -47,7 +47,7 @@ export default function SelectedMenu({
   handleSelectAll,
 }: SelectedMenuProps) {
   return (
-    <div className="bg-background/95 fixed bottom-4 left-1/2 z-50 w-[calc(100vw-2rem)] max-w-3xl -translate-x-1/2 rounded-lg border p-2 shadow-lg backdrop-blur">
+    <div className="bg-background/60 fixed bottom-4 left-1/2 z-50 w-[calc(100vw-2rem)] max-w-3xl -translate-x-1/2 rounded-lg border p-2 shadow-lg backdrop-blur-md">
       <div className="flex flex-wrap items-center justify-center gap-2">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

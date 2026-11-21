@@ -1,9 +1,7 @@
 'use client'
 
-import { TextQuoteIcon } from 'lucide-react'
 import Link from 'next/link'
 
-import SectionHeader from './section-header'
 import { Card, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 
@@ -21,9 +19,7 @@ export default function RandomQuote({ quote, isLoading, isError }: RandomQuotePr
   }
 
   return (
-    <section className="space-y-3">
-      <SectionHeader icon={TextQuoteIcon} title="随机摘录" />
-
+    <section aria-label="随机摘录">
       {isLoading ? (
         <Skeleton className="h-40 w-full rounded-xl" />
       ) : isError ? (

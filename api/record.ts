@@ -1,12 +1,23 @@
 import { api } from '@/lib/request-utils'
 
 import type {
+  RecordDayGame,
   RecordHeatmapPeriods,
   RecordOverviewStats,
   RecordPlayHeatmap,
   RecordPlayHeatmapMonth,
   RecordPlayHeatmapYear,
 } from '@/types'
+
+export async function getRecordDayGames(date: string, includeNsfw: boolean) {
+  const response = await api.request<{ data: RecordDayGame[] }>({
+    method: 'GET',
+    url: '/record/day',
+    params: { date, includeNsfw },
+  })
+
+  return response.data.data
+}
 
 export const getRecordOverviewStatsApi = async () => {
   const response = await api.get<{ data: RecordOverviewStats }>('/record/overview/stats')

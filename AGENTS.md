@@ -58,6 +58,11 @@ export function actionObjectApi() {
   - `views`
   - `lib`（模块内工具与常量）
   - `index.ts(x)`
+  
+  
+  # 其他
+  
+  组件的边框需要参考系统的设置中的“无边框”开关的状态
 
 # 开发计划
 

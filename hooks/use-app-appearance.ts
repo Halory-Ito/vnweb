@@ -1,7 +1,9 @@
 'use client'
 
+import { useAtomValue } from 'jotai'
 import { useEffect } from 'react'
 
+import { borderlessAtom } from './use-layout-visibility'
 import {
   applyFontSettingsToDocument,
   FONT_SETTINGS_EVENT,
@@ -16,6 +18,14 @@ import {
 } from '@/lib/settings/glass-settings'
 
 export function useAppAppearance() {
+  const borderless = useAtomValue(borderlessAtom)
+
+  useEffect(() => {
+    const root = document.documentElement
+    root.toggleAttribute('data-borderless', borderless)
+    return () => root.removeAttribute('data-borderless')
+  }, [borderless])
+
   useEffect(() => {
     const syncGlassSettings = () => {
       applyGlassSettingsToDocument(readGlassSettings())
