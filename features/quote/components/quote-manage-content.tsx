@@ -1,8 +1,9 @@
 'use client'
 
-import { Loader2Icon, SparklesIcon } from 'lucide-react'
+import { Loader2Icon } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
+import { EmptyArtwork } from '@/components/ui/empty-artwork'
 import { QuoteNoteCard } from '@/features/quote/components/quote-note-card'
 import { useQuoteColumns } from '@/features/quote/hooks/use-quote-columns'
 import { useQuoteLoadMore } from '@/features/quote/hooks/use-quote-load-more'
@@ -65,10 +66,8 @@ export function QuoteManageContent({
   if (items.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed p-12 text-center">
-        <div className="mb-3 flex size-14 items-center justify-center rounded-full border border-rose-300/60 bg-rose-50/50 text-rose-500 dark:border-rose-400/30 dark:bg-rose-950/20">
-          <SparklesIcon className="size-6" />
-        </div>
-        <p className="text-sm font-medium">(｡•́︿•̀｡) 还没有贴上台词便利贴</p>
+        <EmptyArtwork className="mb-3" />
+        <p className="text-sm font-medium">还没有贴上台词便利贴</p>
         <p className="text-muted-foreground mt-1 text-xs">
           点击上方“新增摘录”，把心动的台词收藏进手账吧
         </p>

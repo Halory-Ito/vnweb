@@ -39,7 +39,7 @@ export function AgentWebMcpPanel({ tools, status, onRefresh }: AgentWebMcpPanelP
 
       <div className="min-h-0 flex-1 space-y-3 overflow-y-auto p-4">
         {status === 'error' ? (
-          <Empty className="h-full border-0">
+          <Empty className="h-full border-0" showArtwork={false}>
             <EmptyHeader>
               <EmptyMedia variant="icon">
                 <PlugZapIcon />
@@ -51,9 +51,6 @@ export function AgentWebMcpPanel({ tools, status, onRefresh }: AgentWebMcpPanelP
         ) : tools.length === 0 ? (
           <Empty className="h-full border-0">
             <EmptyHeader>
-              <EmptyMedia variant="icon">
-                <PlugZapIcon />
-              </EmptyMedia>
               <EmptyTitle>暂无已注册工具</EmptyTitle>
               <EmptyDescription>当页面通过 WebMCP 注册工具后会自动显示在这里</EmptyDescription>
             </EmptyHeader>

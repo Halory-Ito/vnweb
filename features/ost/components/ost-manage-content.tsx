@@ -1,8 +1,9 @@
 'use client'
 
-import { Disc3Icon, Loader2Icon } from 'lucide-react'
+import { Loader2Icon } from 'lucide-react'
 import { useReducedMotion } from 'motion/react'
 
+import { EmptyArtwork } from '@/components/ui/empty-artwork'
 import { Skeleton } from '@/components/ui/skeleton'
 import { OstShelfShowcase } from '@/features/ost/components/ost-shelf-showcase'
 import { OstShelfTier, OstShelfTierSkeleton } from '@/features/ost/components/ost-shelf-tier'
@@ -52,10 +53,8 @@ export function OstManageContent({
 
   const emptyState = (
     <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed p-12 text-center">
-      <div className="mb-3 flex size-14 items-center justify-center rounded-full border border-sky-300/60 bg-sky-50/50 text-sky-500 dark:border-sky-400/30 dark:bg-sky-950/20">
-        <Disc3Icon className="size-6" />
-      </div>
-      <p className="text-sm font-medium">(´・ω・`) 唱片架上还是空的</p>
+      <EmptyArtwork className="mb-3" />
+      <p className="text-sm font-medium">唱片架上还是空的</p>
       <p className="text-muted-foreground mt-1 text-xs">
         点击上方“新增 OST”，把喜欢的原声带放进唱片架吧
       </p>

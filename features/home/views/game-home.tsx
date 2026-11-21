@@ -1,6 +1,6 @@
 'use client'
 
-import { AlertCircle, SearchX } from 'lucide-react'
+import { AlertCircle } from 'lucide-react'
 import Link from 'next/link'
 
 import GameHomeEmptyState from '../components/empty-home'
@@ -59,7 +59,6 @@ export default function GameHome() {
   if (home.gameCards.length === 0 && home.collections.length === 0) {
     return (
       <GameHomeEmptyState
-        icon={SearchX}
         title="暂无游戏"
         description="当前游戏库还没有数据。可以先扫描目录或手动导入。"
       >

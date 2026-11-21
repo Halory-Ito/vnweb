@@ -105,7 +105,7 @@ export function AgentChatPanel({
 
       <div ref={scrollRef} className="min-h-0 flex-1 space-y-4 overflow-y-auto px-4 py-4">
         {configs.length === 0 ? (
-          <Empty className="h-full border-0">
+          <Empty className="h-full border-0" showArtwork={false}>
             <EmptyHeader>
               <EmptyMedia variant="icon">
                 <BotIcon />
@@ -120,7 +120,7 @@ export function AgentChatPanel({
             </EmptyContent>
           </Empty>
         ) : chat.messages.length === 0 ? (
-          <Empty className="h-full border-0">
+          <Empty className="h-full border-0" showArtwork={false}>
             <EmptyHeader>
               <EmptyMedia variant="icon">
                 <BotIcon />

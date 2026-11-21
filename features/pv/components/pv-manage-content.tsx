@@ -1,9 +1,8 @@
 'use client'
 
-import { FilmIcon } from 'lucide-react'
-
 import { PvGridCard } from './pv-grid-card'
 import { Button } from '@/components/ui/button'
+import { EmptyArtwork } from '@/components/ui/empty-artwork'
 import { Skeleton } from '@/components/ui/skeleton'
 
 import type { PvCategoryFilter } from '../lib/pv-library'
@@ -58,7 +57,7 @@ export function PvManageContent({
   if (!items.length)
     return (
       <div className="text-muted-foreground flex flex-col items-center gap-3 rounded-xl border border-dashed p-10 text-center text-sm">
-        <FilmIcon aria-hidden="true" className="size-6" />
+        <EmptyArtwork />
         当前条件下没有 PV
       </div>
     )

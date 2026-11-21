@@ -1,7 +1,8 @@
 'use client'
 
-import { Loader2Icon, Music2Icon } from 'lucide-react'
+import { Loader2Icon } from 'lucide-react'
 
+import { EmptyArtwork } from '@/components/ui/empty-artwork'
 import { Skeleton } from '@/components/ui/skeleton'
 import { SongTrackRow } from '@/features/ost/components/song-track-row'
 
@@ -45,10 +46,8 @@ export function SongManageContent({
   if (items.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed p-12 text-center">
-        <div className="mb-3 flex size-14 items-center justify-center rounded-full border border-violet-300/60 bg-violet-50/50 text-violet-500 dark:border-violet-400/30 dark:bg-violet-950/20">
-          <Music2Icon className="size-6" />
-        </div>
-        <p className="text-sm font-medium">(´・ω・`) 这张唱片里还没有收录曲目</p>
+        <EmptyArtwork className="mb-3" />
+        <p className="text-sm font-medium">这张唱片里还没有收录曲目</p>
         <p className="text-muted-foreground mt-1 text-xs">
           点击右上角“添加歌曲”，把专辑里的音轨收录进来吧
         </p>

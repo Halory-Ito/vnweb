@@ -1,6 +1,7 @@
 import {
   BackgroundSection,
   ChartSection,
+  EmptyStateSection,
   FontSection,
   GlassSection,
   GuideSection,
@@ -13,6 +14,7 @@ export default function AppearancePage() {
     <>
       <div className="space-y-6">
         <LayoutSection />
+        <EmptyStateSection />
         <FontSection />
         <StatusSection />
         <BackgroundSection />

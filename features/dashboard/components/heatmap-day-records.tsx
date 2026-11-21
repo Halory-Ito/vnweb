@@ -2,6 +2,7 @@ import { Clock3Icon } from 'lucide-react'
 import Link from 'next/link'
 
 import { formatHeatmapDayLabel, formatPlayDuration } from '../lib/format-utils'
+import { EmptyArtwork } from '@/components/ui/empty-artwork'
 import { Skeleton } from '@/components/ui/skeleton'
 
 import type { RecordDayGame } from '@/types'
@@ -16,7 +17,11 @@ export default function HeatmapDayRecords({ date, games, isError }: HeatmapDayRe
   const totalSeconds = games?.reduce((sum, game) => sum + game.seconds, 0) ?? 0
 
   return (
-    <section className="min-w-0 space-y-3" aria-label="当天游玩记录" aria-busy={!games && !isError}>
+    <section
+      className="flex h-full min-w-0 flex-col gap-3"
+      aria-label="当天游玩记录"
+      aria-busy={!games && !isError}
+    >
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h3 className="text-sm font-semibold">{formatHeatmapDayLabel(date)}</h3>
         {games?.length ? (
@@ -33,9 +38,13 @@ export default function HeatmapDayRecords({ date, games, isError }: HeatmapDayRe
       ) : !games ? (
         <Skeleton className="h-14 rounded-lg" />
       ) : games.length === 0 ? (
-        <p role="status" className="text-muted-foreground py-3 text-sm">
-          当天没有游玩记录。
-        </p>
+        <div
+          role="status"
+          className="text-muted-foreground flex min-h-24 flex-1 flex-col items-center justify-center gap-2 text-center text-sm"
+        >
+          <EmptyArtwork />
+          <p>当天没有游玩记录</p>
+        </div>
       ) : (
         <ul className="max-h-64 divide-y overflow-y-auto">
           {games.map((game) => (

@@ -1,8 +1,14 @@
 import { cva, type VariantProps } from 'class-variance-authority'
 
+import { EmptyArtwork } from './empty-artwork'
 import { cn } from '@/lib/utils'
 
-function Empty({ className, ...props }: React.ComponentProps<'div'>) {
+function Empty({
+  children,
+  className,
+  showArtwork = true,
+  ...props
+}: React.ComponentProps<'div'> & { showArtwork?: boolean }) {
   return (
     <div
       data-slot="empty"
@@ -11,7 +17,10 @@ function Empty({ className, ...props }: React.ComponentProps<'div'>) {
         className,
       )}
       {...props}
-    />
+    >
+      {showArtwork ? <EmptyArtwork /> : null}
+      {children}
+    </div>
   )
 }
 

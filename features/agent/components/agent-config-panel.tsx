@@ -1,12 +1,12 @@
 'use client'
 
-import { PlusIcon, SettingsIcon } from 'lucide-react'
+import { PlusIcon } from 'lucide-react'
 
 import { AgentConfigDialog } from './agent-config-dialog'
 import { AgentConfigItem } from './agent-config-item'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty'
+import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from '@/components/ui/empty'
 import { Spinner } from '@/components/ui/spinner'
 import { useAgentConfigDialog } from '@/features/agent/hooks/use-agent-config-dialog'
 
@@ -70,9 +70,6 @@ export function AgentConfigPanel({ config, isLoading, isSaving, save }: AgentCon
         ) : config.configs.length === 0 ? (
           <Empty className="h-full border-0">
             <EmptyHeader>
-              <EmptyMedia variant="icon">
-                <SettingsIcon />
-              </EmptyMedia>
               <EmptyTitle>暂无模型配置</EmptyTitle>
               <EmptyDescription>添加 OpenAI 兼容的接口地址、API Key 与模型名称</EmptyDescription>
             </EmptyHeader>

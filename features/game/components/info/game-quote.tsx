@@ -2,9 +2,10 @@
 
 import { useQuery } from '@tanstack/react-query'
 import dayjs from 'dayjs'
-import { TextQuoteIcon, QuoteIcon } from 'lucide-react'
+import { QuoteIcon } from 'lucide-react'
 
 import { getGameQuotesByGameId } from '@/api'
+import { EmptyArtwork } from '@/components/ui/empty-artwork'
 
 import type { QuoteManageItem } from '@/types'
 
@@ -32,9 +33,7 @@ export default function GameQuote({ gameId }: GameQuoteProps) {
   if (items.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed p-12 text-center">
-        <div className="bg-muted mb-4 flex size-16 items-center justify-center rounded-full">
-          <TextQuoteIcon className="text-muted-foreground size-8" />
-        </div>
+        <EmptyArtwork className="mb-4" />
         <h3 className="mb-2 text-lg font-semibold">暂无台词摘录</h3>
         <p className="text-muted-foreground max-w-sm text-sm">
           在摘录管理页面可以为该游戏添加台词摘录

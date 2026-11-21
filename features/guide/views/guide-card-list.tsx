@@ -1,12 +1,12 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
-import { BookOpen } from 'lucide-react'
 import { motion } from 'motion/react'
 import { useRouter } from 'next/navigation'
 import { useMemo, useState } from 'react'
 
 import { Pagination } from '@/components/custom-pagination'
+import { EmptyArtwork } from '@/components/ui/empty-artwork'
 import GuideCard from '@/features/guide/components/guide-card'
 import GuideSelectionToolbar from '@/features/guide/components/guide-selection-toolbar'
 import { fastContainerVariants, cardVariants } from '@/features/guide/data/motion'
@@ -53,8 +53,8 @@ export default function GuideCardList() {
 
   if (!guides || guides.length === 0) {
     return (
-      <div className="flex h-48 flex-col items-center justify-center gap-3">
-        <BookOpen className="text-muted-foreground h-10 w-10" />
+      <div className="flex min-h-48 flex-col items-center justify-center gap-3 py-4">
+        <EmptyArtwork />
         <p className="text-muted-foreground text-sm">暂无攻略数据</p>
         <p className="text-muted-foreground text-xs">请先导入攻略</p>
       </div>

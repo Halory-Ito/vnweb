@@ -1,14 +1,12 @@
-import { SearchX } from 'lucide-react'
 import Link from 'next/link'
 
 import { Button } from '@/components/ui/button'
+import { EmptyArtwork } from '@/components/ui/empty-artwork'
 
 export default function EmptyLibrary() {
   return (
     <div className="flex min-h-[50vh] flex-col items-center justify-center gap-4 text-center">
-      <div className="bg-muted text-muted-foreground flex size-14 items-center justify-center rounded-full border">
-        <SearchX className="size-7" />
-      </div>
+      <EmptyArtwork />
       <div className="space-y-1">
         <h2 className="text-lg font-semibold">游戏库还是空的</h2>
         <p className="text-muted-foreground text-sm">
