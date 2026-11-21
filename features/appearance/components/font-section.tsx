@@ -1,7 +1,7 @@
 'use client'
 
-import { useQuery } from '@tanstack/react-query'
-import { useEffect, useState } from 'react'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useEffect, useRef, useState } from 'react'
 
 import { getLocalFontDisplayName } from '../font-api'
 import { FontDialog } from './font-dialog'
@@ -11,9 +11,11 @@ import {
   applyFontSettingsToDocument,
   BROWSER_FONT_OPTIONS,
   DEFAULT_FONT_SETTINGS,
+  getFontConfigApi,
   normalizeFontSettings,
   notifyFontSettingsChanged,
   readFontSettings,
+  updateFontConfigApi,
   writeFontSettings,
   type FontSettings,
 } from '@/lib/settings/font-settings'
@@ -33,8 +35,11 @@ const getFontNameFromPath = (fontPath: string) => {
 }
 
 export function FontSection() {
+  const queryClient = useQueryClient()
   const [settings, setSettings] = useState(DEFAULT_FONT_SETTINGS)
   const [dialogOpen, setDialogOpen] = useState(false)
+  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
   const filename = settings.fontPath.startsWith('/assets/fonts/')
     ? settings.fontPath.slice('/assets/fonts/'.length)
     : ''
@@ -46,10 +51,48 @@ export function FontSection() {
   })
   const fontName = localizedName ?? getFontNameFromPath(settings.fontPath)
 
+  const { data: configData } = useQuery({
+    queryKey: ['font-config'],
+    queryFn: getFontConfigApi,
+  })
+
+  const updateConfigMutation = useMutation({
+    mutationFn: updateFontConfigApi,
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['font-config'] })
+    },
+  })
+
   useEffect(() => {
     const saved = readFontSettings()
     setSettings(saved)
     void applyFontSettingsToDocument(saved)
+  }, [])
+
+  useEffect(() => {
+    if (!configData?.persisted || !configData.data) {
+      return
+    }
+    const config = normalizeFontSettings(configData.data)
+    const localSettings = readFontSettings()
+    if (
+      config.fontPath !== localSettings.fontPath ||
+      config.fontSize !== localSettings.fontSize ||
+      config.fontWeight !== localSettings.fontWeight
+    ) {
+      setSettings(config)
+      writeFontSettings(config)
+      void applyFontSettingsToDocument(config)
+      notifyFontSettingsChanged()
+    }
+  }, [configData])
+
+  useEffect(() => {
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current)
+      }
+    }
   }, [])
 
   const update = (next: Partial<FontSettings>) => {
@@ -58,6 +101,13 @@ export function FontSection() {
     writeFontSettings(normalized)
     void applyFontSettingsToDocument(normalized)
     notifyFontSettingsChanged()
+
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current)
+    }
+    debounceTimerRef.current = setTimeout(() => {
+      updateConfigMutation.mutate(normalized)
+    }, 300)
   }
 
   return (

@@ -1,13 +1,13 @@
-import { atomWithStorage, unstable_withStorageValidator } from 'jotai/utils'
-import { createJSONStorage } from 'jotai/vanilla/utils'
+import { atomWithStorage } from 'jotai/utils'
 
-import type { LibraryGroup } from '@/features/home/lib/library-grouping'
+import {
+  createLayoutSyncedStorage,
+  isLayoutLibraryGroup,
+  type LayoutLibraryGroup,
+} from '@/lib/settings/layout-settings'
 
-export const gameLibraryGroupAtom = atomWithStorage(
+export const gameLibraryGroupAtom = atomWithStorage<LayoutLibraryGroup>(
   'vnweb.layout.game-library-group',
   'status',
-  unstable_withStorageValidator(
-    (value): value is LibraryGroup =>
-      value === 'status' || value === 'developer' || value === 'publisher',
-  )(createJSONStorage<unknown>(() => window.localStorage)),
+  createLayoutSyncedStorage('gameLibraryGroup', isLayoutLibraryGroup),
 )

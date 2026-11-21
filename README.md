@@ -216,6 +216,14 @@ vnweb 是一个面向视觉小说与本地单机游戏整理场景的 Web 管理
 
 ![统计页][screenshot-record]
 
+OST管理
+
+![OST][screenshot-ost]
+
+全屏音乐播放器
+
+![音乐播放器][screenshot-music-player]
+
 游戏攻略（路线 / 结局 / 步骤与进度）
 
 ![攻略页][screenshot-guide]
@@ -370,3 +378,5 @@ Halory-Ito - [@Halory-Ito](https://github.com/Halory-Ito)
 [screenshot-quote]: images/摘录页.png
 [screenshot-settings]: images/设置页.png
 [screenshot-game-lib]: images/游戏库页面.png
+[screenshot-ost]: images/OST管理页.png
+[screenshot-music-player]: images/音乐播放器页面.png

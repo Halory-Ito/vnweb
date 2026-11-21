@@ -1,15 +1,16 @@
-import { atomWithStorage, unstable_withStorageValidator } from 'jotai/utils'
-import { createJSONStorage } from 'jotai/vanilla/utils'
+import { atomWithStorage } from 'jotai/utils'
 
-export type GameLibraryLayout = 'mixed' | 'grid'
+import {
+  createLayoutSyncedStorage,
+  type GameLibraryLayout,
+  isGameLibraryLayout,
+} from '@/lib/settings/layout-settings'
 
-export const isGameLibraryLayout = (value: unknown): value is GameLibraryLayout =>
-  value === 'mixed' || value === 'grid'
+export type { GameLibraryLayout }
+export { isGameLibraryLayout }
 
-export const gameLibraryLayoutAtom = atomWithStorage(
+export const gameLibraryLayoutAtom = atomWithStorage<GameLibraryLayout>(
   'vnweb.layout.game-library',
   'mixed',
-  unstable_withStorageValidator(isGameLibraryLayout)(
-    createJSONStorage<unknown>(() => window.localStorage),
-  ),
+  createLayoutSyncedStorage('gameLibraryLayout', isGameLibraryLayout),
 )

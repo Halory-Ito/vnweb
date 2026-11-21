@@ -5,8 +5,7 @@ import BackupSettingsContent from './backup/backup-settings-content'
 import ProxyPage from './proxy/page'
 import ThemeContent from './theme/theme-content'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import CloudSync from '@/features/settings/components/cloud-sync'
-import PluginSettings from '@/features/settings/components/plugin-settings'
+import { CloudSync, PluginSettings } from '@/features/settings'
 
 type SettingsPropsItem = {
   value: string

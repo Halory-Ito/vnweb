@@ -1,15 +1,15 @@
-import { atomWithStorage, unstable_withStorageValidator } from 'jotai/utils'
-import { createJSONStorage } from 'jotai/vanilla/utils'
+import { atomWithStorage } from 'jotai/utils'
 
-type GridDisplay = 'folders' | 'sections' | 'ungrouped'
+import {
+  createLayoutSyncedStorage,
+  type GridDisplay,
+  isGridDisplay,
+} from '@/lib/settings/layout-settings'
 
-export const isGridDisplay = (value: unknown): value is GridDisplay =>
-  value === 'folders' || value === 'sections' || value === 'ungrouped'
+export { isGridDisplay }
 
-export const gameLibraryGridDisplayAtom = atomWithStorage(
+export const gameLibraryGridDisplayAtom = atomWithStorage<GridDisplay>(
   'vnweb.layout.game-library-grid-display',
   'folders',
-  unstable_withStorageValidator(isGridDisplay)(
-    createJSONStorage<unknown>(() => window.localStorage),
-  ),
+  createLayoutSyncedStorage('gameLibraryGridDisplay', isGridDisplay),
 )

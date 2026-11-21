@@ -1,7 +1,33 @@
+import { api } from '@/lib/request-utils'
+
 export type FontSettings = {
   fontPath: string
   fontSize: number
   fontWeight: number
+}
+
+export type FontConfigResponse = {
+  data: FontSettings
+  persisted: boolean
+}
+
+export async function getFontConfigApi(): Promise<FontConfigResponse> {
+  const response = await api.request<FontConfigResponse>({
+    method: 'GET',
+    url: '/settings/appearance/font',
+  })
+  return response.data
+}
+
+export async function updateFontConfigApi(
+  settings: Partial<FontSettings>,
+): Promise<FontConfigResponse> {
+  const response = await api.request<FontConfigResponse>({
+    method: 'POST',
+    url: '/settings/appearance/font',
+    data: settings,
+  })
+  return response.data
 }
 
 export const FONT_SETTINGS_STORAGE_KEY = 'vnweb:font-settings'

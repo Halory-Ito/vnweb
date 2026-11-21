@@ -1,16 +1,27 @@
 'use client'
 
 import { useAtom } from 'jotai'
-import { atomWithStorage, unstable_withStorageValidator } from 'jotai/utils'
-import { createJSONStorage } from 'jotai/vanilla/utils'
+import { atomWithStorage } from 'jotai/utils'
 
-const booleanStorage = unstable_withStorageValidator(
-  (value): value is boolean => typeof value === 'boolean',
-)(createJSONStorage(() => window.localStorage))
+import { createLayoutSyncedStorage } from '@/lib/settings/layout-settings'
 
-const sidebarHiddenAtom = atomWithStorage('vnweb.layout.sidebar-hidden', false, booleanStorage)
-const headerHiddenAtom = atomWithStorage('vnweb.layout.header-hidden', false, booleanStorage)
-export const borderlessAtom = atomWithStorage('vnweb.layout.borderless', false, booleanStorage)
+const isBoolean = (value: unknown): value is boolean => typeof value === 'boolean'
+
+export const sidebarHiddenAtom = atomWithStorage(
+  'vnweb.layout.sidebar-hidden',
+  false,
+  createLayoutSyncedStorage('sidebarHidden', isBoolean),
+)
+export const headerHiddenAtom = atomWithStorage(
+  'vnweb.layout.header-hidden',
+  false,
+  createLayoutSyncedStorage('headerHidden', isBoolean),
+)
+export const borderlessAtom = atomWithStorage(
+  'vnweb.layout.borderless',
+  false,
+  createLayoutSyncedStorage('borderless', isBoolean),
+)
 
 export function useLayoutVisibility() {
   const [sidebarHidden, setSidebarHidden] = useAtom(sidebarHiddenAtom)

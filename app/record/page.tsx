@@ -2,6 +2,7 @@ import { Metadata } from 'next'
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { RecordExportPanel, RecordOverview, RecordPeriodPanel } from '@/features/record'
+import { DataSettings } from '@/features/settings'
 
 export const metadata: Metadata = {
   title: '游戏记录',
@@ -17,6 +18,7 @@ export default function Record() {
         <TabsTrigger value="year">年报</TabsTrigger>
         <TabsTrigger value="month">月报</TabsTrigger>
         <TabsTrigger value="export">导出报告</TabsTrigger>
+        <TabsTrigger value="data">数据</TabsTrigger>
       </TabsList>
       <TabsContent className="h-full w-full" value="overview">
         <RecordOverview />
@@ -29,6 +31,9 @@ export default function Record() {
       </TabsContent>
       <TabsContent value="export">
         <RecordExportPanel />
+      </TabsContent>
+      <TabsContent value="data">
+        <DataSettings />
       </TabsContent>
     </Tabs>
   )
