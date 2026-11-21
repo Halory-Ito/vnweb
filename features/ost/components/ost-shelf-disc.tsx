@@ -32,7 +32,7 @@ export const OstShelfDisc = memo(function OstShelfDisc({
       aria-label={item.name}
       aria-pressed={isSelected}
       className={cn(
-        'group relative min-w-0 cursor-pointer text-left [transform-style:preserve-3d] transition-transform duration-500 ease-out',
+        'group relative block min-w-0 cursor-pointer text-left [transform-style:preserve-3d] transition-transform duration-500 ease-out',
         isSelected && !isBatchSelecting
           ? 'z-40 [transform:perspective(950px)_translate3d(0,-10px,42px)_rotateY(14deg)] sm:[transform:perspective(950px)_translate3d(0,-28px,42px)_rotateY(14deg)]'
           : '[transform:perspective(950px)_rotateY(var(--ost-disc-angle))_rotateX(4deg)] hover:z-30 hover:[transform:perspective(950px)_translate3d(0,-6px,22px)_rotateY(28deg)] sm:hover:[transform:perspective(950px)_translate3d(0,-16px,22px)_rotateY(28deg)]',

@@ -50,14 +50,30 @@ export function Pagination({
   const startItem = total > 0 ? (page - 1) * pageSize + 1 : 0
   const endItem = Math.min(page * pageSize, total)
   const sizeLabel = sizeSelection?.label ?? '每页'
+  const totalDigitMask = '8'.repeat(Math.max(1, String(total).length))
+  const pageDigitMask = '8'.repeat(Math.max(1, String(totalPages).length))
 
   return (
     <div className="flex flex-col items-center gap-4 px-2 py-4 sm:flex-row sm:justify-between">
       {/* 统计信息 */}
-      <div className="text-muted-foreground text-sm">
-        {total === 0 && itemName
-          ? `共 0 ${itemUnit}${itemName}`
-          : `显示 ${startItem}-${endItem} ${itemUnit}，共 ${total} ${itemUnit}${itemName}`}
+      <div className="text-muted-foreground text-sm tabular-nums">
+        {total === 0 && itemName ? (
+          `共 0 ${itemUnit}${itemName}`
+        ) : (
+          <>
+            显示{' '}
+            <span className="inline-grid justify-items-center">
+              <span aria-hidden="true" className="invisible col-start-1 row-start-1 select-none">
+                {totalDigitMask}-{totalDigitMask}
+              </span>
+              <span className="col-start-1 row-start-1">
+                {startItem}-{endItem}
+              </span>
+            </span>{' '}
+            {itemUnit}，共 {total} {itemUnit}
+            {itemName}
+          </>
+        )}
       </div>
 
       {/* 分页控制 */}
@@ -109,8 +125,13 @@ export function Pagination({
           >
             <ChevronLeftIcon className="size-4" />
           </Button>
-          <div className="flex items-center gap-1 px-2">
-            <span className="text-sm font-medium">{page}</span>
+          <div className="flex items-center gap-1 px-2 tabular-nums">
+            <span className="inline-grid justify-items-end text-sm font-medium">
+              <span aria-hidden="true" className="invisible col-start-1 row-start-1 select-none">
+                {pageDigitMask}
+              </span>
+              <span className="col-start-1 row-start-1">{page}</span>
+            </span>
             <span className="text-muted-foreground text-sm">/</span>
             <span className="text-muted-foreground text-sm">{totalPages}</span>
           </div>
