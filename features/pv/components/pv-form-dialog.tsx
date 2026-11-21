@@ -3,6 +3,9 @@
 import { UploadIcon } from 'lucide-react'
 import { useRef, useState } from 'react'
 
+import { usePvUpload } from '../hooks/use-pv-upload'
+import { PvBasicFields } from './pv-basic-fields'
+import { PvMetadataFields } from './pv-metadata-fields'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -14,21 +17,13 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
-import { api } from '@/lib/request-utils'
 
-import type { GameOption, PvFormState, PvItem } from '../types'
+import type { GameOption, PvFormState } from '../types'
+import type { PvMetadata } from '@/types/pv'
 
 type PvFormDialogProps = {
   open: boolean
-  editingItem: PvItem | null
   form: PvFormState
   gameOptions: GameOption[]
   isSubmitting: boolean
@@ -36,12 +31,12 @@ type PvFormDialogProps = {
   onGameIdChange: (value: string) => void
   onNameChange: (value: string) => void
   onUrlChange: (value: string) => void | Promise<void>
+  onMetadataChange: (value: PvMetadata) => void
   onSubmit: (uploadedUrl?: string) => void
 }
 
 export function PvFormDialog({
   open,
-  editingItem,
   form,
   gameOptions,
   isSubmitting,
@@ -49,101 +44,47 @@ export function PvFormDialog({
   onGameIdChange,
   onNameChange,
   onUrlChange,
+  onMetadataChange,
   onSubmit,
 }: PvFormDialogProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const [isUploading, setIsUploading] = useState(false)
-  const [uploadProgress, setUploadProgress] = useState(0)
-  const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [useUpload, setUseUpload] = useState(false)
-
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      setSelectedFile(file)
-    }
-  }
-
-  const handleUpload = async () => {
-    if (!selectedFile || !form.gameId) return
-
-    setIsUploading(true)
-    setUploadProgress(0)
-
-    try {
-      const formData = new FormData()
-      formData.append('file', selectedFile)
-      formData.append('gameId', form.gameId)
-
-      const response = await api.post('/pv/upload', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-        onUploadProgress: (progressEvent) => {
-          if (progressEvent.total) {
-            const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total)
-            setUploadProgress(progress)
-          }
-        },
-      })
-
-      const uploadedUrl = response.data?.data?.url
-      if (uploadedUrl) {
-        onSubmit(uploadedUrl)
-        setSelectedFile(null)
-      }
-    } catch (error) {
-      console.error('Upload failed:', error)
-    } finally {
-      setIsUploading(false)
-      setUploadProgress(0)
-    }
-  }
+  const { isUploading, uploadProgress, selectedFile, setSelectedFile, handleUpload } = usePvUpload(
+    form.gameId,
+    onSubmit,
+  )
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-xl">
+    <Dialog
+      open={open}
+      onOpenChange={(next) => {
+        if (!isUploading) onOpenChange(next)
+      }}
+    >
+      <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-xl">
         <DialogHeader>
-          <DialogTitle>{editingItem ? '编辑 PV' : '新增 PV'}</DialogTitle>
+          <DialogTitle>新增 PV</DialogTitle>
           <DialogDescription className="sr-only">
             填写 PV 所属游戏、名称、链接等信息
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-3">
-          <div className="space-y-2">
-            <div className="text-sm font-medium">游戏</div>
-            <Select value={form.gameId} onValueChange={onGameIdChange}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="请选择游戏" />
-              </SelectTrigger>
-              <SelectContent>
-                {gameOptions.map((game) => (
-                  <SelectItem key={game.id} value={game.id}>
-                    {game.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+        <div className="flex flex-col gap-4">
+          <PvBasicFields
+            form={form}
+            gameOptions={gameOptions}
+            onGameIdChange={onGameIdChange}
+            onNameChange={onNameChange}
+            onUrlChange={useUpload ? undefined : onUrlChange}
+          />
+          <PvMetadataFields value={form.metadata} onChange={onMetadataChange} />
+
+          <div className="flex items-center gap-2">
+            <Switch id="upload-mode" checked={useUpload} onCheckedChange={setUseUpload} />
+            <Label htmlFor="upload-mode">上传本地视频</Label>
           </div>
 
-          <div className="space-y-2">
-            <div className="text-sm font-medium">PV 名称</div>
-            <Input
-              value={form.name}
-              onChange={(event) => onNameChange(event.target.value)}
-              placeholder="请输入 PV 名称"
-            />
-          </div>
-
-          {!editingItem && (
-            <div className="flex items-center space-x-2">
-              <Switch id="upload-mode" checked={useUpload} onCheckedChange={setUseUpload} />
-              <Label htmlFor="upload-mode">上传本地视频</Label>
-            </div>
-          )}
-
-          {useUpload && !editingItem ? (
+          {useUpload ? (
             <div className="space-y-2">
               <div className="text-sm font-medium">视频文件</div>
               <div className="flex items-center gap-2">
@@ -151,7 +92,7 @@ export function PvFormDialog({
                   ref={fileInputRef}
                   type="file"
                   accept="video/mp4,video/webm,video/ogg,video/quicktime,video/x-msvideo,video/x-matroska,.mp4,.webm,.ogg,.mov,.avi,.mkv,.m4v"
-                  onChange={handleFileSelect}
+                  onChange={(event) => setSelectedFile(event.target.files?.[0] ?? null)}
                   className="hidden"
                 />
                 <Button
@@ -183,16 +124,7 @@ export function PvFormDialog({
                 </div>
               )}
             </div>
-          ) : (
-            <div className="space-y-2">
-              <div className="text-sm font-medium">PV 链接</div>
-              <Input
-                value={form.url}
-                onChange={(event) => onUrlChange(event.target.value)}
-                placeholder="请输入可访问链接"
-              />
-            </div>
-          )}
+          ) : null}
         </div>
 
         <DialogFooter>
@@ -204,15 +136,11 @@ export function PvFormDialog({
           >
             取消
           </Button>
-          <Button
-            type="button"
-            onClick={() => onSubmit()}
-            disabled={
-              isSubmitting || isUploading || (useUpload && !editingItem ? !selectedFile : !form.url)
-            }
-          >
-            {isSubmitting ? '提交中...' : editingItem ? '保存修改' : '创建'}
-          </Button>
+          {!useUpload && (
+            <Button type="button" onClick={() => onSubmit()} disabled={isSubmitting || !form.url}>
+              {isSubmitting ? '提交中...' : '创建'}
+            </Button>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>

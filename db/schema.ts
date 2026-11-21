@@ -1,6 +1,8 @@
 import dayjs from 'dayjs'
 import { int, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core'
 
+import type { PvMetadata } from '@/types/pv'
+
 // 游戏信息表
 export const GameInfoTable = sqliteTable('game_info', {
   id: int().primaryKey({ autoIncrement: true }),
@@ -39,6 +41,13 @@ export const GamePvTable = sqliteTable('game_pv', {
   url: text().notNull(), // pv链接地址
   createdAt: text().default(dayjs().toString()), // 创建时间
   updatedAt: text().default(dayjs().toString()), // 更新时间
+})
+
+export const GamePvMetadataTable = sqliteTable('game_pv_metadata', {
+  pvId: int()
+    .primaryKey()
+    .references(() => GamePvTable.id, { onDelete: 'cascade' }),
+  metadata: text({ mode: 'json' }).$type<PvMetadata>().notNull(),
 })
 
 // 调整：游戏 OST 表

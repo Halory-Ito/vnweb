@@ -12,7 +12,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select'
+import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 
 import type { RemoteBackupInfo } from '@/features/backup/webdav-api'
 
@@ -72,26 +80,39 @@ export function WebDAVDownloadCard({
       <div className="space-y-3">
         <div className="flex items-end gap-2">
           <div className="min-w-0 flex-1 space-y-2">
-            <p className="text-sm font-medium">远程备份</p>
-            <NativeSelect
-              className="w-full"
-              value={selectedBackup || ''}
-              onChange={(e) => setSelectedBackup(e.target.value || null)}
+            <Label htmlFor="webdav-remote-backup">远程备份</Label>
+            <Select
+              value={selectedBackup ?? ''}
+              onValueChange={(name) => setSelectedBackup(name || null)}
               disabled={isLoadingBackups || backupList.length === 0}
             >
-              <NativeSelectOption value="" disabled>
-                {isLoadingBackups
-                  ? '加载中...'
-                  : backupList.length === 0
-                    ? '暂无远程备份'
-                    : '请选择备份'}
-              </NativeSelectOption>
-              {backupList.map((backup) => (
-                <NativeSelectOption key={backup.name} value={backup.name}>
-                  {backup.name}（{formatSize(backup.size)}）
-                </NativeSelectOption>
-              ))}
-            </NativeSelect>
+              <SelectTrigger id="webdav-remote-backup" className="w-full">
+                <SelectValue
+                  placeholder={
+                    isLoadingBackups
+                      ? '加载中...'
+                      : backupList.length === 0
+                        ? '暂无远程备份'
+                        : '请选择备份'
+                  }
+                />
+              </SelectTrigger>
+              <SelectContent className="w-(--radix-select-trigger-width)">
+                <SelectGroup>
+                  {backupList.map((backup) => (
+                    <SelectItem
+                      key={backup.name}
+                      value={backup.name}
+                      className="*:[span]:last:min-w-0"
+                    >
+                      <span className="truncate">
+                        {backup.name}（{formatSize(backup.size)}）
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              </SelectContent>
+            </Select>
           </div>
           <Button
             type="button"

@@ -12,6 +12,7 @@ import { getQuoteNoteTheme } from '@/features/quote/lib/quote-note-theme'
 import { cn } from '@/lib/utils'
 
 import type { QuoteManageItem } from '@/types'
+import type { CSSProperties } from 'react'
 
 type QuoteNoteCardProps = {
   item: QuoteManageItem
@@ -39,11 +40,11 @@ export const QuoteNoteCard = memo(function QuoteNoteCard({
 
   return (
     <article
+      style={{ '--quote-note-color': theme.color } as CSSProperties}
       className={cn(
-        'group bg-background relative mb-5 break-inside-avoid rounded-2xl border-2 px-5 pt-7 pb-4 transition-all duration-300',
-        '[content-visibility:auto] [contain-intrinsic-size:auto_220px]',
+        'group relative rounded-2xl border-2 px-5 pt-7 pb-4 transition-[transform,border-color,box-shadow] duration-200',
         'hover:z-10 hover:-translate-y-1 hover:rotate-0 hover:shadow-md',
-        theme.border,
+        'border-(--quote-note-color)/40 bg-(--quote-note-color)/15 hover:border-(--quote-note-color)/70 dark:bg-(--quote-note-color)/20',
         theme.tilt,
       )}
     >
@@ -51,8 +52,8 @@ export const QuoteNoteCard = memo(function QuoteNoteCard({
       <div
         aria-hidden="true"
         className={cn(
-          'pointer-events-none absolute -top-2.5 left-1/2 h-5 w-16 -translate-x-1/2 -rotate-2 rounded-xs border backdrop-blur-[1px]',
-          theme.tape,
+          'pointer-events-none absolute -top-2.5 left-1/2 h-5 w-16 -translate-x-1/2 -rotate-2 rounded-xs border',
+          'border-(--quote-note-color)/40 bg-(--quote-note-color)/35',
         )}
       />
 
@@ -61,14 +62,14 @@ export const QuoteNoteCard = memo(function QuoteNoteCard({
         aria-hidden="true"
         className={cn(
           'pointer-events-none absolute top-2 left-3.5 text-5xl leading-none select-none',
-          theme.accent,
+          'text-(--quote-note-color)/35',
         )}
       >
         “
       </span>
 
       {/* 悬浮操作胶囊 */}
-      <div className="bg-background/95 absolute top-2.5 right-2.5 flex items-center gap-0.5 rounded-full border px-1 py-0.5 opacity-0 shadow-xs backdrop-blur-xs transition-opacity duration-200 group-hover:opacity-100 focus-within:opacity-100">
+      <div className="bg-background/95 absolute top-2.5 right-2.5 flex items-center gap-0.5 rounded-full border px-1 py-0.5 opacity-0 shadow-xs transition-opacity duration-200 group-hover:opacity-100 focus-within:opacity-100 pointer-coarse:opacity-100">
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
@@ -117,7 +118,7 @@ export const QuoteNoteCard = memo(function QuoteNoteCard({
       </div>
 
       {/* 台词正文 */}
-      <p className="relative z-1 mt-1 text-sm leading-relaxed whitespace-pre-wrap break-words">
+      <p className="relative z-1 mt-1 text-sm leading-relaxed break-words whitespace-pre-wrap">
         {item.content}
       </p>
 
@@ -136,6 +137,7 @@ export const QuoteNoteCard = memo(function QuoteNoteCard({
               src={item.characterImage}
               alt={item.characterName || '角色头像'}
               loading="lazy"
+              decoding="async"
               className="size-6 shrink-0 rounded-full border object-cover"
             />
           ) : (
@@ -143,22 +145,20 @@ export const QuoteNoteCard = memo(function QuoteNoteCard({
               <UserIcon className="size-3.5" />
             </div>
           )}
-          <span className="truncate text-xs font-medium">
-            {item.characterName || '未关联角色'}
-          </span>
+          <span className="truncate text-xs font-medium">{item.characterName || '未关联角色'}</span>
         </div>
 
         <div className="flex items-center gap-1.5">
           {gameTitle ? (
             <Badge
               variant="outline"
-              className={cn('max-w-[140px] truncate rounded-full px-2 py-0 text-[11px]', theme.badge)}
+              className="max-w-[140px] truncate rounded-full border-(--quote-note-color)/40 px-2 py-0 text-[11px]"
               title={gameTitle}
             >
               {gameTitle}
             </Badge>
           ) : null}
-          <SparklesIcon className="text-muted-foreground/50 size-3 animate-pulse" />
+          <SparklesIcon className="text-muted-foreground/50 size-3 shrink-0" />
         </div>
       </div>
 

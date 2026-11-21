@@ -1,8 +1,9 @@
 import { and, desc, eq, like, or } from 'drizzle-orm'
 import { NextRequest, NextResponse } from 'next/server'
 
-import { GameInfoTable, GamePvTable } from '@/db/schema'
+import { GameInfoTable, GamePvMetadataTable, GamePvTable } from '@/db/schema'
 import { db } from '@/lib/drizzle'
+import { ensurePvMetadataSchema, normalizePvMetadata } from '@/lib/server/pv-metadata'
 
 const normalizeText = (value: unknown) => {
   if (typeof value !== 'string') {
@@ -47,6 +48,7 @@ const getPvList = async (req: NextRequest) => {
       )
     }
 
+    await ensurePvMetadataSchema()
     const rows = await db
       .select({
         id: GamePvTable.id,
@@ -59,9 +61,11 @@ const getPvList = async (req: NextRequest) => {
         gameNameCn: GameInfoTable.nameCn,
         gameCover: GameInfoTable.cover,
         gameBg: GameInfoTable.bg,
+        metadata: GamePvMetadataTable.metadata,
       })
       .from(GamePvTable)
       .innerJoin(GameInfoTable, eq(GamePvTable.gameId, GameInfoTable.id))
+      .leftJoin(GamePvMetadataTable, eq(GamePvMetadataTable.pvId, GamePvTable.id))
       .where(conditions.length > 0 ? and(...conditions) : undefined)
       .orderBy(desc(GamePvTable.id))
 
@@ -82,11 +86,13 @@ const createPv = async (req: NextRequest) => {
       gameId?: number
       name?: string
       url?: string
+      metadata?: unknown
     }
 
     const gameId = Number(payload.gameId)
     const name = normalizeText(payload.name)
     const url = normalizeText(payload.url)
+    const metadata = normalizePvMetadata(payload.metadata)
 
     if (!Number.isInteger(gameId) || gameId <= 0) {
       return NextResponse.json({ error: '无效的游戏 id' }, { status: 400 })
@@ -107,27 +113,33 @@ const createPv = async (req: NextRequest) => {
     }
 
     const now = new Date().toISOString()
-    const inserted = await db
-      .insert(GamePvTable)
-      .values({
-        gameId,
-        name,
-        url,
-        createdAt: now,
-        updatedAt: now,
-      })
-      .returning({
-        id: GamePvTable.id,
-        gameId: GamePvTable.gameId,
-        name: GamePvTable.name,
-        url: GamePvTable.url,
-        createdAt: GamePvTable.createdAt,
-        updatedAt: GamePvTable.updatedAt,
-      })
+    if (metadata) await ensurePvMetadataSchema()
+    const item = await db.transaction(async (tx) => {
+      const [inserted] = await tx
+        .insert(GamePvTable)
+        .values({
+          gameId,
+          name,
+          url,
+          createdAt: now,
+          updatedAt: now,
+        })
+        .returning({
+          id: GamePvTable.id,
+          gameId: GamePvTable.gameId,
+          name: GamePvTable.name,
+          url: GamePvTable.url,
+          createdAt: GamePvTable.createdAt,
+          updatedAt: GamePvTable.updatedAt,
+        })
+
+      if (metadata) await tx.insert(GamePvMetadataTable).values({ pvId: inserted.id, metadata })
+      return inserted
+    })
 
     return NextResponse.json({
       data: {
-        item: inserted[0],
+        item,
       },
     })
   } catch (error) {

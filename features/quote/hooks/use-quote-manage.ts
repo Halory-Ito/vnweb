@@ -1,6 +1,6 @@
 'use client'
 
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useCallback, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 
@@ -27,14 +27,11 @@ const defaultForm: QuoteFormState = {
 export function useQuoteManage() {
   const queryClient = useQueryClient()
   const [keywordInput, setKeywordInputState] = useState('')
-  const [page, setPage] = useState(1)
-  const [pageSize, setPageSizeState] = useState(12)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [pendingDelete, setPendingDelete] = useState<QuoteManageItem | null>(null)
   const [editingItem, setEditingItem] = useState<QuoteManageItem | null>(null)
   const [form, setForm] = useState<QuoteFormState>(defaultForm)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [randomSeed, setRandomSeed] = useState(0)
 
   const debouncedKeyword = useDebounce(keywordInput.trim(), 300)
 
@@ -47,46 +44,26 @@ export function useQuoteManage() {
     data: quoteData,
     isLoading,
     isRefetching,
-  } = useQuery({
+    isError,
+    refetch,
+    hasNextPage,
+    fetchNextPage,
+    isFetchingNextPage,
+    isFetchNextPageError,
+  } = useInfiniteQuery({
     queryKey: ['quote-manage', debouncedKeyword],
-    queryFn: () =>
+    initialPageParam: 1,
+    queryFn: ({ pageParam }) =>
       getQuoteManageList({
         keyword: debouncedKeyword,
-        page: 1,
-        pageSize: 9999,
+        page: pageParam,
+        pageSize: 24,
       }),
+    getNextPageParam: ({ pagination }) =>
+      pagination.page < pagination.totalPages ? pagination.page + 1 : undefined,
   })
 
-  const allItems = useMemo(() => quoteData?.items ?? [], [quoteData?.items])
-  const total = allItems.length
-  const totalPages = Math.max(1, Math.ceil(total / pageSize))
-  const currentPage = Math.min(page, totalPages)
-
-  const items = useMemo(
-    () => allItems.slice((currentPage - 1) * pageSize, currentPage * pageSize),
-    [allItems, currentPage, pageSize],
-  )
-
-  const setKeywordInput = useCallback((value: string) => {
-    setKeywordInputState(value)
-    setPage(1)
-  }, [])
-
-  const setPageSize = useCallback((newSize: number) => {
-    setPageSizeState(newSize)
-    setPage(1)
-  }, [])
-
-  const randomQuote = useMemo(() => {
-    if (allItems.length === 0) return null
-    const index = (randomSeed * 7 + allItems.length) % allItems.length
-    return allItems[index]
-  }, [allItems, randomSeed])
-
-  const shuffleRandomQuote = useCallback(() => {
-    if (allItems.length <= 1) return
-    setRandomSeed((prev) => prev + Math.floor(Math.random() * (allItems.length - 1)) + 1)
-  }, [allItems.length])
+  const items = useMemo(() => quoteData?.pages.flatMap((page) => page.items) ?? [], [quoteData])
 
   const gameOptions = useMemo<GameOption[]>(
     () =>
@@ -180,18 +157,17 @@ export function useQuoteManage() {
 
   return {
     keywordInput,
-    setKeywordInput,
-    page: currentPage,
-    pageSize,
-    total,
-    totalPages,
-    setPage,
-    setPageSize,
+    setKeywordInput: setKeywordInputState,
+    searchKeyword: debouncedKeyword,
     items,
     isLoading,
     isRefetching,
-    randomQuote,
-    shuffleRandomQuote,
+    isError,
+    refetch,
+    hasNextPage,
+    fetchNextPage,
+    isFetchingNextPage,
+    isFetchNextPageError,
     dialogOpen,
     editingItem,
     form,

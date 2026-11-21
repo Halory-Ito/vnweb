@@ -19,6 +19,7 @@ import { Label } from '@/components/ui/label'
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
   SelectTrigger,
   SelectValue,
@@ -52,11 +53,13 @@ export function OstFormDialog(props: OstFormDialogProps) {
                   <SelectValue placeholder="选择游戏" />
                 </SelectTrigger>
                 <SelectContent>
-                  {gameCards.map((game) => (
-                    <SelectItem key={game.id} value={String(game.id)}>
-                      {game.title}
-                    </SelectItem>
-                  ))}
+                  <SelectGroup>
+                    {gameCards.map((game) => (
+                      <SelectItem key={game.id} value={String(game.id)}>
+                        {game.title}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
                 </SelectContent>
               </Select>
             </div>

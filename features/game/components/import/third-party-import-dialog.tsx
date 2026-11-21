@@ -55,7 +55,7 @@ export function ThirdPartyImportDialog({
               <SelectTrigger id={providerSelectId} className="h-10 w-full sm:h-9">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent position="popper">
+              <SelectContent>
                 {providers.map((item) => (
                   <SelectItem key={item.id} value={item.id} className="min-h-10">
                     {item.label}

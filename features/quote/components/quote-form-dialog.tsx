@@ -15,6 +15,7 @@ import {
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
   SelectTrigger,
   SelectValue,
@@ -114,11 +115,13 @@ export function QuoteFormDialog({
                 <SelectValue placeholder="请选择游戏" />
               </SelectTrigger>
               <SelectContent>
-                {gameOptions.map((game) => (
-                  <SelectItem key={game.id} value={game.id}>
-                    {game.label}
-                  </SelectItem>
-                ))}
+                <SelectGroup>
+                  {gameOptions.map((game) => (
+                    <SelectItem key={game.id} value={game.id}>
+                      {game.label}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
               </SelectContent>
             </Select>
           </div>
@@ -156,13 +159,15 @@ export function QuoteFormDialog({
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="请选择角色（可选）" />
                 </SelectTrigger>
-                <SelectContent className="max-h-50">
-                  <SelectItem value="none">不指定角色</SelectItem>
-                  {characterOptions.map((character) => (
-                    <SelectItem key={character.id} value={character.id}>
-                      {character.name}
-                    </SelectItem>
-                  ))}
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectItem value="none">不指定角色</SelectItem>
+                    {characterOptions.map((character) => (
+                      <SelectItem key={character.id} value={character.id}>
+                        {character.name}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
                 </SelectContent>
               </Select>
             )}

@@ -1,12 +1,10 @@
-import type { PvManageItem } from '@/types'
-
-export type ViewMode = 'grid' | 'list'
+import type { PvManageItem, PvMetadata } from '@/types'
 
 export type PvFormState = {
   gameId: string
   name: string
   url: string
-  uploadingFile?: File | null
+  metadata: PvMetadata
 }
 
 export type GameOption = {

@@ -1,6 +1,6 @@
 import { api } from '@/lib/request-utils'
 
-import type { PvManageItem } from '@/types/pv'
+import type { PvManageItem, PvWritePayload } from '@/types/pv'
 
 export const getPvManageList = async (params?: { keyword?: string; gameId?: number }) => {
   const response = await api.get('/pv', {
@@ -12,11 +12,7 @@ export const getPvManageList = async (params?: { keyword?: string; gameId?: numb
   return (response.data as { data: { items: PvManageItem[] } }).data
 }
 
-export const createPvManageItem = async (payload: {
-  gameId: number
-  name: string
-  url: string
-}) => {
+export const createPvManageItem = async (payload: PvWritePayload) => {
   const response = await api.post('/pv', payload)
   return response.data as {
     data: {
@@ -32,14 +28,7 @@ export const createPvManageItem = async (payload: {
   }
 }
 
-export const updatePvManageItem = async (
-  id: number,
-  payload: {
-    gameId: number
-    name: string
-    url: string
-  },
-) => {
+export const updatePvManageItem = async (id: number, payload: PvWritePayload) => {
   const response = await api.patch(`/pv/${id}`, payload)
   return response.data as {
     data: {

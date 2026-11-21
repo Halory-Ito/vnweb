@@ -1,12 +1,6 @@
 'use client'
 
-import {
-  Field,
-  FieldContent,
-  FieldDescription,
-  FieldGroup,
-  FieldLabel,
-} from '@/components/ui/field'
+import { Field, FieldGroup } from '@/components/ui/field'
 import {
   Select,
   SelectContent,
@@ -29,7 +23,7 @@ export function SortSelect({ orderBy, setOrderBy }: SortSelectProps) {
           <SelectTrigger>
             <SelectValue />
           </SelectTrigger>
-          <SelectContent position="popper">
+          <SelectContent>
             <SelectGroup>
               <SelectItem value="name">名称</SelectItem>
               <SelectItem value="public_date">发布日期</SelectItem>

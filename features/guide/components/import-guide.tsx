@@ -117,7 +117,7 @@ export default function ImportGuide() {
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="请选择要绑定的游戏" />
                   </SelectTrigger>
-                  <SelectContent position="popper" className="max-h-60">
+                  <SelectContent>
                     {gameCards.map((game) => (
                       <SelectItem key={game.id} value={game.id}>
                         {game.title}

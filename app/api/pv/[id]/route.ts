@@ -1,8 +1,9 @@
 import { eq } from 'drizzle-orm'
 import { NextRequest, NextResponse } from 'next/server'
 
-import { GameInfoTable, GamePvTable } from '@/db/schema'
+import { GameInfoTable, GamePvMetadataTable, GamePvTable } from '@/db/schema'
 import { db } from '@/lib/drizzle'
+import { ensurePvMetadataSchema, normalizePvMetadata } from '@/lib/server/pv-metadata'
 
 const normalizeText = (value: unknown) => {
   if (typeof value !== 'string') {
@@ -29,11 +30,13 @@ const updatePv = async (req: NextRequest, context: { params: Promise<{ id: strin
       gameId?: number
       name?: string
       url?: string
+      metadata?: unknown
     }
 
     const gameId = Number(payload.gameId)
     const name = normalizeText(payload.name)
     const url = normalizeText(payload.url)
+    const metadata = normalizePvMetadata(payload.metadata)
 
     if (!Number.isInteger(gameId) || gameId <= 0) {
       return NextResponse.json({ error: '无效的游戏 id' }, { status: 400 })
@@ -53,25 +56,30 @@ const updatePv = async (req: NextRequest, context: { params: Promise<{ id: strin
       return NextResponse.json({ error: '游戏不存在' }, { status: 404 })
     }
 
-    const target = await db
-      .select({ id: GamePvTable.id })
-      .from(GamePvTable)
-      .where(eq(GamePvTable.id, pvId))
-      .limit(1)
+    if (metadata) await ensurePvMetadataSchema()
+    const updated = await db.transaction(async (tx) => {
+      const [target] = await tx
+        .update(GamePvTable)
+        .set({
+          gameId,
+          name,
+          url,
+          updatedAt: new Date().toISOString(),
+        })
+        .where(eq(GamePvTable.id, pvId))
+        .returning({ id: GamePvTable.id })
+      if (!target) return false
 
-    if (!target[0]) {
-      return NextResponse.json({ error: 'PV 不存在' }, { status: 404 })
-    }
+      if (metadata) {
+        await tx.insert(GamePvMetadataTable).values({ pvId, metadata }).onConflictDoUpdate({
+          target: GamePvMetadataTable.pvId,
+          set: { metadata },
+        })
+      }
+      return true
+    })
 
-    await db
-      .update(GamePvTable)
-      .set({
-        gameId,
-        name,
-        url,
-        updatedAt: new Date().toISOString(),
-      })
-      .where(eq(GamePvTable.id, pvId))
+    if (!updated) return NextResponse.json({ error: 'PV 不存在' }, { status: 404 })
 
     return NextResponse.json({
       data: {
