@@ -1,17 +1,22 @@
 'use client'
 
-import { useAtom } from 'jotai'
+import { useAtom, useAtomValue } from 'jotai'
 
 import FolderPaletteEditor from './folder-palette-editor'
+import GridDisplaySetting from './grid-display-setting'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import GameLibraryLayoutSelect from '@/features/game/components/game-library-layout-select'
 import LibraryGroupSelect from '@/features/home/components/library-group-select'
 import { borderlessAtom, useLayoutVisibility } from '@/hooks/use-layout-visibility'
+import { gameLibraryGridDisplayAtom } from '@/lib/settings/game-library-grid-display'
+import { gameLibraryLayoutAtom } from '@/lib/settings/game-library-layout'
 
 export function LayoutSection() {
   const { sidebarHidden, setSidebarHidden, headerHidden, setHeaderHidden } = useLayoutVisibility()
   const [borderless, setBorderless] = useAtom(borderlessAtom)
+  const layout = useAtomValue(gameLibraryLayoutAtom)
+  const gridDisplay = useAtomValue(gameLibraryGridDisplayAtom)
 
   return (
     <section
@@ -37,11 +42,14 @@ export function LayoutSection() {
         <Label htmlFor="game-library-layout">游戏库布局</Label>
         <GameLibraryLayoutSelect id="game-library-layout" />
       </div>
-      <div className="flex min-h-8 flex-wrap items-center justify-between gap-3">
-        <Label htmlFor="game-library-group">网格分类依据</Label>
-        <LibraryGroupSelect id="game-library-group" />
-      </div>
-      <FolderPaletteEditor />
+      <GridDisplaySetting />
+      {gridDisplay !== 'ungrouped' ? (
+        <div className="flex min-h-8 flex-wrap items-center justify-between gap-3">
+          <Label htmlFor="game-library-group">网格分类依据</Label>
+          <LibraryGroupSelect id="game-library-group" />
+        </div>
+      ) : null}
+      {layout === 'grid' && gridDisplay === 'folders' ? <FolderPaletteEditor /> : null}
     </section>
   )
 }

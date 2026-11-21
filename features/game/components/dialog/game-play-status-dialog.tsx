@@ -13,7 +13,13 @@ import {
 } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
-import { GAME_PLAY_STATUS_OPTIONS, getGamePlayStatusLabel } from '@/features/game/lib/game-status'
+import { useGameStatusNames } from '@/features/game/hooks/use-game-status-names'
+import {
+  UNKNOWN_GAME_STATUS,
+  getGamePlayStatusLabel,
+  getGamePlayStatusOptions,
+  normalizeGamePlayStatus,
+} from '@/features/game/lib/game-status'
 
 type GamePlayStatusDialogProps = {
   gameId: number
@@ -33,6 +39,12 @@ export default function GamePlayStatusDialog({
   onStatusChange,
   disabled,
 }: GamePlayStatusDialogProps) {
+  const { data: statusNames } = useGameStatusNames()
+  const selectedStatus = normalizeGamePlayStatus(currentStatus, statusNames)
+  const options = [
+    ...getGamePlayStatusOptions(statusNames).map(({ value }) => value),
+    UNKNOWN_GAME_STATUS,
+  ]
   const handleSelect = (status: number) => {
     onStatusChange(status)
     onOpenChange(false)
@@ -51,11 +63,11 @@ export default function GamePlayStatusDialog({
 
         <div className="py-4">
           <RadioGroup
-            value={String(currentStatus)}
+            value={String(selectedStatus)}
             onValueChange={(value) => handleSelect(Number(value))}
             className="grid grid-cols-2 gap-3"
           >
-            {GAME_PLAY_STATUS_OPTIONS.map((status) => (
+            {options.map((status) => (
               <div key={status} className="relative">
                 <RadioGroupItem
                   value={String(status)}
@@ -66,14 +78,14 @@ export default function GamePlayStatusDialog({
                 <Label
                   htmlFor={`status-${status}`}
                   className={`flex cursor-pointer items-center justify-center rounded-lg border-2 p-3 transition-all duration-200 ${
-                    currentStatus === status
+                    selectedStatus === status
                       ? 'border-primary bg-primary/10 text-primary'
                       : 'border-border hover:border-primary/50 hover:bg-muted'
                   } ${disabled ? 'cursor-not-allowed opacity-50' : ''}`}
                 >
-                  <span className="font-medium">{getGamePlayStatusLabel(status)}</span>
+                  <span className="font-medium">{getGamePlayStatusLabel(status, statusNames)}</span>
                 </Label>
-                {currentStatus === status && (
+                {selectedStatus === status && (
                   <div className="bg-primary text-primary-foreground absolute -top-1 -right-1 flex size-5 items-center justify-center rounded-full">
                     <svg
                       className="size-3"

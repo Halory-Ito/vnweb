@@ -17,6 +17,7 @@ import {
   getGameCardList,
 } from '@/api'
 import { selectedGameIdsAtom, showNsfwAtom } from '@/atom/global'
+import { useGameStatusNames } from '@/features/game/hooks/use-game-status-names'
 
 import type { LibraryGroup } from '../lib/library-grouping'
 
@@ -41,6 +42,7 @@ export function useGameHome({
   const queryClient = useQueryClient()
   const [storedSelectedGameIds, setSelectedGameIds] = useAtom(selectedGameIdsAtom)
   const [showNsfw] = useAtom(showNsfwAtom)
+  const { data: statusNames } = useGameStatusNames()
 
   const [isAddingToCollection, setIsAddingToCollection] = useState(false)
   const [isDeletingGames, setIsDeletingGames] = useState(false)
@@ -74,8 +76,8 @@ export function useGameHome({
     if (foldersOnly) return []
     return folderKey === undefined
       ? games
-      : games.filter((game) => getLibraryFolderKeys(game, groupBy).includes(folderKey))
-  }, [groupBy, folderKey, foldersOnly, gameCardsQuery.data])
+      : games.filter((game) => getLibraryFolderKeys(game, groupBy, statusNames).includes(folderKey))
+  }, [groupBy, folderKey, foldersOnly, gameCardsQuery.data, statusNames])
   const allGameIds = useMemo(() => visibleGames.map((item) => item.id), [visibleGames])
   const visibleIds = useMemo(() => new Set(allGameIds), [allGameIds])
   const selectedGameIds = storedSelectedGameIds.filter((id) => visibleIds.has(id))

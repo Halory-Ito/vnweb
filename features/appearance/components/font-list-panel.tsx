@@ -21,6 +21,7 @@ type FontListPanelProps = {
   fonts: LocalFontItem[]
   isLoading: boolean
   isImportingPath: string | null
+  selectedPath: string | null
   sourceFilter: FontSourceFilter
   searchKeyword: string
   onSourceFilterChange: (value: FontSourceFilter) => void
@@ -33,6 +34,7 @@ export function FontListPanel({
   fonts,
   isLoading,
   isImportingPath,
+  selectedPath,
   sourceFilter,
   searchKeyword,
   onSourceFilterChange,
@@ -46,7 +48,7 @@ export function FontListPanel({
     return fonts.filter((font) => {
       if (sourceFilter !== 'all' && font.source !== sourceFilter) return false
       if (!keyword) return true
-      return font.name.toLowerCase().includes(keyword)
+      return [font.name, font.filename].some((name) => name?.toLowerCase().includes(keyword))
     })
   }, [fonts, searchKeyword, sourceFilter])
 
@@ -102,26 +104,18 @@ export function FontListPanel({
             </p>
           ) : (
             filteredFonts.map((font) => (
-              <div
+              <Button
                 key={`${font.path}-${font.source}`}
-                className="hover:bg-accent/50 flex items-center justify-between gap-2 rounded-md px-2 py-1.5 transition-colors"
+                type="button"
+                variant="ghost"
+                className="aria-pressed:bg-accent w-full justify-between px-2 font-normal"
+                aria-pressed={selectedPath === font.path}
+                disabled={isImportingPath !== null}
+                onClick={() => onImport(font)}
               >
-                <div className="min-w-0">
-                  <p className="truncate text-sm">{font.name}</p>
-                  <p className="text-muted-foreground text-xs">
-                    {font.source === 'system' ? '系统字体' : '用户字体'}
-                  </p>
-                </div>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="xs"
-                  disabled={isImportingPath === font.path}
-                  onClick={() => onImport(font)}
-                >
-                  {isImportingPath === font.path ? <Spinner className="size-3" /> : '预览'}
-                </Button>
-              </div>
+                <span className="min-w-0 truncate">{font.name}</span>
+                {isImportingPath === font.path ? <Spinner className="size-3" /> : null}
+              </Button>
             ))
           )}
         </div>

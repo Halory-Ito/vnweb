@@ -1,14 +1,12 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
 import { api } from '@/lib/request-utils'
-import { getBrowserFontLabel } from '@/lib/settings/font-settings'
+import { DEFAULT_FONT_SETTINGS, getBrowserFontFamily } from '@/lib/settings/font-settings'
 
 import type { FontSourceFilter, LocalFontItem } from '../components/font-types'
-
-const getDefaultPreviewName = (fontPath: string) => getBrowserFontLabel(fontPath) ?? '当前字体'
 
 const isImportedFontPath = (path: string) =>
   /_\d{10,14}\.[^.]+$/.test(path.replace(/\\/g, '/').split('/').pop() || '')
@@ -26,15 +24,18 @@ export function useFontDialog({
   onOpenChange,
   onApply,
 }: UseFontDialogOptions) {
+  const currentUsesBrowser = Boolean(getBrowserFontFamily(currentFontPath))
   const [isLoadingFonts, setIsLoadingFonts] = useState(false)
   const [isImportingPath, setIsImportingPath] = useState<string | null>(null)
   const [sourceFilter, setSourceFilter] = useState<FontSourceFilter>('all')
   const [searchKeyword, setSearchKeyword] = useState('')
   const [localFonts, setLocalFonts] = useState<LocalFontItem[]>([])
-  const [previewFontPath, setPreviewFontPath] = useState(currentFontPath)
-  const [previewFontName, setPreviewFontName] = useState(getDefaultPreviewName(currentFontPath))
+  const [followsBrowser, setFollowsBrowser] = useState(currentUsesBrowser)
+  const [browserPath, setBrowserPath] = useState(DEFAULT_FONT_SETTINGS.fontPath)
+  const [customPath, setCustomPath] = useState('')
+  const [selectedLocalPath, setSelectedLocalPath] = useState<string | null>(null)
+  const previewFontPath = followsBrowser ? browserPath : customPath
   const [importedPaths, setImportedPaths] = useState<string[]>([])
-  const skipCleanupRef = useRef(false)
 
   const loadFonts = async () => {
     setIsLoadingFonts(true)
@@ -62,12 +63,12 @@ export function useFontDialog({
     setIsImportingPath(font.path)
     try {
       const response = await api.post('/settings/font/import', { sourcePath: font.path })
-      const payload = response.data as { data?: { path?: string; name?: string } }
+      const payload = response.data as { data?: { path?: string } }
       const importedPath = payload.data?.path?.trim()
       if (!importedPath) throw new Error('未获取到导入后的字体路径')
 
-      setPreviewFontPath(importedPath)
-      setPreviewFontName(payload.data?.name || font.name)
+      setCustomPath(importedPath)
+      setSelectedLocalPath(font.path)
       setImportedPaths((prev) => (prev.includes(importedPath) ? prev : [...prev, importedPath]))
       toast.success('字体导入成功')
     } catch (error) {
@@ -77,18 +78,18 @@ export function useFontDialog({
     }
   }
 
-  const handleSelectBrowserFont = (fontPath: string, label: string) => {
-    setPreviewFontPath(fontPath)
-    setPreviewFontName(label)
+  const handleChangeMode = (nextFollowsBrowser: boolean) => {
+    setFollowsBrowser(nextFollowsBrowser)
+    if (!nextFollowsBrowser && localFonts.length === 0 && !isLoadingFonts) void loadFonts()
   }
 
   const handleConfirm = async () => {
+    if (isImportingPath) return
     if (!previewFontPath) {
       toast.error('请先选择字体')
       return
     }
 
-    skipCleanupRef.current = true
     const removable = importedPaths.filter((path) => path !== previewFontPath)
 
     if (
@@ -100,11 +101,12 @@ export function useFontDialog({
       removable.push(currentFontPath)
     }
 
-    await cleanupPaths(removable)
     onApply(previewFontPath)
+    await cleanupPaths(removable)
   }
 
   const handleCancel = async () => {
+    if (isImportingPath) return
     await cleanupPaths(importedPaths)
     setImportedPaths([])
     onOpenChange(false)
@@ -115,24 +117,21 @@ export function useFontDialog({
       onOpenChange(true)
       return
     }
-    if (skipCleanupRef.current) {
-      skipCleanupRef.current = false
-      onOpenChange(false)
-      return
-    }
     void handleCancel()
   }
 
   // Reset state when dialog opens
   useEffect(() => {
     if (!open) return
-    setPreviewFontPath(currentFontPath)
-    setPreviewFontName(getDefaultPreviewName(currentFontPath))
+    setFollowsBrowser(currentUsesBrowser)
+    setBrowserPath(currentUsesBrowser ? currentFontPath : DEFAULT_FONT_SETTINGS.fontPath)
+    setCustomPath(currentUsesBrowser ? '' : currentFontPath)
+    setSelectedLocalPath(null)
     setSourceFilter('all')
     setSearchKeyword('')
     setImportedPaths([])
-    void loadFonts()
-  }, [open, currentFontPath])
+    if (!currentUsesBrowser) void loadFonts()
+  }, [open, currentFontPath, currentUsesBrowser])
 
   return {
     isLoadingFonts,
@@ -141,12 +140,14 @@ export function useFontDialog({
     searchKeyword,
     localFonts,
     previewFontPath,
-    previewFontName,
+    followsBrowser,
+    selectedLocalPath,
     setSourceFilter,
     setSearchKeyword,
     loadFonts,
     handleImport,
-    handleSelectBrowserFont,
+    handleChangeMode,
+    handleSelectBrowserFont: setBrowserPath,
     handleConfirm,
     handleCancel,
     handleOpenChange,

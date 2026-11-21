@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { toast } from 'sonner'
 
 import {
   DEFAULT_STATUS_COLOR_SETTINGS,
@@ -36,10 +37,14 @@ export function useStatusSettings() {
       return
     }
 
-    const merged = { ...settings, [key]: draft[key] }
-    setSettings(merged)
-    await writeStatusColorSettings(merged)
-    notifyStatusColorSettingsChanged()
+    const color = draft[key]
+    try {
+      await writeStatusColorSettings({ [key]: color })
+      setSettings((previous) => ({ ...previous, [key]: color }))
+      notifyStatusColorSettingsChanged()
+    } catch {
+      toast.error('保存游戏状态颜色失败，请重试')
+    }
   }
 
   return { settings, draft, updateDraft, confirmColor }

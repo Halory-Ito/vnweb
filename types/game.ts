@@ -135,3 +135,4 @@ export type GameSidebarProps = {
   title: string
   items: GameSidebarItemProps[]
 }
+export type GameStatusNames = Record<number, string>

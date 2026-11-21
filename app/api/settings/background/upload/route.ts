@@ -1,35 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { randomUUID } from 'node:crypto'
 import fs from 'node:fs/promises'
 import path from 'node:path'
+
+import {
+  getBackgroundImageExtension,
+  isValidBackgroundName,
+} from '@/lib/settings/background-upload-name'
 
 const MAX_UPLOAD_SIZE = 20 * 1024 * 1024
 
 const CUSTOM_BG_DIR = path.join(process.cwd(), 'assets', 'bg', 'custom')
 
-const getSafeExt = (fileName: string, fileType: string) => {
-  const ext = path.extname(fileName).toLowerCase()
-  if (ext && /^[.][a-z0-9]{1,10}$/.test(ext)) {
-    return ext
-  }
-
-  const byMime: Record<string, string> = {
-    'image/jpeg': '.jpg',
-    'image/png': '.png',
-    'image/webp': '.webp',
-    'image/gif': '.gif',
-    'image/bmp': '.bmp',
-    'image/svg+xml': '.svg',
-  }
-
-  return byMime[fileType] || '.png'
-}
-
-const removeOldCustomBackgrounds = async (device: 'pc' | 'mobile') => {
+const removeOldCustomBackgrounds = async (device: 'pc' | 'mobile', filename: string) => {
   try {
     const entries = await fs.readdir(CUSTOM_BG_DIR)
     for (const entry of entries) {
       // 只删除对应设备的旧背景（以设备类型开头的文件）
-      if (entry.startsWith(`${device}-`)) {
+      if (entry.startsWith(`${device}-`) && entry.toLowerCase() !== filename.toLowerCase()) {
         const filePath = path.join(CUSTOM_BG_DIR, entry)
         const stat = await fs.stat(filePath)
         if (stat.isFile()) {
@@ -42,11 +30,14 @@ const removeOldCustomBackgrounds = async (device: 'pc' | 'mobile') => {
   }
 }
 
+let uploadQueue = Promise.resolve()
+
 const uploadBackgroundImage = async (req: NextRequest) => {
   try {
     const formData = await req.formData()
     const file = formData.get('file')
     const device = formData.get('device') as string
+    const requestedName = formData.get('name')
 
     if (!(file instanceof File)) {
       return NextResponse.json({ error: '未检测到上传文件' }, { status: 400 })
@@ -63,19 +54,39 @@ const uploadBackgroundImage = async (req: NextRequest) => {
     // 验证设备类型
     const deviceType = device === 'mobile' ? 'mobile' : 'pc'
 
-    const ext = getSafeExt(file.name, file.type)
-    const fileName = `${deviceType}-${Date.now()}${ext}`
+    const name = typeof requestedName === 'string' ? requestedName.trim() : ''
+    if (
+      (requestedName !== null && typeof requestedName !== 'string') ||
+      !isValidBackgroundName(name)
+    ) {
+      return NextResponse.json(
+        { error: '图片名称只能包含文字、数字、空格、连字符和下划线，最多 60 字' },
+        { status: 400 },
+      )
+    }
+    const ext = getBackgroundImageExtension(file.name, file.type)
+    const fileName = `${deviceType}-${name || Date.now()}${ext}`
     const targetPath = path.join(CUSTOM_BG_DIR, fileName)
 
-    await fs.mkdir(CUSTOM_BG_DIR, { recursive: true })
-    await removeOldCustomBackgrounds(deviceType)
-
-    const bytes = await file.arrayBuffer()
-    await fs.writeFile(targetPath, Buffer.from(bytes))
+    const version = randomUUID()
+    const bytes = Buffer.from(await file.arrayBuffer())
+    const save = uploadQueue.then(async () => {
+      const temporaryPath = path.join(CUSTOM_BG_DIR, `.${version}.tmp`)
+      await fs.mkdir(CUSTOM_BG_DIR, { recursive: true })
+      try {
+        await fs.writeFile(temporaryPath, bytes, { flag: 'wx' })
+        await fs.rename(temporaryPath, targetPath)
+      } finally {
+        await fs.rm(temporaryPath, { force: true }).catch(() => {})
+      }
+      await removeOldCustomBackgrounds(deviceType, fileName)
+    })
+    uploadQueue = save.catch(() => {})
+    await save
 
     return NextResponse.json({
       data: {
-        path: `/assets/bg/custom/${fileName}`,
+        path: `/assets/bg/custom/${fileName}?v=${version}`,
         device: deviceType,
       },
     })

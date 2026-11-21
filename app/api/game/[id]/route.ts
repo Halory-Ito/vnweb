@@ -10,6 +10,7 @@ import {
   GameMemoryTable,
   GameOstTable,
   GamePlayTable,
+  GameStatusTable,
   GamePvTable,
   GameRecordTable,
   relateWebsiteTable,
@@ -17,6 +18,7 @@ import {
 import { db } from '@/lib/drizzle'
 import { ensureGameCompletionSchema, resolveCompletedAt } from '@/lib/server/game-completion'
 import { localizeGameImageFieldsInBackground } from '@/lib/server/game-image-storage'
+import { ensureGameStatusSchema, runGameStatusTransaction } from '@/lib/server/game-status-settings'
 import { syncVndbCharactersByGameId } from '@/lib/server/vndb-character-sync'
 
 const parseCsv = (value: string) =>
@@ -540,37 +542,43 @@ const updateGame = async (req: NextRequest, context: { params: Promise<{ id: str
     }
 
     const nextStatus = Number(payload.status)
-    if (!Number.isInteger(nextStatus) || nextStatus < 0 || nextStatus > 5) {
+    if (!Number.isSafeInteger(nextStatus) || nextStatus < -1) {
       return NextResponse.json({ error: 'Invalid status' }, { status: 400 })
     }
 
     await ensureGameCompletionSchema()
+    await ensureGameStatusSchema()
 
-    const playRows = await db
-      .select({
-        id: GamePlayTable.id,
-        completedAt: GamePlayTable.completedAt,
-      })
-      .from(GamePlayTable)
-      .where(eq(GamePlayTable.gameId, gameId))
-      .limit(1)
+    const updated = await runGameStatusTransaction(async (tx) => {
+      const [status] = await tx
+        .select({ id: GameStatusTable.id })
+        .from(GameStatusTable)
+        .where(eq(GameStatusTable.id, nextStatus))
+      if (!status) return false
 
-    const play = playRows[0]
-    const completedAt = resolveCompletedAt(nextStatus, play?.completedAt)
-    if (play) {
-      await db
-        .update(GamePlayTable)
-        .set({
-          status: nextStatus,
-          completedAt,
+      const [play] = await tx
+        .select({
+          id: GamePlayTable.id,
+          completedAt: GamePlayTable.completedAt,
         })
-        .where(eq(GamePlayTable.id, play.id))
-    } else {
-      await db.insert(GamePlayTable).values({
-        gameId,
+        .from(GamePlayTable)
+        .where(eq(GamePlayTable.gameId, gameId))
+        .limit(1)
+
+      const values = {
         status: nextStatus,
-        completedAt,
-      })
+        completedAt: resolveCompletedAt(nextStatus, play?.completedAt),
+      }
+      if (play) {
+        await tx.update(GamePlayTable).set(values).where(eq(GamePlayTable.id, play.id))
+      } else {
+        await tx.insert(GamePlayTable).values({ gameId, ...values })
+      }
+      return true
+    })
+
+    if (!updated) {
+      return NextResponse.json({ error: '该游戏状态已不存在，请重新选择' }, { status: 400 })
     }
 
     return NextResponse.json({

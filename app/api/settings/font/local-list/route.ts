@@ -3,6 +3,8 @@ import fs from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
 
+import { getChineseFontDisplayName } from '@/lib/server/font-display-name'
+
 const FONT_EXTENSIONS = new Set(['.ttf', '.otf', '.ttc', '.woff', '.woff2'])
 
 type FontSource = 'system' | 'user'
@@ -25,6 +27,7 @@ const listLocalFonts = async () => {
 
     const allFonts: Array<{
       name: string
+      filename: string
       path: string
       source: FontSource
     }> = []
@@ -46,6 +49,7 @@ const listLocalFonts = async () => {
           const name = path.basename(entry.name, ext)
           allFonts.push({
             name,
+            filename: name,
             path: path.join(dir, entry.name),
             source,
           })
@@ -55,6 +59,15 @@ const listLocalFonts = async () => {
       }
     }
 
+    // Bound concurrent file reads while scanning large system font directories.
+    for (let offset = 0; offset < allFonts.length; offset += 8) {
+      await Promise.all(
+        allFonts.slice(offset, offset + 8).map(async (font) => {
+          const data = await fs.readFile(font.path).catch(() => undefined)
+          if (data) font.name = getChineseFontDisplayName(data) ?? font.filename
+        }),
+      )
+    }
     allFonts.sort((a, b) => a.name.localeCompare(b.name, 'zh-CN'))
 
     return NextResponse.json({

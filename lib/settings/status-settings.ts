@@ -25,9 +25,8 @@ export function normalizeStatusColorSettings(
     return result
   }
 
-  for (const key of STATUS_COLOR_KEYS) {
-    const value = input[key]
-    if (typeof value === 'string' && value.trim()) {
+  for (const [key, value] of Object.entries(input)) {
+    if (/^\d+$/.test(key) && typeof value === 'string' && /^#[\da-f]{6}$/i.test(value.trim())) {
       result[key] = value.trim()
     }
   }
@@ -69,9 +68,11 @@ export async function readStatusColorSettings(): Promise<StatusColorSettings> {
 }
 
 export async function writeStatusColorSettings(settings: StatusColorSettings): Promise<void> {
-  const normalized = normalizeStatusColorSettings(settings)
-  await api.post('/settings/appearance/status', normalized)
-  cache = normalized
+  const response = await api.post<{ data: StatusColorSettings }>(
+    '/settings/appearance/status',
+    settings,
+  )
+  cache = normalizeStatusColorSettings(response.data.data)
 }
 
 export function notifyStatusColorSettingsChanged() {

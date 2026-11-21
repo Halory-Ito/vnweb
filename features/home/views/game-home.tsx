@@ -5,18 +5,19 @@ import { AlertCircle, ArrowLeftIcon } from 'lucide-react'
 import Link from 'next/link'
 
 import GameHomeEmptyState from '../components/empty-home'
-import { HomeActionDialogs } from '../components/home-action-dialogs'
+import { GameHomeActions } from '../components/game-home-actions'
 import LibraryFolders from '../components/library-folders'
-import SelectedMenu from '../components/selected-menu'
 import { useGameHome } from '../hooks/use-game-home'
 import { getLibraryFolderTitle } from '../lib/library-grouping'
 import { getGameCardList } from '@/api'
 import { Button } from '@/components/ui/button'
 import { Empty, EmptyDescription, EmptyTitle } from '@/components/ui/empty'
+import { useGameStatusNames } from '@/features/game/hooks/use-game-status-names'
 import AllGame from '@/features/home/components/all-game'
 import GameHomeSkeleton from '@/features/home/components/home-skeleton'
 import MyColletion from '@/features/home/components/my-collection'
 import PlayingGames from '@/features/home/components/playing-games'
+import { gameLibraryGridDisplayAtom } from '@/lib/settings/game-library-grid-display'
 import { gameLibraryGroupAtom } from '@/lib/settings/game-library-group'
 import { gameLibraryLayoutAtom } from '@/lib/settings/game-library-layout'
 
@@ -38,13 +39,23 @@ export default function GameHome({
   folderKey?: string
 }) {
   const layout = useAtomValue(gameLibraryLayoutAtom)
+  const gridDisplay = useAtomValue(gameLibraryGridDisplayAtom)
   const preferredGroup = useAtomValue(gameLibraryGroupAtom)
-  const activeFolder = layout === 'grid' ? folderKey : undefined
+  const isUngroupedGrid = layout === 'grid' && gridDisplay === 'ungrouped'
+  const activeFolder = layout === 'grid' && !isUngroupedGrid ? folderKey : undefined
   const groupBy = activeFolder === undefined ? preferredGroup : linkedGroup
-  const foldersOnly = layout === 'grid' && activeFolder === undefined
+  const isGroupedGridRoot = layout === 'grid' && !isUngroupedGrid && activeFolder === undefined
+  const showSections = gridDisplay === 'sections'
+  const { data: statusNames } = useGameStatusNames()
   const folderTitle =
-    activeFolder === undefined ? undefined : getLibraryFolderTitle(groupBy, activeFolder)
-  const home = useGameHome({ groupBy, folderKey: activeFolder, foldersOnly })
+    activeFolder === undefined
+      ? undefined
+      : getLibraryFolderTitle(groupBy, activeFolder, statusNames)
+  const home = useGameHome({
+    groupBy,
+    folderKey: activeFolder,
+    foldersOnly: isGroupedGridRoot && !showSections,
+  })
 
   if (home.gameCardsQuery.isLoading || home.collectionsQuery.isLoading) {
     return <GameHomeSkeleton />
@@ -77,7 +88,10 @@ export default function GameHome({
     )
   }
 
-  if (layout === 'mixed' && home.gameCards.length === 0 && home.collections.length === 0) {
+  if (
+    home.gameCards.length === 0 &&
+    (isUngroupedGrid || (layout === 'mixed' && home.collections.length === 0))
+  ) {
     return (
       <GameHomeEmptyState
         title="暂无游戏"
@@ -95,17 +109,28 @@ export default function GameHome({
       {activeFolder !== undefined ? (
         <Button asChild variant="outline" size="sm">
           <Link href="/game/home">
-            <ArrowLeftIcon /> 返回文件夹
+            <ArrowLeftIcon /> {showSections ? '返回游戏库' : '返回文件夹'}
           </Link>
         </Button>
       ) : null}
-      {foldersOnly ? (
+      {isGroupedGridRoot ? (
         <LibraryFolders
           games={home.gameCards}
           collections={home.collections}
           groupBy={groupBy}
+          showSections={showSections}
+          selectedGameIds={home.selectedGameIds}
+          selectionMode={home.selectionMode}
+          onToggleSelect={home.handleToggleSelect}
           onCreate={() => home.setCreateCollectionOpen(true)}
           onDelete={home.handleRequestDeleteCollection}
+        />
+      ) : isUngroupedGrid ? (
+        <AllGame
+          gameCards={home.visibleGames}
+          selectedGameIds={home.selectedGameIds}
+          selectionMode={home.selectionMode}
+          onToggleSelect={home.handleToggleSelect}
         />
       ) : activeFolder !== undefined ? (
         home.visibleGames.length ? (
@@ -148,51 +173,7 @@ export default function GameHome({
         </>
       )}
 
-      {home.selectionMode ? (
-        <SelectedMenu
-          selectedCount={home.selectedCount}
-          selectedGameIds={home.selectedGameIds}
-          allGameIds={home.allGameIds}
-          isAddingToCollection={home.isAddingToCollection}
-          isMarkingNsfw={home.isMarkingNsfw}
-          isDeletingGames={home.isDeletingGames}
-          collections={home.collections}
-          setCreateCollectionOpen={home.setCreateCollectionOpen}
-          setMetadataDialogOpen={home.setMetadataDialogOpen}
-          setMergeDialogOpen={home.setMergeDialogOpen}
-          setDeleteConfirmOpen={home.setDeleteConfirmOpen}
-          handleAddToCollection={home.handleAddToCollection}
-          handleBatchNsfw={home.handleBatchNsfw}
-          handleCancelSelection={home.handleCancelSelection}
-          handleSelectAll={home.handleSelectAll}
-        />
-      ) : null}
-
-      <HomeActionDialogs
-        selectedGameIds={home.selectedGameIds}
-        selectedCount={home.selectedCount}
-        selectedCollectionCount={home.selectedCollectionIds.length}
-        gameCards={home.gameCards}
-        deleteConfirmOpen={home.deleteConfirmOpen}
-        isDeletingGames={home.isDeletingGames}
-        onDeleteConfirmOpenChange={home.setDeleteConfirmOpen}
-        onDeleteGames={() => void home.handleDeleteGames()}
-        deleteCollectionsConfirmOpen={home.deleteCollectionsConfirmOpen}
-        isDeletingCollections={home.isDeletingCollections}
-        onDeleteCollectionsConfirmOpenChange={home.setDeleteCollectionsConfirmOpen}
-        onDeleteCollections={() => void home.handleDeleteCollections()}
-        createCollectionOpen={home.createCollectionOpen}
-        newCollectionName={home.newCollectionName}
-        isAddingToCollection={home.isAddingToCollection}
-        onCreateCollectionOpenChange={home.setCreateCollectionOpen}
-        onNewCollectionNameChange={home.setNewCollectionName}
-        onCreateCollectionAndAdd={() => void home.handleCreateCollectionAndAdd()}
-        metadataDialogOpen={home.metadataDialogOpen}
-        onMetadataDialogOpenChange={home.setMetadataDialogOpen}
-        mergeDialogOpen={home.mergeDialogOpen}
-        onMergeDialogOpenChange={home.setMergeDialogOpen}
-        onClearSelection={home.handleCancelSelection}
-      />
+      <GameHomeActions home={home} />
     </div>
   )
 }

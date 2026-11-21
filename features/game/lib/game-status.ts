@@ -1,9 +1,15 @@
-// 游戏游玩状态的统一定义，与 GamePlayTable.status 字段一一对应
+import type { GameStatusNames } from '@/types/game'
+
+export type { GameStatusNames } from '@/types/game'
+
+// 既有游戏库使用的初始状态。
 export const GAME_PLAY_STATUS_OPTIONS = [0, 1, 2, 3, 4, 5] as const
 
-export type GamePlayStatus = (typeof GAME_PLAY_STATUS_OPTIONS)[number]
+export type GamePlayStatus = number
+export const UNKNOWN_GAME_STATUS = -1
+export const GAME_STATUS_NAME_MAX_LENGTH = 24
 
-export const gamePlayStatusLabelMap: Record<number, string> = {
+export const gamePlayStatusLabelMap: GameStatusNames = {
   0: '未开始',
   1: '游玩中',
   2: '部分完成',
@@ -14,16 +20,29 @@ export const gamePlayStatusLabelMap: Record<number, string> = {
 
 // 状态指示点颜色默认值由 `lib/settings/status-settings.ts` 提供，可在「设置 - 外观」中自定义
 
-export function normalizeGamePlayStatus(status?: number | null): GamePlayStatus {
-  const value = Number(status)
-  return gamePlayStatusLabelMap[value] ? (value as GamePlayStatus) : 0
+export function normalizeGamePlayStatus(status?: number | null, names = gamePlayStatusLabelMap) {
+  const value = status ?? 0
+  return Object.hasOwn(names, value) ? value : UNKNOWN_GAME_STATUS
 }
 
-export const getGamePlayStatusLabel = (status?: number | null) =>
-  gamePlayStatusLabelMap[normalizeGamePlayStatus(status)]
+export function normalizeGameStatusNames(input: unknown): GameStatusNames {
+  const names = { ...gamePlayStatusLabelMap }
+  if (!input || typeof input !== 'object') return names
 
-export const getGamePlayStatusOptions = () =>
-  GAME_PLAY_STATUS_OPTIONS.map((status) => ({
-    value: status,
-    label: gamePlayStatusLabelMap[status],
+  for (const status of GAME_PLAY_STATUS_OPTIONS) {
+    const name = (input as Partial<Record<GamePlayStatus, unknown>>)[status]
+    if (typeof name === 'string' && name.trim()) {
+      names[status] = name.trim().slice(0, GAME_STATUS_NAME_MAX_LENGTH)
+    }
+  }
+  return names
+}
+
+export const getGamePlayStatusLabel = (status?: number | null, names = gamePlayStatusLabelMap) =>
+  names[normalizeGamePlayStatus(status, names)] ?? '未知'
+
+export const getGamePlayStatusOptions = (names = gamePlayStatusLabelMap) =>
+  Object.entries(names).map(([status, label]) => ({
+    value: Number(status),
+    label,
   }))

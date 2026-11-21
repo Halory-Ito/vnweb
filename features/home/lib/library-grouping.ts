@@ -1,5 +1,6 @@
 import { getGamePlayStatusLabel, normalizeGamePlayStatus } from '@/features/game/lib/game-status'
 
+import type { GameStatusNames } from '@/features/game/lib/game-status'
 import type { GameCardListItem } from '@/types'
 
 export const LIBRARY_GROUP_LABELS = {
@@ -14,8 +15,12 @@ export function getLibraryGroup(value: unknown): LibraryGroup {
   return value === 'developer' || value === 'publisher' ? value : 'status'
 }
 
-export function getLibraryFolderKeys(game: GameCardListItem, group: LibraryGroup): string[] {
-  if (group === 'status') return [String(normalizeGamePlayStatus(game.status))]
+export function getLibraryFolderKeys(
+  game: GameCardListItem,
+  group: LibraryGroup,
+  statusNames?: GameStatusNames,
+): string[] {
+  if (group === 'status') return [String(normalizeGamePlayStatus(game.status, statusNames))]
 
   const names = new Set(
     (game[group] ?? '')
@@ -26,8 +31,12 @@ export function getLibraryFolderKeys(game: GameCardListItem, group: LibraryGroup
   return names.size ? [...names] : ['']
 }
 
-export function getLibraryFolderTitle(group: LibraryGroup, key: string) {
-  if (group === 'status') return getGamePlayStatusLabel(Number(key))
+export function getLibraryFolderTitle(
+  group: LibraryGroup,
+  key: string,
+  statusNames?: GameStatusNames,
+) {
+  if (group === 'status') return getGamePlayStatusLabel(Number(key), statusNames)
   return key || `未知${LIBRARY_GROUP_LABELS[group]}`
 }
 

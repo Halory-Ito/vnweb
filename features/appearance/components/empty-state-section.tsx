@@ -33,8 +33,10 @@ export function EmptyStateSection() {
           <ToggleGroupItem value="image">图片</ToggleGroupItem>
         </ToggleGroup>
       </div>
-      <div className="grid gap-5 lg:grid-cols-2">
+      <div hidden={settings.mode !== 'kaomoji'}>
         <EmptyStateListEditor itemKey="kaomoji" items={settings.kaomoji} />
+      </div>
+      <div hidden={settings.mode !== 'image'}>
         <EmptyStateListEditor itemKey="images" items={settings.images} />
       </div>
     </section>

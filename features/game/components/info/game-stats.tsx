@@ -4,6 +4,7 @@ import { ClockIcon, Gamepad2Icon, StarIcon, TimerResetIcon } from 'lucide-react'
 import { ReactNode } from 'react'
 
 import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card'
+import { useGameStatusNames } from '@/features/game/hooks/use-game-status-names'
 import { getGamePlayStatusLabel } from '@/features/game/lib/game-status'
 
 type GameStatsProps = {
@@ -81,6 +82,7 @@ export default function GameStats({
   onOpenRating,
   onOpenPlayStatus,
 }: GameStatsProps) {
+  const { data: statusNames } = useGameStatusNames()
   return (
     <div className="@container min-w-0">
       <div className="grid grid-cols-1 gap-3 @min-[15rem]:grid-cols-2 @min-[44rem]:grid-cols-4 @min-[44rem]:gap-4">
@@ -101,7 +103,7 @@ export default function GameStats({
           interactiveIcon
           icon={<Gamepad2Icon className="size-5" />}
           onClick={onOpenPlayStatus}
-          value={getGamePlayStatusLabel(playStatus)}
+          value={getGamePlayStatusLabel(playStatus, statusNames)}
         />
         <StatCard
           title="我的评分"

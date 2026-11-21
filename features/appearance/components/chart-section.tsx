@@ -68,12 +68,7 @@ export function ChartSection() {
 
   return (
     <div className="dark:border-input dark:bg-input/20 space-y-6 rounded-xl border p-6">
-      <div>
-        <p className="text-base font-semibold">图表</p>
-        <p className="text-muted-foreground mt-1 text-sm">
-          自定义图表的默认颜色和透明度，设置将应用到所有图表组件。
-        </p>
-      </div>
+      <p className="text-base font-semibold">图表</p>
 
       <div className="space-y-2">
         <div className="flex items-center justify-between">

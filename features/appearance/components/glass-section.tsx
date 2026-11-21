@@ -95,12 +95,7 @@ export function GlassSection() {
 
   return (
     <div className="dark:border-input dark:bg-input/20 space-y-6 rounded-xl border p-6">
-      <div>
-        <p className="text-base font-semibold">毛玻璃</p>
-        <p className="text-muted-foreground mt-1 text-sm">
-          调整全局毛玻璃模糊与透明度，设置将实时应用到所有页面。
-        </p>
-      </div>
+      <p className="text-base font-semibold">毛玻璃</p>
 
       <div className="space-y-2">
         <div className="flex items-center justify-between">

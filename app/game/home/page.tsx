@@ -1,6 +1,5 @@
 import { Metadata } from 'next'
 
-import { GAME_PLAY_STATUS_OPTIONS } from '@/features/game/lib/game-status'
 import { getLibraryGroup } from '@/features/home/lib/library-grouping'
 import GameHome from '@/features/home/views/game-home'
 
@@ -22,7 +21,11 @@ export default async function Home({
   const groupBy = getLibraryGroup(group)
   const folderKey =
     groupBy === 'status'
-      ? GAME_PLAY_STATUS_OPTIONS.map(String).find((value) => value === status)
+      ? typeof status === 'string' &&
+        /^(?:-1|0|[1-9]\d*)$/.test(status) &&
+        Number.isSafeInteger(Number(status))
+        ? status
+        : undefined
       : typeof folder === 'string'
         ? folder
         : undefined

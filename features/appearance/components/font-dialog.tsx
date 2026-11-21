@@ -7,12 +7,12 @@ import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Separator } from '@/components/ui/separator'
+import { Switch } from '@/components/ui/switch'
 import { useFontDialog } from '@/features/appearance/hooks/use-font-dialog'
 
 type FontDialogProps = {
@@ -34,47 +34,67 @@ export function FontDialog({
 
   return (
     <Dialog open={open} onOpenChange={dialog.handleOpenChange}>
-      <DialogContent className="sm:max-w-3xl">
+      <DialogContent
+        className="max-h-[calc(100dvh-2rem)] overflow-y-auto sm:max-w-3xl"
+        aria-describedby={undefined}
+      >
         <DialogHeader>
           <DialogTitle>选择字体</DialogTitle>
-          <DialogDescription>
-            跟随浏览器字体，或从本地字体文件导入预览；确认后应用到整个界面。
-          </DialogDescription>
         </DialogHeader>
 
         <div className="flex flex-col gap-4">
-          <BrowserFontPresets
-            selectedPath={dialog.previewFontPath}
-            onSelect={dialog.handleSelectBrowserFont}
-          />
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <label className="flex items-center gap-3 text-sm font-medium">
+              跟随浏览器字体设置
+              <Switch
+                checked={dialog.followsBrowser}
+                disabled={dialog.isImportingPath !== null}
+                onCheckedChange={dialog.handleChangeMode}
+              />
+            </label>
+            {dialog.followsBrowser ? (
+              <BrowserFontPresets
+                selectedPath={dialog.previewFontPath}
+                onSelect={dialog.handleSelectBrowserFont}
+              />
+            ) : null}
+          </div>
 
           <Separator />
 
-          <div className="grid gap-5 md:grid-cols-2">
-            <FontListPanel
-              fonts={dialog.localFonts}
-              isLoading={dialog.isLoadingFonts}
-              isImportingPath={dialog.isImportingPath}
-              sourceFilter={dialog.sourceFilter}
-              searchKeyword={dialog.searchKeyword}
-              onSourceFilterChange={dialog.setSourceFilter}
-              onSearchKeywordChange={dialog.setSearchKeyword}
-              onRefresh={() => void dialog.loadFonts()}
-              onImport={(font) => void dialog.handleImport(font)}
-            />
-            <FontPreviewPanel
-              fontPath={dialog.previewFontPath}
-              fontWeight={currentFontWeight}
-              label={dialog.previewFontName}
-            />
+          <div className={dialog.followsBrowser ? 'grid' : 'grid gap-5 md:grid-cols-2'}>
+            {dialog.followsBrowser ? null : (
+              <FontListPanel
+                fonts={dialog.localFonts}
+                isLoading={dialog.isLoadingFonts}
+                isImportingPath={dialog.isImportingPath}
+                selectedPath={dialog.selectedLocalPath}
+                sourceFilter={dialog.sourceFilter}
+                searchKeyword={dialog.searchKeyword}
+                onSourceFilterChange={dialog.setSourceFilter}
+                onSearchKeywordChange={dialog.setSearchKeyword}
+                onRefresh={() => void dialog.loadFonts()}
+                onImport={(font) => void dialog.handleImport(font)}
+              />
+            )}
+            <FontPreviewPanel fontPath={dialog.previewFontPath} fontWeight={currentFontWeight} />
           </div>
         </div>
 
         <DialogFooter>
-          <Button type="button" variant="outline" onClick={() => void dialog.handleCancel()}>
+          <Button
+            type="button"
+            variant="outline"
+            disabled={dialog.isImportingPath !== null}
+            onClick={() => void dialog.handleCancel()}
+          >
             取消
           </Button>
-          <Button type="button" onClick={() => void dialog.handleConfirm()}>
+          <Button
+            type="button"
+            disabled={!dialog.previewFontPath || dialog.isImportingPath !== null}
+            onClick={() => void dialog.handleConfirm()}
+          >
             使用该字体
           </Button>
         </DialogFooter>

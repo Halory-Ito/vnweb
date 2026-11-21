@@ -1,14 +1,16 @@
 'use client'
 
+import { useQuery } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
 
+import { getLocalFontDisplayName } from '../font-api'
 import { FontDialog } from './font-dialog'
 import { Button } from '@/components/ui/button'
 import { Slider } from '@/components/ui/slider'
 import {
   applyFontSettingsToDocument,
+  BROWSER_FONT_OPTIONS,
   DEFAULT_FONT_SETTINGS,
-  getBrowserFontLabel,
   normalizeFontSettings,
   notifyFontSettingsChanged,
   readFontSettings,
@@ -17,9 +19,11 @@ import {
 } from '@/lib/settings/font-settings'
 
 const getFontNameFromPath = (fontPath: string) => {
-  const browserFontLabel = getBrowserFontLabel(fontPath)
+  const browserFontLabel = BROWSER_FONT_OPTIONS.find(
+    (option) => option.fontPath === fontPath,
+  )?.shortLabel
   if (browserFontLabel) {
-    return `跟随浏览器 · ${browserFontLabel}`
+    return browserFontLabel
   }
 
   const normalized = fontPath.replace(/\\/g, '/')
@@ -31,6 +35,16 @@ const getFontNameFromPath = (fontPath: string) => {
 export function FontSection() {
   const [settings, setSettings] = useState(DEFAULT_FONT_SETTINGS)
   const [dialogOpen, setDialogOpen] = useState(false)
+  const filename = settings.fontPath.startsWith('/assets/fonts/')
+    ? settings.fontPath.slice('/assets/fonts/'.length)
+    : ''
+  const { data: localizedName } = useQuery({
+    queryKey: ['local-font-display-name', filename],
+    queryFn: () => getLocalFontDisplayName(filename),
+    enabled: Boolean(filename),
+    staleTime: Infinity,
+  })
+  const fontName = localizedName ?? getFontNameFromPath(settings.fontPath)
 
   useEffect(() => {
     const saved = readFontSettings()
@@ -52,16 +66,22 @@ export function FontSection() {
         <p className="text-base font-semibold">字体</p>
       </div>
 
-      <div className="flex items-center justify-between gap-4">
-        <div className="min-w-0">
-          <p className="text-sm font-medium">当前字体</p>
-          <p className="text-muted-foreground truncate text-xs" title={settings.fontPath}>
-            {getFontNameFromPath(settings.fontPath)}
-          </p>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className="text-sm">当前字体</p>
+        <div className="ml-auto flex max-w-full min-w-0 items-center justify-end gap-2">
+          <span className="text-muted-foreground min-w-0 truncate text-sm" title={fontName}>
+            {fontName}
+          </span>
+          <Button
+            type="button"
+            variant="outline"
+            className="shrink-0"
+            aria-label="重新选择字体"
+            onClick={() => setDialogOpen(true)}
+          >
+            重新选择
+          </Button>
         </div>
-        <Button type="button" variant="outline" onClick={() => setDialogOpen(true)}>
-          选择字体
-        </Button>
       </div>
 
       <div className="space-y-2">

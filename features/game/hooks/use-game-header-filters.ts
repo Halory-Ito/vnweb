@@ -5,14 +5,16 @@ import { useAtom } from 'jotai'
 import { useMemo } from 'react'
 
 import { GAME_HEADER_SELECT_FILTERS } from '../data/game-header-filters'
-import { GAME_PLAY_STATUS_OPTIONS, getGamePlayStatusLabel } from '../lib/game-status'
+import { UNKNOWN_GAME_STATUS, getGamePlayStatusOptions } from '../lib/game-status'
 import { getGameFilterOptions } from '@/api'
 import { defaultGameFilter, gameFilterAtom, gameSearchAtom } from '@/atom/global'
+import { useGameStatusNames } from '@/features/game/hooks/use-game-status-names'
 
 import type { GameFilterState } from '@/types'
 
 export function useGameHeaderFilters() {
   const [search, setSearch] = useAtom(gameSearchAtom)
+  const { data: statusNames } = useGameStatusNames()
   const [filter, setFilter] = useAtom(gameFilterAtom)
   const { data: filterOptions } = useQuery({
     queryKey: ['game-filter-options'],
@@ -25,10 +27,13 @@ export function useGameHeaderFilters() {
       {
         key: 'playStatus' as const,
         label: '游玩状态',
-        options: GAME_PLAY_STATUS_OPTIONS.map((status) => ({
-          value: String(status),
-          label: getGamePlayStatusLabel(status),
-        })),
+        options: [
+          ...getGamePlayStatusOptions(statusNames).map(({ value, label }) => ({
+            value: String(value),
+            label,
+          })),
+          { value: String(UNKNOWN_GAME_STATUS), label: '未知' },
+        ],
       },
       ...GAME_HEADER_SELECT_FILTERS.map(({ key, label, optionsKey }) => ({
         key,
@@ -36,7 +41,7 @@ export function useGameHeaderFilters() {
         options: (filterOptions?.[optionsKey] ?? []).map((value) => ({ value, label: value })),
       })),
     ],
-    [filterOptions],
+    [filterOptions, statusNames],
   )
 
   return {

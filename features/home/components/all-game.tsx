@@ -3,9 +3,8 @@ import { useState } from 'react'
 
 import { GameCardsData, SelectableGameProps } from '../views/game-home'
 import AreaHeader from './area-header'
-import GameHomeGrid from './game-home-grid'
+import SelectableGameGrid from './selectable-game-grid'
 import { Button } from '@/components/ui/button'
-import GameCard from '@/features/game/components/game-card'
 import { SortSelect } from '@/features/game/components/sort-select'
 
 type AllGameProps = SelectableGameProps & {
@@ -23,7 +22,7 @@ const AllGame = ({
   const [order, setOrder] = useState<string>('asc')
   const [orderBy, setOrderBy] = useState<string>('add_date')
 
-  const items: GameCardProps[] = [...gameCards]
+  const items = [...gameCards]
 
   items.sort((a, b) => {
     let compare = 0
@@ -74,18 +73,12 @@ const AllGame = ({
           </Button>
         </div>
       </div>
-      <GameHomeGrid>
-        {items.map((item) => (
-          <GameCard
-            key={item.id}
-            {...item}
-            isSelected={selectedGameIds.includes(item.id)}
-            showSelection
-            selectionMode={selectionMode}
-            onToggleSelect={onToggleSelect}
-          />
-        ))}
-      </GameHomeGrid>
+      <SelectableGameGrid
+        games={items}
+        selectedGameIds={selectedGameIds}
+        selectionMode={selectionMode}
+        onToggleSelect={onToggleSelect}
+      />
     </section>
   )
 }

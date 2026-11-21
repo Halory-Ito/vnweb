@@ -1,5 +1,6 @@
 export type LocalFontItem = {
   name: string
+  filename?: string
   path: string
   source: 'system' | 'user'
 }

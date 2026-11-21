@@ -2,7 +2,9 @@ import { desc, eq, sql } from 'drizzle-orm'
 import { NextRequest, NextResponse } from 'next/server'
 
 import { CollectionGameTable, CollectionTable, GameInfoTable, GamePlayTable } from '@/db/schema'
+import { normalizeGamePlayStatus } from '@/features/game/lib/game-status'
 import { db } from '@/lib/drizzle'
+import { readGameStatusSettings } from '@/lib/server/game-status-settings'
 
 import type { GameSidebarProps } from '@/types/game'
 
@@ -107,9 +109,9 @@ const getSidebarData = async (req: NextRequest) => {
       .leftJoin(GamePlayTable, eq(GamePlayTable.gameId, GameInfoTable.id))
       .orderBy(desc(GameInfoTable.id))
 
+    const statusNames = playStatus ? (await readGameStatusSettings()).names : undefined
     const filteredGames = allGames.filter((game) => {
       const title = game.nameCn || game.name
-      const statusValue = Number(game.playStatus ?? 0)
 
       if (search && !includesText(title, search) && !includesText(game.name, search)) {
         return false
@@ -123,7 +125,10 @@ const getSidebarData = async (req: NextRequest) => {
         return false
       }
 
-      if (playStatus && Number(playStatus) !== statusValue) {
+      if (
+        playStatus &&
+        Number(playStatus) !== normalizeGamePlayStatus(game.playStatus, statusNames)
+      ) {
         return false
       }
 

@@ -75,6 +75,12 @@ export const GameOstSongsTable = sqliteTable('game_ost_songs', {
   updatedAt: text().default(dayjs().toString()), // 更新时间
 })
 
+export const GameStatusTable = sqliteTable('game_status', {
+  id: int().primaryKey({ autoIncrement: true }),
+  name: text().notNull(),
+  color: text().notNull(),
+})
+
 // 游戏游玩表
 export const GamePlayTable = sqliteTable('game_play', {
   id: int().primaryKey({ autoIncrement: true }),
@@ -85,7 +91,7 @@ export const GamePlayTable = sqliteTable('game_play', {
   playCount: int().default(0), // 游戏游玩次数
   rating: int().default(0), // 游戏评分，0-10分
   lastLaunchedAt: text().default(''), // 上次游玩时间
-  status: int().default(0), // 游戏状态，0未开始、1游玩中、2部分完成、3已完成、4多周目、5搁置中
+  status: int().default(0), // 游戏状态 ID，-1 表示未知
   completedAt: text().default(''), // 完成时间（状态转为已完成/多周目时记录）
   pid: int().default(0), // 游戏进程ID
 })
