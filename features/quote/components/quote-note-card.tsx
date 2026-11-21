@@ -42,8 +42,9 @@ export const QuoteNoteCard = memo(function QuoteNoteCard({
     <article
       style={{ '--quote-note-color': theme.color } as CSSProperties}
       className={cn(
-        'group relative rounded-2xl border-2 px-5 pt-7 pb-4 transition-[transform,border-color,box-shadow] duration-200',
-        'hover:z-10 hover:-translate-y-1 hover:rotate-0 hover:shadow-md',
+        'group relative rounded-2xl border-2 px-5 pt-7 pb-4 will-change-transform',
+        'transition-[translate,rotate,scale,border-color,box-shadow,background-color] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none',
+        'hover:z-10 hover:-translate-y-1.5 hover:scale-[1.012] hover:rotate-0 hover:shadow-lg motion-reduce:hover:translate-y-0 motion-reduce:hover:scale-100',
         'border-(--quote-note-color)/40 bg-(--quote-note-color)/15 hover:border-(--quote-note-color)/70 dark:bg-(--quote-note-color)/20',
         theme.tilt,
       )}
@@ -53,6 +54,7 @@ export const QuoteNoteCard = memo(function QuoteNoteCard({
         aria-hidden="true"
         className={cn(
           'pointer-events-none absolute -top-2.5 left-1/2 h-5 w-16 -translate-x-1/2 -rotate-2 rounded-xs border',
+          'transition-[translate,rotate] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-y-0.5 group-hover:rotate-0 motion-reduce:transition-none',
           'border-(--quote-note-color)/40 bg-(--quote-note-color)/35',
         )}
       />
@@ -69,7 +71,7 @@ export const QuoteNoteCard = memo(function QuoteNoteCard({
       </span>
 
       {/* 悬浮操作胶囊 */}
-      <div className="bg-background/95 absolute top-2.5 right-2.5 flex items-center gap-0.5 rounded-full border px-1 py-0.5 opacity-0 shadow-xs transition-opacity duration-200 group-hover:opacity-100 focus-within:opacity-100 pointer-coarse:opacity-100">
+      <div className="bg-background/95 absolute top-2.5 right-2.5 flex translate-y-1 items-center gap-0.5 rounded-full border px-1 py-0.5 opacity-0 shadow-xs transition-[opacity,translate] duration-250 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-y-0 group-hover:opacity-100 focus-within:translate-y-0 focus-within:opacity-100 motion-reduce:transition-none pointer-coarse:translate-y-0 pointer-coarse:opacity-100">
         <Tooltip>
           <TooltipTrigger asChild>
             <Button

@@ -62,19 +62,13 @@ export function QuoteToolArea({
         <SearchIcon className="text-muted-foreground absolute top-1/2 left-3.5 size-4 -translate-y-1/2" />
       </motion.div>
 
-      <motion.div className="flex flex-wrap items-center gap-2.5" variants={itemVariants}>
-        <Button type="button" onClick={onCreate} variant="outline" className="rounded-full">
+      <motion.div className="flex flex-wrap items-center gap-2" variants={itemVariants}>
+        <Button type="button" onClick={onCreate} variant="outline">
           <PlusIcon />
           新增摘录
         </Button>
 
-        <Button
-          type="button"
-          onClick={onExport}
-          variant="outline"
-          className="rounded-full"
-          disabled={isExporting}
-        >
+        <Button type="button" onClick={onExport} variant="outline" disabled={isExporting}>
           {isExporting ? <Loader2Icon className="animate-spin" /> : <FileSpreadsheetIcon />}
           {isExporting ? '导出中...' : '导出 XLSX'}
         </Button>

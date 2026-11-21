@@ -1,8 +1,16 @@
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+
 import type { NextConfig } from 'next'
+
+const projectRoot = path.dirname(fileURLToPath(import.meta.url))
 
 const nextConfig: NextConfig = {
   /* config options here */
   // reactCompiler: true,
+  turbopack: {
+    root: projectRoot,
+  },
   experimental: {
     // 自动按需引入第三方包，大幅缩小打包体积
     optimizePackageImports: ['lucide-react', 'date-fns', '@radix-ui/react-icons', 'lodash-es'],
