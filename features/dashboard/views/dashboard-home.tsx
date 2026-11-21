@@ -97,8 +97,8 @@ export default function DashboardHome() {
   }
 
   return (
-    <div className="max-h-[100cqh] w-full overflow-x-hidden overflow-y-auto p-3 sm:p-4">
-      <div className="space-y-4">
+    <div className="h-full max-h-[100cqh] w-full overflow-x-hidden overflow-y-auto p-3 sm:p-4">
+      <div className="flex min-h-full flex-col gap-4">
         <RandomQuote
           quote={randomQuote.quote}
           isLoading={randomQuote.isLoading}

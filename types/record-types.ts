@@ -1,6 +1,7 @@
 export type RecordDayGame = {
   gameId: number
   title: string
+  cover: string
   seconds: number
   recordCount: number
 }

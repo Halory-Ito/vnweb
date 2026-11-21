@@ -21,6 +21,7 @@ export async function GET(request: NextRequest) {
         gameId: GameInfoTable.id,
         name: GameInfoTable.name,
         nameCn: GameInfoTable.nameCn,
+        cover: GameInfoTable.cover,
         playDate: GameRecordTable.playDate,
         playTime: GameRecordTable.playTime,
       })
@@ -41,6 +42,7 @@ export async function GET(request: NextRequest) {
       const game = games.get(row.gameId) ?? {
         gameId: row.gameId,
         title: row.nameCn || row.name || `游戏 ${row.gameId}`,
+        cover: row.cover ?? '',
         seconds: 0,
         recordCount: 0,
       }

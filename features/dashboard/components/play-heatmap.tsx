@@ -32,12 +32,12 @@ export default function PlayHeatmap({ year, periods, activeYear, onSelectYear }:
   const calendar = usePlayCalendar(activeYear, year.data?.days ?? [])
 
   return (
-    <Card variant="outline" className="@container gap-0 py-0">
-      <CardContent className="grid min-w-0 px-0 @min-[38rem]:grid-cols-[minmax(0,1.12fr)_minmax(0,1fr)]">
+    <Card variant="outline" className="@container flex-1 gap-0 py-0">
+      <CardContent className="grid min-w-0 flex-1 px-0 @min-[38rem]:grid-cols-2">
         <section
           aria-label="游玩月历"
           aria-busy={year.isFetching}
-          className="min-w-0 space-y-3 p-3 sm:p-4"
+          className="flex min-w-0 flex-col gap-3 p-3 sm:p-4"
         >
           <div className="flex flex-wrap items-center gap-2">
             <Select
@@ -81,27 +81,31 @@ export default function PlayHeatmap({ year, periods, activeYear, onSelectYear }:
           ) : !year.data ? (
             <HeatmapSkeleton />
           ) : (
-            <div className="grid grid-cols-7 gap-1">
-              {WEEKDAYS.map((label) => (
-                <span key={label} className="text-muted-foreground py-1 text-center text-xs">
-                  {label}
-                </span>
-              ))}
-              {calendar.cells.map((day, index) =>
-                day ? (
-                  <HeatmapDayCell
-                    key={day.date}
-                    day={day}
-                    color={color}
-                    level={getHeatmapLevel(day.seconds, calendar.thresholds)}
-                    isToday={day.date === calendar.todayKey}
-                    isSelected={day.date === calendar.date}
-                    onSelect={() => calendar.setSelectedDate(day.date)}
-                  />
-                ) : (
-                  <div key={index} aria-hidden="true" />
-                ),
-              )}
+            <div className="flex flex-1 flex-col gap-1">
+              <div className="grid grid-cols-7 gap-1">
+                {WEEKDAYS.map((label) => (
+                  <span key={label} className="text-muted-foreground py-1 text-center text-xs">
+                    {label}
+                  </span>
+                ))}
+              </div>
+              <div className="grid flex-1 auto-rows-fr grid-cols-7 gap-1">
+                {calendar.cells.map((day, index) =>
+                  day ? (
+                    <HeatmapDayCell
+                      key={day.date}
+                      day={day}
+                      color={color}
+                      level={getHeatmapLevel(day.seconds, calendar.thresholds)}
+                      isToday={day.date === calendar.todayKey}
+                      isSelected={day.date === calendar.date}
+                      onSelect={() => calendar.setSelectedDate(day.date)}
+                    />
+                  ) : (
+                    <div key={index} aria-hidden="true" />
+                  ),
+                )}
+              </div>
             </div>
           )}
         </section>

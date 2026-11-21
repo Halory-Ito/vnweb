@@ -34,7 +34,7 @@ export default function HeatmapDayCell({
       aria-pressed={isSelected}
       onClick={onSelect}
       className={cn(
-        'relative grid h-9 min-w-0 place-items-center rounded-md text-sm tabular-nums hover:brightness-110 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-ring sm:h-10',
+        'relative grid h-full min-h-9 min-w-0 place-items-center rounded-md text-sm tabular-nums hover:brightness-110 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-ring sm:min-h-10',
         level === 0 && 'bg-muted text-muted-foreground',
         isSelected && 'ring-foreground ring-2 ring-inset font-semibold',
       )}

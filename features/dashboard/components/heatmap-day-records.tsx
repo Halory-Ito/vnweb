@@ -1,4 +1,5 @@
 import { Clock3Icon } from 'lucide-react'
+import Image from 'next/image'
 import Link from 'next/link'
 
 import { formatHeatmapDayLabel, formatPlayDuration } from '../lib/format-utils'
@@ -46,14 +47,27 @@ export default function HeatmapDayRecords({ date, games, isError }: HeatmapDayRe
           <p>当天没有游玩记录</p>
         </div>
       ) : (
-        <ul className="max-h-64 divide-y overflow-y-auto">
+        <ul className="max-h-64 min-h-0 flex-1 divide-y overflow-y-auto @min-[38rem]:max-h-none">
           {games.map((game) => (
             <li key={game.gameId}>
               <Link
                 href={`/game/info/${game.gameId}`}
-                className="hover:bg-accent/50 focus-visible:outline-ring flex min-w-0 items-start justify-between gap-3 rounded-md px-2 py-2.5 focus-visible:outline-2 focus-visible:-outline-offset-2"
+                className="hover:bg-accent/50 focus-visible:outline-ring flex min-w-0 items-center gap-3.5 rounded-md px-2.5 py-3 transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2"
               >
-                <span className="min-w-0 text-sm font-medium wrap-anywhere">{game.title}</span>
+                <div className="bg-muted relative h-16 w-12 shrink-0 overflow-hidden rounded-md">
+                  {game.cover ? (
+                    <Image
+                      src={game.cover}
+                      alt={game.title}
+                      fill
+                      sizes="48px"
+                      className="object-cover"
+                    />
+                  ) : null}
+                </div>
+                <span className="min-w-0 flex-1 text-sm font-medium wrap-anywhere">
+                  {game.title}
+                </span>
                 <span className="text-muted-foreground shrink-0 text-right text-xs tabular-nums">
                   <span className="text-foreground block">{formatPlayDuration(game.seconds)}</span>
                   {game.recordCount} 条记录

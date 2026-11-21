@@ -194,7 +194,7 @@ vnweb 是一个面向视觉小说与本地单机游戏整理场景的 Web 管理
 
 ## 使用说明
 
-### 界面截图
+### 界面截图（更新于2026-11-21）
 
 主页仪表盘与最近访问
 
@@ -203,6 +203,10 @@ vnweb 是一个面向视觉小说与本地单机游戏整理场景的 Web 管理
 扫描目录与扫描状态
 
 ![扫描页][screenshot-scan]
+
+游戏库（文件夹布局、列表布局、网格布局、混合布局）
+
+![游戏库页面][screenshot-game-lib]
 
 游戏详情（资料 / 人物 / PV / OST / 记录 / 回忆 / 摘录 / 攻略）
 
@@ -365,3 +369,4 @@ Halory-Ito - [@Halory-Ito](https://github.com/Halory-Ito)
 [screenshot-guide]: images/攻略页.png
 [screenshot-quote]: images/摘录页.png
 [screenshot-settings]: images/设置页.png
+[screenshot-game-lib]: images/游戏库页面.png
