@@ -1,35 +1,14 @@
 import { api } from '@/lib/request-utils'
 
-export type ResourceCategory = 'image' | 'video' | 'audio' | 'font'
+import type { LocalResourcesResponse } from '@/types/local-resource'
 
-export type LocalResourceItem = {
-  id: string
-  name: string
-  relativePath: string
-  url: string
-  category: ResourceCategory
-  folder: string
-  extension: string
-  size: number
-  modifiedAt: string
-}
-
-export type ResourceCategorySummary = {
-  count: number
-  size: number
-}
-
-export type LocalResourceSummary = {
-  totalCount: number
-  totalSize: number
-  categories: Record<ResourceCategory, ResourceCategorySummary>
-}
-
-export type LocalResourcesResponse = {
-  summary: LocalResourceSummary
-  unusedSummary: LocalResourceSummary
-  items: LocalResourceItem[]
-}
+export type {
+  LocalResourceItem,
+  LocalResourceSummary,
+  LocalResourcesResponse,
+  ResourceCategory,
+  ResourceCategorySummary,
+} from '@/types/local-resource'
 
 export type DeleteLocalResourcesResult = {
   deleted: string[]

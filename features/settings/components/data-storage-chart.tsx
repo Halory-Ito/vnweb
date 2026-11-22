@@ -2,22 +2,17 @@
 
 import { RefreshCw, Trash2 } from 'lucide-react'
 import { useState } from 'react'
-import { Cell, Label, Pie, PieChart } from 'recharts'
 
-import { formatResourceSize } from '../lib/data-resource-utils'
+import { DataImageUsage } from './data-image-usage'
 import { DataStorageLegend } from './data-storage-legend'
+import { DataStorageOverview, PIE_COLORS } from './data-storage-overview'
 import { Button } from '@/components/ui/button'
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-  type ChartConfig,
-} from '@/components/ui/chart'
 import { Skeleton } from '@/components/ui/skeleton'
+import { cn } from '@/lib/utils'
 
 import type { ResourceChartDatum } from '../hooks/use-data-settings'
-import type { LocalResourceSummary, ResourceCategory } from '../settings-api'
+import type { LocalResourceSummary } from '../settings-api'
 
 type ResourceViewMode = 'all' | 'unused'
 
@@ -34,21 +29,6 @@ interface DataStorageChartProps {
   onRequestCleanup: () => void
 }
 
-const PIE_COLORS: Record<ResourceCategory, string> = {
-  image: 'var(--chart-1)',
-  video: 'var(--chart-2)',
-  audio: 'var(--chart-3)',
-  font: 'var(--chart-4)',
-}
-
-const pieChartConfig = {
-  size: { label: '占用空间' },
-  image: { label: '图片', color: PIE_COLORS.image },
-  video: { label: '视频', color: PIE_COLORS.video },
-  audio: { label: '音频', color: PIE_COLORS.audio },
-  font: { label: '字体', color: PIE_COLORS.font },
-} satisfies ChartConfig
-
 export function DataStorageChart({
   summary,
   unusedSummary,
@@ -62,10 +42,11 @@ export function DataStorageChart({
   onRequestCleanup,
 }: DataStorageChartProps) {
   const [viewMode, setViewMode] = useState<ResourceViewMode>('all')
+  const [imageUsageOpen, setImageUsageOpen] = useState(false)
   const activeSummary = viewMode === 'all' ? summary : unusedSummary
   const activeChartData = viewMode === 'all' ? chartData : unusedChartData
   const pieData = activeChartData.filter((item) => item.size > 0)
-  const totalSizeLabel = formatResourceSize(activeSummary.totalSize)
+  const showImageUsage = imageUsageOpen && activeSummary.categories.image.count > 0
 
   return (
     <Card variant="outline">
@@ -107,7 +88,7 @@ export function DataStorageChart({
         </CardAction>
       </CardHeader>
 
-      <CardContent>
+      <CardContent className="@container">
         {isError ? (
           <div className="flex flex-col items-start gap-3 py-4 text-sm">
             <span className="text-destructive">加载本地静态资源统计失败</span>
@@ -118,77 +99,48 @@ export function DataStorageChart({
         ) : isLoading ? (
           <Skeleton className="h-64 w-full rounded-lg" />
         ) : (
-          <div className="flex flex-col gap-4">
-            {pieData.length > 0 ? (
-              <ChartContainer config={pieChartConfig} className="mx-auto h-56 w-full max-w-xs">
-                <PieChart>
-                  <ChartTooltip
-                    content={
-                      <ChartTooltipContent
-                        hideLabel
-                        formatter={(_value, _name, item) => {
-                          const payload = item.payload as ResourceChartDatum
-                          return `${payload.label}：${formatResourceSize(payload.size)}（${payload.percent}%）`
-                        }}
-                      />
-                    }
-                  />
-                  <Pie
-                    data={pieData}
-                    dataKey="size"
-                    nameKey="label"
-                    innerRadius={60}
-                    outerRadius={88}
-                    paddingAngle={2}
-                    strokeWidth={2}
-                  >
-                    {pieData.map((entry) => (
-                      <Cell key={entry.category} fill={PIE_COLORS[entry.category]} />
-                    ))}
-                    <Label
-                      content={({ viewBox }) => {
-                        if (!viewBox || !('cx' in viewBox) || !('cy' in viewBox)) return null
-                        return (
-                          <text
-                            x={viewBox.cx}
-                            y={viewBox.cy}
-                            textAnchor="middle"
-                            dominantBaseline="middle"
-                          >
-                            <tspan
-                              x={viewBox.cx}
-                              y={viewBox.cy}
-                              className="fill-foreground text-base font-semibold"
-                            >
-                              {totalSizeLabel}
-                            </tspan>
-                            <tspan
-                              x={viewBox.cx}
-                              y={(viewBox.cy || 0) + 18}
-                              className="fill-muted-foreground text-xs"
-                            >
-                              {activeSummary.totalCount} 个文件
-                            </tspan>
-                          </text>
-                        )
-                      }}
-                    />
-                  </Pie>
-                </PieChart>
-              </ChartContainer>
-            ) : (
-              <div className="text-muted-foreground flex h-56 items-center justify-center text-sm">
-                {viewMode === 'unused' ? '暂无未使用的静态资源' : '暂无本地静态资源'}
-              </div>
+          <div
+            className={cn(
+              'grid grid-cols-[minmax(0,1fr)] @min-[36rem]:grid-rows-[auto] motion-safe:transition-[grid-template-columns,grid-template-rows,gap] motion-safe:duration-200 motion-safe:ease-[cubic-bezier(0.25,0.8,0.25,1)]',
+              showImageUsage
+                ? 'grid-rows-[auto_minmax(0,1fr)] gap-5 @min-[36rem]:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]'
+                : 'grid-rows-[auto_minmax(0,0fr)] gap-0 @min-[36rem]:grid-cols-[minmax(0,1fr)_minmax(0,0fr)]',
             )}
+          >
+            <div className="flex min-w-0 flex-col gap-4">
+              {pieData.length > 0 ? (
+                <DataStorageOverview
+                  pieData={pieData}
+                  totalSize={activeSummary.totalSize}
+                  totalCount={activeSummary.totalCount}
+                  imageUsageOpen={showImageUsage}
+                  onToggleImageUsage={() => setImageUsageOpen((open) => !open)}
+                />
+              ) : (
+                <div className="text-muted-foreground flex h-56 items-center justify-center text-sm">
+                  {viewMode === 'unused' ? '暂无未使用的静态资源' : '暂无本地静态资源'}
+                </div>
+              )}
 
-            <DataStorageLegend
-              items={activeChartData}
-              unusedSummary={unusedSummary}
-              showUnusedRow={viewMode === 'all'}
-              colors={PIE_COLORS}
-              onSelectUnused={() => setViewMode('unused')}
-            />
+              <DataStorageLegend
+                items={activeChartData}
+                unusedSummary={unusedSummary}
+                showUnusedRow={viewMode === 'all'}
+                colors={PIE_COLORS}
+                onSelectUnused={() => setViewMode('unused')}
+              />
+            </div>
+            <div
+              inert={!showImageUsage}
+              className={cn(
+                'min-h-0 min-w-0 overflow-clip motion-safe:transition-opacity motion-safe:duration-200 motion-safe:ease-[cubic-bezier(0.23,1,0.32,1)]',
+                showImageUsage ? 'opacity-100' : 'opacity-0',
+              )}
+            >
+              <div className="@min-[36rem]:min-w-64">
+                <DataImageUsage summary={activeSummary} />
+              </div>
+            </div>
           </div>
         )}
       </CardContent>

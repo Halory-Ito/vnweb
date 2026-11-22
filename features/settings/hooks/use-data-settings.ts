@@ -19,6 +19,7 @@ import {
 const EMPTY_SUMMARY: LocalResourceSummary = {
   totalCount: 0,
   totalSize: 0,
+  imagesByUsage: {},
   categories: {
     image: { count: 0, size: 0 },
     video: { count: 0, size: 0 },
