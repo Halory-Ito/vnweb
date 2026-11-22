@@ -4,8 +4,8 @@ import { useAtom } from 'jotai'
 import { ArrowDownIcon, ArrowUpIcon, PlusIcon, Trash2Icon } from 'lucide-react'
 import { useState } from 'react'
 
+import AppearanceColorInput from './appearance-color-input'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import {
   DEFAULT_FOLDER_PALETTE,
   folderPaletteAtom,
@@ -44,8 +44,7 @@ export default function FolderPaletteEditor() {
             <span className="text-muted-foreground w-6 text-center text-xs tabular-nums">
               {index + 1}
             </span>
-            <Input
-              type="color"
+            <AppearanceColorInput
               aria-label={`第 ${index + 1} 个颜色`}
               value={color}
               onChange={(event) =>
@@ -55,7 +54,6 @@ export default function FolderPaletteEditor() {
                   ),
                 )
               }
-              className="h-8 w-12 cursor-pointer p-1"
             />
             <span className="min-w-16 flex-1 text-xs tabular-nums">{color.toUpperCase()}</span>
             <div className="flex items-center gap-1">

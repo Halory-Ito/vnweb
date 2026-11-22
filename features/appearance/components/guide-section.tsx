@@ -1,5 +1,6 @@
 'use client'
 
+import AppearanceColorInput from './appearance-color-input'
 import { useGuideSettings } from '@/features/appearance/hooks/use-guide-settings'
 
 import type { GuideColorSettings } from '@/lib/settings/guide-settings'
@@ -24,12 +25,11 @@ export function GuideSection() {
             <span className="text-sm font-medium">{item.label}</span>
             <div className="flex items-center gap-2">
               <span className="text-muted-foreground text-sm">{draft[item.key]}</span>
-              <input
-                type="color"
+              <AppearanceColorInput
+                aria-label={`${item.label}颜色`}
                 value={draft[item.key]}
                 onChange={(e) => updateDraft(item.key, e.target.value)}
                 onBlur={() => confirmColor(item.key)}
-                className="border-input h-8 w-8 cursor-pointer rounded border"
               />
             </div>
           </div>

@@ -2,6 +2,7 @@
 
 import { PlusIcon, Trash2Icon } from 'lucide-react'
 
+import AppearanceColorInput from './appearance-color-input'
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -96,13 +97,11 @@ export function StatusSection() {
               />
               <div className="flex items-center gap-2">
                 <span className="text-muted-foreground text-sm">{color}</span>
-                <input
-                  type="color"
+                <AppearanceColorInput
                   aria-label={`${option.label}的状态颜色`}
                   value={color}
                   onChange={(event) => updateDraft(key, event.target.value)}
                   onBlur={() => void confirmColor(key)}
-                  className="border-input h-8 w-8 cursor-pointer rounded border"
                 />
                 <Button
                   type="button"
