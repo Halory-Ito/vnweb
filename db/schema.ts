@@ -332,3 +332,8 @@ export const RecentVisitTable = sqliteTable('recent_visit', {
   href: text().notNull(), // 访问路径
   visitedAt: text().default(''), // 访问时间
 })
+
+export const LibraryFolderLogoTable = sqliteTable('library_folder_logo', {
+  href: text().primaryKey(),
+  source: text(),
+})

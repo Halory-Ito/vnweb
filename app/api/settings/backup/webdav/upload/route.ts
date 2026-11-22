@@ -4,6 +4,8 @@ import { randomUUID } from 'node:crypto'
 import fs from 'node:fs'
 import path from 'node:path'
 
+import { LIBRARY_FOLDER_LOGO_DIRECTORY } from '@/lib/library-folder-logo-path'
+import { getLibraryFolderLogoDirectory } from '@/lib/server/library-folder-logo-files'
 import { createTask, finishTask, getTask, updateTask } from '@/lib/webdav-progress'
 import { getWebDAVConfig, WebDAVClient } from '@/lib/webdav-utils'
 
@@ -94,6 +96,9 @@ export async function POST(_req: NextRequest) {
     let totalSize = 0
     totalSize += await calculateSize(gameSaveDir)
     totalSize += (await fs.promises.stat(dbPath)).size
+    const logoDir = getLibraryFolderLogoDirectory()
+    const logoPath = fs.existsSync(logoDir) ? logoDir : undefined
+    if (logoPath) totalSize += await calculateSize(logoPath)
 
     // 创建上传任务
     const taskId = randomUUID()
@@ -104,7 +109,7 @@ export async function POST(_req: NextRequest) {
     task.message = '开始上传...'
 
     // 后台执行上传（不阻塞响应）
-    void runUpload(client, gameSaveDir, dbPath, backupDir, taskId, totalSize)
+    void runUpload(client, gameSaveDir, dbPath, backupDir, taskId, totalSize, logoPath)
 
     return NextResponse.json({
       data: {
@@ -127,6 +132,7 @@ async function runUpload(
   backupDir: string,
   taskId: string,
   totalSize: number,
+  logoPath?: string,
 ) {
   try {
     const updateProgress = (taskId: string, uploaded: number, currentFile: string) => {
@@ -158,6 +164,21 @@ async function runUpload(
       },
     )
     uploaded += await calculateSize(gameSaveDir)
+
+    if (logoPath) {
+      await client.uploadDirectory(
+        logoPath,
+        `${backupDir}/${LIBRARY_FOLDER_LOGO_DIRECTORY}`,
+        (loaded, _total, currentFile) => {
+          updateProgress(
+            taskId,
+            uploaded + loaded,
+            `${LIBRARY_FOLDER_LOGO_DIRECTORY}/${currentFile ?? ''}`,
+          )
+        },
+      )
+      uploaded += await calculateSize(logoPath)
+    }
 
     // 上传local.db文件
     const dbSize = (await fs.promises.stat(dbPath)).size

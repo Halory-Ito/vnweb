@@ -4,6 +4,11 @@ import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 
+import {
+  isLibraryFolderLogoFilename,
+  LIBRARY_FOLDER_LOGO_DIRECTORY,
+} from '@/lib/library-folder-logo-path'
+import { getLibraryFolderLogoDirectory } from '@/lib/server/library-folder-logo-files'
 import { getWebDAVConfig, WebDAVClient } from '@/lib/webdav-utils'
 
 // 获取数据库路径
@@ -68,11 +73,36 @@ async function backupLocalFiles(timestamp: string) {
     await fs.promises.copyFile(dbPath, backupDbPath)
   }
 
+  const logoDir = getLibraryFolderLogoDirectory()
+  if (fs.existsSync(logoDir)) {
+    await fs.promises.cp(logoDir, path.join(backupDir, LIBRARY_FOLDER_LOGO_DIRECTORY), {
+      recursive: true,
+    })
+  }
+
   return backupDir
 }
 
 // 覆盖本地文件
 async function restoreLocalFiles(remoteBasePath: string, client: WebDAVClient) {
+  const entries = await client.listDirectory(remoteBasePath)
+  if (
+    entries.some(
+      (entry) => entry.type === 'directory' && entry.basename === LIBRARY_FOLDER_LOGO_DIRECTORY,
+    )
+  ) {
+    const remoteLogoDir = `${remoteBasePath}/${LIBRARY_FOLDER_LOGO_DIRECTORY}`
+    const localLogoDir = getLibraryFolderLogoDirectory()
+    for (const file of await client.listDirectory(remoteLogoDir)) {
+      if (file.type === 'file' && isLibraryFolderLogoFilename(file.basename)) {
+        await client.downloadFile(
+          `${remoteLogoDir}/${file.basename}`,
+          path.join(localLogoDir, file.basename),
+        )
+      }
+    }
+  }
+
   // 覆盖游戏存档目录
   const gameSaveConfig = await getGameSaveConfig()
   if (gameSaveConfig.enabled && gameSaveConfig.directory) {

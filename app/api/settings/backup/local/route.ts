@@ -4,6 +4,8 @@ import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 
+import { LIBRARY_FOLDER_LOGO_DIRECTORY } from '@/lib/library-folder-logo-path'
+
 // 默认保留备份数量
 const BACKUP_KEEP_COUNT = 10
 
@@ -22,7 +24,16 @@ function getAssetsPath() {
 }
 
 // 需要包含的 assets 子目录
-const ASSET_DIRS = ['cover', 'bg', 'icon', 'logo', 'ost', 'characters', 'pv']
+const ASSET_DIRS = [
+  'cover',
+  'bg',
+  'icon',
+  'logo',
+  'ost',
+  'characters',
+  'pv',
+  LIBRARY_FOLDER_LOGO_DIRECTORY,
+]
 
 // 获取游戏存档配置
 async function getGameSaveConfig(): Promise<{

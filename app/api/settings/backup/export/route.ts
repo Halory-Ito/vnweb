@@ -4,6 +4,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import fs from 'node:fs'
 import path from 'node:path'
 
+import { LIBRARY_FOLDER_LOGO_DIRECTORY } from '@/lib/library-folder-logo-path'
+
 // 获取数据库路径
 function getDbPath() {
   const dbUrl = process.env.DB_FILE_NAME?.trim() || 'file:./local.db'
@@ -20,7 +22,16 @@ function getAssetsPath() {
 }
 
 // 需要包含的 assets 子目录
-const ASSET_DIRS = ['cover', 'bg', 'icon', 'logo', 'ost', 'characters', 'pv']
+const ASSET_DIRS = [
+  'cover',
+  'bg',
+  'icon',
+  'logo',
+  'ost',
+  'characters',
+  'pv',
+  LIBRARY_FOLDER_LOGO_DIRECTORY,
+]
 
 // 获取游戏存档配置
 async function getGameSaveConfig(): Promise<{
