@@ -21,6 +21,7 @@ import {
   updateFontConfigApi,
   writeFontSettings,
 } from '@/lib/settings/font-settings'
+import { gameCardRadiusAtom, gameCardTitleHiddenAtom } from '@/lib/settings/game-card-appearance'
 import { folderColorsAtom, folderPaletteAtom } from '@/lib/settings/game-library-folder-colors'
 import { folderLogosStorageAtom } from '@/lib/settings/game-library-folder-logos'
 import { gameLibraryGridDisplayAtom } from '@/lib/settings/game-library-grid-display'
@@ -108,6 +109,8 @@ export function useAppAppearance() {
             store.set(gameLibraryLayoutAtom, res.data.gameLibraryLayout)
             store.set(gameLibraryGridDisplayAtom, res.data.gameLibraryGridDisplay)
             store.set(gameLibraryGroupAtom, res.data.gameLibraryGroup)
+            store.set(gameCardTitleHiddenAtom, res.data.gameCardTitleHidden)
+            store.set(gameCardRadiusAtom, res.data.gameCardRadius)
             store.set(folderPaletteAtom, res.data.folderPalette)
             store.set(folderColorsAtom, res.data.folderColors)
             store.set(folderLogosStorageAtom, res.data.folderLogos)
@@ -122,6 +125,8 @@ export function useAppAppearance() {
           gameLibraryLayout: store.get(gameLibraryLayoutAtom),
           gameLibraryGridDisplay: store.get(gameLibraryGridDisplayAtom),
           gameLibraryGroup: store.get(gameLibraryGroupAtom),
+          gameCardTitleHidden: store.get(gameCardTitleHiddenAtom),
+          gameCardRadius: store.get(gameCardRadiusAtom),
           folderPalette: store.get(folderPaletteAtom),
           folderColors: store.get(folderColorsAtom),
           folderLogos: store.get(folderLogosStorageAtom),

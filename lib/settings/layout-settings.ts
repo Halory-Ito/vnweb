@@ -15,6 +15,8 @@ export type LayoutSettings = {
   gameLibraryLayout: GameLibraryLayout
   gameLibraryGridDisplay: GridDisplay
   gameLibraryGroup: LayoutLibraryGroup
+  gameCardTitleHidden: boolean
+  gameCardRadius: number
   folderPalette: string[]
   folderColors: Record<string, string>
   folderLogos: Record<string, string>
@@ -22,6 +24,7 @@ export type LayoutSettings = {
 
 export const DEFAULT_FOLDER_PALETTE = ['#5b85d6', '#4b9c8d', '#a17bd3', '#ce805d', '#bd6e94']
 export const MAX_FOLDER_PALETTE_SIZE = 16
+export const MAX_GAME_CARD_RADIUS = 40
 
 export const DEFAULT_LAYOUT_SETTINGS: LayoutSettings = {
   sidebarHidden: false,
@@ -30,6 +33,8 @@ export const DEFAULT_LAYOUT_SETTINGS: LayoutSettings = {
   gameLibraryLayout: 'mixed',
   gameLibraryGridDisplay: 'folders',
   gameLibraryGroup: 'status',
+  gameCardTitleHidden: false,
+  gameCardRadius: 10,
   folderPalette: DEFAULT_FOLDER_PALETTE,
   folderColors: {},
   folderLogos: {},
@@ -37,6 +42,12 @@ export const DEFAULT_LAYOUT_SETTINGS: LayoutSettings = {
 
 export const isFolderColor = (value: unknown): value is string =>
   typeof value === 'string' && /^#[0-9a-f]{6}$/i.test(value)
+
+export const isGameCardRadius = (value: unknown): value is number =>
+  typeof value === 'number' &&
+  Number.isInteger(value) &&
+  value >= 0 &&
+  value <= MAX_GAME_CARD_RADIUS
 
 export const isGameLibraryLayout = (value: unknown): value is GameLibraryLayout =>
   value === 'mixed' || value === 'grid'
@@ -88,6 +99,13 @@ export function normalizeLayoutSettings(
     gameLibraryGroup: isLayoutLibraryGroup(source.gameLibraryGroup)
       ? source.gameLibraryGroup
       : DEFAULT_LAYOUT_SETTINGS.gameLibraryGroup,
+    gameCardTitleHidden:
+      typeof source.gameCardTitleHidden === 'boolean'
+        ? source.gameCardTitleHidden
+        : DEFAULT_LAYOUT_SETTINGS.gameCardTitleHidden,
+    gameCardRadius: isGameCardRadius(source.gameCardRadius)
+      ? source.gameCardRadius
+      : DEFAULT_LAYOUT_SETTINGS.gameCardRadius,
     folderPalette: isFolderPalette(source.folderPalette)
       ? source.folderPalette
       : DEFAULT_LAYOUT_SETTINGS.folderPalette,

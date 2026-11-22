@@ -3,6 +3,7 @@ import {
   ChartSection,
   EmptyStateSection,
   FontSection,
+  GameCardSection,
   GlassSection,
   GuideSection,
   LayoutSection,
@@ -14,6 +15,7 @@ export default function AppearancePage() {
     <>
       <div className="space-y-6">
         <LayoutSection />
+        <GameCardSection />
         <EmptyStateSection />
         <FontSection />
         <StatusSection />

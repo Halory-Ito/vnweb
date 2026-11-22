@@ -7,7 +7,6 @@ export {
 export { default as CharacterQuotes } from './components/character-quotes'
 export { default as GameCard } from './components/game-card'
 export { default as GameSidebar } from './components/game-sidebar'
-export { default as GameStatusBadge } from './components/game-status-badge'
 export {
   BangumiImportDialog,
   GameAddButton,

@@ -11,6 +11,8 @@ const LAYOUT_KEYS: Array<keyof LayoutSettings> = [
   'gameLibraryLayout',
   'gameLibraryGridDisplay',
   'gameLibraryGroup',
+  'gameCardTitleHidden',
+  'gameCardRadius',
   'folderPalette',
   'folderColors',
   'folderLogos',

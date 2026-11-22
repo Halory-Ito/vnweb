@@ -1,45 +1,30 @@
 'use client'
 
-import { CalendarDaysIcon, CheckIcon, Clock3Icon, ImageOffIcon, PlayIcon } from 'lucide-react'
+import { useAtomValue } from 'jotai'
+import { CheckIcon, ImageOffIcon, PlayIcon } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useState } from 'react'
 import { toast } from 'sonner'
 
 import { useGameCardLaunch } from '../hooks/use-game-card-launch'
+import { useGameCardTitleColor } from '../hooks/use-game-card-title-color'
+import GameCardPlayInfo from './game-card-play-info'
 import GameExePathDialog from './game-exe-path-dialog'
-import GameStatusBadge from './game-status-badge'
 import { Button } from '@/components/ui/button'
+import { gameCardRadiusAtom, gameCardTitleHiddenAtom } from '@/lib/settings/game-card-appearance'
 
 export default function GameCard(props: GameCardProps) {
   const { gameHref, launch, isLaunching, exePathDialog } = useGameCardLaunch(props.id, props.href)
+  const titleColor = useGameCardTitleColor(props.status)
+  const titleHidden = useAtomValue(gameCardTitleHiddenAtom)
+  const radius = useAtomValue(gameCardRadiusAtom)
   const [imageError, setImageError] = useState(false)
   const showSelection = Boolean(props.showSelection)
   const isSelected = Boolean(props.isSelected)
   const selectionMode = Boolean(props.selectionMode)
   const modifierSelectEnabled = Boolean(props.modifierSelectEnabled)
   const showPlayInfo = props.showPlayInfo !== false
-  const formatPlayTime = (seconds: number) => {
-    const safeSeconds = Math.max(0, Number(seconds) || 0)
-    const hours = safeSeconds / 3600
-    return `${hours.toFixed(1)}h`
-  }
-
-  const formatLastRunDate = (value: string) => {
-    if (!value) {
-      return '-'
-    }
-    const date = new Date(value)
-    if (Number.isNaN(date.getTime())) {
-      return '-'
-    }
-
-    const year = date.getFullYear()
-    const month = String(date.getMonth() + 1).padStart(2, '0')
-    const day = String(date.getDate()).padStart(2, '0')
-    return `${year}-${month}-${day}`
-  }
-
   const handleLaunchAndOpen = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault()
     event.stopPropagation()
@@ -70,6 +55,7 @@ export default function GameCard(props: GameCardProps) {
     <>
       <Link
         href={gameHref}
+        aria-label={titleHidden ? props.title : undefined}
         className="group relative flex w-full flex-col items-center p-1"
         onClick={handleCardClick}
       >
@@ -89,7 +75,10 @@ export default function GameCard(props: GameCardProps) {
         ) : null}
 
         <div className="relative w-full">
-          <div className="relative aspect-3/4 w-full overflow-hidden rounded-lg shadow-lg transition-all duration-300 md:group-hover:shadow-2xl">
+          <div
+            className="relative aspect-3/4 w-full overflow-hidden shadow-lg transition-all duration-300 md:group-hover:shadow-2xl"
+            style={{ borderRadius: radius }}
+          >
             <div className="bg-primary/20 pointer-events-none absolute -inset-4 opacity-0 blur-3xl transition-opacity duration-500 md:group-hover:opacity-60" />
 
             {imageError ? (
@@ -115,24 +104,9 @@ export default function GameCard(props: GameCardProps) {
               />
             )}
 
-            <GameStatusBadge status={props.status} />
-
-            {showPlayInfo && (
-              <div className="absolute right-2 bottom-2 left-2 space-y-1 md:hidden">
-                <div className="flex items-center gap-1.5 rounded-md bg-black/60 px-2 py-1">
-                  <Clock3Icon className="size-3 text-white/80" />
-                  <span className="text-xs font-medium text-white">
-                    {formatPlayTime(props.playTime)}
-                  </span>
-                </div>
-                <div className="flex items-center gap-1.5 rounded-md bg-black/60 px-2 py-1">
-                  <CalendarDaysIcon className="size-3 shrink-0 text-white/80" />
-                  <span className="text-xs break-all text-white/90">
-                    {formatLastRunDate(props.lastRunAt)}
-                  </span>
-                </div>
-              </div>
-            )}
+            {showPlayInfo ? (
+              <GameCardPlayInfo playTime={props.playTime} lastRunAt={props.lastRunAt} mobile />
+            ) : null}
 
             {!selectionMode && (
               <div className="absolute inset-0 hidden flex-col items-center justify-center bg-linear-to-t from-black/90 via-black/50 to-transparent opacity-0 transition-opacity duration-300 md:flex md:group-hover:opacity-100">
@@ -149,37 +123,25 @@ export default function GameCard(props: GameCardProps) {
                   </Button>
                 )}
 
-                {showPlayInfo && (
-                  <div className="absolute right-3 bottom-3 left-3 space-y-1.5">
-                    {/* 游戏时长 */}
-                    <div className="flex items-center gap-1.5 rounded-md px-2 py-1">
-                      <Clock3Icon className="size-3 text-white/80" />
-                      <span className="text-xs font-medium text-white">
-                        {formatPlayTime(props.playTime)}
-                      </span>
-                    </div>
-                    {/* 上次游玩 */}
-                    <div className="flex items-center gap-1.5 rounded-md px-2 py-1">
-                      <CalendarDaysIcon className="size-3 text-white/80" />
-                      <span className="text-xs text-white/90">
-                        {formatLastRunDate(props.lastRunAt)}
-                      </span>
-                    </div>
-                  </div>
-                )}
+                {showPlayInfo ? (
+                  <GameCardPlayInfo playTime={props.playTime} lastRunAt={props.lastRunAt} />
+                ) : null}
               </div>
             )}
           </div>
         </div>
 
-        <div className="mt-2.5 w-full px-1">
-          <h3
-            className="md:group-hover:text-primary line-clamp-2 text-center text-sm leading-5 font-medium wrap-anywhere transition-colors"
-            title={props.title}
-          >
-            {props.title}
-          </h3>
-        </div>
+        {titleHidden ? null : (
+          <div className="mt-2.5 w-full px-1">
+            <h3
+              className="line-clamp-2 text-center text-sm leading-5 font-medium wrap-anywhere"
+              style={{ color: titleColor }}
+              title={props.title}
+            >
+              {props.title}
+            </h3>
+          </div>
+        )}
       </Link>
 
       {exePathDialog.open ? (
