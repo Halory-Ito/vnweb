@@ -1,12 +1,13 @@
 import { unstable_withStorageValidator } from 'jotai/utils'
 import { createJSONStorage } from 'jotai/vanilla/utils'
 
+import { isGameMetadataField, type GameMetadataField } from '@/lib/game-metadata-fields'
 import { api } from '@/lib/request-utils'
 import { isAppearanceImageSource } from '@/lib/settings/appearance-image'
 
-export type GameLibraryLayout = 'mixed' | 'grid'
+export type GameLibraryLayout = 'mixed' | 'grid' | 'hybrid'
 export type GridDisplay = 'folders' | 'sections' | 'ungrouped'
-export type LayoutLibraryGroup = 'status' | 'developer' | 'publisher'
+export type LayoutLibraryGroup = 'status' | GameMetadataField
 
 export type LayoutSettings = {
   sidebarHidden: boolean
@@ -50,13 +51,21 @@ export const isGameCardRadius = (value: unknown): value is number =>
   value <= MAX_GAME_CARD_RADIUS
 
 export const isGameLibraryLayout = (value: unknown): value is GameLibraryLayout =>
-  value === 'mixed' || value === 'grid'
+  value === 'mixed' || value === 'grid' || value === 'hybrid'
 
 export const isGridDisplay = (value: unknown): value is GridDisplay =>
   value === 'folders' || value === 'sections' || value === 'ungrouped'
 
 export const isLayoutLibraryGroup = (value: unknown): value is LayoutLibraryGroup =>
-  value === 'status' || value === 'developer' || value === 'publisher'
+  value === 'status' || isGameMetadataField(value)
+
+export function resolveLayoutLibraryGroup(
+  value: unknown,
+  legacyField?: unknown,
+): LayoutLibraryGroup {
+  if (value === 'custom') return isGameMetadataField(legacyField) ? legacyField : 'platforms'
+  return isLayoutLibraryGroup(value) ? value : DEFAULT_LAYOUT_SETTINGS.gameLibraryGroup
+}
 
 export const isFolderPalette = (value: unknown): value is string[] =>
   Array.isArray(value) && value.length <= MAX_FOLDER_PALETTE_SIZE && value.every(isFolderColor)
@@ -96,9 +105,7 @@ export function normalizeLayoutSettings(
     gameLibraryGridDisplay: isGridDisplay(source.gameLibraryGridDisplay)
       ? source.gameLibraryGridDisplay
       : DEFAULT_LAYOUT_SETTINGS.gameLibraryGridDisplay,
-    gameLibraryGroup: isLayoutLibraryGroup(source.gameLibraryGroup)
-      ? source.gameLibraryGroup
-      : DEFAULT_LAYOUT_SETTINGS.gameLibraryGroup,
+    gameLibraryGroup: resolveLayoutLibraryGroup(source.gameLibraryGroup, source.libraryGroupField),
     gameCardTitleHidden:
       typeof source.gameCardTitleHidden === 'boolean'
         ? source.gameCardTitleHidden

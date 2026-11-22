@@ -1,4 +1,3 @@
-import { useAtomValue } from 'jotai'
 import {
   FolderOpenIcon,
   ImageIcon,
@@ -28,7 +27,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
-import { folderLogosAtom } from '@/lib/settings/game-library-folder-logos'
 
 import type { GameCardsData } from '../views/game-home'
 
@@ -38,6 +36,8 @@ export default function LibraryFolderCard({
   games,
   paletteColor,
   canSetLogo,
+  logo,
+  localLogoOnly,
   onDelete,
 }: {
   title: string
@@ -45,13 +45,14 @@ export default function LibraryFolderCard({
   games: GameCardsData
   paletteColor?: string
   canSetLogo?: boolean
+  logo?: string
+  localLogoOnly?: boolean
   onDelete?: () => void
 }) {
   const [logoOpen, setLogoOpen] = useState(false)
-  const logos = useAtomValue(folderLogosAtom)
-  const logo = canSetLogo ? logos[href] : undefined
   const { color: customColor, open, setOpen, setColor, resetColor } = useLibraryFolderColor(href)
   const color = customColor ?? paletteColor
+  const folderLabel = onDelete ? '收藏夹' : '文件夹'
 
   return (
     <div className="relative min-w-0">
@@ -99,7 +100,7 @@ export default function LibraryFolderCard({
             variant="outline"
             size="icon-sm"
             className="absolute top-4 right-2"
-            aria-label={`管理文件夹：${title}`}
+            aria-label={`管理${folderLabel}：${title}`}
           >
             <MoreHorizontalIcon />
           </Button>
@@ -115,7 +116,7 @@ export default function LibraryFolderCard({
           </DropdownMenuItem>
           {onDelete ? (
             <DropdownMenuItem variant="destructive" onSelect={onDelete}>
-              <Trash2Icon /> 删除文件夹
+              <Trash2Icon /> 删除收藏夹
             </DropdownMenuItem>
           ) : null}
         </DropdownMenuContent>
@@ -125,18 +126,19 @@ export default function LibraryFolderCard({
           href={href}
           title={title}
           source={logo}
+          localOnly={localLogoOnly}
           onClose={() => setLogoOpen(false)}
         />
       ) : null}
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
-            <DialogTitle>文件夹颜色</DialogTitle>
+            <DialogTitle>{folderLabel}颜色</DialogTitle>
             <DialogDescription>{title}</DialogDescription>
           </DialogHeader>
           <Input
             type="color"
-            aria-label="选择文件夹颜色"
+            aria-label={`选择${folderLabel}颜色`}
             value={color ?? '#64748b'}
             onChange={(event) => setColor(event.target.value)}
             className="h-10 w-24 cursor-pointer p-1"

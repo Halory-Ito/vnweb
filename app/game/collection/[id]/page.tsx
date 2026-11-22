@@ -4,9 +4,6 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAtom, useAtomValue } from 'jotai'
 import {
   AlertCircle,
-  ArrowDownIcon,
-  ArrowLeftIcon,
-  ArrowUpIcon,
   CheckIcon,
   FolderPlusIcon,
   RefreshCcwIcon,
@@ -67,8 +64,11 @@ import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import GameBulkUpdateMetadataDialog from '@/features/game/components/dialog/game-bulk-update-metadata-dialog'
 import GameCard from '@/features/game/components/game-card'
-import { SortSelect } from '@/features/game/components/sort-select'
 import GameHomeGrid from '@/features/home/components/game-home-grid'
+import LibraryFolderHeader from '@/features/home/components/library-folder-header'
+import LibraryGameFilter from '@/features/home/components/library-game-filter'
+import LibraryGameSort from '@/features/home/components/library-game-sort'
+import { useCollectionGameControls } from '@/features/home/hooks/use-collection-game-controls'
 
 type CollectionEmptyStateProps = {
   icon: typeof AlertCircle
@@ -131,8 +131,6 @@ export default function CollectionDetailPage() {
   const params = useParams<{ id: string }>()
   const router = useRouter()
   const queryClient = useQueryClient()
-  const [order, setOrder] = useState<string>('asc')
-  const [orderBy, setOrderBy] = useState<string>('add_date')
   const [selectedGameIds, setSelectedGameIds] = useAtom(selectedGameIdsAtom)
   const showNsfw = useAtomValue(showNsfwAtom)
   const [isAddingToCollection, setIsAddingToCollection] = useState(false)
@@ -162,15 +160,13 @@ export default function CollectionDetailPage() {
 
   const collection = collections.find((item) => item.id === collectionId)
   const otherCollections = collections.filter((item) => item.id !== collectionId)
-  const visibleGames = useMemo(
-    () => (collection?.games ?? []).filter((game) => showNsfw || !game.nsfw),
-    [collection, showNsfw],
-  )
-
-  const collectionGameIds = useMemo(
-    () => visibleGames.map((item) => String(item.id)),
-    [visibleGames],
-  )
+  const {
+    filters,
+    sortControls,
+    items: sortedGames,
+    gameIds: collectionGameIds,
+    hasGames,
+  } = useCollectionGameControls(collection, showNsfw)
   const collectionGameIdSet = useMemo(() => new Set(collectionGameIds), [collectionGameIds])
 
   const selectedInCollection = useMemo(
@@ -179,36 +175,6 @@ export default function CollectionDetailPage() {
   )
 
   const selectionMode = selectedInCollection.length > 0
-
-  const sortedGames = useMemo(() => {
-    const games = [...visibleGames]
-    games.sort((a, b) => {
-      let compare = 0
-      switch (orderBy) {
-        case 'name':
-          compare = a.name.localeCompare(b.name)
-          break
-        case 'public_date':
-          compare = new Date(a.date).getTime() - new Date(b.date).getTime()
-          break
-        case 'last_run':
-          compare = new Date(a.lastRunAt).getTime() - new Date(b.lastRunAt).getTime()
-          break
-        case 'add_date':
-          compare = new Date(a.addedAt).getTime() - new Date(b.addedAt).getTime()
-          break
-        case 'play_time':
-          compare = a.playTime - b.playTime
-          break
-        case 'rating':
-          compare = a.rating - b.rating
-          break
-      }
-      return order === 'asc' ? compare : -compare
-    })
-
-    return games
-  }, [visibleGames, order, orderBy])
 
   const refreshAll = async () => {
     await queryClient.invalidateQueries({ queryKey: ['collections'] })
@@ -258,7 +224,7 @@ export default function CollectionDetailPage() {
         response?: { data?: { error?: string } }
         message?: string
       }
-      toast.error(err.response?.data?.error || err.message || '添加合集失败')
+      toast.error(err.response?.data?.error || err.message || '添加到收藏夹失败')
     } finally {
       setIsAddingToCollection(false)
     }
@@ -267,7 +233,7 @@ export default function CollectionDetailPage() {
   const handleCreateCollectionAndAdd = async () => {
     const collectionName = newCollectionName.trim()
     if (!collectionName) {
-      toast.error('请输入新合集名称')
+      toast.error('请输入新收藏夹名称')
       return
     }
 
@@ -395,38 +361,27 @@ export default function CollectionDetailPage() {
 
   return (
     <div className="@container/library h-[100cqh] w-full min-w-0 overflow-y-auto p-3 sm:p-4">
-      <div className="mb-4 flex flex-wrap items-center gap-2">
-        <Button asChild variant="outline" size="icon" aria-label="返回游戏库">
-          <Link href="/game/home">
-            <ArrowLeftIcon />
-          </Link>
-        </Button>
-        <h1 className="mr-auto min-w-0 text-lg font-bold wrap-anywhere">{collection.name}</h1>
-        <SortSelect orderBy={orderBy} setOrderBy={setOrderBy} />
-        <Button
-          variant="outline"
-          size="icon"
-          aria-label={order === 'asc' ? '切换为降序' : '切换为升序'}
-          onClick={() => setOrder(order === 'asc' ? 'desc' : 'asc')}
-        >
-          {order === 'asc' ? <ArrowDownIcon /> : <ArrowUpIcon />}
-        </Button>
-      </div>
+      <LibraryFolderHeader title={collection.name} className="mb-4">
+        <div className="flex flex-wrap items-center gap-2">
+          <LibraryGameFilter {...filters} />
+          <LibraryGameSort {...sortControls} />
+        </div>
+      </LibraryFolderHeader>
 
       {sortedGames.length === 0 ? (
         <div className="text-muted-foreground flex flex-col items-center gap-2 py-10 text-center text-sm">
           <EmptyArtwork />
-          <p>文件夹内暂无游戏</p>
+          <p>{hasGames ? '没有符合条件的游戏' : '收藏夹内暂无游戏'}</p>
         </div>
       ) : (
         <GameHomeGrid>
-          {sortedGames.map((game) => (
+          {sortedGames.map(({ game, title }) => (
             <ContextMenu key={game.linkId}>
               <ContextMenuTrigger asChild>
                 <div>
                   <GameCard
                     id={String(game.id)}
-                    title={game.name}
+                    title={title}
                     cover={game.cover || '/cover/wa2.jpg'}
                     href={`/game/info/${game.id}`}
                     publishAt={game.date}
@@ -483,12 +438,12 @@ export default function CollectionDetailPage() {
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="sm" disabled={isAddingToCollection}>
                   <FolderPlusIcon className="size-4" />
-                  添加到合集
+                  添加到收藏夹
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent>
                 {collections.length === 0 ? (
-                  <DropdownMenuItem disabled>暂无合集</DropdownMenuItem>
+                  <DropdownMenuItem disabled>暂无收藏夹</DropdownMenuItem>
                 ) : (
                   collections.map((item) => (
                     <DropdownMenuItem
@@ -504,7 +459,7 @@ export default function CollectionDetailPage() {
                     setCreateCollectionOpen(true)
                   }}
                 >
-                  + 新建合集
+                  + 新建收藏夹
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -555,15 +510,15 @@ export default function CollectionDetailPage() {
       >
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
-            <DialogTitle>新建合集</DialogTitle>
+            <DialogTitle>新建收藏夹</DialogTitle>
             <DialogDescription className="sr-only">
-              输入合集名称后创建，创建完成后可把游戏加入该合集
+              输入收藏夹名称，创建后可将游戏添加到收藏夹。
             </DialogDescription>
           </DialogHeader>
           <Input
             value={newCollectionName}
             onChange={(event) => setNewCollectionName(event.target.value)}
-            placeholder="请输入合集名称"
+            placeholder="请输入收藏夹名称"
           />
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => setCreateCollectionOpen(false)}>

@@ -1,5 +1,6 @@
 import { api } from '@/lib/request-utils'
 
+import type { LayoutLibraryGroup } from '@/lib/settings/layout-settings'
 import type {
   GameCardListItem,
   GameDetail,
@@ -287,26 +288,18 @@ export const batchUpdateGameMetadata = async (payload: {
 
 export const getGameSidebarData = async (payload: {
   search: string
-  filter: GameFilterState
+  filter?: GameFilterState
+  group?: LayoutLibraryGroup
   includeNsfw?: boolean
 }) => {
   const params = new URLSearchParams()
   const includeNsfw = payload.includeNsfw ?? true
   params.set('search', payload.search)
+  if (payload.group) params.set('group', payload.group)
   params.set('includeNsfw', String(includeNsfw))
-  params.set('releaseDateFrom', payload.filter.releaseDateFrom)
-  params.set('releaseDateTo', payload.filter.releaseDateTo)
-  params.set('playStatus', payload.filter.playStatus)
-  params.set('developer', payload.filter.developer)
-  params.set('publisher', payload.filter.publisher)
-  params.set('category', payload.filter.category)
-  params.set('platform', payload.filter.platform)
-  params.set('tags', payload.filter.tags)
-  params.set('originalPainter', payload.filter.originalPainter)
-  params.set('script', payload.filter.script)
-  params.set('music', payload.filter.music)
-  params.set('engine', payload.filter.engine)
-  params.set('planning', payload.filter.planning)
+  for (const [key, value] of Object.entries(payload.filter ?? {})) {
+    if (value) params.set(key, value)
+  }
   const response = await api.get(`/game/sidebar?${params.toString()}`)
   return (
     response.data as {

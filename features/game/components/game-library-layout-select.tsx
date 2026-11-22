@@ -27,8 +27,9 @@ export default function GameLibraryLayoutSelect({ id }: { id?: string }) {
       </SelectTrigger>
       <SelectContent>
         <SelectGroup>
-          <SelectItem value="mixed">列表 + 网格</SelectItem>
-          <SelectItem value="grid">网格布局</SelectItem>
+          <SelectItem value="mixed">列表</SelectItem>
+          <SelectItem value="grid">网格</SelectItem>
+          <SelectItem value="hybrid">混合</SelectItem>
         </SelectGroup>
       </SelectContent>
     </Select>

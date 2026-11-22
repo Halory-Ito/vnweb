@@ -1,26 +1,56 @@
-import { useSetAtom } from 'jotai'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { isAxiosError } from 'axios'
 import { useState } from 'react'
 
+import { saveLibraryFolderLogo } from '../library-folder-logo-api'
+import { libraryFolderLogosQuery } from './use-library-folder-logos'
+import { isLibraryFolderLogoFile } from '@/lib/library-folder-logo-path'
 import { isAppearanceImageUrl, readLocalAppearanceImage } from '@/lib/settings/appearance-image'
-import { folderLogosAtom } from '@/lib/settings/game-library-folder-logos'
+
+type LogoSource = 'remote' | 'local'
 
 export function useLibraryFolderLogo(
   href: string,
   source: string | undefined,
   onClose: () => void,
+  localOnly: boolean,
 ) {
-  const updateLogo = useSetAtom(folderLogosAtom)
-  const [url, setUrl] = useState(source?.startsWith('data:') ? '' : (source ?? ''))
-  const [localSource, setLocalSource] = useState(source?.startsWith('data:') ? source : undefined)
+  const queryClient = useQueryClient()
+  const isEmbedded = source?.startsWith('data:')
+  const isLocal = isEmbedded || isLibraryFolderLogoFile(source)
+  const [mode, setMode] = useState<LogoSource>(localOnly || isLocal ? 'local' : 'remote')
+  const [url, setUrl] = useState(isLocal ? '' : (source ?? ''))
+  const [localSource, setLocalSource] = useState(isEmbedded ? source : undefined)
+  const [download, setDownload] = useState(false)
   const [isReading, setIsReading] = useState(false)
   const [error, setError] = useState('')
+  const mutation = useMutation({
+    mutationFn: saveLibraryFolderLogo,
+    onMutate: () => queryClient.cancelQueries({ queryKey: libraryFolderLogosQuery.queryKey }),
+    onSuccess({ href, source }) {
+      queryClient.setQueryData(libraryFolderLogosQuery.queryKey, (current) => {
+        const next = { ...current }
+        if (source === null) delete next[href]
+        else next[href] = source
+        return next
+      })
+      void queryClient.invalidateQueries({ queryKey: libraryFolderLogosQuery.queryKey })
+      onClose()
+    },
+    onError(cause) {
+      const message = isAxiosError<{ error?: string }>(cause)
+        ? cause.response?.data?.error
+        : undefined
+      setError(message || '无法保存 LOGO。')
+    },
+  })
 
   async function chooseFile(file: File) {
     setIsReading(true)
     setError('')
+    setLocalSource(undefined)
     try {
       setLocalSource(await readLocalAppearanceImage(file))
-      setUrl('')
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : '无法读取图片。')
     } finally {
@@ -30,23 +60,45 @@ export function useLibraryFolderLogo(
 
   function updateUrl(value: string) {
     setUrl(value)
-    setLocalSource(undefined)
     setError('')
   }
 
-  function save(remove = false) {
-    const value = url.trim()
-    if (!remove && !localSource && !isAppearanceImageUrl(value)) {
-      setError('请输入 HTTP、HTTPS 图片链接或站内图片路径。')
-      return
-    }
-    try {
-      updateLogo(href, remove ? undefined : (localSource ?? value))
-      onClose()
-    } catch (cause) {
-      setError(cause instanceof Error ? cause.message : '无法保存 LOGO。')
+  function updateMode(value: string) {
+    if (value === 'local' || value === 'remote') {
+      setMode(value)
+      setError('')
     }
   }
 
-  return { url, localSource, isReading, error, updateUrl, chooseFile, save }
+  const busy = isReading || mutation.isPending
+  const value = mode === 'local' ? localSource : url.trim()
+
+  function save(remove = false) {
+    if (busy) return
+    if (remove) {
+      mutation.mutate({ href, source: null })
+      return
+    }
+    if (!value) return
+    if (mode === 'remote' && !isAppearanceImageUrl(value)) {
+      setError('请输入有效的图片链接。')
+      return
+    }
+    setError('')
+    mutation.mutate({ href, source: value, download: mode === 'remote' && download })
+  }
+
+  return {
+    mode,
+    url,
+    download,
+    busy,
+    error,
+    canSave: Boolean(value),
+    updateMode,
+    updateUrl,
+    setDownload,
+    chooseFile,
+    save,
+  }
 }

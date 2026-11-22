@@ -42,10 +42,10 @@ export function LayoutSection() {
         <Label htmlFor="game-library-layout">游戏库布局</Label>
         <GameLibraryLayoutSelect id="game-library-layout" />
       </div>
-      <GridDisplaySetting />
-      {gridDisplay !== 'ungrouped' ? (
+      {layout === 'grid' ? <GridDisplaySetting /> : null}
+      {layout !== 'grid' || gridDisplay !== 'ungrouped' ? (
         <div className="flex min-h-8 flex-wrap items-center justify-between gap-3">
-          <Label htmlFor="game-library-group">网格分类依据</Label>
+          <Label htmlFor="game-library-group">分类依据</Label>
           <LibraryGroupSelect id="game-library-group" />
         </div>
       ) : null}

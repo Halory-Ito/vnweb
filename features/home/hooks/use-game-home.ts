@@ -7,6 +7,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 
 import { getLibraryFolderKeys } from '../lib/library-grouping'
+import { useLibraryGameFilters } from './use-library-game-filters'
 import {
   addGameToCollection,
   batchMarkNsfw,
@@ -33,10 +34,16 @@ export function useGameHome({
   groupBy,
   folderKey,
   foldersOnly,
+  showGameFilters,
+  listGameIds,
+  keyword,
 }: {
   groupBy: LibraryGroup
   folderKey?: string
   foldersOnly: boolean
+  showGameFilters: boolean
+  listGameIds?: string[]
+  keyword: string
 }) {
   const router = useRouter()
   const queryClient = useQueryClient()
@@ -67,9 +74,6 @@ export function useGameHome({
   })
 
   const gameCards = gameCardsQuery.data ?? []
-  const playingGames = gameCards
-    .filter((game) => game.status === 1)
-    .sort((a, b) => (Date.parse(b.lastRunAt) || 0) - (Date.parse(a.lastRunAt) || 0))
   const collections = collectionsQuery.data ?? []
   const visibleGames = useMemo(() => {
     const games = gameCardsQuery.data ?? []
@@ -78,7 +82,12 @@ export function useGameHome({
       ? games
       : games.filter((game) => getLibraryFolderKeys(game, groupBy, statusNames).includes(folderKey))
   }, [groupBy, folderKey, foldersOnly, gameCardsQuery.data, statusNames])
-  const allGameIds = useMemo(() => visibleGames.map((item) => item.id), [visibleGames])
+  const gameFilters = useLibraryGameFilters(visibleGames, keyword, statusNames)
+  const selectableGames = showGameFilters ? gameFilters.filteredGames : visibleGames
+  const allGameIds = useMemo(
+    () => listGameIds ?? selectableGames.map(({ id }) => id),
+    [listGameIds, selectableGames],
+  )
   const visibleIds = useMemo(() => new Set(allGameIds), [allGameIds])
   const selectedGameIds = storedSelectedGameIds.filter((id) => visibleIds.has(id))
 
@@ -137,7 +146,7 @@ export function useGameHome({
       router.refresh()
       toast.success(`已添加 ${successCount}/${selectedGameIds.length} 项`)
     } catch (error) {
-      toast.error(getErrorMessage(error, '添加合集失败'))
+      toast.error(getErrorMessage(error, '添加到收藏夹失败'))
     } finally {
       setIsAddingToCollection(false)
     }
@@ -147,7 +156,7 @@ export function useGameHome({
     if (isAddingToCollection) return
     const collectionName = newCollectionName.trim()
     if (!collectionName) {
-      toast.error('请输入新合集名称')
+      toast.error('请输入新收藏夹名称')
       return
     }
     if (selectedGameIds.length > 0) {
@@ -158,7 +167,7 @@ export function useGameHome({
     }
 
     if (collections.some(({ name }) => name === collectionName)) {
-      toast.error('已存在同名文件夹')
+      toast.error('已存在同名收藏夹')
       return
     }
 
@@ -171,9 +180,9 @@ export function useGameHome({
       ])
       setCreateCollectionOpen(false)
       setNewCollectionName('')
-      toast.success('已新建文件夹')
+      toast.success('已新建收藏夹')
     } catch (error) {
-      toast.error(getErrorMessage(error, '新建文件夹失败'))
+      toast.error(getErrorMessage(error, '新建收藏夹失败'))
     } finally {
       setIsAddingToCollection(false)
     }
@@ -262,7 +271,7 @@ export function useGameHome({
     collectionsQuery,
     gameCards,
     visibleGames,
-    playingGames,
+    gameFilters,
     collections,
     allGameIds,
     selectedGameIds,

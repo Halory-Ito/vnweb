@@ -1,7 +1,7 @@
 import { Metadata } from 'next'
 
-import { getLibraryGroup } from '@/features/home/lib/library-grouping'
 import GameHome from '@/features/home/views/game-home'
+import { resolveLayoutLibraryGroup } from '@/lib/settings/layout-settings'
 
 export const metadata: Metadata = {
   title: '游戏库',
@@ -15,10 +15,11 @@ export default async function Home({
     group?: string | string[]
     status?: string | string[]
     folder?: string | string[]
+    field?: string | string[]
   }>
 }) {
-  const { group, status, folder } = await searchParams
-  const groupBy = getLibraryGroup(group)
+  const { group, status, folder, field } = await searchParams
+  const groupBy = resolveLayoutLibraryGroup(group, field)
   const folderKey =
     groupBy === 'status'
       ? typeof status === 'string' &&

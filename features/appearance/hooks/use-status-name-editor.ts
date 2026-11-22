@@ -1,12 +1,10 @@
 'use client'
 
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { useSetAtom } from 'jotai'
 import { useState } from 'react'
 import { toast } from 'sonner'
 
 import { createGameStatus, removeGameStatus, saveGameStatusNames } from '@/api/status-settings'
-import { gameFilterAtom } from '@/atom/global'
 import {
   gameStatusNamesQuery,
   useGameStatusNames,
@@ -18,7 +16,6 @@ import type { GamePlayStatus, GameStatusNames } from '@/features/game/lib/game-s
 export function useStatusNameEditor() {
   const query = useGameStatusNames()
   const queryClient = useQueryClient()
-  const setGameFilter = useSetAtom(gameFilterAtom)
   const [edits, setEdits] = useState<Partial<GameStatusNames>>({})
   const [newName, setNewName] = useState('')
   const [pendingDelete, setPendingDelete] = useState<GamePlayStatus>()
@@ -53,9 +50,6 @@ export function useStatusNameEditor() {
         return next
       })
       setPendingDelete(undefined)
-      setGameFilter((filter) =>
-        filter.playStatus === String(id) ? { ...filter, playStatus: '' } : filter,
-      )
       toast.success(`状态已删除，${saved.affectedGames} 个游戏已设为「未知」`)
       await Promise.all(
         [

@@ -9,10 +9,9 @@ import { toast } from 'sonner'
 
 import { useGamePlaySession } from './use-game-play-session'
 import { updateGamePlayStatusById } from '@/api'
-import { gameFilterAtom } from '@/atom/global'
+import { gameSearchAtom } from '@/atom/global'
 
 import type { GameDetail } from '@/types'
-import type { GameFilterState } from '@/types/game'
 
 const GAME_INFO_TABS = ['overview', 'characters', 'pv', 'ost', 'record', 'memory', 'quote', 'guide']
 
@@ -36,7 +35,7 @@ export function useGameInfo(game: GameDetail, initialTab?: string) {
   const session = useGamePlaySession(game)
   const queryClient = useQueryClient()
   const router = useRouter()
-  const setGameFilter = useSetAtom(gameFilterAtom)
+  const setGameSearch = useSetAtom(gameSearchAtom)
 
   useEffect(() => {
     setPlayStatus(game.playStatus)
@@ -49,6 +48,7 @@ export function useGameInfo(game: GameDetail, initialTab?: string) {
       setPlayStatus(nextStatus)
       await queryClient.invalidateQueries({ queryKey: ['game', String(game.id)] })
       await queryClient.invalidateQueries({ queryKey: ['game-cards'] })
+      await queryClient.invalidateQueries({ queryKey: ['game-sidebar'] })
       await queryClient.invalidateQueries({ queryKey: ['collections'] })
       router.refresh()
       toast.success('游玩状态已更新')
@@ -59,16 +59,14 @@ export function useGameInfo(game: GameDetail, initialTab?: string) {
     },
   })
 
-  const applyTagFilter = (field: keyof GameFilterState, value: string, fieldLabel: string) => {
-    if (!value || value === '-') return
-    setGameFilter((previous) => ({ ...previous, [field]: value }))
-    router.push('/game/home')
-    toast.success(`已按${fieldLabel}筛选：${value}`)
-  }
-
   const handleTabChange = (value: string) => {
     if (!GAME_INFO_TABS.includes(value) || value === currentTab) return
     router.push(`/game/info/${game.id}/${value}`)
+  }
+
+  const searchGame = (value: string) => {
+    setGameSearch(value)
+    router.push('/game/home')
   }
 
   const updatePlayStatus = (nextStatus: number) => {
@@ -81,7 +79,7 @@ export function useGameInfo(game: GameDetail, initialTab?: string) {
   return {
     title,
     currentTab,
-    applyTagFilter,
+    searchGame,
     handleTabChange,
     onOpenBasicInfo: () => basicInfo.onOpenChange(true),
     onOpenUpdateData: () => updateData.onOpenChange(true),

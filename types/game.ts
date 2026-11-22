@@ -1,3 +1,5 @@
+import type { GameMetadataField } from '@/lib/game-metadata-fields'
+
 export type GameDetail = {
   id: number
   date: string
@@ -56,6 +58,9 @@ export type GameTimerRecordItem = {
 export type GameCardListItem = {
   id: string
   title: string
+  originalTitle?: string
+  searchMetadata?: Partial<Record<GameMetadataField, string>>
+  tags?: string[]
   cover: string
   publishAt: string
   lastRunAt: string
@@ -133,6 +138,7 @@ export type GameSidebarItemProps = {
 export type GameSidebarProps = {
   id: string
   title: string
+  logoTarget?: { href: string; localOnly?: boolean }
   items: GameSidebarItemProps[]
 }
 export type GameStatusNames = Record<number, string>

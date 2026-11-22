@@ -1,33 +1,34 @@
 'use client'
 
-import { useQuery } from '@tanstack/react-query'
-import { useAtomValue } from 'jotai'
 import { useEffect, useState } from 'react'
 
+import { useGameSidebar } from '../hooks/use-game-sidebar'
 import { GameSidebarItem } from './game-sidebar-item'
-import { getGameSidebarData } from '@/api'
-import { gameFilterAtom, gameSearchAtom, showNsfwAtom } from '@/atom/global'
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion'
+import { Button } from '@/components/ui/button'
+import LibraryCategoryIcon from '@/features/home/components/library-category-icon'
+import LibraryFolderContextMenu from '@/features/home/components/library-folder-context-menu'
+import LibraryFolderLogoDialog from '@/features/home/components/library-folder-logo-dialog'
+import { useLibraryFolderLogos } from '@/features/home/hooks/use-library-folder-logos'
 
-export default function GameSidebar() {
-  const search = useAtomValue(gameSearchAtom)
-  const filter = useAtomValue(gameFilterAtom)
-  const showNsfw = useAtomValue(showNsfwAtom)
+export function GameSidebarContent({
+  data,
+  isPending,
+  isError,
+  refetch,
+  onCreateCollection,
+}: ReturnType<typeof useGameSidebar> & { onCreateCollection?: () => void }) {
   const [ctrlPressed, setCtrlPressed] = useState(false)
-
-  const { data } = useQuery({
-    queryKey: ['game-sidebar', search, filter, showNsfw],
-    queryFn: () => getGameSidebarData({ search, filter, includeNsfw: showNsfw }),
-  })
-
+  const [logoFolderHref, setLogoFolderHref] = useState<string>()
   const items = data?.items ?? []
-  const hasActiveFilter = Object.values(filter).some(
-    (value) => typeof value === 'string' && value.trim() !== '',
+  const logos = useLibraryFolderLogos(items.some(({ logoTarget }) => Boolean(logoTarget)))
+  const logoFolder = items.find(
+    ({ logoTarget }) => logoTarget && logoTarget.href === logoFolderHref,
   )
 
   useEffect(() => {
@@ -50,20 +51,71 @@ export default function GameSidebar() {
     }
   }, [])
 
+  if (isPending) return <p className="text-muted-foreground p-3 text-sm">正在加载游戏…</p>
+  if (isError)
+    return (
+      <Button className="m-3" variant="outline" onClick={() => void refetch()}>
+        重试加载游戏
+      </Button>
+    )
+  if (!items.length || (data?.mode === 'search' && !items[0]?.items.length)) {
+    return <p className="text-muted-foreground p-3 text-sm">没有符合条件的游戏</p>
+  }
+
   return (
-    <Accordion type="multiple" className="w-full min-w-0 overflow-x-hidden p-2">
-      {items.map((item) => (
-        <AccordionItem key={item.id} value={item.id} className="min-w-0 border-none">
+    <Accordion
+      key={data?.mode}
+      type="multiple"
+      defaultValue={data?.mode === 'search' ? ['search-results'] : undefined}
+      className="w-full min-w-0 overflow-x-hidden p-2"
+    >
+      {items.map((item) => {
+        const href = item.logoTarget?.href
+        const logo = href ? logos?.[href] : undefined
+        const trigger = (
           <AccordionTrigger className="min-w-0 cursor-pointer p-2 font-bold hover:no-underline">
-            {`${hasActiveFilter && item.id === 'all' ? '筛选结果' : item.title} (${item.items.length})`}
+            <span className="flex min-w-0 items-center gap-2">
+              {href ? <LibraryCategoryIcon key={logo} logo={logo} /> : null}
+              <span className="truncate">{`${item.title} (${item.items.length})`}</span>
+            </span>
           </AccordionTrigger>
-          <AccordionContent className="min-w-0 space-y-2 p-2">
-            {item.items.map((subItem) => (
-              <GameSidebarItem key={subItem.id} {...subItem} ctrlPressed={ctrlPressed} />
-            ))}
-          </AccordionContent>
-        </AccordionItem>
-      ))}
+        )
+
+        return (
+          <AccordionItem key={item.id} value={item.id} className="min-w-0 border-none">
+            {href || onCreateCollection ? (
+              <LibraryFolderContextMenu
+                onEdit={href ? () => setLogoFolderHref(href) : undefined}
+                onCreate={onCreateCollection}
+              >
+                {trigger}
+              </LibraryFolderContextMenu>
+            ) : (
+              trigger
+            )}
+            <AccordionContent className="min-w-0 space-y-2 p-2">
+              {item.items.map((subItem) => (
+                <GameSidebarItem key={subItem.id} {...subItem} ctrlPressed={ctrlPressed} />
+              ))}
+            </AccordionContent>
+          </AccordionItem>
+        )
+      })}
+      {logoFolder?.logoTarget ? (
+        <LibraryFolderLogoDialog
+          key={logoFolder.logoTarget.href}
+          href={logoFolder.logoTarget.href}
+          title={logoFolder.title}
+          source={logos?.[logoFolder.logoTarget.href]}
+          localOnly={logoFolder.logoTarget.localOnly}
+          onClose={() => setLogoFolderHref(undefined)}
+        />
+      ) : null}
     </Accordion>
   )
+}
+
+export default function GameSidebar() {
+  const query = useGameSidebar()
+  return <GameSidebarContent {...query} />
 }

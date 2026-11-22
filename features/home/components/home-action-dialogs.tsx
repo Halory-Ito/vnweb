@@ -128,17 +128,18 @@ export function HomeActionDialogs({
       </AlertDialog>
 
       <Dialog open={createCollectionOpen} onOpenChange={onCreateCollectionOpenChange}>
-        <DialogContent>
+        <DialogContent {...(selectedCount === 0 ? { 'aria-describedby': undefined } : {})}>
           <DialogHeader>
-            <DialogTitle>{selectedCount > 0 ? '新建合集并添加' : '新建文件夹'}</DialogTitle>
-            <DialogDescription>
-              {selectedCount > 0
-                ? `将当前选中的 ${selectedCount} 个游戏添加到新合集中。`
-                : '输入用于分类游戏的文件夹名称。'}
-            </DialogDescription>
+            <DialogTitle>{selectedCount > 0 ? '新建收藏夹并添加' : '新建收藏夹'}</DialogTitle>
+            {selectedCount > 0 ? (
+              <DialogDescription>
+                将当前选中的 {selectedCount} 个游戏添加到新收藏夹。
+              </DialogDescription>
+            ) : null}
           </DialogHeader>
           <Input
-            placeholder="请输入合集名称..."
+            aria-label="收藏夹名称"
+            placeholder="收藏夹名称"
             value={newCollectionName}
             onChange={(e) => onNewCollectionNameChange(e.target.value)}
             onKeyDown={(e) => {

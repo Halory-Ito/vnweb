@@ -54,7 +54,7 @@ export default function GameInfo({ game, initialTab }: GameInfoProps) {
               </TabsList>
             </div>
             <TabsContent value="overview">
-              <GameOverview game={game} onApplyTagFilter={info.applyTagFilter} />
+              <GameOverview game={game} onSearch={info.searchGame} />
             </TabsContent>
             <TabsContent value="characters">
               <GameCharacters gameId={game.id} />

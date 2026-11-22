@@ -2,6 +2,7 @@ import { useAtomValue } from 'jotai'
 import { FolderPlusIcon, Trash2Icon } from 'lucide-react'
 import Link from 'next/link'
 
+import { useLibraryFolderLogos } from '../hooks/use-library-folder-logos'
 import { useLibraryFolders } from '../hooks/use-library-folders'
 import { LIBRARY_GROUP_LABELS } from '../lib/library-grouping'
 import GameHomeGrid from './game-home-grid'
@@ -33,6 +34,7 @@ export default function LibraryFolders({
   const { groupedFolders, customFolders } = useLibraryFolders(games, collections, groupBy)
   const groupLabel = LIBRARY_GROUP_LABELS[groupBy]
   const palette = useAtomValue(folderPaletteAtom)
+  const logos = useLibraryFolderLogos(!showSections)
 
   return (
     <>
@@ -54,6 +56,7 @@ export default function LibraryFolders({
                 <LibraryFolderCard
                   key={folder.href}
                   {...folder}
+                  logo={folder.canSetLogo ? logos?.[folder.href] : undefined}
                   paletteColor={getFolderPaletteColor(palette, index)}
                 />
               ))}
@@ -63,15 +66,15 @@ export default function LibraryFolders({
           )}
         </section>
       )}
-      <section className="space-y-3" aria-label="自定义文件夹">
+      <section className="space-y-3" aria-label="收藏夹">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 className="text-base font-semibold">自定义文件夹</h2>
+          <h2 className="text-base font-semibold">收藏夹</h2>
           <Button type="button" variant="outline" size="sm" onClick={onCreate}>
-            <FolderPlusIcon /> 新建文件夹
+            <FolderPlusIcon /> 新建收藏夹
           </Button>
         </div>
         {customFolders.length === 0 ? (
-          <p className="text-muted-foreground text-sm">暂无自定义文件夹</p>
+          <p className="text-muted-foreground text-sm">暂无收藏夹</p>
         ) : showSections ? (
           <div className="flex min-w-0 flex-col gap-6">
             {customFolders.map(({ id, href, title, games }) => (
@@ -87,7 +90,7 @@ export default function LibraryFolders({
                     variant="outline"
                     size="icon-sm"
                     className="shrink-0"
-                    aria-label={`删除文件夹：${title}`}
+                    aria-label={`删除收藏夹：${title}`}
                     onClick={() => onDelete(id)}
                   >
                     <Trash2Icon />
@@ -96,7 +99,7 @@ export default function LibraryFolders({
                 {games.length ? (
                   <SelectableGameGrid games={games} {...selection} />
                 ) : (
-                  <p className="text-muted-foreground text-sm">该文件夹暂无游戏</p>
+                  <p className="text-muted-foreground text-sm">该收藏夹暂无游戏</p>
                 )}
               </section>
             ))}
@@ -107,6 +110,9 @@ export default function LibraryFolders({
               <LibraryFolderCard
                 key={id}
                 {...folder}
+                canSetLogo
+                localLogoOnly
+                logo={logos?.[folder.href]}
                 paletteColor={getFolderPaletteColor(palette, groupedFolders.length + index)}
                 onDelete={() => onDelete(id)}
               />

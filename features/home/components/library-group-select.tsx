@@ -2,7 +2,7 @@
 
 import { useAtom } from 'jotai'
 
-import { getLibraryGroup, LIBRARY_GROUP_LABELS } from '../lib/library-grouping'
+import { LIBRARY_GROUP_LABELS } from '../lib/library-grouping'
 import {
   Select,
   SelectContent,
@@ -12,12 +12,18 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { gameLibraryGroupAtom } from '@/lib/settings/game-library-group'
+import { isLayoutLibraryGroup } from '@/lib/settings/layout-settings'
 
 export default function LibraryGroupSelect({ id }: { id: string }) {
   const [groupBy, setGroupBy] = useAtom(gameLibraryGroupAtom)
 
   return (
-    <Select value={groupBy} onValueChange={(value) => setGroupBy(getLibraryGroup(value))}>
+    <Select
+      value={groupBy}
+      onValueChange={(value) => {
+        if (isLayoutLibraryGroup(value)) setGroupBy(value)
+      }}
+    >
       <SelectTrigger id={id} size="sm">
         <SelectValue />
       </SelectTrigger>

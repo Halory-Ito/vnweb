@@ -2,8 +2,10 @@ export type CollectionGameItem = {
   linkId: number
   id: number
   name: string
+  nameCn?: string
   cover: string
   icon: string
+  developer?: string
   nsfw?: number
   date: string
   addedAt: string

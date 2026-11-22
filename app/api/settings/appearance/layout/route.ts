@@ -15,7 +15,6 @@ const LAYOUT_KEYS: Array<keyof LayoutSettings> = [
   'gameCardRadius',
   'folderPalette',
   'folderColors',
-  'folderLogos',
 ]
 
 async function readLayoutSettings(): Promise<{ data: LayoutSettings; persisted: boolean }> {

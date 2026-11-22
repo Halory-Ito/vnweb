@@ -1,10 +1,17 @@
-import { desc, eq, sql } from 'drizzle-orm'
+import { desc, eq } from 'drizzle-orm'
 import { NextRequest, NextResponse } from 'next/server'
 
 import { CollectionGameTable, CollectionTable, GameInfoTable, GamePlayTable } from '@/db/schema'
 import { normalizeGamePlayStatus } from '@/features/game/lib/game-status'
+import {
+  getLibraryFolderHref,
+  getLibraryFolderKeys,
+  getLibraryFolderTitle,
+} from '@/features/home/lib/library-grouping'
 import { db } from '@/lib/drizzle'
+import { gameMetadataSearchColumns, getGameSearchMetadata } from '@/lib/server/game-metadata-search'
 import { readGameStatusSettings } from '@/lib/server/game-status-settings'
+import { resolveLayoutLibraryGroup } from '@/lib/settings/layout-settings'
 
 import type { GameSidebarProps } from '@/types/game'
 
@@ -70,6 +77,7 @@ const getSidebarData = async (req: NextRequest) => {
   try {
     const searchParams = req.nextUrl.searchParams
     const search = (searchParams.get('search') || '').trim()
+    const group = resolveLayoutLibraryGroup(searchParams.get('group'))
     const includeNsfw = (searchParams.get('includeNsfw') || 'true').trim().toLowerCase() !== 'false'
     const releaseDateFrom = (searchParams.get('releaseDateFrom') || '').trim()
     const releaseDateTo = (searchParams.get('releaseDateTo') || '').trim()
@@ -91,17 +99,8 @@ const getSidebarData = async (req: NextRequest) => {
         name: GameInfoTable.name,
         nameCn: GameInfoTable.nameCn,
         icon: GameInfoTable.icon,
-        date: GameInfoTable.date,
-        developer: GameInfoTable.developer,
-        publisher: GameInfoTable.publisher,
-        gameType: GameInfoTable.gameType,
-        platforms: GameInfoTable.platforms,
+        ...gameMetadataSearchColumns,
         tags: GameInfoTable.tags,
-        originalPainter: GameInfoTable.originalPainter,
-        script: GameInfoTable.script,
-        music: GameInfoTable.music,
-        gameEngine: GameInfoTable.gameEngine,
-        programmer: GameInfoTable.programmer,
         nsfw: GameInfoTable.nsfw,
         playStatus: GamePlayTable.status,
       })
@@ -109,11 +108,18 @@ const getSidebarData = async (req: NextRequest) => {
       .leftJoin(GamePlayTable, eq(GamePlayTable.gameId, GameInfoTable.id))
       .orderBy(desc(GameInfoTable.id))
 
-    const statusNames = playStatus ? (await readGameStatusSettings()).names : undefined
+    const statusNames =
+      playStatus || group === 'status' ? (await readGameStatusSettings()).names : undefined
     const filteredGames = allGames.filter((game) => {
       const title = game.nameCn || game.name
 
-      if (search && !includesText(title, search) && !includesText(game.name, search)) {
+      if (
+        search &&
+        !includesText(title, search) &&
+        !includesText(game.name, search) &&
+        !parseCsv(game.tags).some((tag) => includesText(tag, search)) &&
+        !Object.values(getGameSearchMetadata(game)).some((value) => includesText(value, search))
+      ) {
         return false
       }
 
@@ -240,49 +246,49 @@ const getSidebarData = async (req: NextRequest) => {
       collectionGameMap.set(row.collectionId, current)
     }
 
-    // 查询最近运行过的游戏（lastLaunchedAt 不为空且不为空字符串）
-    const recentGameRows = await db
-      .select({
-        gameId: GamePlayTable.gameId,
-        lastLaunchedAt: GamePlayTable.lastLaunchedAt,
-        gameName: GameInfoTable.name,
-        gameNameCn: GameInfoTable.nameCn,
-        gameIcon: GameInfoTable.icon,
-      })
-      .from(GamePlayTable)
-      .innerJoin(GameInfoTable, eq(GamePlayTable.gameId, GameInfoTable.id))
-      .where(
-        sql`${GamePlayTable.lastLaunchedAt} IS NOT NULL AND ${GamePlayTable.lastLaunchedAt} != ''`,
+    const groupedGames = new Map<string, GameSidebarProps['items']>()
+    for (const game of filteredGames) {
+      const keys = getLibraryFolderKeys(
+        {
+          status: game.playStatus ?? 0,
+          publishAt: game.date,
+          developer: game.developer,
+          publisher: game.publisher,
+          searchMetadata: getGameSearchMetadata(game),
+        },
+        group,
+        statusNames,
       )
-      .orderBy(desc(GamePlayTable.lastLaunchedAt))
-      .limit(10)
+      const item = {
+        id: String(game.id),
+        title: game.nameCn || game.name,
+        icon: game.icon?.trim() || DEFAULT_GAME_ICON,
+      }
+      for (const key of keys) {
+        const entries = groupedGames.get(key) ?? []
+        entries.push(item)
+        groupedGames.set(key, entries)
+      }
+    }
 
-    const recentGameItems: Array<{ id: string; title: string; icon: string }> = recentGameRows
-      .filter((game) => filteredGameIdSet.has(game.gameId))
-      .map((game) => ({
-        id: String(game.gameId),
-        title: game.gameNameCn || game.gameName,
-        icon: game.gameIcon?.trim() ? game.gameIcon : DEFAULT_GAME_ICON,
-      }))
+    const groupKeys = [...groupedGames.keys()].sort((a, b) =>
+      group === 'status'
+        ? Number(a) - Number(b)
+        : Number(!a) - Number(!b) || a.localeCompare(b, 'zh-CN'),
+    )
 
     const items: GameSidebarProps[] = [
-      {
-        id: 'recent',
-        title: '最近游戏',
-        items: recentGameItems,
-      },
-      {
-        id: 'all',
-        title: '所有游戏',
-        items: filteredGames.map((game) => ({
-          id: String(game.id),
-          title: game.nameCn || game.name,
-          icon: game.icon?.trim() ? game.icon : DEFAULT_GAME_ICON,
-        })),
-      },
+      ...groupKeys.map((key) => ({
+        id: `group-${group}-${key}`,
+        title: getLibraryFolderTitle(group, key, statusNames),
+        logoTarget:
+          group === 'developer' && key ? { href: getLibraryFolderHref(group, key) } : undefined,
+        items: groupedGames.get(key) ?? [],
+      })),
       ...collections.map((collection) => ({
         id: `collection-${collection.id}`,
         title: collection.name,
+        logoTarget: { href: `/game/collection/${collection.id}`, localOnly: true },
         items: collectionGameMap.get(collection.id) ?? [],
       })),
     ]

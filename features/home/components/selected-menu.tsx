@@ -53,12 +53,12 @@ export default function SelectedMenu({
           <DropdownMenuTrigger asChild>
             <Button variant="outline" size="sm" disabled={isAddingToCollection}>
               <FolderPlusIcon className="size-4" />
-              <span className="hidden sm:inline">添加到合集</span>
+              <span className="hidden sm:inline">添加到收藏夹</span>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
             {collections.length === 0 ? (
-              <DropdownMenuItem disabled>暂无合集</DropdownMenuItem>
+              <DropdownMenuItem disabled>暂无收藏夹</DropdownMenuItem>
             ) : (
               collections.map((collection) => (
                 <DropdownMenuItem
@@ -74,7 +74,7 @@ export default function SelectedMenu({
                 setCreateCollectionOpen(true)
               }}
             >
-              + 新建合集
+              + 新建收藏夹
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

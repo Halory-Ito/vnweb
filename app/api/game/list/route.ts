@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 
 import { GameInfoTable, GamePlayTable } from '@/db/schema'
 import { db } from '@/lib/drizzle'
+import { gameMetadataSearchColumns, getGameSearchMetadata } from '@/lib/server/game-metadata-search'
 
 const getGameCardList = async (req: NextRequest) => {
   try {
@@ -15,9 +16,8 @@ const getGameCardList = async (req: NextRequest) => {
         name: GameInfoTable.name,
         nameCn: GameInfoTable.nameCn,
         cover: GameInfoTable.cover,
-        developer: GameInfoTable.developer,
-        publisher: GameInfoTable.publisher,
-        date: GameInfoTable.date,
+        ...gameMetadataSearchColumns,
+        tags: GameInfoTable.tags,
         createdAt: GameInfoTable.createdAt,
       })
       .from(GameInfoTable)
@@ -54,6 +54,12 @@ const getGameCardList = async (req: NextRequest) => {
       return {
         id: String(game.id),
         title: game.nameCn || game.name,
+        originalTitle: game.name,
+        searchMetadata: getGameSearchMetadata(game),
+        tags: game.tags
+          .split(',')
+          .map((tag) => tag.trim())
+          .filter(Boolean),
         cover: game.cover || '/cover/wa2.jpg',
         developer: game.developer,
         publisher: game.publisher,

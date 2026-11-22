@@ -23,7 +23,6 @@ import {
 } from '@/lib/settings/font-settings'
 import { gameCardRadiusAtom, gameCardTitleHiddenAtom } from '@/lib/settings/game-card-appearance'
 import { folderColorsAtom, folderPaletteAtom } from '@/lib/settings/game-library-folder-colors'
-import { folderLogosStorageAtom } from '@/lib/settings/game-library-folder-logos'
 import { gameLibraryGridDisplayAtom } from '@/lib/settings/game-library-grid-display'
 import { gameLibraryGroupAtom } from '@/lib/settings/game-library-group'
 import { gameLibraryLayoutAtom } from '@/lib/settings/game-library-layout'
@@ -113,7 +112,6 @@ export function useAppAppearance() {
             store.set(gameCardRadiusAtom, res.data.gameCardRadius)
             store.set(folderPaletteAtom, res.data.folderPalette)
             store.set(folderColorsAtom, res.data.folderColors)
-            store.set(folderLogosStorageAtom, res.data.folderLogos)
           })
           return
         }
@@ -129,7 +127,6 @@ export function useAppAppearance() {
           gameCardRadius: store.get(gameCardRadiusAtom),
           folderPalette: store.get(folderPaletteAtom),
           folderColors: store.get(folderColorsAtom),
-          folderLogos: store.get(folderLogosStorageAtom),
         })
       })
       .catch((error) => {
