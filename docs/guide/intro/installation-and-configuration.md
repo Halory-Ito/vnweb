@@ -20,13 +20,11 @@ npm install
 
 ### 2. 编写配置文件
 
-见`app/config.example.ts`，填写好配置后，把该文件重命名为`config.ts`
-
-其中`app/config.example.json`只需要拷贝一份，重命名为`config.json`即可，该`json`文件的具体配置可以在 Web UI 中修改
-
-> 一开始还是用.env的，后来意识到这是一个本地软件，没必要搞.env，索性就换成 type-safe 高一点的配置方式了
+启动后打开「设置 → 平台」，填写所需的接口地址和凭证。设置保存在 `data/settings/platform.json`，首次读取时自动创建。
 
 ### 3. 初始化数据库
+
+数据库默认为项目根目录的 `local.db`。可在 `data/settings/general.json` 中设置 `dbFileName`（例如 `file:./local.db`），修改后重启应用。
 
 ```bash
 npx drizzle-kit generate # 生成 sql 文件
@@ -65,15 +63,13 @@ vnweb start
 
 # 配置文件
 
-## config.ts
+## 平台配置
 
-详见`config.example.ts`文件
+可在 Web UI 修改平台配置。SteamGridDB 的密钥和接口地址可在 `data/settings/platform.json` 的 `steamgriddb` 中填写。
 
-## config.example.json
+## 设置示例
 
-这里主要用于一些非 api-key、token 之类的配置，目前支持：
-
-- 游戏存档备份
+`data/example/` 包含平台、外观、备份和通用设置的 JSON 示例。运行 `init.bat` 会将缺失的文件复制到 `data/settings/`，保留已有设置。手动安装时也可以按需复制。
 
 # 项目启动
 

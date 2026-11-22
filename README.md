@@ -91,14 +91,15 @@ vnweb 是一个面向视觉小说与本地单机游戏整理场景的 Web 管理
 - **游戏库**：合集与收藏、多选批量操作（删除 / 加入合集 / 更新元数据 / 合并 / NSFW 标记）、多维度排序、游玩状态标签（未开始、游玩中、部分完成、已完成、多周目、搁置中）
 - **游戏详情**：概览 / 相关人物 / PV / OST / 记录 / 回忆 / 摘录 / 攻略 标签页；启动与结束游戏、自动计时、评分、可执行路径与存档目录、封面 / 背景 / 图标 / 徽标设置
 - **扫描与导入**：维护多个扫描目录，支持层级扫描与可执行文件扫描、扫描深度、排除路径、失败项重试、资源管理器选目录，以及多数据源搜索导入
-- **媒体管理**：PV（HLS / 视频链接与播放器）、OST（专辑搜索与导入、Meting 多平台音源、曲目与歌词）、回忆（截图 + Markdown 记录）
+- **媒体管理**：PV 支持 HLS、视频直链、Bilibili 短链和 YouTube 嵌入。OST 支持通过网易云搜索专辑、按 ID 导入、显示来源标签，以及通过 Meting SDK 或网易云 Enhanced API 播放曲目。回忆支持截图与 Markdown 记录。
 - **台词摘录**：按角色归类、关键字与日期筛选、分页、导出 XLSX
 - **游戏攻略**：从 [yjgalgame](https://www.yjgalgame.com/) 搜索导入，或按内置提示词让 AI 把攻略文本整理成 JSON 后导入；支持路线 / 结局 / 步骤、进度勾选与重置、拖拽排序、结局类型标注、角色卡片入口，以及多选批量删除
 - **数据总览与报告**：统计卡片（游戏、角色、OST、PV、台词数量与时长、天数、次数）、时长与时段分布图、排行榜、周 / 月 / 年时间线、导出报告
 - **外观设置**：跟随浏览器字体或导入本地字体、自定义背景图（明暗主题与移动端分开、动画样式与过渡时长）、毛玻璃模糊与透明度、图表颜色与透明度、游戏状态与攻略颜色
-- **备份与同步**：全局存档目录与「游戏结束后自动备份」、WebDAV 上传 / 下载（并发传输与进度展示）、Steam / Bangumi / VNDB 账号绑定与游玩时长同步
+- **备份与同步**：本地与 WebDAV 备份、游戏结束后自动备份存档。支持 Steam、Bangumi、VNDB 和 YMGal 账号绑定，以及 Steam 游玩时长同步。
+- **平台设置**：集中管理数据源凭证、Bangumi 官方与镜像地址、Meting 播放码率和封面尺寸，以及 Enhanced API 的本地 SDK、外部地址、默认音质和 `MUSIC_U`。
 - **AI 助手**：WebMCP 工具发现与调用、流式对话（含思考过程折叠）、OpenAI 兼容模型配置、图片与文本文件附件，工具结果可渲染为可交互的生成式 UI（候选专辑 / 曲目 / Steam AppID 等卡片）
-- **通用能力**：R18 开关、明暗主题、移动端响应式布局、插件市场与插件系统、全局代理设置、命令行工具
+- **通用能力**：R18 开关、明暗主题、移动端响应式布局、全局代理设置、命令行工具
 
 ### 技术栈
 
@@ -106,7 +107,7 @@ vnweb 是一个面向视觉小说与本地单机游戏整理场景的 Web 管理
 - **数据**：TanStack Query 5、Jotai、axios
 - **UI**：Tailwind CSS 4、shadcn/ui（Radix UI）、Lucide、Recharts、Motion
 - **数据库**：SQLite（libSQL）+ Drizzle ORM
-- **媒体与文档**：hls.js、ExcelJS、MDX、react-markdown
+- **媒体与文档**：hls.js、`@meting/core`、ExcelJS、MDX、react-markdown
 - **AI / WebMCP**：`usewebmcp` + `@mcp-b/webmcp-polyfill`（工具注册与浏览器运行时兜底）
 - **工程质量**：oxlint、oxfmt、Vitest（browser / node）、Playwright
 
@@ -124,9 +125,9 @@ vnweb 是一个面向视觉小说与本地单机游戏整理场景的 Web 管理
 
 ### Windows 一键初始化
 
-克隆仓库后双击根目录的 `init.bat`，会依次完成：检查 Node.js / npm → 生成缺失的 `.env`、`app/config.ts`、`app/config.json` → `npm install` → 初始化数据库 → `npm run build` → 将项目目录加入用户 `PATH`。
+克隆后双击根目录的 `init.bat`。脚本检查 Node.js 和 npm、安装依赖、将缺失的 JSON 从 `data/example/` 复制到 `data/settings/`，随后初始化数据库、构建项目并将项目目录加入用户 `PATH`。已有设置文件会保留。
 
-> ⚠️ 若已存在数据库文件（默认 `local.db`，可由 `.env` 的 `DB_FILE_NAME` 指定），脚本会先将其连同 `-wal` / `-shm` 文件移动到 `backups/db/<名称>-<时间戳>.db`，再创建一个全新的空数据库。运行前请先关闭 vnweb 服务与 Drizzle Studio。
+> ⚠️ 若已存在数据库文件，脚本会先将其连同 `-wal` / `-shm` 文件移动到 `backups/db/<名称>-<时间戳>.db`，再创建一个全新的空数据库。运行前请先关闭 vnweb 服务与 Drizzle Studio。
 
 如需手动安装，请参考下方步骤。
 
@@ -145,29 +146,24 @@ vnweb 是一个面向视觉小说与本地单机游戏整理场景的 Web 管理
    npm install
    ```
 
-3. 编写应用配置
+3. 配置平台
 
-   复制 `app/config.example.ts` 为 `app/config.ts`，按需填写密钥（不填也能使用大部分本地功能）：
-   - `NEXT_PUBLIC_STEAM_API_KEY`：Steam 相关接口（https://steamcommunity.com/dev/apikey）
-   - `NEXT_PUBLIC_STEAMGRIDDB_API_KEY`：封面 / 背景 / 图标 / 徽标来源（https://www.steamgriddb.com/profile/preferences/api）
-   - `BANGUMI_OAUTH_CLIENT_ID` / `BANGUMI_OAUTH_CLIENT_SECRET`：Bangumi 账号绑定（https://bgm.tv/dev/app/create）
-   - `VNDB_OAUTH_TOKEN`：VNDB 账号相关（https://vndb.org/settings/api）
-   - `NETEASE_API_BASE`：OST 专辑关键词搜索和专辑元数据接口，默认使用 `https://music.163.com/api`，也兼容已有 NeteaseCloudMusicApi 服务地址（如 `http://localhost:2999`），服务请求失败时回退到网易云公开接口；播放与歌词仍使用 Meting
-   - `METING_API_BASE` / `METING_API_AUTH`：在 `app/config.ts` 配置 OST 接口地址与可选 auth（也可由同名环境变量提供）；默认地址为 https://api.i-meto.com/meting/api，auth 默认留空，歌曲链接中的签名保持原样
+   启动后在「设置 → 平台」配置 Steam、Bangumi、VNDB、YMGal、Meting SDK 和网易云 Enhanced API。平台配置写入 `data/settings/platform.json`，首次读取时自动创建。
+   `data/example/` 提供四份不含凭证的配置示例。需要手动配置时，可将所需示例复制到 `data/settings/`，已有文件可参照示例补充字段。
+   SteamGridDB 的密钥和接口地址可在该文件的 `steamgriddb.apiKey` 和 `steamgriddb.baseUrl` 中填写。
+   VNDB OAuth 使用该文件的 `vndb.oauthClientId` 和 `vndb.oauthClientSecret`。如需覆盖默认端点或授权范围，可设置 `oauthAuthorizeUrl`、`oauthTokenUrl`、`oauthUserInfoUrl` 或 `oauthScope`。
 
-   运行期设置存放在 `app/config.json`（外观、备份、AI 助手、首页目标等），可从 `app/config.example.json` 复制一份作为初始值；文件不存在时会自动创建，绝大多数配置也能直接在 Web UI 中修改。
+4. 数据库路径（可选）
 
-4. 环境变量（可选）
+   默认数据库为项目根目录的 `local.db`。如需指定其他文件，在 `data/settings/general.json` 中设置 `dbFileName`，修改后重启应用。
 
-   复制 `.env.example` 为 `.env`；默认数据库为项目根目录的 `local.db`：
-
-   ```env
-   DB_FILE_NAME=file:./local.db
+   ```json
+   { "dbFileName": "file:./local.db" }
    ```
 
 5. 初始化数据库
 
-   将 `db/schema.ts` 同步到 `.env` 指定的 SQLite 文件（默认 `local.db`）：
+   将 `db/schema.ts` 同步到所配置的 SQLite 文件：
 
    ```sh
    npm run db:push
