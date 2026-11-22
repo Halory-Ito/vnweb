@@ -1,15 +1,11 @@
 import { Metadata } from 'next'
 
-import { RecordPeriodPanel } from '@/features/record'
+import RecordPeriodPanel from '@/features/record/components/record-period-panel'
 
 export const metadata: Metadata = {
   title: '月度游戏报告',
 }
 
 export default function MonthRecord() {
-  return (
-    <div className="max-h-[100cqh] w-full space-y-4 overflow-y-scroll p-4">
-      <RecordPeriodPanel range="month" title="月度游戏报告" />
-    </div>
-  )
+  return <RecordPeriodPanel range="month" title="月度游戏报告" />
 }

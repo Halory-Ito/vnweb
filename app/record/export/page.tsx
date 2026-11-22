@@ -1,9 +1,11 @@
 import { Metadata } from 'next'
 
+import RecordExportPanel from '@/features/record/components/record-export-panel'
+
 export const metadata: Metadata = {
   title: '导出报告',
 }
 
 export default function ExportPage() {
-  return <div className="max-h-[100cqh] w-full space-y-4 overflow-y-scroll p-4">导出报告</div>
+  return <RecordExportPanel />
 }

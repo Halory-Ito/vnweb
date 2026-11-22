@@ -1,40 +1,5 @@
-import { Metadata } from 'next'
-
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { RecordExportPanel, RecordOverview, RecordPeriodPanel } from '@/features/record'
-import { DataSettings } from '@/features/settings'
-
-export const metadata: Metadata = {
-  title: '游戏记录',
-}
-
-export const dynamic = 'force-dynamic'
+import { redirect } from 'next/navigation'
 
 export default function Record() {
-  return (
-    <Tabs defaultValue="overview" className="max-h-[100cqh] w-full overflow-y-scroll p-4">
-      <TabsList className="dark:bg-transparent">
-        <TabsTrigger value="overview">总览</TabsTrigger>
-        <TabsTrigger value="year">年报</TabsTrigger>
-        <TabsTrigger value="month">月报</TabsTrigger>
-        <TabsTrigger value="export">导出报告</TabsTrigger>
-        <TabsTrigger value="data">数据</TabsTrigger>
-      </TabsList>
-      <TabsContent className="h-full w-full" value="overview">
-        <RecordOverview />
-      </TabsContent>
-      <TabsContent value="year">
-        <RecordPeriodPanel range="year" title="年度游戏报告" />
-      </TabsContent>
-      <TabsContent value="month">
-        <RecordPeriodPanel range="month" title="月度游戏报告" />
-      </TabsContent>
-      <TabsContent value="export">
-        <RecordExportPanel />
-      </TabsContent>
-      <TabsContent value="data">
-        <DataSettings />
-      </TabsContent>
-    </Tabs>
-  )
+  redirect('/record/overview')
 }
