@@ -14,6 +14,7 @@ import {
   PV_LIBRARY_FILTERS,
 } from '../lib/pv-library'
 import { readPvDuration } from '../lib/read-pv-duration'
+import { resolvePvShortUrl } from '../lib/video-resolver'
 import {
   createPvManageItem,
   deletePvManageItem,
@@ -22,7 +23,6 @@ import {
   updatePvManageItem,
 } from '@/api'
 import { useDebounce } from '@/hooks/use-debounce'
-import { callHook } from '@/lib/plugins'
 
 import type { PvCategoryFilter, PvFilterKey, PvFilters } from '../lib/pv-library'
 import type { PvFormState, PvItem } from '../types'
@@ -149,15 +149,15 @@ export function usePvManage() {
 
   async function updateUrl(url: string) {
     setForm((current) => ({ ...current, url }))
-    if (!url.includes('b23.tv/') && !url.includes('bilibili.com')) return
+    const trimmed = url.trim()
+    if (!/^https?:\/\//i.test(trimmed)) return
     try {
-      const result = await callHook('pv:resolve-url', { url })
-      const resolvedUrl = result?.resolvedUrl
+      const resolvedUrl = await resolvePvShortUrl(trimmed)
       if (resolvedUrl) {
         setForm((current) => (current.url === url ? { ...current, url: resolvedUrl } : current))
       }
     } catch {
-      // Keep the entered URL if the plugin cannot resolve it.
+      // Keep the entered URL if it cannot be resolved.
     }
   }
 

@@ -1,5 +1,5 @@
 import { isHlsUrl, isSteamVideoUrl, isVideoFileUrl, isVideoStreamUrl } from './pv-utils'
-import { callHook } from '@/lib/plugins'
+import { resolvePvVideoUrl } from './video-resolver'
 
 export function readPvDuration(url: string, timeoutMs = 5000): Promise<number | null> {
   return new Promise((resolve) => {
@@ -30,7 +30,7 @@ export function readPvDuration(url: string, timeoutMs = 5000): Promise<number | 
 
     async function load() {
       const direct = isVideoFileUrl(url) || isVideoStreamUrl(url) || isSteamVideoUrl(url)
-      const source = direct ? null : await callHook('pv:video-resolve', { url })
+      const source = direct ? null : await resolvePvVideoUrl(url)
       if (settled) return
 
       if (source?.embedUrl && !source.resolvedUrl) {

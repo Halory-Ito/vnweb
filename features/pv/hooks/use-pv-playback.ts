@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 
 import { isHlsUrl, isVideoFileUrl } from '../lib/pv-utils'
-import { callHook } from '@/lib/plugins'
+import { resolvePvVideoUrl } from '../lib/video-resolver'
 
 type Source = { mode: 'direct' | 'embed'; url: string }
 type Playback = { mode: 'loading' } | { mode: 'unavailable' } | Source
@@ -25,7 +25,7 @@ export function usePvPlayback(value: string): Playback {
     if (!playableUrl || direct) return
 
     let cancelled = false
-    void callHook('pv:video-resolve', { url: playableUrl })
+    void resolvePvVideoUrl(playableUrl)
       .then((result) => {
         if (cancelled) return
 

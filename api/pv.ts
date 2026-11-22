@@ -47,3 +47,11 @@ export const deletePvManageItem = async (id: number) => {
     }
   }
 }
+
+export function resolvePvShortLinkApi(url: string) {
+  return api.request<{ resolvedUrl: string | null }>({
+    method: 'POST',
+    url: '/pv/resolve-short-link',
+    data: { url },
+  })
+}
