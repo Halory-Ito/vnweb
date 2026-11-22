@@ -126,10 +126,14 @@ export async function collectLocalResourceReferences() {
   collectRefs(logos, refs, 'logo')
   collectRefs([pvs, ostSongs, guides, guideSteps], refs)
 
-  for (const name of ['config.json', 'custom.css']) {
+  const configFiles = [
+    path.join(process.cwd(), 'data', 'settings', 'appearance.json'),
+    path.join(process.cwd(), 'app', 'custom.css'),
+  ]
+  for (const filePath of configFiles) {
     try {
-      const text = await fs.readFile(path.join(process.cwd(), 'app', name), 'utf8')
-      collectRefs(name.endsWith('.json') ? JSON.parse(text) : text, refs)
+      const text = await fs.readFile(filePath, 'utf8')
+      collectRefs(filePath.endsWith('.json') ? JSON.parse(text) : text, refs)
     } catch (error) {
       if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error
     }

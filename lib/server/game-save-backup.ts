@@ -1,32 +1,11 @@
 import fs from 'node:fs'
 import path from 'node:path'
 
-// 配置文件路径
-const CONFIG_FILE = path.join(process.cwd(), 'app', 'config.json')
-
-type GameSaveConfig = {
-  enabled: boolean
-  directory: string
-}
+import { readGameSaveBackupConfig } from '@/lib/server/config-rw'
 
 // 读取配置
-async function readConfig(): Promise<GameSaveConfig> {
-  try {
-    if (fs.existsSync(CONFIG_FILE)) {
-      const content = await fs.promises.readFile(CONFIG_FILE, 'utf-8')
-      const fullConfig = JSON.parse(content)
-      const settings = (fullConfig['settings'] || {}) as Record<string, unknown>
-      const backup = (settings['backup'] || {}) as Record<string, unknown>
-      const save = (backup['save'] || {}) as Record<string, unknown>
-      return {
-        enabled: Boolean(save.active),
-        directory: typeof save.dir === 'string' ? save.dir : '',
-      }
-    }
-  } catch {
-    // ignore
-  }
-  return { enabled: false, directory: '' }
+async function readConfig() {
+  return readGameSaveBackupConfig()
 }
 
 /**

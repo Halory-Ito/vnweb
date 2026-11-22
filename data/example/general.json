@@ -1,0 +1,11 @@
+{
+  "dbFileName": "file:./local.db",
+  "agent": {
+    "configs": [],
+    "activeConfigId": ""
+  },
+  "goals": {
+    "dailyPlayMinutes": 60,
+    "yearlyCompletedGames": 12
+  }
+}

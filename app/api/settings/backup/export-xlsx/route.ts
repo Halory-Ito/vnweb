@@ -1,4 +1,3 @@
-import 'dotenv/config'
 import dayjs from 'dayjs'
 import { and, asc, eq, gt } from 'drizzle-orm'
 import ExcelJS from 'exceljs'

@@ -1,46 +1,14 @@
-import 'dotenv/config'
 import { NextRequest, NextResponse } from 'next/server'
 import { randomUUID } from 'node:crypto'
 import fs from 'node:fs'
 import path from 'node:path'
 
 import { LIBRARY_FOLDER_LOGO_DIRECTORY } from '@/lib/library-folder-logo-path'
+import { readGameSaveBackupConfig as getGameSaveConfig } from '@/lib/server/config-rw'
+import { getDbPath } from '@/lib/server/database-config.mjs'
 import { getLibraryFolderLogoDirectory } from '@/lib/server/library-folder-logo-files'
 import { createTask, finishTask, getTask, updateTask } from '@/lib/webdav-progress'
 import { getWebDAVConfig, WebDAVClient } from '@/lib/webdav-utils'
-
-// 获取数据库路径
-function getDbPath() {
-  const dbUrl = process.env.DB_FILE_NAME?.trim() || 'file:./local.db'
-  if (dbUrl.startsWith('file:')) {
-    return path.join(process.cwd(), dbUrl.replace('file:', ''))
-  }
-  return dbUrl
-}
-
-// 获取游戏存档配置
-async function getGameSaveConfig(): Promise<{
-  enabled: boolean
-  directory: string
-}> {
-  try {
-    const configFile = path.join(process.cwd(), 'app', 'config.json')
-    if (fs.existsSync(configFile)) {
-      const content = await fs.promises.readFile(configFile, 'utf-8')
-      const config = JSON.parse(content)
-      const settings = (config['settings'] || {}) as Record<string, unknown>
-      const backup = (settings['backup'] || {}) as Record<string, unknown>
-      const save = (backup['save'] || {}) as Record<string, unknown>
-      return {
-        enabled: Boolean(save.active),
-        directory: typeof save.dir === 'string' ? save.dir : '',
-      }
-    }
-  } catch {
-    // ignore
-  }
-  return { enabled: false, directory: '' }
-}
 
 // 计算文件或目录的总大小
 async function calculateSize(target: string): Promise<number> {

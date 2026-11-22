@@ -6,8 +6,8 @@ title vnweb 初始化
 rem ============================================================
 rem  vnweb 一键初始化脚本（Windows）
 rem  1. 检查 Node.js / npm 环境
-rem  2. 生成缺失的配置文件（.env、app/config.ts、app/config.json）
-rem  3. 安装依赖（npm install）
+rem  2. 安装依赖（npm install）
+rem  3. 从 data/example 复制缺失的配置到 data/settings
 rem  4. 备份已有数据库，并初始化新的数据库（drizzle-kit push）
 rem  5. 构建生产版本（npm run build）
 rem  6. 将项目目录加入用户 PATH，以便在任意位置使用 vnweb 命令
@@ -48,18 +48,7 @@ for /f "delims=" %%V in ('npm -v') do echo   npm     %%V
 
 rem ------------------------------------------------------------
 echo.
-echo [2/6] 检查配置文件...
-rem ------------------------------------------------------------
-call :ensure_copy ".env.example" ".env"
-if errorlevel 1 goto :fail
-call :ensure_copy "app\config.example.ts" "app\config.ts"
-if errorlevel 1 goto :fail
-call :ensure_copy "app\config.example.json" "app\config.json"
-if errorlevel 1 goto :fail
-
-rem ------------------------------------------------------------
-echo.
-echo [3/6] 安装依赖（npm install）...
+echo [2/6] 安装依赖（npm install）...
 rem ------------------------------------------------------------
 call npm install
 if errorlevel 1 (
@@ -69,17 +58,22 @@ if errorlevel 1 (
 
 rem ------------------------------------------------------------
 echo.
+echo [3/6] 检查配置文件...
+rem ------------------------------------------------------------
+node --import tsx cmd/init-settings.ts
+if errorlevel 1 goto :fail
+
+rem ------------------------------------------------------------
+echo.
 echo [4/6] 初始化数据库...
 rem ------------------------------------------------------------
-rem 解析数据库文件路径：默认 local.db，可由 .env 中的 DB_FILE_NAME 覆盖
-set "DB_URL=file:./local.db"
-if exist ".env" (
-  for /f "usebackq eol=# tokens=1,* delims==" %%A in (".env") do (
-    if /i "%%A"=="DB_FILE_NAME" set "DB_URL=%%~B"
-  )
+rem 与 Drizzle 及备份接口使用同一份数据库路径配置。
+set "DB_FILE="
+for /f "delims=" %%F in ('node --input-type^=module -e "import { getDbPath } from './lib/server/database-config.mjs'; console.log(getDbPath())"') do set "DB_FILE=%%F"
+if not defined DB_FILE (
+  echo   [错误] 无法读取数据库路径，请检查 data/settings/general.json。
+  goto :fail
 )
-set "DB_FILE=!DB_URL:file:=!"
-set "DB_FILE=!DB_FILE:/=\!"
 for %%F in ("!DB_FILE!") do (
   set "DB_PATH=%%~fF"
   set "DB_DIR=%%~dpF"
@@ -192,26 +186,6 @@ echo ============================================================
 call :pause_if_needed
 endlocal
 exit /b 1
-
-rem ------------------------------------------------------------
-rem  :ensure_copy <模板文件> <目标文件>  目标不存在时从模板复制
-rem ------------------------------------------------------------
-:ensure_copy
-if exist "%~2" (
-  echo   已存在：%~2
-  exit /b 0
-)
-if not exist "%~1" (
-  echo   [错误] 缺少模板文件：%~1
-  exit /b 1
-)
-copy /y "%~1" "%~2" >nul
-if errorlevel 1 (
-  echo   [错误] 无法创建：%~2
-  exit /b 1
-)
-echo   已创建：%~2（来自 %~1，可按需修改）
-exit /b 0
 
 :pause_if_needed
 if /i not "%VNWEB_INIT_NO_PAUSE%"=="1" pause

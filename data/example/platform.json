@@ -1,0 +1,46 @@
+{
+  "steam": {
+    "apiKey": ""
+  },
+  "bangumi": {
+    "useMirror": false,
+    "mirrorUrl": "",
+    "baseUrl": "",
+    "apiKey": "",
+    "oauthClientId": "",
+    "oauthClientSecret": ""
+  },
+  "vndb": {
+    "baseUrl": "https://api.vndb.org/kana",
+    "oauthToken": "",
+    "oauthClientId": "",
+    "oauthClientSecret": "",
+    "oauthAuthorizeUrl": "https://vndb.org/oauth/authorize",
+    "oauthTokenUrl": "https://vndb.org/oauth/token",
+    "oauthUserInfoUrl": "https://api.vndb.org/kana/authinfo",
+    "oauthScope": ""
+  },
+  "ymgal": {
+    "baseUrl": "https://www.ymgal.games",
+    "clientId": "",
+    "clientSecret": "",
+    "oauthClientId": "",
+    "oauthClientSecret": ""
+  },
+  "steamgriddb": {
+    "apiKey": "",
+    "baseUrl": "https://www.steamgriddb.com/api/v2"
+  },
+  "meting": {
+    "bitrate": 320,
+    "coverSize": 300,
+    "neteaseCookie": ""
+  },
+  "enhanced": {
+    "useLocalSdk": false,
+    "apiBase": "https://music.163.com/api",
+    "musicU": "",
+    "quality": "standard",
+    "sdkPort": 3001
+  }
+}

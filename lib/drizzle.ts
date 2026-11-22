@@ -1,7 +1,5 @@
-import 'dotenv/config'
 import { drizzle } from 'drizzle-orm/libsql'
 
-// You can specify any property from the libsql connection options
-const dbUrl = process.env.DB_FILE_NAME?.trim() || 'file:./local.db'
+import { databaseUrl } from './server/database-config.mjs'
 
-export const db = drizzle({ connection: { url: dbUrl } })
+export const db = drizzle({ connection: { url: databaseUrl } })

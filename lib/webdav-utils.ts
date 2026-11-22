@@ -320,18 +320,24 @@ export class WebDAVClient {
   }
 }
 
-// 获取WebDAV配置
+// 获取WebDAV配置（优先读取 data/settings/backup.json，兼容旧 app/webdav-config.json）
 export async function getWebDAVConfig(): Promise<WebDAVConfig | null> {
   try {
-    const configPath = path.join(process.cwd(), 'app', 'webdav-config.json')
-    if (!fs.existsSync(configPath)) {
-      return null
+    const { readConfig } = await import('@/lib/server/config-rw')
+    const fullConfig = await readConfig()
+    const settings = (fullConfig['settings'] || {}) as Record<string, unknown>
+    const backup = (settings['backup'] || {}) as Record<string, unknown>
+    let config = (backup['webdav'] || null) as Partial<WebDAVConfig> | null
+
+    if (!config?.server) {
+      const legacyPath = path.join(process.cwd(), 'app', 'webdav-config.json')
+      if (fs.existsSync(legacyPath)) {
+        const content = await fs.promises.readFile(legacyPath, 'utf-8')
+        config = JSON.parse(content) as Partial<WebDAVConfig>
+      }
     }
 
-    const content = await fs.promises.readFile(configPath, 'utf-8')
-    const config = JSON.parse(content)
-
-    if (!config.server) {
+    if (!config?.server) {
       return null
     }
 
@@ -347,9 +353,8 @@ export async function getWebDAVConfig(): Promise<WebDAVConfig | null> {
   }
 }
 
-// 保存WebDAV配置
+// 保存WebDAV配置到 data/settings/backup.json
 export async function saveWebDAVConfig(config: WebDAVConfig): Promise<void> {
-  const configPath = path.join(process.cwd(), 'app', 'webdav-config.json')
-  await fs.promises.mkdir(path.dirname(configPath), { recursive: true })
-  await fs.promises.writeFile(configPath, JSON.stringify(config, null, 2))
+  const { updateConfigSection } = await import('@/lib/server/config-rw')
+  await updateConfigSection(['settings', 'backup', 'webdav'], config)
 }

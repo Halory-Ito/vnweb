@@ -1,0 +1,12 @@
+{
+  "save": {
+    "active": false,
+    "dir": ""
+  },
+  "webdav": {
+    "server": "",
+    "username": "",
+    "password": "",
+    "remotePath": "/vnweb-backup"
+  }
+}

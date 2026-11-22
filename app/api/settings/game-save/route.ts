@@ -1,4 +1,3 @@
-import 'dotenv/config'
 import { NextRequest, NextResponse } from 'next/server'
 import fs from 'node:fs'
 

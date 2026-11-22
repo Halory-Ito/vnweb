@@ -1,35 +1,50 @@
-import 'dotenv/config'
 import { NextRequest, NextResponse } from 'next/server'
 import fs from 'node:fs'
 import path from 'node:path'
 
-// WebDAV配置文件路径
-function getConfigPath() {
-  return path.join(process.cwd(), 'app', 'webdav-config.json')
-}
+import { readConfig, updateConfigSection } from '@/lib/server/config-rw'
 
-// 默认WebDAV配置
+const LEGACY_WEBDAV_CONFIG_FILE = path.join(process.cwd(), 'app', 'webdav-config.json')
+
 const DEFAULT_CONFIG = {
   server: '',
   username: '',
   password: '',
   remotePath: '/vnweb-backup',
   autoBackup: false,
-  autoBackupInterval: 24, // 小时
+  autoBackupInterval: 24,
 }
 
-// 获取WebDAV配置
+type StoredWebDAVConfig = typeof DEFAULT_CONFIG
+
+async function readStoredWebDAVConfig(): Promise<StoredWebDAVConfig> {
+  const fullConfig = await readConfig()
+  const settings = (fullConfig['settings'] || {}) as Record<string, unknown>
+  const backup = (settings['backup'] || {}) as Record<string, unknown>
+  const webdav = backup['webdav']
+
+  if (webdav && typeof webdav === 'object' && !Array.isArray(webdav)) {
+    return { ...DEFAULT_CONFIG, ...(webdav as Partial<StoredWebDAVConfig>) }
+  }
+
+  if (fs.existsSync(LEGACY_WEBDAV_CONFIG_FILE)) {
+    try {
+      const content = await fs.promises.readFile(LEGACY_WEBDAV_CONFIG_FILE, 'utf-8')
+      const legacy = { ...DEFAULT_CONFIG, ...JSON.parse(content) } as StoredWebDAVConfig
+      await updateConfigSection(['settings', 'backup', 'webdav'], legacy)
+      return legacy
+    } catch {
+      // ignore
+    }
+  }
+
+  return DEFAULT_CONFIG
+}
+
 export async function GET() {
   try {
-    const configPath = getConfigPath()
-    let config = DEFAULT_CONFIG
+    const config = await readStoredWebDAVConfig()
 
-    if (fs.existsSync(configPath)) {
-      const content = await fs.promises.readFile(configPath, 'utf-8')
-      config = { ...DEFAULT_CONFIG, ...JSON.parse(content) }
-    }
-
-    // 不返回密码明文
     const safeConfig = {
       ...config,
       password: config.password ? '********' : '',
@@ -45,27 +60,18 @@ export async function GET() {
   }
 }
 
-// 保存WebDAV配置
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
     const { server, username, password, remotePath, autoBackup, autoBackupInterval } = body
 
-    // 验证必填字段
     if (!server) {
       return NextResponse.json({ error: '服务器地址为必填项' }, { status: 400 })
     }
 
-    // 读取现有配置（保留密码如果没有提供新密码）
-    const configPath = getConfigPath()
-    let existingConfig = DEFAULT_CONFIG
-    if (fs.existsSync(configPath)) {
-      const content = await fs.promises.readFile(configPath, 'utf-8')
-      existingConfig = JSON.parse(content)
-    }
+    const existingConfig = await readStoredWebDAVConfig()
 
-    // 更新配置
-    const newConfig = {
+    const newConfig: StoredWebDAVConfig = {
       server: server || existingConfig.server,
       username: username || existingConfig.username,
       password: password === '********' ? existingConfig.password : password || '',
@@ -74,8 +80,7 @@ export async function POST(req: NextRequest) {
       autoBackupInterval: autoBackupInterval || existingConfig.autoBackupInterval,
     }
 
-    // 保存配置
-    await fs.promises.writeFile(configPath, JSON.stringify(newConfig, null, 2))
+    await updateConfigSection(['settings', 'backup', 'webdav'], newConfig)
 
     return NextResponse.json({
       data: {

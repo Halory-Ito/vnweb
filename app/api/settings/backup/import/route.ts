@@ -1,17 +1,8 @@
-import 'dotenv/config'
 import { NextRequest, NextResponse } from 'next/server'
 import fs from 'node:fs'
 import path from 'node:path'
 
-// 获取数据库路径
-function getDbPath() {
-  const dbUrl = process.env.DB_FILE_NAME?.trim() || 'file:./local.db'
-  // 如果是 file:./local.db 格式，提取路径
-  if (dbUrl.startsWith('file:')) {
-    return path.join(process.cwd(), dbUrl.replace('file:', ''))
-  }
-  return dbUrl
-}
+import { getDbPath } from '@/lib/server/database-config.mjs'
 
 // 获取 assets 目录路径
 function getAssetsPath() {
@@ -76,29 +67,7 @@ async function extractZip(
   }
 }
 
-// 获取游戏存档配置
-async function getGameSaveConfig(): Promise<{
-  enabled: boolean
-  directory: string
-}> {
-  try {
-    const configFile = path.join(process.cwd(), 'app', 'config.json')
-    if (fs.existsSync(configFile)) {
-      const content = await fs.promises.readFile(configFile, 'utf-8')
-      const config = JSON.parse(content)
-      const settings = (config['settings'] || {}) as Record<string, unknown>
-      const backup = (settings['backup'] || {}) as Record<string, unknown>
-      const save = (backup['save'] || {}) as Record<string, unknown>
-      return {
-        enabled: Boolean(save.active),
-        directory: typeof save.dir === 'string' ? save.dir : '',
-      }
-    }
-  } catch {
-    // ignore
-  }
-  return { enabled: false, directory: '' }
-}
+import { readGameSaveBackupConfig as getGameSaveConfig } from '@/lib/server/config-rw'
 
 export async function POST(req: NextRequest) {
   try {

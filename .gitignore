@@ -38,9 +38,10 @@ yarn-error.log*
 .env.*
 
 
-/app/config.ts
 /app/config.json
 /app/webdav-config.json
+/data/*
+!/data/example/
 
 /outer-docs
 
