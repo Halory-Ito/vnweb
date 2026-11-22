@@ -1,4 +1,6 @@
-import type { CharacterProviderPlugin, NormalizedCharacterRow } from '@/lib/plugins/types'
+import { bangumiCharacterProviderInfo } from './metadata'
+
+import type { CharacterProviderPlugin, NormalizedCharacterRow } from '@/lib/providers/types'
 
 // ── Bangumi 响应类型 ──────────────────────────────────────
 
@@ -297,32 +299,7 @@ const mapBangumiDetailToCharacterFields = (detail: BgmCharacterDetail) => {
 // ── 插件实现 ──────────────────────────────────────────────
 
 export const bangumiCharacterProvider: CharacterProviderPlugin = {
-  id: 'bangumi-character',
-  name: 'Bangumi 角色',
-  description: '从 Bangumi 获取动画/游戏角色数据',
-  version: '1.0.0',
-  icon: 'Tv',
-  type: 'character-provider',
-  defaultEnabled: true,
-  sourceId: 'bangumi',
-
-  normalizeExternalId(rawId: string): string {
-    const trimmed = rawId.trim()
-    if (!trimmed) {
-      return ''
-    }
-
-    const subjectMatch = trimmed.match(/subject\/(\d+)/i)
-    if (subjectMatch?.[1]) {
-      return subjectMatch[1]
-    }
-
-    if (/^\d+$/.test(trimmed)) {
-      return trimmed
-    }
-
-    return ''
-  },
+  ...bangumiCharacterProviderInfo,
 
   async resolveExternalId(gameId: number): Promise<string | null> {
     const { eq } = await import('drizzle-orm')

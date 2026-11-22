@@ -1,9 +1,15 @@
 import { Suspense } from 'react'
 
-import CloudSync from '@/features/settings/components/cloud-sync'
+import PlatformSettings from '@/features/settings/components/platform-settings'
+
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: '平台设置',
+}
 
 function SyncPageContent() {
-  return <CloudSync />
+  return <PlatformSettings />
 }
 
 export default function SyncPage() {

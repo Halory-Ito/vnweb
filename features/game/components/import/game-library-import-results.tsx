@@ -17,10 +17,6 @@ export function GameLibraryImportResults({
 
   return (
     <div className="space-y-3">
-      <div className="text-muted-foreground text-sm">
-        共 {state.items.length} 项，已选 {state.selectedCount} 项，新增 {state.importedCount}{' '}
-        项，已存在 {state.skippedCount} 项，失败 {state.failedCount} 项
-      </div>
       <div className="flex flex-wrap items-center gap-2">
         <Button
           type="button"
@@ -50,26 +46,22 @@ export function GameLibraryImportResults({
           />
         </div>
       </div>
-      <div className="space-y-2">
-        {state.visibleItems.length === 0 ? (
-          <div className="text-muted-foreground rounded-md border p-4 text-sm">
-            {state.items.length > 0
-              ? '当前筛选下没有可显示的游戏。'
-              : state.provider === 'steam'
-                ? '请先输入 UID 并搜索。'
-                : '请先读取已绑定账号的游戏列表。'}
-          </div>
-        ) : (
-          state.visibleItems.map((item) => (
+      {state.visibleItems.length > 0 ? (
+        <div className="space-y-2">
+          {state.visibleItems.map((item) => (
             <GameLibraryImportRow
               key={item.id}
               item={item}
               disabled={state.isSearching || state.isImporting}
               onToggle={state.handleToggleSelect}
             />
-          ))
-        )}
-      </div>
+          ))}
+        </div>
+      ) : state.items.length > 0 ? (
+        <div className="text-muted-foreground rounded-md border p-4 text-sm">
+          当前筛选下没有可显示的游戏。
+        </div>
+      ) : null}
     </div>
   )
 }

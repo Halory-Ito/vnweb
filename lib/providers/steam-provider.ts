@@ -1,6 +1,6 @@
 import { api } from '@/lib/request-utils'
 
-import type { GameSearchResult, ProviderPlugin, SteamOwnedGameItem } from '@/lib/plugins/types'
+import type { GameSearchResult, ProviderPlugin, SteamOwnedGameItem } from '@/lib/providers/types'
 import type { GameInfo } from '@/types/game'
 
 // ── 插件定义 ──────────────────────────────────────────────

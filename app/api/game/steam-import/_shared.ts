@@ -2,7 +2,6 @@ import axios from 'axios'
 import { like } from 'drizzle-orm'
 import { HttpsProxyAgent } from 'https-proxy-agent'
 
-import { NEXT_PUBLIC_STEAM_API_KEY } from '@/app/config'
 import { relateWebsiteTable } from '@/db/schema'
 import { db } from '@/lib/drizzle'
 
@@ -137,9 +136,7 @@ type SteamAppDetailResponse = {
   data?: SteamAppDetail
 }
 
-export const getSteamApiKey = () => {
-  return NEXT_PUBLIC_STEAM_API_KEY
-}
+export { readSteamApiKey as getSteamApiKey } from '@/lib/server/platform-settings'
 
 export const normalizeSteamId = (value: unknown) => {
   if (typeof value !== 'string') {

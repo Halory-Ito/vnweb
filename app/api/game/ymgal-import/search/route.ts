@@ -5,7 +5,7 @@ import {
   getBoundThirdPartyAccount,
   getImportedExternalIdSet,
 } from '../../third-party-import/_shared'
-import { YMGAL_BASE_URL } from '@/app/config'
+import { readPlatformSettings } from '@/lib/server/platform-settings'
 
 const YMGAL_MEDIA_BASE = 'https://store.ymgal.games/'
 
@@ -44,11 +44,12 @@ const PAGE_SIZE = 50
 const MAX_ITEMS = 500
 
 const fetchYmgalUserVotes = async (userId: string, voteType: number): Promise<YMGalVoteItem[]> => {
+  const { ymgal } = await readPlatformSettings()
   const items: YMGalVoteItem[] = []
 
   for (let pageNum = 1; pageNum <= Math.ceil(MAX_ITEMS / PAGE_SIZE); pageNum += 1) {
     const response = await axios.get<YMGalVotesResponse>(
-      `${YMGAL_BASE_URL}/api/user/votes/${userId}`,
+      `${ymgal.baseUrl}/api/user/votes/${userId}`,
       {
         timeout: 10_000,
         params: {

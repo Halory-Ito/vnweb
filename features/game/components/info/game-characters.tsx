@@ -42,7 +42,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { getEnabledCharacterProviders } from '@/lib/plugins'
+import { getCharacterProviders } from '@/lib/providers'
 
 import type { CharacterSyncSource, VndbCharacterListItem } from '@/types'
 
@@ -94,7 +94,7 @@ export default function GameCharacters({ gameId }: GameCharactersProps) {
   const [gameIdInput, setGameIdInput] = useState('')
   const [saveImagesToLocal, setSaveImagesToLocal] = useState(true)
 
-  const characterProviders = useMemo(() => getEnabledCharacterProviders(), [])
+  const characterProviders = useMemo(() => getCharacterProviders(), [])
 
   const { data: gameDetail } = useQuery({
     queryKey: ['game', String(gameId)],

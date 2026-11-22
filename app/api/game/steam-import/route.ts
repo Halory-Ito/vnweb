@@ -22,7 +22,7 @@ import {
   relateWebsiteTable,
 } from '@/db/schema'
 import { db } from '@/lib/drizzle'
-import { getEnabledProxySettings } from '@/lib/settings/proxy-settings'
+import { getEnabledProxySettings } from '@/lib/server/proxy-settings'
 
 export const maxDuration = 300
 
@@ -53,9 +53,9 @@ const importSteamGames = async (req: NextRequest) => {
       return NextResponse.json({ error: '无效的 appid' }, { status: 400 })
     }
 
-    const steamApiKey = getSteamApiKey()
+    const steamApiKey = await getSteamApiKey()
     if (!steamApiKey) {
-      return NextResponse.json({ error: '未配置 STEAM_API_KEY，无法导入' }, { status: 500 })
+      return NextResponse.json({ error: '请在平台设置中配置 Steam API Key' }, { status: 500 })
     }
 
     // 获取启用的代理配置

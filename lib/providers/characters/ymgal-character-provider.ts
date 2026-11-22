@@ -1,6 +1,9 @@
+import { ymgalCharacterProviderInfo } from './metadata'
 import { api } from '@/lib/request-utils'
+import { readPlatformSettings } from '@/lib/server/platform-settings'
+import { getYmgalClientToken } from '@/lib/server/ymgal-auth'
 
-import type { CharacterProviderPlugin, NormalizedCharacterRow } from '@/lib/plugins/types'
+import type { CharacterProviderPlugin, NormalizedCharacterRow } from '@/lib/providers/types'
 
 // ── YMGal 响应类型 ────────────────────────────────────────
 
@@ -55,62 +58,19 @@ const YMGAL_HEADERS = {
   Referer: 'https://f.ymgal.games/',
 }
 
-// ── Token 管理 ────────────────────────────────────────────
-
-let cachedToken: string | null = null
-let tokenExpiresAt = 0
-
-const getToken = async (): Promise<string> => {
-  const now = Date.now()
-  if (cachedToken && now < tokenExpiresAt) {
-    return cachedToken
-  }
-
-  const { YMGAL_BASE_URL, YMGAL_CLIENT_ID, YMGAL_CLIENT_SECRET } = await import('@/app/config')
-
-  const res = await api.post(
-    `${YMGAL_BASE_URL}/oauth/token`,
-    new URLSearchParams({
-      grant_type: 'client_credentials',
-      client_id: YMGAL_CLIENT_ID,
-      client_secret: YMGAL_CLIENT_SECRET,
-      scope: 'public',
-    }),
-    {
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        ...YMGAL_HEADERS,
-      },
-    },
-  )
-
-  const data = res.data as {
-    access_token?: string
-    expires_in?: number
-  }
-
-  if (!data.access_token) {
-    throw new Error('YMGal: 获取 access token 失败')
-  }
-
-  cachedToken = data.access_token
-  tokenExpiresAt = now + (data.expires_in ?? 3600) * 1000 - 60_000
-  return cachedToken
-}
-
 const ymgalOpenRequest = async <T>(
   path: string,
   params: Record<string, string | number>,
 ): Promise<T> => {
-  const { YMGAL_BASE_URL } = await import('@/app/config')
-  const token = await getToken()
+  const { ymgal } = await readPlatformSettings()
+  const token = await getYmgalClientToken(ymgal, YMGAL_HEADERS)
 
   const query = new URLSearchParams()
   for (const [key, value] of Object.entries(params)) {
     query.set(key, String(value))
   }
 
-  const res = await api.get(`${YMGAL_BASE_URL}${path}`, {
+  const res = await api.get(`${ymgal.baseUrl}${path}`, {
     params: Object.fromEntries(query),
     headers: {
       Accept: 'application/json;charset=utf-8',
@@ -149,27 +109,7 @@ const parseBirthday = (
 // ── 插件实现 ──────────────────────────────────────────────
 
 export const ymgalCharacterProvider: CharacterProviderPlugin = {
-  id: 'ymgal-character',
-  name: 'YMGal 角色',
-  description: '从 YMGal 获取 Galgame 角色数据',
-  version: '1.0.0',
-  icon: 'Moon',
-  type: 'character-provider',
-  defaultEnabled: true,
-  sourceId: 'ymgal',
-
-  normalizeExternalId(rawId: string): string {
-    const trimmed = rawId.trim()
-    if (!trimmed) return ''
-
-    // 支持 ga35200 或 35200 格式
-    const gaMatch = trimmed.match(/^ga(\d+)$/i)
-    if (gaMatch?.[1]) return gaMatch[1]
-
-    if (/^\d+$/.test(trimmed)) return trimmed
-
-    return ''
-  },
+  ...ymgalCharacterProviderInfo,
 
   async resolveExternalId(gameId: number): Promise<string | null> {
     const { eq } = await import('drizzle-orm')

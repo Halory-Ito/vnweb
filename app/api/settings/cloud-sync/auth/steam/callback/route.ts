@@ -36,7 +36,7 @@ const parseSteamId = (claimedId: string) => {
 }
 
 const toSettingsUrl = (req: NextRequest, status: 'success' | 'failed') => {
-  const target = new URL('/settings', req.nextUrl.origin)
+  const target = new URL('/settings/sync', req.nextUrl.origin)
   target.searchParams.set('provider', 'steam')
   target.searchParams.set('status', status)
   return target.toString()

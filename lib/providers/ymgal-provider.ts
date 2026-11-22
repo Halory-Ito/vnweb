@@ -1,6 +1,6 @@
 import { api } from '@/lib/request-utils'
 
-import type { BulkImportResult, GameSearchResult, ProviderPlugin } from '@/lib/plugins/types'
+import type { BulkImportResult, GameSearchResult, ProviderPlugin } from '@/lib/providers/types'
 import type { GameInfo } from '@/types/game'
 
 // ── YMGal 响应类型 ────────────────────────────────────────
@@ -141,26 +141,7 @@ const mapYMGalGameToGameInfo = (game: YMGalGame): GameInfo => {
   }
 }
 
-// ── YMGal 用户收藏相关类型 ─────────────────────────────────
-type YMGalUserGameItem = {
-  gid: number
-  name: string
-  chineseName?: string
-  mainImg?: string
-  releaseDate?: string
-  userJoinTime?: string
-  userRating?: number
-}
-
-type YMGalUserGameData = {
-  result: YMGalUserGameItem[]
-  total: number
-  hasNext: boolean
-  pageNum: number
-  pageSize: number
-}
-
-// ── 插件定义 ──────────────────────────────────────────────
+// ── 数据源定义 ────────────────────────────────────────────
 export const ymgalProvider: ProviderPlugin = {
   id: 'ymgal',
   name: 'YMGal',

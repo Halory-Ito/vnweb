@@ -1,107 +1,62 @@
 import axios from 'axios'
 import SGDB from 'steamgriddb'
 
-import {
-  NEXT_PUBLIC_BANGUMI_API_KEY,
-  NEXT_PUBLIC_BANGUMI_API_URL,
-  NEXT_PUBLIC_STEAMGRIDDB_API_KEY,
-  NEXT_PUBLIC_STEAMGRIDDB_BASE_URL,
-} from '@/app/config'
+import { readPlatformSettings, resolveBangumiEndpoints } from '@/lib/server/platform-settings'
 
-const getPublicEnv = (key: string): string | undefined => {
-  if (typeof import.meta !== 'undefined') {
-    const value = (import.meta as ImportMeta & { env?: Record<string, string | undefined> }).env?.[
-      key
-    ]
-    if (value) {
-      return value
-    }
-  }
+const userAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:144.0) Gecko/20100101 Firefox/144.0'
 
-  if (typeof globalThis !== 'undefined') {
-    const value = (globalThis as { process?: { env?: Record<string, string | undefined> } }).process
-      ?.env?.[key]
-    if (value) {
-      return value
-    }
-  }
-
-  return undefined
-}
-
-// bgm client
 export const BGMClient = axios.create({
-  baseURL: getPublicEnv('NEXT_PUBLIC_BANGUMI_API_URL') || NEXT_PUBLIC_BANGUMI_API_URL,
-  timeout: undefined,
-  headers: {
-    'User-Agent':
-      'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:144.0) Gecko/20100101 Firefox/144.0',
-    'Access-Token': getPublicEnv('NEXT_PUBLIC_BANGUMI_API_KEY') || NEXT_PUBLIC_BANGUMI_API_KEY,
-  },
+  headers: { 'User-Agent': userAgent },
 })
 
-const sgdbApiKey =
-  getPublicEnv('NEXT_PUBLIC_STEAMGRIDDB_API_KEY')?.trim() || NEXT_PUBLIC_STEAMGRIDDB_API_KEY?.trim()
-const sgdbBaseUrl =
-  getPublicEnv('NEXT_PUBLIC_STEAMGRIDDB_BASE_URL') ||
-  NEXT_PUBLIC_STEAMGRIDDB_BASE_URL ||
-  'https://www.steamgriddb.com/api/v2'
-const SGDB_MISSING_KEY_ERROR =
-  'Missing NEXT_PUBLIC_STEAMGRIDDB_API_KEY. Please configure it in your .env or .env.local.'
-
-let sgdbInstance: SGDB | null = null
-
-const getSGDBClient = (): SGDB => {
-  if (!sgdbApiKey) {
-    throw new Error(SGDB_MISSING_KEY_ERROR)
+BGMClient.interceptors.request.use(async (config) => {
+  const { bangumi } = await readPlatformSettings()
+  config.baseURL = resolveBangumiEndpoints(bangumi).apiUrl
+  if (bangumi.apiKey && !config.headers.has('Access-Token')) {
+    config.headers.set('Access-Token', bangumi.apiKey)
   }
+  return config
+})
 
-  if (!sgdbInstance) {
-    sgdbInstance = new SGDB({
-      key: sgdbApiKey,
-      baseURL: sgdbBaseUrl,
-    })
+let sgdb: { apiKey: string; baseUrl: string; client: SGDB } | undefined
+
+async function getSGDBClient(): Promise<SGDB> {
+  const {
+    steamgriddb: { apiKey, baseUrl },
+  } = await readPlatformSettings()
+  if (!apiKey) throw new Error('未配置 SteamGridDB API Key，请检查平台设置')
+
+  if (sgdb?.apiKey !== apiKey || sgdb.baseUrl !== baseUrl) {
+    sgdb = { apiKey, baseUrl, client: new SGDB({ key: apiKey, baseURL: baseUrl }) }
   }
-
-  return sgdbInstance
+  return sgdb.client
 }
 
-type SGDBClientMethods = {
-  searchGame: (...args: Parameters<SGDB['searchGame']>) => ReturnType<SGDB['searchGame']>
-  getGameById: (...args: Parameters<SGDB['getGameById']>) => ReturnType<SGDB['getGameById']>
-  getGridsById: (...args: Parameters<SGDB['getGridsById']>) => ReturnType<SGDB['getGridsById']>
-  getIconsById: (...args: Parameters<SGDB['getIconsById']>) => ReturnType<SGDB['getIconsById']>
-  getLogosById: (...args: Parameters<SGDB['getLogosById']>) => ReturnType<SGDB['getLogosById']>
-  getHeroesById: (...args: Parameters<SGDB['getHeroesById']>) => ReturnType<SGDB['getHeroesById']>
-}
+type SGDBClientMethods = Pick<
+  SGDB,
+  'searchGame' | 'getGameById' | 'getGridsById' | 'getIconsById' | 'getLogosById' | 'getHeroesById'
+>
 
-// steamgriddb client
 export const SGDBClient: SGDBClientMethods = {
-  searchGame: (...args) => getSGDBClient().searchGame(...args),
-  getGameById: (...args) => getSGDBClient().getGameById(...args),
-  getGridsById: (...args) => getSGDBClient().getGridsById(...args),
-  getIconsById: (...args) => getSGDBClient().getIconsById(...args),
-  getLogosById: (...args) => getSGDBClient().getLogosById(...args),
-  getHeroesById: (...args) => getSGDBClient().getHeroesById(...args),
+  searchGame: async (...args) => (await getSGDBClient()).searchGame(...args),
+  getGameById: async (...args) => (await getSGDBClient()).getGameById(...args),
+  getGridsById: async (...args) => (await getSGDBClient()).getGridsById(...args),
+  getIconsById: async (...args) => (await getSGDBClient()).getIconsById(...args),
+  getLogosById: async (...args) => (await getSGDBClient()).getLogosById(...args),
+  getHeroesById: async (...args) => (await getSGDBClient()).getHeroesById(...args),
 }
 
-// steam client
 export const SteamClient = axios.create({
   baseURL: 'https://api.steampowered.com',
-  timeout: undefined,
-  headers: {
-    'User-Agent':
-      'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:144.0) Gecko/20100101 Firefox/144.0',
-  },
+  headers: { 'User-Agent': userAgent },
 })
 
-// vndb client
 export const VNDBClient = axios.create({
-  baseURL: getPublicEnv('NEXT_PUBLIC_VNDB_BASE_URL') || 'https://api.vndb.org/kana',
-  timeout: undefined,
-  headers: {
-    'Content-Type': 'application/json',
-    'User-Agent':
-      'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:144.0) Gecko/20100101 Firefox/144.0',
-  },
+  headers: { 'Content-Type': 'application/json', 'User-Agent': userAgent },
+})
+
+VNDBClient.interceptors.request.use(async (config) => {
+  const { vndb } = await readPlatformSettings()
+  config.baseURL = vndb.baseUrl
+  return config
 })

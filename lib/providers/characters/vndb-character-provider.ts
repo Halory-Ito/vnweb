@@ -1,4 +1,6 @@
-import type { CharacterProviderPlugin, NormalizedCharacterRow } from '@/lib/plugins/types'
+import { vndbCharacterProviderInfo } from './metadata'
+
+import type { CharacterProviderPlugin, NormalizedCharacterRow } from '@/lib/providers/types'
 
 // ── VNDB 响应类型 ─────────────────────────────────────────
 
@@ -41,28 +43,7 @@ const serializeTuple = (value: [string | null, string | null] | null | undefined
 // ── 插件实现 ──────────────────────────────────────────────
 
 export const vndbCharacterProvider: CharacterProviderPlugin = {
-  id: 'vndb-character',
-  name: 'VNDB 角色',
-  description: '从 VNDB 获取视觉小说角色数据',
-  version: '1.0.0',
-  icon: 'BookOpen',
-  type: 'character-provider',
-  defaultEnabled: true,
-  sourceId: 'vndb',
-
-  normalizeExternalId(rawId: string): string {
-    const trimmed = rawId.trim()
-    if (!trimmed) {
-      return ''
-    }
-    if (/^v\d+$/i.test(trimmed)) {
-      return `v${trimmed.slice(1)}`
-    }
-    if (/^\d+$/.test(trimmed)) {
-      return `v${trimmed}`
-    }
-    return ''
-  },
+  ...vndbCharacterProviderInfo,
 
   async resolveExternalId(gameId: number): Promise<string | null> {
     const { eq } = await import('drizzle-orm')

@@ -87,38 +87,3 @@ export function buildProxyUrl(settings: ProxySettings): string | null {
 
   return `${settings.type}://${auth}${settings.host}:${settings.port}`
 }
-
-/**
- * 获取当前启用的代理配置（从数据库）
- * 仅在服务器端使用
- */
-export async function getEnabledProxySettings(): Promise<ProxySettings | null> {
-  try {
-    const { db } = await import('@/lib/drizzle')
-    const { ProxyConfigTable } = await import('@/db/schema')
-    const { eq } = await import('drizzle-orm')
-
-    const result = await db
-      .select()
-      .from(ProxyConfigTable)
-      .where(eq(ProxyConfigTable.enabled, 1))
-      .limit(1)
-
-    if (result.length === 0 || !result[0]) {
-      return null
-    }
-
-    const row = result[0]
-    return {
-      enabled: true,
-      type: row.type as ProxyType,
-      host: row.host,
-      port: row.port,
-      username: row.username || '',
-      password: row.password || '',
-    }
-  } catch (error) {
-    console.error('Failed to get enabled proxy settings:', error)
-    return null
-  }
-}

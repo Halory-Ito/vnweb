@@ -1,20 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 import { getAppOrigin, issueOAuthState } from '../../_shared'
-import { BANGUMI_OAUTH_CLIENT_ID, NEXT_PUBLIC_BANGUMI_BASE_URL } from '@/app/config'
-
-const AUTHORIZE_URL = `${NEXT_PUBLIC_BANGUMI_BASE_URL}/oauth/authorize`
+import { readPlatformSettings, resolveBangumiEndpoints } from '@/lib/server/platform-settings'
 
 const startBangumiLogin = async (req: NextRequest) => {
-  const clientId = process.env.BANGUMI_OAUTH_CLIENT_ID || BANGUMI_OAUTH_CLIENT_ID || ''
+  const { bangumi } = await readPlatformSettings()
+  const clientId = bangumi.oauthClientId
   if (!clientId) {
     return NextResponse.json({ error: '缺少 BANGUMI_OAUTH_CLIENT_ID 配置' }, { status: 500 })
   }
 
+  const { baseUrl } = resolveBangumiEndpoints(bangumi)
   const state = await issueOAuthState('bangumi')
   const callbackUrl = new URL('/api/settings/cloud-sync/auth/bangumi/callback', getAppOrigin(req))
 
-  const authorizeUrl = new URL(AUTHORIZE_URL)
+  const authorizeUrl = new URL(`${baseUrl}/oauth/authorize`)
   authorizeUrl.searchParams.set('client_id', clientId)
   authorizeUrl.searchParams.set('response_type', 'code')
   authorizeUrl.searchParams.set('redirect_uri', callbackUrl.toString())

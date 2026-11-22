@@ -7,8 +7,6 @@ import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { useHeaderDropdownMenu } from '@/hooks/use-header-dropdown-menu'
@@ -24,8 +22,6 @@ export default function GameAddButton({ desktopOnly = false }: { desktopOnly?: b
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start">
-        <DropdownMenuLabel>添加游戏</DropdownMenuLabel>
-        <DropdownMenuSeparator />
         <GameAddMenuItems />
       </DropdownMenuContent>
     </DropdownMenu>

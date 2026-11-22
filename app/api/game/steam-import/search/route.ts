@@ -10,7 +10,7 @@ import {
   toSteamIconUrl,
   toSteamLogoUrl,
 } from '../_shared'
-import { getEnabledProxySettings } from '@/lib/settings/proxy-settings'
+import { getEnabledProxySettings } from '@/lib/server/proxy-settings'
 
 export const maxDuration = 300
 
@@ -23,9 +23,9 @@ const searchSteamOwnedGames = async (req: NextRequest) => {
       return NextResponse.json({ error: '请输入有效的 Steam UID（17 位数字）' }, { status: 400 })
     }
 
-    const steamApiKey = getSteamApiKey()
+    const steamApiKey = await getSteamApiKey()
     if (!steamApiKey) {
-      return NextResponse.json({ error: '未配置 STEAM_API_KEY，无法搜索' }, { status: 500 })
+      return NextResponse.json({ error: '请在平台设置中配置 Steam API Key' }, { status: 500 })
     }
 
     // 获取启用的代理配置

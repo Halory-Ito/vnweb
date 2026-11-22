@@ -3,17 +3,10 @@ import dayjs from 'dayjs'
 import { NextRequest, NextResponse } from 'next/server'
 
 import { getAppOrigin, saveThirdPartyAccount, validateOAuthState } from '../../_shared'
-
-const getTokenUrl = () => {
-  return process.env.VNDB_OAUTH_TOKEN_URL || 'https://vndb.org/oauth/token'
-}
-
-const getUserInfoUrl = () => {
-  return process.env.VNDB_OAUTH_USERINFO_URL || 'https://api.vndb.org/kana/authinfo'
-}
+import { readPlatformSettings } from '@/lib/server/platform-settings'
 
 const toSettingsUrl = (req: NextRequest, status: 'success' | 'failed', reason?: string) => {
-  const target = new URL('/settings', req.nextUrl.origin)
+  const target = new URL('/settings/sync', req.nextUrl.origin)
   target.searchParams.set('provider', 'vndb')
   target.searchParams.set('status', status)
   if (reason) {
@@ -22,9 +15,7 @@ const toSettingsUrl = (req: NextRequest, status: 'success' | 'failed', reason?: 
   return target.toString()
 }
 
-const fetchVndbAccount = async (accessToken: string) => {
-  const url = getUserInfoUrl()
-
+const fetchVndbAccount = async (url: string, accessToken: string) => {
   const tryTokenHeader = async (headerValue: string) => {
     const response = await axios.get(url, {
       timeout: 10_000,
@@ -60,8 +51,13 @@ const vndbCallback = async (req: NextRequest) => {
       return NextResponse.redirect(toSettingsUrl(req, 'failed', 'invalid_state'))
     }
 
-    const clientId = process.env.VNDB_OAUTH_CLIENT_ID || ''
-    const clientSecret = process.env.VNDB_OAUTH_CLIENT_SECRET || ''
+    const { vndb } = await readPlatformSettings()
+    const {
+      oauthClientId: clientId,
+      oauthClientSecret: clientSecret,
+      oauthTokenUrl,
+      oauthUserInfoUrl,
+    } = vndb
     if (!clientId || !clientSecret) {
       return NextResponse.redirect(toSettingsUrl(req, 'failed', 'missing_config'))
     }
@@ -69,7 +65,7 @@ const vndbCallback = async (req: NextRequest) => {
     const callbackUrl = new URL('/api/settings/cloud-sync/auth/vndb/callback', getAppOrigin(req))
 
     const tokenResponse = await axios.post(
-      getTokenUrl(),
+      oauthTokenUrl,
       {
         grant_type: 'authorization_code',
         client_id: clientId,
@@ -99,7 +95,7 @@ const vndbCallback = async (req: NextRequest) => {
       return NextResponse.redirect(toSettingsUrl(req, 'failed', 'missing_token'))
     }
 
-    const profile = await fetchVndbAccount(accessToken)
+    const profile = await fetchVndbAccount(oauthUserInfoUrl, accessToken)
     const accountId = profile.id?.trim() || profile.username?.trim() || ''
 
     if (!accountId) {
@@ -113,8 +109,7 @@ const vndbCallback = async (req: NextRequest) => {
     await saveThirdPartyAccount('vndb', accountId, accessToken, refreshToken, expiresAt)
 
     return NextResponse.redirect(toSettingsUrl(req, 'success'))
-  } catch (error) {
-    console.error('VNDB oauth callback failed:', error)
+  } catch {
     return NextResponse.redirect(toSettingsUrl(req, 'failed', 'callback_error'))
   }
 }

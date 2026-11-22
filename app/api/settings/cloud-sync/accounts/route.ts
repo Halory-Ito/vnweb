@@ -3,9 +3,13 @@ import dayjs from 'dayjs'
 import { eq } from 'drizzle-orm'
 import { NextRequest, NextResponse } from 'next/server'
 
-import { NEXT_PUBLIC_BANGUMI_API_URL, NEXT_PUBLIC_BANGUMI_BASE_URL } from '@/app/config'
 import { ThirdPartyAccountTable } from '@/db/schema'
 import { db } from '@/lib/drizzle'
+import {
+  readPlatformSettings,
+  readSteamApiKey,
+  resolveBangumiEndpoints,
+} from '@/lib/server/platform-settings'
 
 type Provider = 'steam' | 'bangumi' | 'vndb' | 'ymgal'
 
@@ -63,23 +67,14 @@ const normalizeAvatarUrl = (value: unknown) => {
   return ''
 }
 
-const getSteamApiKey = () => {
-  return (
-    process.env.STEAM_API_KEY ||
-    process.env.NEXT_PUBLIC_STEAM_API_KEY ||
-    process.env.STEAM_WEB_API_KEY ||
-    ''
-  )
-}
-
 const isValidSteamUid = (value: string) => {
   return /^\d{17}$/.test(value)
 }
 
 const fetchSteamPlayerSummary = async (steamId: string) => {
-  const apiKey = getSteamApiKey()
+  const apiKey = await readSteamApiKey()
   if (!apiKey) {
-    throw new Error('未配置 STEAM_API_KEY，无法获取 Steam 账号信息')
+    throw new Error('请在平台设置中配置 Steam API Key')
   }
 
   const response = await axios.get<{
@@ -98,7 +93,9 @@ const fetchSteamPlayerSummary = async (steamId: string) => {
 }
 
 const validateBangumiToken = async (accessToken: string) => {
-  const response = await axios.get(`${NEXT_PUBLIC_BANGUMI_API_URL}/v0/me`, {
+  const { bangumi } = await readPlatformSettings()
+  const { apiUrl } = resolveBangumiEndpoints(bangumi)
+  const response = await axios.get(`${apiUrl}/v0/me`, {
     timeout: 10_000,
     headers: {
       Authorization: `Bearer ${accessToken}`,
@@ -175,7 +172,8 @@ const validateYmgalUserId = async (userId: string) => {
   }
 
   try {
-    const response = await axios.get('https://www.ymgal.games/api/user/space', {
+    const { ymgal } = await readPlatformSettings()
+    const response = await axios.get(ymgal.baseUrl + '/api/user/space', {
       timeout: 10_000,
       params: { uid: normalizedUid },
       headers: YMGAL_API_HEADERS,
@@ -210,7 +208,9 @@ const getBangumiProfile = async (
   accessToken: string,
 ): Promise<AccountProfile> => {
   try {
-    const response = await axios.get(`${NEXT_PUBLIC_BANGUMI_API_URL}/v0/me`, {
+    const { bangumi } = await readPlatformSettings()
+    const { apiUrl, baseUrl } = resolveBangumiEndpoints(bangumi)
+    const response = await axios.get(`${apiUrl}/v0/me`, {
       timeout: 10_000,
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -233,11 +233,7 @@ const getBangumiProfile = async (
       displayName: nickname || username || accountId,
       secondaryName: username && username !== nickname ? `@${username}` : id,
       avatar: normalizeAvatarUrl(payload.avatar),
-      profileUrl: username
-        ? `${NEXT_PUBLIC_BANGUMI_BASE_URL}/user/${username}`
-        : id
-          ? `${NEXT_PUBLIC_BANGUMI_BASE_URL}/user/${id}`
-          : '',
+      profileUrl: username ? `${baseUrl}/user/${username}` : id ? `${baseUrl}/user/${id}` : '',
     }
   } catch {
     return {
@@ -320,8 +316,9 @@ const getYmgalProfile = async (
   accountId: string,
   _accessToken: string,
 ): Promise<AccountProfile> => {
+  const { ymgal } = await readPlatformSettings()
   try {
-    const response = await axios.get('https://www.ymgal.games/api/user/space', {
+    const response = await axios.get(ymgal.baseUrl + '/api/user/space', {
       timeout: 10_000,
       params: { uid: accountId },
       headers: YMGAL_API_HEADERS,
@@ -350,14 +347,14 @@ const getYmgalProfile = async (
       displayName: username || accountId,
       secondaryName: uid,
       avatar,
-      profileUrl: uid ? `https://www.ymgal.games/user/${uid}` : '',
+      profileUrl: uid ? `${ymgal.baseUrl}/user/${uid}` : '',
     }
   } catch {
     return {
       displayName: accountId,
       secondaryName: '',
       avatar: '',
-      profileUrl: `https://www.ymgal.games/user/${accountId}`,
+      profileUrl: `${ymgal.baseUrl}/user/${accountId}`,
     }
   }
 }

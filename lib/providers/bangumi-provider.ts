@@ -1,6 +1,6 @@
 import { api } from '@/lib/request-utils'
 
-import type { BulkImportResult, GameSearchResult, ProviderPlugin } from '@/lib/plugins/types'
+import type { BulkImportResult, GameSearchResult, ProviderPlugin } from '@/lib/providers/types'
 import type { GameInfo } from '@/types/game'
 
 // ── BGM 响应类型 ──────────────────────────────────────────

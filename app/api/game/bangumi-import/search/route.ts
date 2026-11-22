@@ -5,7 +5,7 @@ import {
   getBoundThirdPartyAccount,
   getImportedExternalIdSet,
 } from '../../third-party-import/_shared'
-import { NEXT_PUBLIC_BANGUMI_API_URL } from '@/app/config'
+import { readPlatformSettings, resolveBangumiEndpoints } from '@/lib/server/platform-settings'
 
 type BangumiMeResponse = {
   id?: number
@@ -45,8 +45,8 @@ const USER_AGENT = 'vnweb/1.0'
 const PAGE_SIZE = 50
 const MAX_ITEMS = 500
 
-const getCurrentBangumiUsername = async (accessToken: string) => {
-  const response = await axios.get<BangumiMeResponse>(`${NEXT_PUBLIC_BANGUMI_API_URL}/v0/me`, {
+const getCurrentBangumiUsername = async (accessToken: string, apiBaseUrl: string) => {
+  const response = await axios.get<BangumiMeResponse>(`${apiBaseUrl}/v0/me`, {
     timeout: 10_000,
     headers: {
       Authorization: `Bearer ${accessToken}`,
@@ -70,12 +70,16 @@ const normalizeCollections = (payload: BangumiCollectionResponse) => {
   return payload.data ?? []
 }
 
-const fetchBangumiCollections = async (username: string, accessToken: string) => {
+const fetchBangumiCollections = async (
+  username: string,
+  accessToken: string,
+  apiBaseUrl: string,
+) => {
   const items: BangumiCollectionItem[] = []
 
   for (let offset = 0; offset < MAX_ITEMS; offset += PAGE_SIZE) {
     const response = await axios.get<BangumiCollectionResponse>(
-      `${NEXT_PUBLIC_BANGUMI_API_URL}/v0/users/${encodeURIComponent(username)}/collections`,
+      `${apiBaseUrl}/v0/users/${encodeURIComponent(username)}/collections`,
       {
         timeout: 10_000,
         params: {
@@ -112,8 +116,11 @@ const searchBangumiCollectedGames = async () => {
       return NextResponse.json({ error: '请先绑定 Bangumi 账号' }, { status: 400 })
     }
 
-    const username = await getCurrentBangumiUsername(account.accessToken)
-    const collections = await fetchBangumiCollections(username, account.accessToken)
+    const { bangumi } = await readPlatformSettings()
+    const { apiUrl: apiBaseUrl } = resolveBangumiEndpoints(bangumi)
+
+    const username = await getCurrentBangumiUsername(account.accessToken, apiBaseUrl)
+    const collections = await fetchBangumiCollections(username, account.accessToken, apiBaseUrl)
     const importedIdSet = await getImportedExternalIdSet('bangumi')
 
     const items = collections

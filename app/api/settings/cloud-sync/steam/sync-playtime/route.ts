@@ -35,14 +35,14 @@ const syncSteamPlaytime = async (req: NextRequest) => {
     }
 
     const steamId = steamAccount[0].accountId
-    const apiKey = getSteamApiKey()
+    const apiKey = await getSteamApiKey()
 
     if (!apiKey) {
       return NextResponse.json(
         {
           data: {
             success: false,
-            message: '未配置 STEAM_API_KEY，无法同步游戏时长',
+            message: '请在平台设置中配置 Steam API Key',
           },
         },
         { status: 500 },

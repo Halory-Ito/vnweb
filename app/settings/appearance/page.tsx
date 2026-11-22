@@ -10,6 +10,12 @@ import {
   StatusSection,
 } from '@/features/appearance'
 
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: '外观设置',
+}
+
 export default function AppearancePage() {
   return (
     <>

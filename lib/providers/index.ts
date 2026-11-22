@@ -1,23 +1,25 @@
-// 向后兼容：从统一插件系统重新导出
 export type {
   BulkImportResult,
+  CharacterProvider,
+  CharacterProviderPlugin,
+  GameProvider,
+  GameProviderPlugin,
   GameSearchItem,
   GameSearchResult,
+  NormalizedCharacterRow,
   ProviderCapability,
+  ProviderPlugin,
   SteamOwnedGameItem,
   ThirdPartyLibraryGameItem,
-} from '@/lib/plugins/types'
-
-export type { ProviderPlugin as GameProviderPlugin } from '@/lib/plugins/types'
+} from './types'
 
 export {
   getAccountBindProviders,
   getAllProviders,
   getBulkImportProviders,
+  getCharacterProviders,
   getEnabledProviders,
   getManualSearchProviderOptions,
   getProviderById,
   getProvidersByCapability,
-  isProviderPluginEnabled,
-  toggleProvider,
 } from './registry'

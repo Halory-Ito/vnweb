@@ -1,6 +1,6 @@
 'use client'
 
-import { Clapperboard, CloudDownload, FilePlus2, Gamepad2 } from 'lucide-react'
+import { CloudDownload, FilePlus2 } from 'lucide-react'
 
 import { useGameImportAvailability } from '../../hooks/use-game-import-availability'
 import { BangumiImportDialog } from './bangumi-import-dialog'
@@ -16,6 +16,10 @@ import {
   DropdownMenuSubTrigger,
 } from '@/components/ui/dropdown-menu'
 
+function ProviderLogo({ src, alt }: { src: string; alt: string }) {
+  return <img src={src} alt={alt} className="size-4 shrink-0 rounded-xs object-contain" />
+}
+
 export default function GameAddMenuItems({ compact = false }: { compact?: boolean }) {
   const { steamEnabled, bangumiEnabled, vndbEnabled, ymgalEnabled, hasBulkImport } =
     useGameImportAvailability()
@@ -26,28 +30,32 @@ export default function GameAddMenuItems({ compact = false }: { compact?: boolea
       {steamEnabled ? (
         <SteamImportDialog>
           <DropdownMenuItem className={itemClassName} onSelect={(event) => event.preventDefault()}>
-            <Gamepad2 />从 Steam 导入
+            <ProviderLogo src="/logos/steam.ico" alt="Steam" />
+            Steam
           </DropdownMenuItem>
         </SteamImportDialog>
       ) : null}
       {bangumiEnabled ? (
         <BangumiImportDialog>
           <DropdownMenuItem className={itemClassName} onSelect={(event) => event.preventDefault()}>
-            <Clapperboard />从 bangumi 导入
+            <ProviderLogo src="/logos/bangumi.ico" alt="Bangumi" />
+            Bangumi
           </DropdownMenuItem>
         </BangumiImportDialog>
       ) : null}
       {vndbEnabled ? (
         <VndbImportDialog>
           <DropdownMenuItem className={itemClassName} onSelect={(event) => event.preventDefault()}>
-            <Clapperboard />从 VNDB 导入
+            <ProviderLogo src="/logos/vndb.ico" alt="VNDB" />
+            VNDB
           </DropdownMenuItem>
         </VndbImportDialog>
       ) : null}
       {ymgalEnabled ? (
         <YmgalImportDialog>
           <DropdownMenuItem className={itemClassName} onSelect={(event) => event.preventDefault()}>
-            <Clapperboard />从 YMGal 导入
+            <ProviderLogo src="/logos/ymgal.ico" alt="YMGal" />
+            YMGal
           </DropdownMenuItem>
         </YmgalImportDialog>
       ) : null}

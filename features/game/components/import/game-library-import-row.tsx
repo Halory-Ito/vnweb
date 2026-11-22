@@ -45,11 +45,6 @@ export function GameLibraryImportRow({ item, disabled, onToggle }: GameLibraryIm
         <div className="truncate" title={item.name}>
           {item.name}
         </div>
-        {item.note ? (
-          <div className="text-muted-foreground truncate text-xs" title={item.note}>
-            {item.note}
-          </div>
-        ) : null}
       </div>
       <div className="col-start-3 flex min-w-0 flex-wrap gap-x-3 text-xs sm:contents sm:text-sm">
         <div className="truncate" title={item.detail}>

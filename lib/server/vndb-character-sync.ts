@@ -3,9 +3,9 @@ import { and, eq } from 'drizzle-orm'
 
 import { CharacterTable } from '@/db/schema'
 import { db } from '@/lib/drizzle'
-import { getCharacterProvider } from '@/lib/plugins/registry'
+import { getCharacterProvider } from '@/lib/providers/characters'
 
-import type { NormalizedCharacterRow } from '@/lib/plugins/types'
+import type { NormalizedCharacterRow } from '@/lib/providers'
 
 export type { NormalizedCharacterRow }
 
@@ -179,7 +179,7 @@ export const syncVndbCharactersByGameId = async (
     return { gameId, vnId, bgmSubjectId, ...result }
   }
 
-  // 单源模式：通过插件注册表动态查找
+  // 单源模式：通过数据源注册表动态查找
   const provider = getCharacterProvider(source)
   if (!provider) {
     return {

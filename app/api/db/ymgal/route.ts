@@ -1,45 +1,13 @@
 import axios from 'axios'
 import { NextRequest, NextResponse } from 'next/server'
 
-import { YMGAL_BASE_URL, YMGAL_CLIENT_ID, YMGAL_CLIENT_SECRET } from '@/app/config'
-
-// ── Token 缓存 ────────────────────────────────────────────
-let cachedToken: string | null = null
-let tokenExpiresAt = 0
-
-const getToken = async (): Promise<string> => {
-  const now = Date.now()
-  if (cachedToken && now < tokenExpiresAt) {
-    return cachedToken
-  }
-
-  const res = await axios.get(`${YMGAL_BASE_URL}/oauth/token`, {
-    params: {
-      grant_type: 'client_credentials',
-      client_id: YMGAL_CLIENT_ID,
-      client_secret: YMGAL_CLIENT_SECRET,
-      scope: 'public',
-    },
-  })
-
-  const data = res.data as {
-    access_token?: string
-    expires_in?: number
-  }
-
-  if (!data.access_token) {
-    throw new Error('YMGal: Failed to obtain access token')
-  }
-
-  cachedToken = data.access_token
-  // 提前 60 秒过期，避免边界情况
-  tokenExpiresAt = now + (data.expires_in ?? 3600) * 1000 - 60_000
-  return cachedToken
-}
+import { readPlatformSettings } from '@/lib/server/platform-settings'
+import { getYmgalClientToken } from '@/lib/server/ymgal-auth'
 
 const ymgalRequest = async (path: string, params: Record<string, string | number>) => {
-  const token = await getToken()
-  const res = await axios.get(`${YMGAL_BASE_URL}${path}`, {
+  const { ymgal } = await readPlatformSettings()
+  const token = await getYmgalClientToken(ymgal)
+  const res = await axios.get(`${ymgal.baseUrl}${path}`, {
     params,
     headers: {
       Accept: 'application/json;charset=utf-8',

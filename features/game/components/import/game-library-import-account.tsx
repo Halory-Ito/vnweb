@@ -19,11 +19,6 @@ export function GameLibraryImportAccount({
     return (
       <div className="space-y-2">
         <Label htmlFor={uidInputId}>Steam UID</Label>
-        {account ? (
-          <div className="text-muted-foreground text-xs">
-            已绑定 Steam 账号：{account.accountId}
-          </div>
-        ) : null}
         <div className="flex items-center gap-2">
           <Input
             id={uidInputId}
@@ -58,23 +53,28 @@ export function GameLibraryImportAccount({
           账号加载失败，请稍后重试。
         </div>
       ) : account ? (
-        <div className="rounded-md border p-3 text-sm">
-          <div className="font-medium">{account.profile?.displayName || account.accountId}</div>
-          <div className="text-muted-foreground text-xs">账号 ID：{account.accountId}</div>
+        <div className="flex items-center justify-between gap-3 rounded-md border px-3 py-2.5 text-sm">
+          <div className="min-w-0">
+            <div className="truncate font-medium">
+              {account.profile?.displayName || account.accountId}
+            </div>
+            <div className="text-muted-foreground truncate text-xs">ID：{account.accountId}</div>
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            className="shrink-0"
+            disabled={isSearching || isImporting}
+            onClick={state.handleSearch}
+          >
+            {isSearching ? '读取中...' : '读取游戏列表'}
+          </Button>
         </div>
       ) : (
         <div className="text-muted-foreground rounded-md border p-3 text-sm">
           请先在设置页绑定 {label} 账号。
         </div>
       )}
-      <Button
-        type="button"
-        variant="outline"
-        disabled={isSearching || isImporting || !account}
-        onClick={state.handleSearch}
-      >
-        {isSearching ? '读取中...' : '读取已绑定账号列表'}
-      </Button>
     </div>
   )
 }

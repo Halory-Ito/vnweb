@@ -50,7 +50,7 @@ export const ManualImportDialog = ({
   initialProvider,
   lockProvider = false,
   dialogTitle = '添加游戏',
-  dialogDescription = '从游戏数据库中导入',
+  dialogDescription,
 }: GameImportDialogProps) => {
   const router = useRouter()
   const queryClient = useQueryClient()
@@ -212,7 +212,7 @@ export const ManualImportDialog = ({
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{dialogTitle}</DialogTitle>
-            <DialogDescription>{dialogDescription}</DialogDescription>
+            {dialogDescription ? <DialogDescription>{dialogDescription}</DialogDescription> : null}
           </DialogHeader>
           <div className="space-y-4">
             <div className="flex items-center space-x-4">
@@ -279,15 +279,14 @@ export const ManualImportDialog = ({
         <DialogContent className="flex max-h-[85vh] flex-col sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle>搜索结果</DialogTitle>
-            <DialogDescription>每页 10 条，选择后自动回填游戏 ID</DialogDescription>
           </DialogHeader>
 
           <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-hidden">
-            <div className="text-muted-foreground hidden grid-cols-[2fr_1fr_1fr_auto] gap-2 px-2 text-sm sm:grid">
-              <div>游戏名</div>
-              <div>开发商</div>
-              <div>发行日期</div>
-              <div className="text-right">操作</div>
+            <div className="text-muted-foreground hidden grid-cols-[2fr_1fr_1fr_4.5rem] gap-2 px-2 text-sm sm:grid">
+              <div className="text-left">游戏名</div>
+              <div className="text-left">开发商</div>
+              <div className="text-center">发行日期</div>
+              <div className="text-center">操作</div>
             </div>
 
             <div className="min-h-0 flex-1 space-y-2 overflow-y-auto">
@@ -299,16 +298,16 @@ export const ManualImportDialog = ({
                 searchResults.map((item) => (
                   <div
                     key={item.id}
-                    className="grid items-center gap-2 rounded-md border p-2 sm:grid-cols-[2fr_1fr_1fr_auto]"
+                    className="grid items-center gap-2 rounded-md border p-2 sm:grid-cols-[2fr_1fr_1fr_4.5rem]"
                   >
-                    <div className="truncate text-sm font-medium">{item.name || '-'}</div>
-                    <div className="text-muted-foreground truncate text-xs sm:text-sm">
+                    <div className="truncate text-left text-sm font-medium">{item.name || '-'}</div>
+                    <div className="text-muted-foreground truncate text-left text-xs sm:text-sm">
                       {item.developer || '-'}
                     </div>
-                    <div className="text-muted-foreground truncate text-xs sm:text-sm">
+                    <div className="text-muted-foreground truncate text-xs sm:text-center sm:text-sm">
                       {item.date || '-'}
                     </div>
-                    <div className="text-right">
+                    <div className="text-center">
                       <Button
                         type="button"
                         variant="outline"

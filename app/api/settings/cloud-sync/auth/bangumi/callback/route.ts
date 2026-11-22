@@ -3,14 +3,10 @@ import dayjs from 'dayjs'
 import { NextRequest, NextResponse } from 'next/server'
 
 import { getAppOrigin, saveThirdPartyAccount, validateOAuthState } from '../../_shared'
-import { NEXT_PUBLIC_BANGUMI_API_URL, NEXT_PUBLIC_BANGUMI_BASE_URL } from '@/app/config'
-import { BANGUMI_OAUTH_CLIENT_ID, BANGUMI_OAUTH_CLIENT_SECRET } from '@/app/config'
-
-const TOKEN_URL = `${NEXT_PUBLIC_BANGUMI_BASE_URL}/oauth/access_token`
-const PROFILE_URL = `${NEXT_PUBLIC_BANGUMI_API_URL}/v0/me`
+import { readPlatformSettings, resolveBangumiEndpoints } from '@/lib/server/platform-settings'
 
 const toSettingsUrl = (req: NextRequest, status: 'success' | 'failed', reason?: string) => {
-  const target = new URL('/settings', req.nextUrl.origin)
+  const target = new URL('/settings/sync', req.nextUrl.origin)
   target.searchParams.set('provider', 'bangumi')
   target.searchParams.set('status', status)
   if (reason) {
@@ -33,9 +29,12 @@ const bangumiCallback = async (req: NextRequest) => {
       return NextResponse.redirect(toSettingsUrl(req, 'failed', 'invalid_state'))
     }
 
-    const clientId = process.env.BANGUMI_OAUTH_CLIENT_ID || BANGUMI_OAUTH_CLIENT_ID || ''
-    const clientSecret =
-      process.env.BANGUMI_OAUTH_CLIENT_SECRET || BANGUMI_OAUTH_CLIENT_SECRET || ''
+    const { bangumi } = await readPlatformSettings()
+    const { baseUrl, apiUrl } = resolveBangumiEndpoints(bangumi)
+    const tokenUrl = `${baseUrl}/oauth/access_token`
+    const profileUrl = `${apiUrl}/v0/me`
+
+    const { oauthClientId: clientId, oauthClientSecret: clientSecret } = bangumi
     if (!clientId || !clientSecret) {
       return NextResponse.redirect(toSettingsUrl(req, 'failed', 'missing_config'))
     }
@@ -43,7 +42,7 @@ const bangumiCallback = async (req: NextRequest) => {
     const callbackUrl = new URL('/api/settings/cloud-sync/auth/bangumi/callback', getAppOrigin(req))
 
     const tokenResponse = await axios.post(
-      TOKEN_URL,
+      tokenUrl,
       {
         grant_type: 'authorization_code',
         client_id: clientId,
@@ -73,7 +72,7 @@ const bangumiCallback = async (req: NextRequest) => {
       return NextResponse.redirect(toSettingsUrl(req, 'failed', 'missing_token'))
     }
 
-    const profileResponse = await axios.get(PROFILE_URL, {
+    const profileResponse = await axios.get(profileUrl, {
       timeout: 10_000,
       headers: {
         Authorization: `Bearer ${accessToken}`,

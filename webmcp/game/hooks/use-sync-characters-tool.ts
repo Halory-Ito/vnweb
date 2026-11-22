@@ -6,7 +6,7 @@ import { toast } from 'sonner'
 import { useWebMCP } from 'usewebmcp'
 
 import { getGameById, syncVndbCharactersByGameId, updateGameInfoById } from '@/api'
-import { getEnabledCharacterProviders } from '@/lib/plugins'
+import { getCharacterProviders } from '@/lib/providers'
 import {
   SYNC_CHARACTERS_TOOL_NAME,
   syncCharactersToolInputSchema,
@@ -56,9 +56,9 @@ export const useSyncCharactersTool = () => {
       const target = matched.game
 
       // 2. 选定角色数据源
-      const providers = getEnabledCharacterProviders()
+      const providers = getCharacterProviders()
       if (providers.length === 0) {
-        const message = '当前没有启用任何角色数据源插件，请先在插件设置中启用'
+        const message = '当前没有可用的角色数据源'
         toast.error(message)
         return { synced: false, reason: 'no-provider', message }
       }
