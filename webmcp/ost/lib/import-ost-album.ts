@@ -23,7 +23,10 @@ export const fetchAlbumDetails = async (
 
   try {
     const albumRef = normalizeAlbumRef(source, rawRef)
-    const details = await getAlbumDetails(source, albumRef)
+    const details = await getAlbumDetails(
+      source === 'netease' ? 'enhanced-api' : 'meting-api',
+      albumRef,
+    )
     return { ok: true, shortRef, details }
   } catch (error) {
     return {

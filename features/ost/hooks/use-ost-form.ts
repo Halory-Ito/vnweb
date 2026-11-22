@@ -4,7 +4,9 @@ import { useMutation, useQuery } from '@tanstack/react-query'
 import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 
-import { getAlbumDetails, searchAlbums } from '../lib/ost-utils'
+import { getAlbumDetails, type OstService } from '../lib/ost-utils'
+import { METING_ID_PATTERN } from '../meting-types'
+import { searchOstAlbums } from '../ost-api'
 import { getGameCardList } from '@/api'
 
 import type { MetingServer } from '../meting-types'
@@ -39,6 +41,7 @@ export function parseOstAlbumIds(input: string) {
 
 export function useOstForm({ open, editingItem, onSubmit }: OstFormDialogProps) {
   const [form, setForm] = useState(emptyForm)
+  const [service, setService] = useState<OstService>('enhanced-api')
   const [server, setServer] = useState<MetingServer>('netease')
   const [mode, setMode] = useState<'search' | 'album'>('search')
   const [searchResults, setSearchResults] = useState<UnifiedSearchResult[]>([])
@@ -70,6 +73,7 @@ export function useOstForm({ open, editingItem, onSubmit }: OstFormDialogProps) 
           }
         : emptyForm,
     )
+    setService('enhanced-api')
     setServer('netease')
     setMode('search')
     setAlbums([])
@@ -79,25 +83,28 @@ export function useOstForm({ open, editingItem, onSubmit }: OstFormDialogProps) 
 
   const keyword = form.searchKeyword.trim()
   const ids = mode === 'album' ? parseOstAlbumIds(keyword) : []
-  const hasInvalidIds = ids.some((id) => !validId.test(id))
+  const idPattern = service === 'meting-api' ? METING_ID_PATTERN : validId
+  const hasInvalidIds = ids.some((id) => !idPattern.test(id))
   const canSearch =
     mode === 'search'
       ? keyword.length > 0 && keyword.length <= 200
       : ids.length > 0 && !hasInvalidIds
 
   const loadAlbums = useMutation({
-    mutationFn: async (references: Array<{ id: string; label: string; cover?: string }>) => {
+    mutationFn: async (
+      references: Array<{ id: string; label: string; name?: string; cover?: string }>,
+    ) => {
       const current = ++version.current
       setShowResults(false)
       setAlbums([])
       const loaded: UnifiedAlbumDetails[] = []
       const failed: string[] = []
-      for (const { id, label, cover } of references) {
+      for (const { id, label, name, cover } of references) {
         if (current !== version.current) return
         try {
-          const details = await getAlbumDetails('meting-api', id)
+          const details = await getAlbumDetails(service, id)
           if (!details.songs.length) throw new Error('专辑没有曲目')
-          loaded.push({ ...details, cover: details.cover || cover || '' })
+          loaded.push({ ...details, name: name || details.name, cover: cover || details.cover })
         } catch {
           failed.push(label)
         }
@@ -116,9 +123,7 @@ export function useOstForm({ open, editingItem, onSubmit }: OstFormDialogProps) 
       setAlbums([])
       setSearchResults([])
       try {
-        const results = (await searchAlbums(keyword, 'meting-api')).filter(
-          (album) => album.type === 'album',
-        )
+        const results = await searchOstAlbums(keyword)
         if (current !== version.current) return
         setSearchResults(results)
         setShowResults(results.length > 0)
@@ -149,7 +154,7 @@ export function useOstForm({ open, editingItem, onSubmit }: OstFormDialogProps) 
 
   const selectAlbums = (selected: UnifiedSearchResult[]) =>
     loadAlbums.mutate(
-      selected.map(({ id, name, cover }) => ({ id: String(id), label: name, cover })),
+      selected.map(({ id, name, cover }) => ({ id: String(id), label: name, name, cover })),
     )
 
   const updateAlbum = (
@@ -168,10 +173,10 @@ export function useOstForm({ open, editingItem, onSubmit }: OstFormDialogProps) 
     } else {
       onSubmit({
         gameId,
-        albums: albums.map(({ name, cover, songs }) => ({
+        albums: albums.map(({ name, cover, source, songs }) => ({
           name: name.trim(),
           cover: cover.trim(),
-          resource: 'meting-api',
+          resource: source,
           songs,
         })),
       })
@@ -181,6 +186,8 @@ export function useOstForm({ open, editingItem, onSubmit }: OstFormDialogProps) 
   return {
     form,
     setForm,
+    service,
+    setService,
     server,
     setServer,
     mode,

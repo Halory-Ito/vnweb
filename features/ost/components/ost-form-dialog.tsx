@@ -10,7 +10,6 @@ import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -34,14 +33,14 @@ export function OstFormDialog(props: OstFormDialogProps) {
   return (
     <>
       <Dialog open={open} onOpenChange={(next) => !isSubmitting && onOpenChange(next)}>
-        <DialogContent className="flex max-h-[85dvh] flex-col overflow-hidden sm:max-w-3xl">
-          <DialogHeader>
+        <DialogContent
+          className="flex max-h-[85dvh] flex-col gap-5 overflow-hidden p-4 sm:max-w-xl sm:p-6"
+          aria-describedby={undefined}
+        >
+          <DialogHeader className="pr-8 text-left">
             <DialogTitle>{editingItem ? '编辑 OST' : '添加 OST'}</DialogTitle>
-            <DialogDescription>
-              {editingItem ? '修改 OST 信息' : '搜索并添加 OST 专辑'}
-            </DialogDescription>
           </DialogHeader>
-          <div className="min-h-0 flex-1 space-y-6 overflow-y-auto p-2">
+          <div className="-mx-1 min-h-0 space-y-4 overflow-y-auto p-1">
             <div className="space-y-2">
               <Label htmlFor="ost-game">关联游戏</Label>
               <Select
@@ -99,7 +98,7 @@ export function OstFormDialog(props: OstFormDialogProps) {
               />
             )}
           </div>
-          <DialogFooter>
+          <DialogFooter className="flex-row justify-end">
             <Button variant="outline" disabled={isSubmitting} onClick={() => onOpenChange(false)}>
               取消
             </Button>

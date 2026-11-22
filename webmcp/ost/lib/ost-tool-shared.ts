@@ -7,7 +7,7 @@ export const DEFAULT_OST_SOURCE: MusicSource = 'meting-api'
 export const OST_SOURCE_LABEL: Record<MusicSource, string> = {
   khinsider: 'Khinsider',
   netease: '网易云音乐',
-  'meting-api': 'Meting API',
+  'meting-api': 'Meting SDK',
 }
 
 /** 搜索结果最多回传多少张专辑，避免工具结果与上下文过长 */

@@ -5,9 +5,8 @@ import { useAtom } from 'jotai'
 import { atomWithStorage } from 'jotai/utils'
 import { useEffect, useMemo, useRef } from 'react'
 
-import { api } from '@/lib/request-utils'
-
 import { findActiveCueIndex, parseLrc, type LyricTrackKey } from '../lib/parse-lrc'
+import { fetchLyricTextApi } from '../ost-api'
 
 import type { OstSongItem } from '@/types'
 
@@ -26,8 +25,7 @@ export function usePlayerLyrics(song: OstSongItem, time: number) {
   const file = useQuery({
     queryKey: ['ost-player-lyrics', path],
     enabled: !inline && Boolean(path),
-    queryFn: async ({ signal }) =>
-      (await api.get<string>(path!, { signal, responseType: 'text' })).data,
+    queryFn: ({ signal }) => fetchLyricTextApi(path!, signal),
   })
   const text = inline || file.data || ''
   const parsed = useMemo(() => parseLrc(text), [text])
@@ -54,8 +52,7 @@ export function usePlayerLyrics(song: OstSongItem, time: number) {
       ? Math.max(0, row.offsetTop - (panel.clientHeight - row.offsetHeight) / 2)
       : 0
     const reduceMotion =
-      typeof window !== 'undefined' &&
-      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
     panel.scrollTo({
       top: targetTop,
       behavior: reduceMotion ? 'auto' : 'smooth',

@@ -1,22 +1,42 @@
-import { requestMeting, metingDetails, MetingUnsupportedTypeError } from './meting'
+import { requestMeting, metingDetails } from './meting'
 import { getNeteaseAlbum } from './netease-albums'
+import { getNeteaseEnhancedService } from './netease-playback'
+import { NETEASE_PLAYBACK_PATH } from '@/features/ost/ost-api'
 
 import type { MetingSong } from './meting'
 import type { UnifiedAlbumDetails } from '@/features/ost/types'
 
 export async function getOstAlbum(id: string): Promise<UnifiedAlbumDetails> {
+  if (await getNeteaseEnhancedService()) {
+    const album = await getNeteaseAlbum(id)
+    return {
+      source: 'netease',
+      name: album.name,
+      cover: album.cover,
+      songs: album.songs.map((song) => ({
+        name: song.name,
+        url: NETEASE_PLAYBACK_PATH + '?id=' + song.id,
+      })),
+    }
+  }
+
   const [album, albumTracks] = await Promise.all([
     getNeteaseAlbum(id),
-    requestMeting({ server: 'netease', type: 'album', id }).catch((error) => {
-      if (error instanceof MetingUnsupportedTypeError) return null
-      throw error
-    }),
+    requestMeting({ server: 'netease', type: 'album', id }),
   ])
-  const tracks = albumTracks ?? (await readAlbumTracks(album.songs.map((song) => String(song.id))))
-  const details = metingDetails({ server: 'netease', type: 'album', id }, tracks)
-  const byId = new Map(
-    details.songs.map((song) => [new URL(song.url).searchParams.get('id'), song]),
-  )
+  return buildOstAlbum(id, album, albumTracks)
+}
+
+async function buildOstAlbum(
+  id: string,
+  album: Awaited<ReturnType<typeof getNeteaseAlbum>>,
+  albumTracks: MetingSong[],
+): Promise<UnifiedAlbumDetails> {
+  const tracks = albumTracks.length
+    ? albumTracks
+    : await readAlbumTracks(album.songs.map((song) => String(song.id)))
+  const details = await metingDetails({ server: 'netease', type: 'album', id }, tracks)
+  const byId = new Map(tracks.map((track, index) => [track.id, details.songs[index]]))
   const songs = album.songs.map((metadata) => {
     const song = byId.get(String(metadata.id))
     if (!song) throw new Error('Meting 未返回完整专辑曲目')
@@ -47,7 +67,7 @@ async function readAlbumTracks(ids: string[]): Promise<MetingSong[]> {
     const batch = await Promise.all(
       ids.slice(start, start + 6).map(async (id) => {
         const songs = await requestMeting({ server: 'netease', type: 'song', id })
-        const song = songs.find((item) => new URL(item.url).searchParams.get('id') === id)
+        const song = songs.find((item) => item.id === id)
         if (!song) throw new Error('Meting 未返回对应专辑曲目')
         return song
       }),

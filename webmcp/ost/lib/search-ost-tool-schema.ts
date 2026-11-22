@@ -17,7 +17,7 @@ export const searchOstToolInputSchema = {
     },
     source: {
       type: 'string',
-      description: '音源：meting-api（唯一音源；通过网易云搜索专辑，曲目由 Meting API 提供）',
+      description: '音源：meting-api（唯一音源；通过网易云搜索专辑，曲目由 Meting SDK 提供）',
     },
   },
   required: ['game'],

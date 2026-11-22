@@ -11,7 +11,7 @@ const REMOTE_URL_RE = /^https?:\/\//i
 export function useSongLyricPreview(item: OstSongItem | null) {
   const inlineText = item?.lyricsText?.trim() ?? ''
   const path = item?.lyricsPath?.trim() ?? ''
-  const isRemote = !inlineText && REMOTE_URL_RE.test(path)
+  const isRemote = !inlineText && (REMOTE_URL_RE.test(path) || path.startsWith('/api/ost/meting?'))
 
   const query = useQuery({
     queryKey: ['ost-lyric-preview', path],

@@ -3,7 +3,7 @@
 import { toast } from 'sonner'
 import { useWebMCP } from 'usewebmcp'
 
-import { searchAlbums } from '@/features/ost/lib/ost-utils'
+import { searchOstAlbums } from '@/features/ost/ost-api'
 import {
   buildGameNameCandidates,
   resolveTargetGame,
@@ -12,7 +12,6 @@ import {
 import {
   MAX_ALBUM_RESULTS,
   OST_SOURCES,
-  OST_SOURCE_LABEL,
   resolveOstSource,
   toShortAlbumRef,
 } from '@/webmcp/ost/lib/ost-tool-shared'
@@ -21,11 +20,9 @@ import {
   searchOstToolInputSchema,
 } from '@/webmcp/ost/lib/search-ost-tool-schema'
 
-/** 按平台优先级去重出候选搜索词（最多两个）：网易云是中文平台优先中文名，khinsider 是英文站优先原名 */
-
 /**
  * 注册「搜索游戏 OST 条目」工具（只读，不写库）：
- * 按游戏名称 / vndb_id 匹配本地游戏 → 用【库内游戏名称】在指定音源搜索专辑 → 返回候选并在对话里渲染成【可多选】的勾选卡片。
+ * 按游戏名称 / vndb_id 匹配本地游戏 → 用【库内游戏名称】在网易云搜索专辑 → 返回候选并在对话里渲染成【可多选】的勾选卡片。
  * 用户确认后，卡片会把所选专辑的 id 作为下一条消息发出，再由模型调用 import_game_ost 完成导入（多张用 albumIds）。
  */
 export const useSearchOstTool = () => {
@@ -61,7 +58,6 @@ export const useSearchOstTool = () => {
 
       const target = matched.game
       const candidates = buildGameNameCandidates(target, {
-        // 网易云是中文平台，中文名命中率更高；khinsider 是英文站，原名更准
         preferChinese: true,
         explicit: input.keyword,
       })
@@ -84,12 +80,10 @@ export const useSearchOstTool = () => {
         results: albums,
         keyword,
         triedKeywords,
-      } = await searchWithGameNameCandidates(candidates, (candidate) =>
-        searchAlbums(candidate, source),
-      )
+      } = await searchWithGameNameCandidates(candidates, searchOstAlbums)
 
       if (albums.length === 0) {
-        const message = `在 ${OST_SOURCE_LABEL[source]} 中用「${triedKeywords.join('」「')}」都没有搜到专辑，可换个 keyword 再试`
+        const message = `在网易云音乐中用「${triedKeywords.join('」「')}」都没有搜到专辑，可换个 keyword 再试`
         toast.error(message)
         return {
           found: false,
@@ -124,7 +118,7 @@ export const useSearchOstTool = () => {
         ui: {
           kind: 'checkbox-list',
           title: `为「${target.title}」选择要导入的 OST 专辑`,
-          description: `${OST_SOURCE_LABEL[source]} · 关键词「${keyword}」· 共 ${albums.length} 张${
+          description: `网易云音乐 · 关键词「${keyword}」· 共 ${albums.length} 张${
             albums.length > options.length ? `（仅显示前 ${options.length} 张）` : ''
           } · 可多选，导入所选专辑`,
           // 涉及写库：默认不勾选，避免误点确认就把全部候选都导进去
@@ -139,9 +133,9 @@ export const useSearchOstTool = () => {
                 album.songCount ? `${album.songCount} 首` : '',
               ]
                 .filter(Boolean)
-                .join(' · ') || OST_SOURCE_LABEL[source],
+                .join(' · ') || '网易云音乐',
             image: album.cover || undefined,
-            badge: OST_SOURCE_LABEL[source],
+            badge: '网易云音乐',
           })),
           confirmLabel: '导入已选专辑',
           sendPrefix: `把这些专辑导入「${target.title}」的 OST（source=${source}）：`,

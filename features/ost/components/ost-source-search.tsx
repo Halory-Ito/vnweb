@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/select'
 
 import type { useOstForm } from '../hooks/use-ost-form'
+import type { OstService } from '../lib/ost-utils'
 import type { MetingServer } from '../meting-types'
 
 export function OstSourceSearch({
@@ -23,22 +24,56 @@ export function OstSourceSearch({
   state: ReturnType<typeof useOstForm>
   disabled: boolean
 }) {
-  const { form, setForm, server, setServer, mode, setMode, resetResults, runSearch } = state
+  const {
+    form,
+    setForm,
+    service,
+    setService,
+    server,
+    setServer,
+    mode,
+    setMode,
+    resetResults,
+    runSearch,
+  } = state
   const isBusy = disabled || state.isBusy
   return (
-    <div className="space-y-3">
-      <div className="flex flex-wrap gap-3">
-        <div className="space-y-2">
+    <div className="space-y-4">
+      <div className="grid gap-x-3 gap-y-4 sm:grid-cols-3">
+        <div className="min-w-0 space-y-2">
+          <Label htmlFor="ost-service">{mode === 'search' ? '曲目数据服务' : '数据服务'}</Label>
+          <Select
+            value={service}
+            disabled={isBusy}
+            onValueChange={(value) => {
+              const nextService = value as OstService
+              resetResults()
+              setService(nextService)
+              if (nextService === 'enhanced-api') {
+                setServer('netease')
+              }
+            }}
+          >
+            <SelectTrigger id="ost-service" className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="enhanced-api">Enhanced API</SelectItem>
+              <SelectItem value="meting-api">Meting SDK</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="min-w-0 space-y-2">
           <Label htmlFor="ost-platform">音乐平台</Label>
           <Select
-            value={server}
-            disabled={isBusy || mode === 'search'}
+            value={mode === 'search' ? 'netease' : server}
+            disabled={isBusy || mode === 'search' || service === 'enhanced-api'}
             onValueChange={(value) => {
               resetResults()
               setServer(value as MetingServer)
             }}
           >
-            <SelectTrigger id="ost-platform" className="w-40">
+            <SelectTrigger id="ost-platform" className="w-full">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -50,7 +85,7 @@ export function OstSourceSearch({
             </SelectContent>
           </Select>
         </div>
-        <div className="space-y-2">
+        <div className="min-w-0 space-y-2">
           <Label htmlFor="ost-mode">读取方式</Label>
           <Select
             value={mode}
@@ -58,11 +93,10 @@ export function OstSourceSearch({
             onValueChange={(value) => {
               resetResults()
               setMode(value as 'search' | 'album')
-              if (value === 'search') setServer('netease')
               setForm((prev) => ({ ...prev, searchKeyword: '' }))
             }}
           >
-            <SelectTrigger id="ost-mode" className="w-40">
+            <SelectTrigger id="ost-mode" className="w-full">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -110,7 +144,7 @@ export function OstSourceSearch({
                 state.hasInvalidIds ? 'text-destructive text-sm' : 'text-muted-foreground text-sm'
               }
             >
-              {state.hasInvalidIds ? '每个专辑 ID 须为 1 至 30 位数字' : '多个专辑 ID 用逗号分隔'}
+              {state.hasInvalidIds ? '请输入有效的专辑 ID' : '多个专辑 ID 用逗号分隔'}
             </p>
             {state.ids.length > 0 && (
               <div className="flex flex-wrap gap-2">

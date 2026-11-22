@@ -41,20 +41,20 @@ export function OstSearchResultsDialog({
 
   return (
     <Dialog open={open} onOpenChange={(value) => (value ? onOpenChange(value) : close())}>
-      <DialogContent className="flex max-h-[85dvh] flex-col overflow-hidden sm:max-w-4xl">
+      <DialogContent className="flex max-h-[85dvh] flex-col overflow-hidden p-4 sm:max-w-2xl sm:p-6">
         <DialogHeader>
           <DialogTitle>搜索结果</DialogTitle>
           <DialogDescription>共找到 {results.length} 张专辑，请选择要添加的专辑</DialogDescription>
         </DialogHeader>
-        <div className="min-h-0 flex-1 overflow-auto">
-          <Table>
+        <div className="min-h-0 min-w-0 flex-1 overflow-y-auto">
+          <Table className="table-fixed">
             <TableHeader>
               <TableRow>
                 <TableHead className="w-12">选择</TableHead>
-                <TableHead className="w-20">封面</TableHead>
+                <TableHead className="w-14 sm:w-16">封面</TableHead>
                 <TableHead>专辑名称</TableHead>
-                <TableHead>艺术家</TableHead>
-                <TableHead>曲目数</TableHead>
+                <TableHead className="w-1/4 sm:w-1/3">艺术家</TableHead>
+                <TableHead className="w-16 text-right">曲目数</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -78,19 +78,23 @@ export function OstSearchResultsDialog({
                       <img
                         src={album.cover}
                         alt={album.name}
-                        className="size-12 rounded-md border object-cover"
+                        className="size-10 rounded-md border object-cover sm:size-12"
                       />
                     ) : (
                       <ImageIcon className="text-muted-foreground size-5" />
                     )}
                   </TableCell>
                   <TableCell>
-                    <div className="max-w-48 truncate sm:max-w-100" title={album.name}>
+                    <div className="truncate" title={album.name}>
                       {album.name}
                     </div>
                   </TableCell>
-                  <TableCell>{album.artist || '-'}</TableCell>
-                  <TableCell>{album.songCount ?? '-'}</TableCell>
+                  <TableCell>
+                    <div className="truncate" title={album.artist}>
+                      {album.artist || '-'}
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-right">{album.songCount ?? '-'}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

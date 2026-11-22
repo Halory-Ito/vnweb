@@ -6,7 +6,8 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 
 import { nextTrackIndex, type PlayMode } from '../lib/play-mode'
-import { getMetingDetails } from '../ost-api'
+import { getMetingMediaRef, metingMediaPath } from '../meting-types'
+import { NETEASE_PLAYBACK_PATH, resolveNeteasePlaybackApi } from '../ost-api'
 
 import type { OstSongItem } from '@/types'
 
@@ -76,9 +77,19 @@ export function useGlobalSongPlayer() {
     try {
       let url = next.song.url
       const id = url.match(/[?&]id=(\d+)/)?.[1]
-      if (next.album?.resource === 'netease' && url.includes('/song/url/v1') && id) {
-        const details = await getMetingDetails({ server: 'netease', type: 'song', id })
-        url = details.songs[0]?.url
+      const isLegacyNeteaseUrl = next.album?.resource === 'netease' && url.includes('/song/url/v1')
+      const storedMeting =
+        next.album?.resource === 'meting-api' || next.album?.resource === 'netease'
+          ? getMetingMediaRef(url, 'url')
+          : undefined
+      if (id && (url.startsWith(NETEASE_PLAYBACK_PATH + '?') || isLegacyNeteaseUrl))
+        url = (await resolveNeteasePlaybackApi(id, false)) ?? url
+      else if (storedMeting) {
+        const enhancedUrl =
+          storedMeting.server === 'netease' && id
+            ? await resolveNeteasePlaybackApi(id, true)
+            : undefined
+        url = enhancedUrl ?? metingMediaPath(storedMeting.server, 'url', storedMeting.id)
       }
       if (version !== revision.current) return
       if (!url) throw new Error('Missing source')

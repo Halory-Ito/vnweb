@@ -1,6 +1,6 @@
-import { NETEASE_API_BASE } from '@/app/config'
 import { api } from '@/lib/request-utils'
 import { isHttpUrl } from '@/lib/server/meting'
+import { readPlatformSettings, resolveEnhancedApiBase } from '@/lib/server/platform-settings'
 
 import type { UnifiedSearchResult } from '@/features/ost/types'
 
@@ -32,8 +32,6 @@ type NeteaseResponse = {
   album?: Album
   songs?: AlbumSong[]
 }
-const usesPublicApi = new URL(NETEASE_API_BASE).hostname === 'music.163.com'
-
 const artistName = (album: Album) =>
   album.artists
     ?.map((artist) => artist.name)
@@ -61,9 +59,13 @@ async function requestAlbums(
   servicePath: string,
   serviceParams: Record<string, string | number>,
 ) {
-  if (usesPublicApi) return requestAt(NETEASE_API_BASE, publicPath, publicParams)
+  const { enhanced } = await readPlatformSettings()
+  const apiBase = resolveEnhancedApiBase(enhanced)
+  const usesPublicApi = new URL(apiBase).hostname === 'music.163.com'
+
+  if (usesPublicApi) return requestAt(apiBase, publicPath, publicParams)
   try {
-    return await requestAt(NETEASE_API_BASE, servicePath, serviceParams)
+    return await requestAt(apiBase, servicePath, serviceParams)
   } catch {
     return requestAt('https://music.163.com/api', publicPath, publicParams)
   }
@@ -71,9 +73,9 @@ async function requestAlbums(
 
 export async function searchNeteaseAlbums(keyword: string): Promise<UnifiedSearchResult[]> {
   const options = { type: 10, offset: 0, total: 'true', limit: 30 }
-  const data = await requestAlbums('/search/get/web', { ...options, s: keyword }, '/search', {
+  const data = await requestAt('https://music.163.com/api', '/cloudsearch/pc', {
     ...options,
-    keywords: keyword,
+    s: keyword,
   })
   if (!data.result || (data.result.albums !== undefined && !Array.isArray(data.result.albums)))
     throw new Error('网易云专辑搜索返回异常')

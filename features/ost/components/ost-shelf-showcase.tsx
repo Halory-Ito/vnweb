@@ -68,6 +68,8 @@ export function OstShelfShowcase({ item, onEdit, onDelete }: OstShelfShowcasePro
   }
 
   const gameTitle = item.gameNameCn || item.gameName
+  const sourceLabel =
+    item.resource === 'netease' ? 'Enhanced' : item.resource === 'meting-api' ? 'Meting' : null
   const imgError = failedCover === item.cover
 
   return (
@@ -138,18 +140,21 @@ export function OstShelfShowcase({ item, onEdit, onDelete }: OstShelfShowcasePro
             </div>
           </div>
 
-          {/* 唱片信息与快捷操作 */}
           <div className="min-w-0 flex-1 space-y-3 text-center sm:text-left">
-            {gameTitle ? (
+            {(gameTitle || sourceLabel) && (
               <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-start">
-                <Badge
-                  variant="outline"
-                  className="max-w-full truncate rounded-full px-2.5 py-0.5 text-xs"
-                >
-                  {gameTitle}
-                </Badge>
+                {gameTitle && (
+                  <Badge variant="outline" className="max-w-full truncate rounded-full px-2.5">
+                    {gameTitle}
+                  </Badge>
+                )}
+                {sourceLabel && (
+                  <Badge variant="outline" className="rounded-full px-2.5">
+                    {sourceLabel}
+                  </Badge>
+                )}
               </div>
-            ) : null}
+            )}
 
             <motion.h2
               layoutId={`ost-title-${item.id}`}
