@@ -43,6 +43,7 @@ export async function POST(request: NextRequest) {
 
     // 下载图片
     const response = await api.get(imageUrl, {
+      adapter: 'fetch',
       responseType: 'arraybuffer',
     })
 

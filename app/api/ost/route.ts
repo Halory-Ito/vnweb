@@ -120,6 +120,7 @@ const downloadCoverToLocal = async (
 
     // 下载图片
     const response = await api.get(coverUrl, {
+      adapter: 'fetch',
       responseType: 'arraybuffer',
     })
 

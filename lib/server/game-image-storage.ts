@@ -198,6 +198,7 @@ const localizeGameImageInternal = async ({
   }
 
   const response = await api.get(normalizedUrl, {
+    adapter: 'fetch',
     responseType: 'arraybuffer',
   })
 

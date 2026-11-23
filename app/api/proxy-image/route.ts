@@ -32,6 +32,7 @@ export async function GET(request: NextRequest) {
 
   try {
     const response = await api.get(url, {
+      adapter: 'fetch',
       responseType: 'arraybuffer',
       timeout: 10_000,
       headers: {
