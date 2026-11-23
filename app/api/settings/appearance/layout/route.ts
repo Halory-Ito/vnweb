@@ -13,6 +13,7 @@ const LAYOUT_KEYS: Array<keyof LayoutSettings> = [
   'gameCardTitleHidden',
   'gameCardRadius',
   'folderPalette',
+  'folderPaletteMode',
   'folderColors',
 ]
 

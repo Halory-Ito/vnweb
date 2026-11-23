@@ -7,18 +7,35 @@ import { useState } from 'react'
 import AppearanceColorInput from './appearance-color-input'
 import { Button } from '@/components/ui/button'
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import {
   DEFAULT_FOLDER_PALETTE,
   folderPaletteAtom,
+  folderPaletteModeAtom,
   MAX_FOLDER_PALETTE_SIZE,
 } from '@/lib/settings/game-library-folder-colors'
+import {
+  DEFAULT_LAYOUT_SETTINGS,
+  isFolderPaletteMode,
+  type FolderPaletteMode,
+} from '@/lib/settings/layout-settings'
 
 export default function FolderPaletteEditor() {
   const [palette, setPalette] = useAtom(folderPaletteAtom)
+  const [mode, setMode] = useAtom(folderPaletteModeAtom)
+  const [draftMode, setDraftMode] = useState<FolderPaletteMode | null>(null)
+  const selectedMode = draftMode ?? mode
   const [draft, setDraft] = useState<string[] | null>(null)
   const colors = draft ?? palette
   const changed =
-    draft !== null &&
-    (colors.length !== palette.length || colors.some((color, index) => color !== palette[index]))
+    selectedMode !== mode ||
+    colors.length !== palette.length ||
+    colors.some((color, index) => color !== palette[index])
 
   function move(index: number, offset: number) {
     const next = [...colors]
@@ -32,11 +49,22 @@ export default function FolderPaletteEditor() {
   return (
     <fieldset className="min-w-0 space-y-3 border-t pt-4">
       <legend className="sr-only">文件夹色板</legend>
-      <div className="space-y-1">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="text-sm font-medium">文件夹色板</p>
-        <p className="text-muted-foreground text-xs">
-          按显示顺序循环取色，单独设置的文件夹颜色优先。
-        </p>
+        <Select
+          value={selectedMode}
+          onValueChange={(value) => {
+            if (isFolderPaletteMode(value)) setDraftMode(value)
+          }}
+        >
+          <SelectTrigger size="sm" aria-label="文件夹取色方式">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="cycle">循环取色</SelectItem>
+            <SelectItem value="random">随机取色</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
       <ol className="grid gap-2">
         {colors.map((color, index) => (
@@ -90,7 +118,7 @@ export default function FolderPaletteEditor() {
           </li>
         ))}
       </ol>
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="flex flex-wrap items-center justify-end gap-2">
         <Button
           type="button"
           variant="outline"
@@ -104,7 +132,10 @@ export default function FolderPaletteEditor() {
           type="button"
           variant="outline"
           size="sm"
-          onClick={() => setDraft([...DEFAULT_FOLDER_PALETTE])}
+          onClick={() => {
+            setDraft([...DEFAULT_FOLDER_PALETTE])
+            setDraftMode(DEFAULT_LAYOUT_SETTINGS.folderPaletteMode)
+          }}
         >
           恢复预设
         </Button>
@@ -114,7 +145,9 @@ export default function FolderPaletteEditor() {
           disabled={!changed}
           onClick={() => {
             setPalette(colors)
+            setMode(selectedMode)
             setDraft(null)
+            setDraftMode(null)
           }}
         >
           保存色板

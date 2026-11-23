@@ -6,6 +6,7 @@ import { api } from '@/lib/request-utils'
 import { isAppearanceImageSource } from '@/lib/settings/appearance-image'
 
 export type GameLibraryLayout = 'mixed' | 'grid' | 'hybrid'
+export type FolderPaletteMode = 'cycle' | 'random'
 export type GridDisplay = 'folders' | 'sections' | 'ungrouped'
 export type LayoutLibraryGroup = 'status' | GameMetadataField
 
@@ -19,6 +20,7 @@ export type LayoutSettings = {
   gameCardTitleHidden: boolean
   gameCardRadius: number
   folderPalette: string[]
+  folderPaletteMode: FolderPaletteMode
   folderColors: Record<string, string>
   folderLogos: Record<string, string>
 }
@@ -37,6 +39,7 @@ export const DEFAULT_LAYOUT_SETTINGS: LayoutSettings = {
   gameCardTitleHidden: false,
   gameCardRadius: 10,
   folderPalette: DEFAULT_FOLDER_PALETTE,
+  folderPaletteMode: 'cycle',
   folderColors: {},
   folderLogos: {},
 }
@@ -69,6 +72,9 @@ export function resolveLayoutLibraryGroup(
 
 export const isFolderPalette = (value: unknown): value is string[] =>
   Array.isArray(value) && value.length <= MAX_FOLDER_PALETTE_SIZE && value.every(isFolderColor)
+
+export const isFolderPaletteMode = (value: unknown): value is FolderPaletteMode =>
+  value === 'cycle' || value === 'random'
 
 export const isFolderColors = (value: unknown): value is Record<string, string> =>
   value !== null &&
@@ -116,6 +122,9 @@ export function normalizeLayoutSettings(
     folderPalette: isFolderPalette(source.folderPalette)
       ? source.folderPalette
       : DEFAULT_LAYOUT_SETTINGS.folderPalette,
+    folderPaletteMode: isFolderPaletteMode(source.folderPaletteMode)
+      ? source.folderPaletteMode
+      : DEFAULT_LAYOUT_SETTINGS.folderPaletteMode,
     folderColors: isFolderColors(source.folderColors)
       ? source.folderColors
       : DEFAULT_LAYOUT_SETTINGS.folderColors,

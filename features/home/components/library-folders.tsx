@@ -9,7 +9,11 @@ import GameHomeGrid from './game-home-grid'
 import LibraryFolderCard from './library-folder-card'
 import SelectableGameGrid from './selectable-game-grid'
 import { Button } from '@/components/ui/button'
-import { folderPaletteAtom, getFolderPaletteColor } from '@/lib/settings/game-library-folder-colors'
+import {
+  folderPaletteAtom,
+  folderPaletteModeAtom,
+  getFolderPaletteColor,
+} from '@/lib/settings/game-library-folder-colors'
 
 import type { LibraryGroup } from '../lib/library-grouping'
 import type { GameCardsData, SelectableGameProps } from '../views/game-home'
@@ -34,6 +38,7 @@ export default function LibraryFolders({
   const { groupedFolders, customFolders } = useLibraryFolders(games, collections, groupBy)
   const groupLabel = LIBRARY_GROUP_LABELS[groupBy]
   const palette = useAtomValue(folderPaletteAtom)
+  const paletteMode = useAtomValue(folderPaletteModeAtom)
   const logos = useLibraryFolderLogos(!showSections)
 
   return (
@@ -57,7 +62,7 @@ export default function LibraryFolders({
                   key={folder.href}
                   {...folder}
                   logo={folder.canSetLogo ? logos?.[folder.href] : undefined}
-                  paletteColor={getFolderPaletteColor(palette, index)}
+                  paletteColor={getFolderPaletteColor(palette, index, paletteMode, folder.href)}
                 />
               ))}
             </GameHomeGrid>
@@ -113,7 +118,12 @@ export default function LibraryFolders({
                 canSetLogo
                 localLogoOnly
                 logo={logos?.[folder.href]}
-                paletteColor={getFolderPaletteColor(palette, groupedFolders.length + index)}
+                paletteColor={getFolderPaletteColor(
+                  palette,
+                  groupedFolders.length + index,
+                  paletteMode,
+                  folder.href,
+                )}
                 onDelete={() => onDelete(id)}
               />
             ))}
