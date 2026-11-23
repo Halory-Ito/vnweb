@@ -2,7 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Download, Loader2, Play, Square, Trash2 } from 'lucide-react'
-import { useEffect, useId, useState } from 'react'
+import { useId, useState } from 'react'
 import { toast } from 'sonner'
 
 import { Badge } from '@/components/ui/badge'
@@ -22,27 +22,24 @@ const ACTION_SUCCESS_TEXT: Record<NeteaseSdkAction, string> = {
   uninstall: 'SDK 已卸载',
 }
 
-export function NeteaseSdkControls() {
+export function NeteaseSdkControls({ savedPort }: { savedPort: number }) {
   const portInputId = useId()
   const queryClient = useQueryClient()
-  const [portInput, setPortInput] = useState('3001')
+  const [portInput, setPortInput] = useState<string>()
 
   const { data: status, isLoading } = useQuery({
     queryKey: ['netease-sdk-status'],
     queryFn: getNeteaseSdkStatusApi,
   })
 
-  useEffect(() => {
-    if (status?.port) {
-      setPortInput(String(status.port))
-    }
-  }, [status?.port])
+  const displayedPort = portInput ?? String(status?.running ? status.port : savedPort)
 
   const actionMutation = useMutation({
     mutationFn: runNeteaseSdkActionApi,
     onSuccess: (nextStatus, variables) => {
       queryClient.setQueryData(['netease-sdk-status'], nextStatus)
       if (variables.action === 'start') {
+        setPortInput(undefined)
         void queryClient.invalidateQueries({ queryKey: ['platform-settings'] })
       }
       toast.success(ACTION_SUCCESS_TEXT[variables.action])
@@ -57,10 +54,14 @@ export function NeteaseSdkControls() {
   const isBusy = isLoading || actionMutation.isPending
 
   const handleStart = () => {
-    const parsedPort = Number.parseInt(portInput, 10)
+    const port = Number(displayedPort)
+    if (!Number.isInteger(port) || port < 1024 || port > 65535) {
+      toast.error('端口必须是 1024 至 65535 之间的整数')
+      return
+    }
     actionMutation.mutate({
       action: 'start',
-      port: Number.isInteger(parsedPort) ? parsedPort : undefined,
+      port,
     })
   }
 
@@ -99,7 +100,7 @@ export function NeteaseSdkControls() {
               type="number"
               min={1024}
               max={65535}
-              value={portInput}
+              value={displayedPort}
               onChange={(event) => setPortInput(event.target.value)}
               disabled={isBusy || status.running}
               placeholder="端口"

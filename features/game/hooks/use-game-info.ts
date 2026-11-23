@@ -44,8 +44,8 @@ export function useGameInfo(game: GameDetail, initialTab?: string) {
 
   const statusMutation = useMutation({
     mutationFn: (nextStatus: number) => updateGamePlayStatusById(game.id, nextStatus),
-    onSuccess: async (_, nextStatus) => {
-      setPlayStatus(nextStatus)
+    onSuccess: async ({ data: { status } }) => {
+      setPlayStatus(status)
       await queryClient.invalidateQueries({ queryKey: ['game', String(game.id)] })
       await queryClient.invalidateQueries({ queryKey: ['game-cards'] })
       await queryClient.invalidateQueries({ queryKey: ['game-sidebar'] })
@@ -70,7 +70,7 @@ export function useGameInfo(game: GameDetail, initialTab?: string) {
   }
 
   const updatePlayStatus = (nextStatus: number) => {
-    if (nextStatus !== playStatus) statusMutation.mutate(nextStatus)
+    statusMutation.mutate(nextStatus)
   }
 
   const totalSeconds = game.totalPlayTime + (session.isRunning ? session.sessionSeconds : 0)
@@ -111,7 +111,7 @@ export function useGameInfo(game: GameDetail, initialTab?: string) {
       playStatus: {
         ...playStatusDialog,
         gameId: game.id,
-        gameTitle: title,
+        gameName: game.name || game.nameCn,
         currentStatus: playStatus,
         onStatusChange: updatePlayStatus,
         disabled: statusMutation.isPending,

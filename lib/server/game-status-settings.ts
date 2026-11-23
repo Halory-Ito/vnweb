@@ -1,7 +1,7 @@
 import { eq, ne, sql } from 'drizzle-orm'
 
 import { readConfig } from './config-rw'
-import { GamePlayTable, GameStatusTable } from '@/db/schema'
+import { GamePlayTable, GameStatusMappingTable, GameStatusTable } from '@/db/schema'
 import {
   GAME_PLAY_STATUS_OPTIONS,
   UNKNOWN_GAME_STATUS,
@@ -62,6 +62,31 @@ async function initialize() {
         name TEXT NOT NULL,
         color TEXT NOT NULL
       )
+    `)
+    await tx.run(sql`
+      CREATE TABLE IF NOT EXISTS game_status_mapping (
+        status_id INTEGER PRIMARY KEY,
+        bangumi INTEGER,
+        vndb INTEGER
+      )
+    `)
+    await tx.run(sql`
+      CREATE TABLE IF NOT EXISTS game_status_push (
+        game_id INTEGER NOT NULL,
+        provider TEXT NOT NULL,
+        account_id TEXT NOT NULL,
+        external_id TEXT NOT NULL,
+        target INTEGER NOT NULL,
+        pushed_at TEXT NOT NULL,
+        PRIMARY KEY (game_id, provider)
+      )
+    `)
+    await tx.run(sql`
+      CREATE TRIGGER IF NOT EXISTS game_status_push_after_game_delete
+      AFTER DELETE ON game_info
+      BEGIN
+        DELETE FROM game_status_push WHERE game_id = OLD.id;
+      END
     `)
     const [marker] = await tx
       .select()
@@ -150,6 +175,7 @@ export async function addGameStatus(name: string) {
 export async function deleteGameStatus(id: number) {
   await ensureGameStatusSchema()
   return runGameStatusTransaction(async (tx) => {
+    await tx.delete(GameStatusMappingTable).where(eq(GameStatusMappingTable.statusId, id))
     await tx.delete(GameStatusTable).where(eq(GameStatusTable.id, id))
     const updated = await tx
       .update(GamePlayTable)

@@ -6,7 +6,7 @@ import { NextRequest } from 'next/server'
 import { ThirdPartyAccountTable } from '@/db/schema'
 import { db } from '@/lib/drizzle'
 
-export type OAuthProvider = 'bangumi' | 'vndb' | 'ymgal'
+export type OAuthProvider = 'steam' | 'bangumi' | 'vndb' | 'ymgal'
 
 export const getAppOrigin = (req: NextRequest) => {
   return req.nextUrl.origin

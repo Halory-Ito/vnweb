@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto'
 import fs from 'node:fs'
 import path from 'node:path'
 
@@ -107,6 +108,8 @@ const URL_FIELDS: ReadonlySet<string> = new Set([
   'oauthUserInfoUrl',
 ])
 
+export class InvalidPlatformSettingsError extends Error {}
+
 function trimTrailingSlash(url: string): string {
   return url.trim().replace(/\/+$/, '')
 }
@@ -204,9 +207,9 @@ function isMaskedValue(incoming: string, original: string): boolean {
 function normalizeUrlValue(value: string): string {
   const trimmed = trimTrailingSlash(value)
   if (!trimmed) return ''
-  const parsed = new URL(trimmed)
-  if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
-    throw new Error('地址必须以 http:// 或 https:// 开头')
+  const parsed = URL.canParse(trimmed) ? new URL(trimmed) : null
+  if (!parsed || (parsed.protocol !== 'http:' && parsed.protocol !== 'https:')) {
+    throw new InvalidPlatformSettingsError('地址必须以 http:// 或 https:// 开头')
   }
   return trimmed
 }
@@ -242,25 +245,65 @@ function mergeWithDefaults(raw: Partial<PlatformSettingsData>): PlatformSettings
 
 async function writePlatformSettingsFile(data: PlatformSettingsData): Promise<void> {
   await fs.promises.mkdir(path.dirname(PLATFORM_SETTINGS_FILE), { recursive: true })
-  await fs.promises.writeFile(PLATFORM_SETTINGS_FILE, JSON.stringify(data, null, 2), 'utf-8')
+  const temporary = `${PLATFORM_SETTINGS_FILE}.${randomUUID()}.tmp`
+  try {
+    await fs.promises.writeFile(temporary, JSON.stringify(data, null, 2), { mode: 0o600 })
+    await fs.promises.rename(temporary, PLATFORM_SETTINGS_FILE)
+  } finally {
+    await fs.promises.rm(temporary, { force: true })
+  }
 }
 
-/** 读取 data/settings/platform.json（含真实密钥，仅服务端使用；首次自动初始化） */
-export async function readPlatformSettings(): Promise<PlatformSettingsData> {
-  if (fs.existsSync(PLATFORM_SETTINGS_FILE)) {
-    try {
-      const content = await fs.promises.readFile(PLATFORM_SETTINGS_FILE, 'utf-8')
-      const parsed = JSON.parse(content) as Partial<PlatformSettingsData>
-      return mergeWithDefaults(parsed)
-    } catch {
-      return getDefaultPlatformSettings()
-    }
+const platformFileState = globalThis as typeof globalThis & {
+  platformSettingsQueue?: Promise<void>
+}
+
+function queuePlatformFileOperation<T>(operation: () => Promise<T>): Promise<T> {
+  const result = (platformFileState.platformSettingsQueue ?? Promise.resolve()).then(operation)
+  platformFileState.platformSettingsQueue = result.then(
+    () => undefined,
+    () => undefined,
+  )
+  return result
+}
+
+function isSettingsRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
+
+async function readOrInitializePlatformSettings(): Promise<PlatformSettingsData> {
+  let content: string
+  try {
+    content = await fs.promises.readFile(PLATFORM_SETTINGS_FILE, 'utf-8')
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error
+    const initial = getDefaultPlatformSettings()
+    await writePlatformSettingsFile(initial)
+    return initial
   }
 
-  const initial = getDefaultPlatformSettings()
+  const parsed: unknown = JSON.parse(content)
+  if (!isSettingsRecord(parsed)) throw new Error('平台配置文件格式无效')
+  for (const [platform, defaults] of Object.entries(getDefaultPlatformSettings())) {
+    const config = parsed[platform]
+    if (config === undefined) continue
+    if (!isSettingsRecord(config)) throw new Error('平台配置文件格式无效')
+    for (const [field, defaultValue] of Object.entries(defaults)) {
+      const value = config[field]
+      if (value === undefined || typeof value === typeof defaultValue) continue
+      if (typeof defaultValue === 'boolean' && (value === 'true' || value === 'false')) {
+        config[field] = value === 'true'
+        continue
+      }
+      throw new Error('平台配置文件字段类型无效')
+    }
+  }
+  return mergeWithDefaults(parsed)
+}
 
-  await writePlatformSettingsFile(initial)
-  return initial
+/** 读取平台配置，首次缺少文件时初始化默认值。 */
+export function readPlatformSettings(): Promise<PlatformSettingsData> {
+  return queuePlatformFileOperation(readOrInitializePlatformSettings)
 }
 
 export async function readSteamApiKey() {
@@ -284,38 +327,58 @@ export function maskPlatformSettings(data: PlatformSettingsData): PlatformSettin
 }
 
 /** 更新单个平台的配置并持久化到 data/settings/platform.json（保留未修改的脱敏密钥） */
-export async function updatePlatformSettings<K extends PlatformKey>(
+export function updatePlatformSettings<K extends PlatformKey>(
   platform: K,
   patch: Partial<PlatformSettingsData[K]>,
 ): Promise<PlatformSettingsData> {
-  const current = await readPlatformSettings()
+  return queuePlatformFileOperation(async () => {
+    const current = await readOrInitializePlatformSettings()
+    const next = applyPlatformSettingsPatch(current, platform, patch)
+    await writePlatformSettingsFile(next)
+    return next
+  })
+}
+
+function applyPlatformSettingsPatch<K extends PlatformKey>(
+  current: PlatformSettingsData,
+  platform: K,
+  patch: Partial<PlatformSettingsData[K]>,
+): PlatformSettingsData {
+  const defaults: Record<string, unknown> = getDefaultPlatformSettings()[platform]
   const storedRecord = { ...(current[platform] as Record<string, unknown>) }
   const secretSet = new Set(SECRET_FIELDS[platform])
 
   for (const [field, rawValue] of Object.entries(patch as Record<string, unknown>)) {
-    if (!(field in storedRecord)) continue
+    if (!Object.hasOwn(defaults, field)) {
+      throw new InvalidPlatformSettingsError(`不支持的配置字段：${field}`)
+    }
+    if (typeof rawValue !== typeof defaults[field]) {
+      throw new InvalidPlatformSettingsError(`配置字段类型无效：${field}`)
+    }
 
     if (platform === 'enhanced' && field === 'quality' && !isEnhancedQuality(rawValue)) {
-      throw new Error('请选择有效的默认音质')
+      throw new InvalidPlatformSettingsError('请选择有效的默认音质')
     }
     if (platform === 'meting' && field === 'bitrate' && !isMetingBitrate(rawValue)) {
-      throw new Error('请选择有效的 Meting 播放码率')
+      throw new InvalidPlatformSettingsError('请选择有效的 Meting 播放码率')
     }
     if (platform === 'meting' && field === 'coverSize' && !isMetingCoverSize(rawValue)) {
-      throw new Error('请选择有效的 Meting 封面尺寸')
+      throw new InvalidPlatformSettingsError('请选择有效的 Meting 封面尺寸')
     }
 
-    if (typeof storedRecord[field] === 'boolean' && typeof rawValue === 'boolean') {
+    if (typeof rawValue === 'boolean') {
       storedRecord[field] = rawValue
       continue
     }
 
-    if (
-      typeof storedRecord[field] === 'number' &&
-      typeof rawValue === 'number' &&
-      Number.isFinite(rawValue)
-    ) {
-      storedRecord[field] = Math.trunc(rawValue)
+    if (typeof rawValue === 'number') {
+      if (
+        field === 'sdkPort' &&
+        (!Number.isInteger(rawValue) || rawValue < 1024 || rawValue > 65535)
+      ) {
+        throw new InvalidPlatformSettingsError('端口必须是 1024 至 65535 之间的整数')
+      }
+      storedRecord[field] = rawValue
       continue
     }
 
@@ -328,13 +391,13 @@ export async function updatePlatformSettings<K extends PlatformKey>(
         continue
       }
       if (field === 'neteaseCookie' && /[^\x20-\x7E]/.test(trimmed)) {
-        throw new Error('请输入单行网易云 Cookie')
+        throw new InvalidPlatformSettingsError('请输入单行网易云 Cookie')
       }
       if (
         field === 'musicU' &&
         (trimmed.startsWith('MUSIC_U=') || /[^\x21-\x7E]|[",;\\]/.test(trimmed))
       ) {
-        throw new Error('请输入单独的 MUSIC_U 值')
+        throw new InvalidPlatformSettingsError('请输入单独的 MUSIC_U 值')
       }
       storedRecord[field] = trimmed
       continue
@@ -348,11 +411,8 @@ export async function updatePlatformSettings<K extends PlatformKey>(
     storedRecord[field] = trimmed
   }
 
-  const next: PlatformSettingsData = {
+  return {
     ...current,
     [platform]: storedRecord as PlatformSettingsData[K],
   }
-
-  await writePlatformSettingsFile(next)
-  return next
 }

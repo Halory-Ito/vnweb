@@ -1,10 +1,7 @@
 import axios from 'axios'
-import dayjs from 'dayjs'
-import { eq } from 'drizzle-orm'
 import { NextRequest, NextResponse } from 'next/server'
 
-import { ThirdPartyAccountTable } from '@/db/schema'
-import { db } from '@/lib/drizzle'
+import { saveThirdPartyAccount, validateOAuthState } from '../../_shared'
 
 const STEAM_OPENID_ENDPOINT = 'https://steamcommunity.com/openid/login'
 const STEAM_CLAIMED_PREFIXES = [
@@ -44,10 +41,24 @@ const toSettingsUrl = (req: NextRequest, status: 'success' | 'failed') => {
 
 const steamCallback = async (req: NextRequest) => {
   try {
+    const state = req.nextUrl.searchParams.get('state') ?? ''
+    if (!(await validateOAuthState('steam', state))) {
+      return NextResponse.redirect(toSettingsUrl(req, 'failed'))
+    }
+
+    const expectedReturnTo = new URL(req.nextUrl.pathname, req.nextUrl.origin)
+    expectedReturnTo.searchParams.set('state', state)
     const incoming = getOpenIdParams(req)
     const claimedId = incoming.get('openid.claimed_id') || ''
 
-    if (!claimedId) {
+    const signedFields = incoming.get('openid.signed')?.split(',') ?? []
+    if (
+      !claimedId ||
+      incoming.get('openid.mode') !== 'id_res' ||
+      incoming.get('openid.return_to') !== expectedReturnTo.href ||
+      !signedFields.includes('return_to') ||
+      !signedFields.includes('claimed_id')
+    ) {
       return NextResponse.redirect(toSettingsUrl(req, 'failed'))
     }
 
@@ -61,7 +72,7 @@ const steamCallback = async (req: NextRequest) => {
     })
 
     const bodyText = String(verification.data || '')
-    if (!/is_valid\s*:\s*true/i.test(bodyText)) {
+    if (!/^is_valid:true\r?$/m.test(bodyText)) {
       return NextResponse.redirect(toSettingsUrl(req, 'failed'))
     }
 
@@ -70,21 +81,7 @@ const steamCallback = async (req: NextRequest) => {
       return NextResponse.redirect(toSettingsUrl(req, 'failed'))
     }
 
-    const now = dayjs().toISOString()
-
-    await db.transaction(async (tx) => {
-      await tx.delete(ThirdPartyAccountTable).where(eq(ThirdPartyAccountTable.provider, 'steam'))
-
-      await tx.insert(ThirdPartyAccountTable).values({
-        provider: 'steam',
-        accountId: steamId,
-        accessToken: 'steam_openid',
-        refreshToken: '',
-        expiresAt: '',
-        createdAt: now,
-        updatedAt: now,
-      })
-    })
+    await saveThirdPartyAccount('steam', steamId, 'steam_openid', '', '')
 
     return NextResponse.redirect(toSettingsUrl(req, 'success'))
   } catch (error) {

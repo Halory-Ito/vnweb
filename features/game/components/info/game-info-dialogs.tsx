@@ -38,7 +38,7 @@ export default function GameInfoDialogs({
       <GamePlayTimeDialog {...playTime} />
       <GameRatingDialog {...rating} />
       <GameOSTDialog {...ost} />
-      <GamePlayStatusDialog {...playStatus} />
+      {playStatus.open && <GamePlayStatusDialog key={playStatus.gameId} {...playStatus} />}
       <Dialog open={exePath.open} onOpenChange={exePath.onOpenChange}>
         <DialogContent>
           <DialogHeader>

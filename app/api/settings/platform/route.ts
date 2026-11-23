@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 
 import {
+  InvalidPlatformSettingsError,
   maskPlatformSettings,
   readPlatformSettings,
   updatePlatformSettings,
@@ -36,6 +37,7 @@ export async function PATCH(request: Request) {
     }
 
     if (
+      !payload ||
       typeof payload.platform !== 'string' ||
       !VALID_PLATFORMS.has(payload.platform as PlatformKey)
     ) {
@@ -54,7 +56,10 @@ export async function PATCH(request: Request) {
 
     return NextResponse.json({ data: maskPlatformSettings(updated) })
   } catch (error) {
-    const message = error instanceof Error ? error.message : '保存平台设置失败'
-    return NextResponse.json({ error: message }, { status: 400 })
+    if (error instanceof InvalidPlatformSettingsError) {
+      return NextResponse.json({ error: error.message }, { status: 400 })
+    }
+    console.error('Save platform settings failed:', error)
+    return NextResponse.json({ error: '保存平台设置失败' }, { status: 500 })
   }
 }

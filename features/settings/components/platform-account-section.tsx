@@ -3,6 +3,10 @@
 import { Calendar, ExternalLink, Loader2, RefreshCw, Unlink, User } from 'lucide-react'
 
 import { AccountBindForm } from './platform-account-bind-form'
+import {
+  PlatformCredentialLink,
+  type PlatformCredentialLinkProps,
+} from './platform-credential-link'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { type ThirdPartyAccountItem } from '@/lib/platform-account-utils'
@@ -16,7 +20,9 @@ interface PlatformAccountSectionProps {
     label: string
     icon: React.ReactNode
     description: string
+    inputLabel?: string
     inputPlaceholder: string
+    credentialLink?: PlatformCredentialLinkProps
   }
   account: ThirdPartyAccountItem | undefined
   isLoading: boolean
@@ -57,30 +63,41 @@ export function PlatformAccountSection({
   onSyncPlaytime,
   children,
 }: PlatformAccountSectionProps) {
-  const isBound = !!account
-  const isSteam = provider === 'steam'
-
   return (
     <section
       aria-labelledby={`platform-section-${provider}`}
       className="dark:border-input dark:bg-input/20 space-y-4 rounded-xl border p-4 sm:p-6"
     >
-      <div className="flex min-w-0 items-center gap-2.5">
+      <div className="flex min-w-0 flex-wrap items-center gap-2.5">
         <div className="bg-muted flex size-7 shrink-0 items-center justify-center rounded-md">
           {config.icon}
         </div>
         <h2 id={`platform-section-${provider}`} className="truncate text-base font-semibold">
           {config.label}
         </h2>
+        {config.credentialLink && <PlatformCredentialLink {...config.credentialLink} />}
       </div>
 
       {isLoading ? (
         <AccountCardSkeleton />
-      ) : isBound ? (
+      ) : account ? (
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <AccountInfo account={account} />
           <div className="flex flex-wrap items-center gap-2 sm:shrink-0">
-            {isSteam && onSyncPlaytime && (
+            {provider === 'ymgal' && account.profile?.profileUrl && (
+              <Button asChild variant="outline" size="icon-sm">
+                <a
+                  href={account.profile.profileUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="打开 YMGal 用户主页"
+                  title="打开 YMGal 用户主页"
+                >
+                  <ExternalLink aria-hidden="true" />
+                </a>
+              </Button>
+            )}
+            {provider === 'steam' && onSyncPlaytime && (
               <Button
                 type="button"
                 variant="outline"
@@ -117,6 +134,7 @@ export function PlatformAccountSection({
           provider={provider}
           inputValue={inputValue}
           onInputChange={onInputChange}
+          inputLabel={config.inputLabel}
           inputPlaceholder={config.inputPlaceholder}
           inputType={inputType}
           isProcessing={isProcessing}
@@ -142,20 +160,18 @@ function AccountInfo({ account }: { account: ThirdPartyAccountItem }) {
         <AvatarFallback>{displayName.slice(0, 1).toUpperCase()}</AvatarFallback>
       </Avatar>
       <div className="min-w-0 flex-1 space-y-0.5">
-        <div className="flex items-center gap-1.5">
-          <span className="truncate text-sm font-medium">{displayName}</span>
-          {account.profile?.profileUrl && (
-            <a
-              className="text-muted-foreground hover:text-primary shrink-0 transition-colors"
-              href={account.profile.profileUrl}
-              target="_blank"
-              rel="noreferrer"
-              title="查看主页"
-            >
-              <ExternalLink className="size-3.5" />
-            </a>
-          )}
-        </div>
+        {account.profile?.profileUrl ? (
+          <a
+            className="block w-fit max-w-full truncate text-sm font-medium underline-offset-4 hover:underline focus-visible:underline"
+            href={account.profile.profileUrl}
+            target="_blank"
+            rel="noreferrer"
+          >
+            {displayName}
+          </a>
+        ) : (
+          <span className="block truncate text-sm font-medium">{displayName}</span>
+        )}
         <div className="text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-0.5 text-sm">
           <span className="inline-flex items-center gap-1">
             <User className="size-4" />

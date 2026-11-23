@@ -16,3 +16,5 @@ export type {
   ResourceCategory,
   ResourceCategorySummary,
 } from './settings-api'
+
+export { getPlatformVisibilityApi, savePlatformVisibilityApi } from './settings-api'

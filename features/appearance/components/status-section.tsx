@@ -3,6 +3,7 @@
 import { PlusIcon, Trash2Icon } from 'lucide-react'
 
 import AppearanceColorInput from './appearance-color-input'
+import { StatusPushColors } from './status-push-colors'
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -33,7 +34,10 @@ export function StatusSection() {
   const options = getGamePlayStatusOptions(names.names)
 
   return (
-    <div className="dark:border-input dark:bg-input/20 space-y-6 rounded-xl border p-6">
+    <div
+      id="game-status"
+      className="dark:border-input dark:bg-input/20 scroll-mt-6 space-y-6 rounded-xl border p-6"
+    >
       <p className="text-base font-semibold">游戏状态</p>
 
       <form
@@ -118,6 +122,7 @@ export function StatusSection() {
           )
         })}
       </div>
+      <StatusPushColors />
       <AlertDialog
         open={names.deleteName !== undefined}
         onOpenChange={(open) => {

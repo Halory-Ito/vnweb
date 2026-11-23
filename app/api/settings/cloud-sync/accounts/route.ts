@@ -303,6 +303,8 @@ const getVndbProfile = async (accountId: string, accessToken: string): Promise<A
   }
 }
 
+const ymgalProfileUrl = (uid: string) => `https://f.ymgal.games/space/${encodeURIComponent(uid)}`
+
 const YMGAL_AVATAR_BASE = 'https://store.ymgal.games/'
 
 const YMGAL_API_HEADERS = {
@@ -347,14 +349,14 @@ const getYmgalProfile = async (
       displayName: username || accountId,
       secondaryName: uid,
       avatar,
-      profileUrl: uid ? `${ymgal.baseUrl}/user/${uid}` : '',
+      profileUrl: ymgalProfileUrl(uid || accountId),
     }
   } catch {
     return {
       displayName: accountId,
       secondaryName: '',
       avatar: '',
-      profileUrl: `${ymgal.baseUrl}/user/${accountId}`,
+      profileUrl: ymgalProfileUrl(accountId),
     }
   }
 }
@@ -417,6 +419,7 @@ const listAccounts = async () => {
           }
         } catch {
           profile = fallbackProfile(row.accountId)
+          if (provider === 'ymgal') profile.profileUrl = ymgalProfileUrl(row.accountId)
         }
 
         // 如果 profile 中的 username/avatar 与数据库中的不同，则更新数据库

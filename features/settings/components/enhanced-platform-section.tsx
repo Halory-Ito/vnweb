@@ -75,14 +75,12 @@ export function EnhancedPlatformSection({
         fields={ENHANCED_CONFIG_FIELDS}
         values={values}
         isLoading={isLoading}
-        renderAfterForm={({ useLocalSdk }) =>
-          useLocalSdk === true && (
-            <div className="border-t pt-4">
-              <NeteaseSdkControls />
-            </div>
-          )
-        }
       />
+      {values?.useLocalSdk === true && (
+        <div className="border-t pt-4">
+          <NeteaseSdkControls savedPort={values.sdkPort} />
+        </div>
+      )}
     </section>
   )
 }

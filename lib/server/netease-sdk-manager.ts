@@ -3,7 +3,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { promisify } from 'node:util'
 
-import { updatePlatformSettings } from '@/lib/server/platform-settings'
+import { readPlatformSettings, updatePlatformSettings } from '@/lib/server/platform-settings'
 
 const execFileAsync = promisify(execFile)
 
@@ -145,7 +145,12 @@ export async function startNeteaseSdk(port?: number): Promise<NeteaseSdkStatus> 
     throw new Error(`请先安装 ${SDK_PACKAGE_NAME}`)
   }
 
-  const targetPort = normalizePort(port ?? runtime.port)
+  const { enhanced } = await readPlatformSettings()
+  if (!enhanced.useLocalSdk) {
+    throw new Error('请先保存「本地 SDK」调用方式')
+  }
+
+  const targetPort = normalizePort(port ?? enhanced.sdkPort)
 
   if (status.running && runtime.port === targetPort) {
     return status
@@ -199,7 +204,12 @@ Promise.resolve(api.serveNcmApi({ port, host: '127.0.0.1' })).catch((err) => {
     throw new Error(reason)
   }
 
-  await updatePlatformSettings('enhanced', { useLocalSdk: true, sdkPort: targetPort })
+  try {
+    await updatePlatformSettings('enhanced', { sdkPort: targetPort })
+  } catch (error) {
+    if (runtime.process === child) await stopNeteaseSdk()
+    throw error
+  }
 
   return getNeteaseSdkStatus()
 }

@@ -330,16 +330,26 @@ export const bangumiCharacterProvider: CharacterProviderPlugin = {
     const { BGMClient } = await import('@/lib/vndb-client')
     const { localizeCharacterImage } = await import('./utils')
 
-    const res = await BGMClient.request({
+    const res = await BGMClient.request<unknown>({
       method: 'GET',
       url: `/v0/subjects/${bgmSubjectId}/characters`,
     })
 
-    const payloadData = res.data as BgmSubjectCharacterResult[]
-    const rows = payloadData ?? []
+    const payload = res.data
+    const rows =
+      payload && typeof payload === 'object' && 'data' in payload ? payload.data : payload
+    if (
+      !Array.isArray(rows) ||
+      rows.some((row) => !row || typeof row !== 'object' || Array.isArray(row))
+    ) {
+      throw new Error(
+        `Bangumi 条目 ${bgmSubjectId} 的角色接口未返回有效列表，请检查平台设置中的接口来源和镜像地址。`,
+      )
+    }
+    const characters = rows as BgmSubjectCharacterResult[]
 
     return Promise.all(
-      rows.map(async (item, index) => {
+      characters.map(async (item, index) => {
         const character = item.character
         const bgmCharacterId = character?.id ?? item.id ?? index + 1
         const fallbackId = sanitizeFileNamePart(

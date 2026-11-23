@@ -48,13 +48,14 @@ const MAX_ITEMS = 500
 const getCurrentBangumiUsername = async (accessToken: string, apiBaseUrl: string) => {
   const response = await axios.get<BangumiMeResponse>(`${apiBaseUrl}/v0/me`, {
     timeout: 10_000,
+    maxRedirects: 0,
     headers: {
       Authorization: `Bearer ${accessToken}`,
       'User-Agent': USER_AGENT,
     },
   })
 
-  const username = (response.data.username || '').trim()
+  const username = typeof response.data?.username === 'string' ? response.data.username.trim() : ''
   if (!username) {
     throw new Error('无法获取 Bangumi 用户名')
   }
@@ -67,7 +68,8 @@ const normalizeCollections = (payload: BangumiCollectionResponse) => {
     return payload
   }
 
-  return payload.data ?? []
+  if (Array.isArray(payload?.data)) return payload.data
+  throw new Error('Bangumi 收藏接口返回了无效的列表数据')
 }
 
 const fetchBangumiCollections = async (
@@ -82,6 +84,7 @@ const fetchBangumiCollections = async (
       `${apiBaseUrl}/v0/users/${encodeURIComponent(username)}/collections`,
       {
         timeout: 10_000,
+        maxRedirects: 0,
         params: {
           subject_type: 4,
           limit: PAGE_SIZE,
@@ -117,10 +120,16 @@ const searchBangumiCollectedGames = async () => {
     }
 
     const { bangumi } = await readPlatformSettings()
-    const { apiUrl: apiBaseUrl } = resolveBangumiEndpoints(bangumi)
+    if (bangumi.useMirror && !bangumi.mirrorUrl.trim()) {
+      return NextResponse.json(
+        { error: '请先在平台设置中填写 Bangumi 接口镜像地址' },
+        { status: 400 },
+      )
+    }
 
-    const username = await getCurrentBangumiUsername(account.accessToken, apiBaseUrl)
-    const collections = await fetchBangumiCollections(username, account.accessToken, apiBaseUrl)
+    const { apiUrl } = resolveBangumiEndpoints(bangumi)
+    const username = await getCurrentBangumiUsername(account.accessToken, apiUrl)
+    const collections = await fetchBangumiCollections(username, account.accessToken, apiUrl)
     const importedIdSet = await getImportedExternalIdSet('bangumi')
 
     const items = collections
@@ -167,6 +176,27 @@ const searchBangumiCollectedGames = async () => {
       },
     })
   } catch (error) {
+    if (axios.isAxiosError(error)) {
+      const status = error.response?.status
+      console.error('Search Bangumi collections failed', { status, code: error.code })
+      if (status === 401 || status === 403) {
+        return NextResponse.json(
+          {
+            error:
+              'Bangumi 拒绝读取收藏，请在平台设置中重新绑定 Bangumi 账号，并检查收藏的访问权限。',
+          },
+          { status },
+        )
+      }
+      return NextResponse.json(
+        {
+          error: status
+            ? 'Bangumi 收藏读取失败 (HTTP ' + status + ')'
+            : 'Bangumi 接口连接失败或超时',
+        },
+        { status: 502 },
+      )
+    }
     console.error('Search Bangumi collections failed:', error)
     return NextResponse.json(
       { error: (error as Error).message || 'Bangumi 收藏读取失败' },

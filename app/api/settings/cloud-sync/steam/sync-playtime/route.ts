@@ -1,23 +1,15 @@
 import dayjs from 'dayjs'
 import { eq } from 'drizzle-orm'
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 
 import { fetchOwnedGames, getSteamApiKey } from '@/app/api/game/steam-import/_shared'
 import { GameIdMapTable, GamePlayTable, GameRecordTable, ThirdPartyAccountTable } from '@/db/schema'
 import { db } from '@/lib/drizzle'
 
-import type { ProxySettings } from '@/lib/settings/proxy-settings'
-
 export const maxDuration = 300
 
-const syncSteamPlaytime = async (req: NextRequest) => {
+const syncSteamPlaytime = async () => {
   try {
-    // 从请求体获取代理设置
-    const body = (await req.json().catch(() => ({}))) as {
-      proxy?: ProxySettings
-    }
-    const proxySettings = body.proxy
-
     // 获取绑定的 Steam 账号
     const steamAccount = await db
       .select({
@@ -49,8 +41,8 @@ const syncSteamPlaytime = async (req: NextRequest) => {
       )
     }
 
-    // 获取 Steam 上的游戏时长（使用代理设置）
-    const ownedGames = await fetchOwnedGames(steamId, apiKey, proxySettings)
+    // 获取 Steam 上的游戏时长
+    const ownedGames = await fetchOwnedGames(steamId, apiKey)
 
     // 获取已导入的 Steam 游戏映射
     const importedGames = await db

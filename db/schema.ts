@@ -1,5 +1,5 @@
 import dayjs from 'dayjs'
-import { int, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core'
+import { int, primaryKey, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core'
 
 import type { PvMetadata } from '@/types/pv'
 
@@ -81,7 +81,26 @@ export const GameStatusTable = sqliteTable('game_status', {
   color: text().notNull(),
 })
 
+export const GameStatusMappingTable = sqliteTable('game_status_mapping', {
+  statusId: int('status_id').primaryKey(),
+  bangumi: int(),
+  vndb: int(),
+})
+
 // 游戏游玩表
+export const GameStatusPushTable = sqliteTable(
+  'game_status_push',
+  {
+    gameId: int('game_id').notNull(),
+    provider: text().notNull(),
+    accountId: text('account_id').notNull(),
+    externalId: text('external_id').notNull(),
+    target: int().notNull(),
+    pushedAt: text('pushed_at').notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.gameId, table.provider] })],
+)
+
 export const GamePlayTable = sqliteTable('game_play', {
   id: int().primaryKey({ autoIncrement: true }),
   gameId: int().notNull(),

@@ -1,15 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
 
+import { issueOAuthState } from '../../_shared'
+
 const STEAM_OPENID_ENDPOINT = 'https://steamcommunity.com/openid/login'
 
-const buildReturnTo = (req: NextRequest) => {
+const buildReturnTo = (req: NextRequest, state: string) => {
   const callbackUrl = new URL('/api/settings/cloud-sync/auth/steam/callback', req.nextUrl.origin)
+  callbackUrl.searchParams.set('state', state)
   return callbackUrl.toString()
 }
 
 const startSteamLogin = async (req: NextRequest) => {
   const realm = req.nextUrl.origin
-  const returnTo = buildReturnTo(req)
+  const returnTo = buildReturnTo(req, await issueOAuthState('steam'))
 
   const params = new URLSearchParams({
     'openid.ns': 'http://specs.openid.net/auth/2.0',

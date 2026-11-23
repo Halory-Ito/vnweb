@@ -1,3 +1,4 @@
+import { readPlatformCache, writePlatformCache } from './platform-cache'
 import { api } from '@/lib/request-utils'
 
 import type { EnhancedQuality } from './enhanced-quality'
@@ -59,11 +60,13 @@ export type PlatformSettingsDTO = {
 }
 
 export async function getPlatformSettingsApi(): Promise<PlatformSettingsDTO> {
-  const response = await api.request<{ data: PlatformSettingsDTO }>({
-    method: 'GET',
-    url: '/settings/platform',
+  return readPlatformCache('config', async () => {
+    const response = await api.request<{ data: PlatformSettingsDTO }>({
+      method: 'GET',
+      url: '/settings/platform',
+    })
+    return response.data.data
   })
-  return response.data.data
 }
 
 export async function updatePlatformSettingsApi<K extends PlatformKey>(
@@ -75,6 +78,7 @@ export async function updatePlatformSettingsApi<K extends PlatformKey>(
     url: '/settings/platform',
     data: { platform, config },
   })
+  writePlatformCache('config', response.data.data)
   return response.data.data
 }
 
@@ -108,5 +112,6 @@ export async function runNeteaseSdkActionApi(payload: {
     data: payload,
     timeout: payload.action === 'install' ? 200_000 : 30_000,
   })
+  if (payload.action === 'start') writePlatformCache('config', null)
   return response.data.data
 }
