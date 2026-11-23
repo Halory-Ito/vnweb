@@ -57,13 +57,13 @@ const CharacterCard = ({ item, onClick }: { item: VndbCharacterListItem; onClick
     <button
       type="button"
       onClick={onClick}
-      className="hover:border-primary relative aspect-9/16 w-full overflow-hidden rounded-md border text-left transition-colors"
+      className="hover:border-primary group relative aspect-9/16 w-full cursor-pointer overflow-hidden rounded-md border text-left transition-colors"
     >
       {item.imageUrl ? (
         <img
           src={item.imageUrl}
           alt={displayName}
-          className="h-full w-full object-cover object-top"
+          className="h-full w-full origin-top object-cover object-top motion-safe:transition-transform motion-safe:duration-300 motion-safe:ease-out motion-safe:group-hover:scale-110"
           loading="lazy"
         />
       ) : (
