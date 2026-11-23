@@ -11,7 +11,6 @@ const links = [
   { segment: 'theme', label: '主题' },
   { segment: 'backup', label: '备份' },
   { segment: 'sync', label: '平台' },
-  { segment: 'proxy', label: '代理' },
 ] as const
 
 export default function SettingsNavigation() {

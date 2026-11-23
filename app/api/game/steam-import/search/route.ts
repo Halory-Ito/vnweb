@@ -10,7 +10,6 @@ import {
   toSteamIconUrl,
   toSteamLogoUrl,
 } from '../_shared'
-import { getEnabledProxySettings } from '@/lib/server/proxy-settings'
 
 export const maxDuration = 300
 
@@ -28,9 +27,7 @@ const searchSteamOwnedGames = async (req: NextRequest) => {
       return NextResponse.json({ error: '请在平台设置中配置 Steam API Key' }, { status: 500 })
     }
 
-    // 获取启用的代理配置
-    const proxySettings = await getEnabledProxySettings()
-    const ownedGames = await fetchOwnedGames(steamId, steamApiKey, proxySettings ?? undefined)
+    const ownedGames = await fetchOwnedGames(steamId, steamApiKey)
     const importedAppIdSet = await getImportedSteamAppIdSet()
 
     const items = ownedGames

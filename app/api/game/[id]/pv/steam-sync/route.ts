@@ -4,7 +4,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { fetchSteamAppDetails } from '@/app/api/game/steam-import/_shared'
 import { GameIdMapTable, GameInfoTable, GamePvTable } from '@/db/schema'
 import { db } from '@/lib/drizzle'
-import { getEnabledProxySettings } from '@/lib/server/proxy-settings'
 
 const parseGameId = async (context: { params: Promise<{ id: string }> }) => {
   const { id } = await context.params
@@ -74,9 +73,7 @@ const syncSteamPvs = async (req: NextRequest, context: { params: Promise<{ id: s
 
     const { steamAppId, shouldBind } = await resolveSteamAppId(gameId, payload.steamAppId)
 
-    // 获取启用的代理配置
-    const proxySettings = await getEnabledProxySettings()
-    const details = await fetchSteamAppDetails(steamAppId, proxySettings ?? undefined)
+    const details = await fetchSteamAppDetails(steamAppId)
     if (!details) {
       return NextResponse.json({ error: '未能从 Steam 获取游戏详情，请稍后重试' }, { status: 502 })
     }

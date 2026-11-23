@@ -2,7 +2,6 @@ import axios from 'axios'
 import { NextRequest, NextResponse } from 'next/server'
 
 import { fetchSteamAppDetails, toSteamStoreUrl } from '../_shared'
-import { getEnabledProxySettings } from '@/lib/server/proxy-settings'
 
 type SteamStoreSearchItem = {
   id?: number
@@ -50,46 +49,17 @@ const searchSteamGamesByName = async (req: NextRequest) => {
       })
     }
 
-    // 获取启用的代理配置
-    const proxySettings = await getEnabledProxySettings()
-
-    let response
-    if (proxySettings && proxySettings.enabled) {
-      const { HttpsProxyAgent } = await import('https-proxy-agent')
-      const auth =
-        proxySettings.username && proxySettings.password
-          ? `${encodeURIComponent(proxySettings.username)}:${encodeURIComponent(
-              proxySettings.password,
-            )}@`
-          : ''
-      const proxyUrl = `${proxySettings.type}://${auth}${proxySettings.host}:${proxySettings.port}`
-      const httpsAgent = new HttpsProxyAgent(proxyUrl)
-
-      response = await axios.get<SteamStoreSearchResponse>(
-        'https://store.steampowered.com/api/storesearch/',
-        {
-          timeout: 10_000,
-          params: {
-            term: keyword,
-            l: 'schinese',
-            cc: 'CN',
-          },
-          httpsAgent,
+    const response = await axios.get<SteamStoreSearchResponse>(
+      'https://store.steampowered.com/api/storesearch/',
+      {
+        timeout: 10_000,
+        params: {
+          term: keyword,
+          l: 'schinese',
+          cc: 'CN',
         },
-      )
-    } else {
-      response = await axios.get<SteamStoreSearchResponse>(
-        'https://store.steampowered.com/api/storesearch/',
-        {
-          timeout: 10_000,
-          params: {
-            term: keyword,
-            l: 'schinese',
-            cc: 'CN',
-          },
-        },
-      )
-    }
+      },
+    )
 
     const items = (response.data.items ?? [])
       .map((item) => {
@@ -138,9 +108,7 @@ const getSteamGameById = async (req: NextRequest) => {
       return NextResponse.json({ error: '无效的 appid' }, { status: 400 })
     }
 
-    // 获取启用的代理配置
-    const proxySettings = await getEnabledProxySettings()
-    const details = await fetchSteamAppDetails(appId, proxySettings ?? undefined)
+    const details = await fetchSteamAppDetails(appId)
     if (!details) {
       return NextResponse.json({ error: '未找到 Steam 游戏详情' }, { status: 404 })
     }

@@ -4,7 +4,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { fetchSteamAppDetails } from './steam-import/_shared'
 import { GameIdMapTable, GameInfoTable, GamePvTable, relateWebsiteTable } from '@/db/schema'
 import { db } from '@/lib/drizzle'
-import { getEnabledProxySettings } from '@/lib/server/proxy-settings'
 import { syncVndbCharactersByGameId } from '@/lib/server/vndb-character-sync'
 import { GameInfo } from '@/types/game'
 
@@ -178,9 +177,7 @@ const createGame = async (req: NextRequest) => {
       if (sourceMap?.provider.toLowerCase() === 'steam') {
         const appId = Number(sourceMap.externalId)
         if (Number.isInteger(appId) && appId > 0) {
-          // 获取启用的代理配置
-          const proxySettings = await getEnabledProxySettings()
-          const details = await fetchSteamAppDetails(appId, proxySettings ?? undefined)
+          const details = await fetchSteamAppDetails(appId)
           const pvRows = (details?.movies ?? [])
             .map((movie, index) => {
               const url =

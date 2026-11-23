@@ -22,7 +22,6 @@ import {
   relateWebsiteTable,
 } from '@/db/schema'
 import { db } from '@/lib/drizzle'
-import { getEnabledProxySettings } from '@/lib/server/proxy-settings'
 
 export const maxDuration = 300
 
@@ -58,15 +57,12 @@ const importSteamGames = async (req: NextRequest) => {
       return NextResponse.json({ error: '请在平台设置中配置 Steam API Key' }, { status: 500 })
     }
 
-    // 获取启用的代理配置
-    const proxySettings = await getEnabledProxySettings()
-
     let iconUrl = iconUrlFromClient
     let logoUrl = logoUrlFromClient
     if (!iconUrl || !logoUrl) {
       let ownedGame = getCachedOwnedGame(steamId, appId)
       if (!ownedGame) {
-        const ownedGames = await fetchOwnedGames(steamId, steamApiKey, proxySettings ?? undefined)
+        const ownedGames = await fetchOwnedGames(steamId, steamApiKey)
         ownedGame = ownedGames.find((item) => Number(item.appid) === appId) || null
       }
 
@@ -95,7 +91,7 @@ const importSteamGames = async (req: NextRequest) => {
       })
     }
 
-    const details = await fetchSteamAppDetails(appId, proxySettings ?? undefined)
+    const details = await fetchSteamAppDetails(appId)
     const now = dayjs().toISOString()
     const name = details?.name?.trim() || appName || `Steam App ${appId}`
     const playtimeSeconds = Math.floor(playtimeMinutes * 60)
