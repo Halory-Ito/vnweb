@@ -320,14 +320,32 @@ export class WebDAVClient {
   }
 }
 
-// 获取WebDAV配置（优先读取 data/settings/backup.json，兼容旧 app/webdav-config.json）
+// 从存储节点中解析出当前启用的配置，兼容旧版单配置结构
+export function resolveEnabledWebDAVConfig(
+  webdav: Record<string, unknown> | null | undefined,
+): Partial<WebDAVConfig> | null {
+  if (!webdav || typeof webdav !== 'object') {
+    return null
+  }
+
+  // 新版结构：configs 数组中取 enabled 项
+  if (Array.isArray(webdav.configs)) {
+    const enabled = (webdav.configs as Array<Record<string, unknown>>).find(
+      (item) => item && typeof item === 'object' && item.enabled === true,
+    )
+    return enabled ? (enabled as Partial<WebDAVConfig>) : null
+  }
+
+  // 旧版结构：单个配置对象
+  return webdav as Partial<WebDAVConfig>
+}
+
+// 获取协议层配置（读取同步服务器存储节点，兼容旧键与旧文件）
 export async function getWebDAVConfig(): Promise<WebDAVConfig | null> {
   try {
-    const { readConfig } = await import('@/lib/server/config-rw')
-    const fullConfig = await readConfig()
-    const settings = (fullConfig['settings'] || {}) as Record<string, unknown>
-    const backup = (settings['backup'] || {}) as Record<string, unknown>
-    let config = (backup['webdav'] || null) as Partial<WebDAVConfig> | null
+    const { readSyncStoreNode } = await import('@/lib/server/sync-config-store')
+    const node = await readSyncStoreNode()
+    let config = resolveEnabledWebDAVConfig(node)
 
     if (!config?.server) {
       const legacyPath = path.join(process.cwd(), 'app', 'webdav-config.json')
@@ -348,13 +366,13 @@ export async function getWebDAVConfig(): Promise<WebDAVConfig | null> {
       remotePath: (config.remotePath || '/vnweb-backup').replace(/\/+$/g, ''),
     }
   } catch (error) {
-    console.error('Get WebDAV config failed:', error)
+    console.error('Get sync server config failed:', error)
     return null
   }
 }
 
-// 保存WebDAV配置到 data/settings/backup.json
+// 保存协议层配置到同步服务器存储节点
 export async function saveWebDAVConfig(config: WebDAVConfig): Promise<void> {
-  const { updateConfigSection } = await import('@/lib/server/config-rw')
-  await updateConfigSection(['settings', 'backup', 'webdav'], config)
+  const { writeSyncStoreNode } = await import('@/lib/server/sync-config-store')
+  await writeSyncStoreNode(config as unknown as Record<string, unknown>)
 }

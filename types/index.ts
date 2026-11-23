@@ -1,4 +1,5 @@
 export * from './agent'
+export * from './backup'
 export * from './character'
 export * from './collection'
 export * from './game'

@@ -10,7 +10,9 @@ import {
 import { readGameSaveBackupConfig as getGameSaveConfig } from '@/lib/server/config-rw'
 import { getDbPath } from '@/lib/server/database-config.mjs'
 import { getLibraryFolderLogoDirectory } from '@/lib/server/library-folder-logo-files'
-import { getWebDAVConfig, WebDAVClient } from '@/lib/webdav-utils'
+import { getEnabledSyncClient, getEnabledSyncConfig } from '@/lib/sync-client'
+
+import type { SyncClient } from '@/lib/sync-client/types'
 
 // 获取本地备份根目录
 function getLocalBackupDir() {
@@ -52,7 +54,7 @@ async function backupLocalFiles(timestamp: string) {
 }
 
 // 覆盖本地文件
-async function restoreLocalFiles(remoteBasePath: string, client: WebDAVClient) {
+async function restoreLocalFiles(remoteBasePath: string, client: SyncClient) {
   const entries = await client.listDirectory(remoteBasePath)
   if (
     entries.some(
@@ -100,24 +102,24 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: '无效的备份名称' }, { status: 400 })
     }
 
-    // 获取WebDAV配置
-    const config = await getWebDAVConfig()
-    if (!config) {
+    // 获取启用配置的客户端
+    const client = await getEnabledSyncClient()
+    if (!client) {
       return NextResponse.json(
-        { error: 'WebDAV配置未设置，请先在设置中配置WebDAV' },
+        { error: '同步服务器配置未设置，请先在设置中配置同步服务器' },
         { status: 400 },
       )
     }
 
-    const client = new WebDAVClient(config)
-
     // 测试连接
     const connected = await client.testConnection()
     if (!connected) {
-      return NextResponse.json({ error: '无法连接到WebDAV服务器，请检查配置' }, { status: 400 })
+      return NextResponse.json({ error: '无法连接到同步服务器，请检查配置' }, { status: 400 })
     }
 
-    const remoteBasePath = config.remotePath + '/' + backupName
+    const syncConfig = await getEnabledSyncConfig()
+    const remoteRoot = (syncConfig?.remotePath || '/vnweb-backup').replace(/\/+$/g, '')
+    const remoteBasePath = `${remoteRoot}/${backupName}`
 
     // 先备份本地文件
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19)
