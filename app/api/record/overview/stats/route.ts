@@ -12,6 +12,14 @@ import {
 } from '@/db/schema'
 import { db } from '@/lib/drizzle'
 
+const SESSION_DURATION_BUCKETS = [
+  { label: '0–<30 分钟', upperSeconds: 1800 },
+  { label: '30–<60 分钟', upperSeconds: 3600 },
+  { label: '1–<2 小时', upperSeconds: 7200 },
+  { label: '2–<4 小时', upperSeconds: 14400 },
+  { label: '4 小时及以上', upperSeconds: Infinity },
+] as const
+
 const getOverviewStats = async () => {
   try {
     const games = await db.select({ id: GameInfoTable.id }).from(GameInfoTable)
@@ -57,14 +65,12 @@ const getOverviewStats = async () => {
         .filter(Boolean),
     )
 
-    const now = dayjs()
-    const currentYear = now.year()
-    const monthBucket = new Map<string, number>()
+    const sessionDurationDistribution = SESSION_DURATION_BUCKETS.map(({ label }) => ({
+      label,
+      count: 0,
+    }))
     const hourBucket = new Map<number, number>()
 
-    for (let i = 1; i <= 12; i += 1) {
-      monthBucket.set(`${currentYear}-${String(i).padStart(2, '0')}`, 0)
-    }
     for (let i = 0; i < 24; i += 1) {
       hourBucket.set(i, 0)
     }
@@ -77,21 +83,16 @@ const getOverviewStats = async () => {
 
       const durationSeconds = Math.max(0, Number(item.playTime || 0))
 
-      if (playDate.year() === currentYear) {
-        const monthKey = playDate.format('YYYY-MM')
-        monthBucket.set(monthKey, (monthBucket.get(monthKey) || 0) + durationSeconds)
+      if (durationSeconds > 0) {
+        const bucketIndex = SESSION_DURATION_BUCKETS.findIndex(
+          ({ upperSeconds }) => durationSeconds < upperSeconds,
+        )
+        if (bucketIndex >= 0) sessionDurationDistribution[bucketIndex].count += 1
       }
 
       const hour = playDate.hour()
       hourBucket.set(hour, (hourBucket.get(hour) || 0) + durationSeconds)
     }
-
-    const monthlyDurationDistribution = Array.from(monthBucket.entries()).map(
-      ([monthKey, seconds]) => ({
-        label: dayjs(monthKey, 'YYYY-MM').format('M月'),
-        hours: Number((seconds / 3600).toFixed(2)),
-      }),
-    )
 
     const hourlyTimeDistribution = Array.from(hourBucket.entries()).map(([hour, seconds]) => ({
       label: `${String(hour).padStart(2, '0')}:00`,
@@ -172,7 +173,7 @@ const getOverviewStats = async () => {
         totalOsts: osts.length,
         totalPvs: pvs.length,
         totalQuotes: quotes.length,
-        monthlyDurationDistribution,
+        sessionDurationDistribution,
         hourlyTimeDistribution,
         peakHourLabel,
         playTimeRank,

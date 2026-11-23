@@ -37,6 +37,7 @@ export default function RecordOverview() {
       label: '小时',
       color: colorWithOpacity,
     },
+    count: { label: '游玩次数', color: colorWithOpacity },
   } satisfies ChartConfig
 
   const { data, isLoading, isError, isRefetching, refetch } = useQuery({
@@ -67,20 +68,16 @@ export default function RecordOverview() {
 
   const chartCardData: ChartStatsCardProps[] = [
     {
-      title: '游戏时长分布',
-      description: `${new Date().getFullYear()} 年每月总时长`,
+      title: '单次游玩时长分布',
+      description: '按时长区间统计全部游玩记录的次数',
       children: (
         <ChartContainer config={chartConfig} className="max-h-64 w-full sm:min-h-32">
-          <BarChart accessibilityLayer data={data.monthlyDurationDistribution}>
-            <CartesianGrid vertical={false} />
-            <XAxis dataKey="label" tickLine={false} axisLine={false} />
-            <YAxis tickLine={false} axisLine={false} width={52} />
-            <ChartTooltip
-              content={
-                <ChartTooltipContent formatter={(value) => `${Number(value).toFixed(2)} 小时`} />
-              }
-            />
-            <Bar dataKey="hours" fill="var(--color-hours)" radius={4} />
+          <BarChart accessibilityLayer data={data.sessionDurationDistribution} layout="vertical">
+            <CartesianGrid horizontal={false} />
+            <XAxis type="number" allowDecimals={false} tickLine={false} axisLine={false} />
+            <YAxis type="category" dataKey="label" tickLine={false} axisLine={false} width={92} />
+            <ChartTooltip content={<ChartTooltipContent formatter={(value) => `${value} 次`} />} />
+            <Bar dataKey="count" fill="var(--color-count)" radius={4} maxBarSize={28} />
           </BarChart>
         </ChartContainer>
       ),

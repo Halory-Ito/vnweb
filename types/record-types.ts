@@ -55,9 +55,9 @@ export type RecordOverviewStats = {
   totalOsts: number
   totalPvs: number
   totalQuotes: number
-  monthlyDurationDistribution: Array<{
+  sessionDurationDistribution: Array<{
     label: string
-    hours: number
+    count: number
   }>
   hourlyTimeDistribution: Array<{
     label: string
