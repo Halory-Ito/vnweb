@@ -1,5 +1,5 @@
 import dayjs from 'dayjs'
-import { and, desc, eq, like } from 'drizzle-orm'
+import { and, desc, eq, inArray, like } from 'drizzle-orm'
 import { NextRequest, NextResponse } from 'next/server'
 import fs from 'node:fs/promises'
 import path from 'node:path'
@@ -163,4 +163,81 @@ const createGameMemory = async (req: NextRequest, context: { params: Promise<{ i
   }
 }
 
-export { listGameMemories as GET, createGameMemory as POST }
+const getMemoryFilePath = (url: string | null) => {
+  const normalized = normalizeText(url)
+  if (!normalized.startsWith('/assets/memory/')) {
+    return null
+  }
+  return path.join(process.cwd(), 'public', ...normalized.split('/'))
+}
+
+const deleteGameMemories = async (
+  req: NextRequest,
+  context: { params: Promise<{ id: string }> },
+) => {
+  try {
+    const gameId = await parseGameId(context)
+    await ensureGameExists(gameId)
+
+    let rawBody: unknown
+    try {
+      rawBody = await req.json()
+    } catch {
+      rawBody = null
+    }
+
+    const rawIds = (rawBody as { ids?: unknown } | null)?.ids
+    const uniqueIds = Array.isArray(rawIds)
+      ? [
+          ...new Set(
+            rawIds.filter(
+              (id): id is number => typeof id === 'number' && Number.isInteger(id) && id > 0,
+            ),
+          ),
+        ]
+      : []
+
+    if (uniqueIds.length === 0) {
+      return NextResponse.json({ error: '请选择要删除的回忆' }, { status: 400 })
+    }
+
+    const rows = await db
+      .select({
+        id: GameMemoryTable.id,
+        imageUrl: GameMemoryTable.imageUrl,
+      })
+      .from(GameMemoryTable)
+      .where(and(eq(GameMemoryTable.gameId, gameId), inArray(GameMemoryTable.id, uniqueIds)))
+
+    if (rows.length === 0) {
+      return NextResponse.json({ data: { deleted: 0, ids: [] } })
+    }
+
+    const foundIds = rows.map((row) => row.id)
+
+    await db
+      .delete(GameMemoryTable)
+      .where(and(eq(GameMemoryTable.gameId, gameId), inArray(GameMemoryTable.id, foundIds)))
+
+    const filePaths = rows
+      .map((row) => getMemoryFilePath(row.imageUrl))
+      .filter((filePath): filePath is string => Boolean(filePath))
+
+    await Promise.allSettled(
+      filePaths.map((filePath) => fs.unlink(filePath).catch(() => undefined)),
+    )
+
+    return NextResponse.json({ data: { deleted: foundIds.length, ids: foundIds } })
+  } catch (error) {
+    const message = (error as Error).message || '批量删除回忆失败'
+    if (message === 'Invalid game id') {
+      return NextResponse.json({ error: message }, { status: 400 })
+    }
+    if (message === 'Game not found') {
+      return NextResponse.json({ error: message }, { status: 404 })
+    }
+    return NextResponse.json({ error: message }, { status: 500 })
+  }
+}
+
+export { listGameMemories as GET, createGameMemory as POST, deleteGameMemories as DELETE }

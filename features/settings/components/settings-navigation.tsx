@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils'
 const links = [
   { segment: 'appearance', label: '外观' },
   { segment: 'theme', label: '主题' },
+  { segment: 'memory', label: '回忆' },
   { segment: 'backup', label: '备份' },
   { segment: 'sync', label: '平台' },
 ] as const

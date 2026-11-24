@@ -2,12 +2,16 @@
 
 import { useQuery } from '@tanstack/react-query'
 import dayjs from 'dayjs'
-import { ArrowLeftIcon, Clock3Icon, ImageIcon, PencilIcon, Trash2Icon } from 'lucide-react'
+import { ArrowLeftIcon, Clock3Icon, ImageIcon, PencilIcon } from 'lucide-react'
 import { MDXRemote, type MDXRemoteSerializeResult } from 'next-mdx-remote'
 import { serialize } from 'next-mdx-remote/serialize'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import {
+  Children,
+  type ComponentProps,
+  Component,
+  type ErrorInfo,
   isValidElement,
   type ReactNode,
   useCallback,
@@ -15,27 +19,34 @@ import {
   useMemo,
   useRef,
   useState,
-  Component,
-  type ErrorInfo,
 } from 'react'
 import rehypeHighlight from 'rehype-highlight'
 import remarkGfm from 'remark-gfm'
 import { toast } from 'sonner'
 
 import { getGameMemoryById, updateGameMemoryById } from '@/api'
+import { MemoryMetadataIcon } from '@/components/memory-metadata-icon'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { GameMemoryFormDialog } from '@/features/game/components/info/game-memory-form-dialog'
+import { GameMemoryOstBar } from '@/features/game/components/info/game-memory-ost-bar'
+import { compressMemoryImageForUpload } from '@/features/game/hooks/use-game-memory'
+import { useMemoryOstAutoPlay } from '@/features/game/hooks/use-memory-ost-autoplay'
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
+  type MemoryFrontmatterEntry,
+  parseMemoryFrontmatter,
+  parseTagsInput,
+  serializeMemoryMarkdown,
+} from '@/features/game/lib/memory-frontmatter'
 import { useRecordVisit } from '@/features/recent'
+import { useMemoryMetadataSettings } from '@/hooks/use-memory-metadata-settings'
+import {
+  buildMemoryMetadataEntries,
+  resolveMemoryMetadataItems,
+  splitMemoryMetadataValues,
+} from '@/lib/settings/memory-metadata-settings'
+import { cn } from '@/lib/utils'
 
 type RouteParams = {
   id: string
@@ -115,10 +126,10 @@ const getNodeText = (node: ReactNode): string => {
 }
 
 const tocIndentClassByLevel: Record<number, string> = {
-  1: 'pl-4',
-  2: 'pl-7',
-  3: 'pl-10',
-  4: 'pl-12',
+  1: 'pl-3',
+  2: 'pl-5',
+  3: 'pl-7',
+  4: 'pl-9',
 }
 
 export default function GameMemoryDetailPage() {
@@ -126,15 +137,35 @@ export default function GameMemoryDetailPage() {
   const gameId = Number(params.id)
   const memoryId = Number(params.memoryId)
 
+  const { fields: metadataFields } = useMemoryMetadataSettings()
   const [editOpen, setEditOpen] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [imageFile, setImageFile] = useState<File | null>(null)
-  const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null)
+  const [keepOriginalImage, setKeepOriginalImage] = useState(true)
   const [title, setTitle] = useState('')
-  const [description, setDescription] = useState('')
+  const [summary, setSummary] = useState('')
+  const [tagsInput, setTagsInput] = useState('')
+  const [ostSongIds, setOstSongIds] = useState<number[]>([])
+  const [metadataValues, setMetadataValues] = useState<Record<string, string>>({})
+  const [extraEntries, setExtraEntries] = useState<MemoryFrontmatterEntry[]>([])
+  const [body, setBody] = useState('')
   const [activeHeadingId, setActiveHeadingId] = useState('')
   const [contentRenderVersion, setContentRenderVersion] = useState(0)
   const scrollContainerRef = useRef<HTMLDivElement | null>(null)
+
+  const selectedPreviewUrl = useMemo(
+    () => (imageFile ? URL.createObjectURL(imageFile) : ''),
+    [imageFile],
+  )
+
+  useEffect(() => {
+    if (!selectedPreviewUrl) {
+      return
+    }
+    return () => {
+      URL.revokeObjectURL(selectedPreviewUrl)
+    }
+  }, [selectedPreviewUrl])
 
   const { data, isLoading, isRefetching, refetch, error } = useQuery({
     queryKey: ['game-memory-detail', gameId, memoryId],
@@ -145,24 +176,24 @@ export default function GameMemoryDetailPage() {
   useRecordVisit(gameId, 'memory', `/game/info/${gameId}/memory`)
 
   const item = data?.item
-  const tocItems = useMemo(() => extractTocItems(item?.description || ''), [item?.description])
+  const parsedMemory = useMemo(
+    () => parseMemoryFrontmatter(item?.description || ''),
+    [item?.description],
+  )
+  const metadataItems = useMemo(
+    () => resolveMemoryMetadataItems(parsedMemory.extraEntries, metadataFields),
+    [parsedMemory.extraEntries, metadataFields],
+  )
+  const tocItems = useMemo(() => extractTocItems(parsedMemory.body), [parsedMemory.body])
   const hasToc = tocItems.length > 0
+  const memoryOst = useMemoryOstAutoPlay({
+    memoryId: Number.isInteger(memoryId) && memoryId > 0 ? memoryId : 0,
+    ostSongIds: parsedMemory.ostSongIds,
+  })
 
   const handleContentRendered = useCallback(() => {
     setContentRenderVersion((previous) => previous + 1)
   }, [])
-
-  useEffect(() => {
-    if (!imageFile) {
-      return
-    }
-
-    const preview = URL.createObjectURL(imageFile)
-    setImagePreviewUrl(preview)
-    return () => {
-      URL.revokeObjectURL(preview)
-    }
-  }, [imageFile])
 
   useEffect(() => {
     if (tocItems.length === 0) {
@@ -222,11 +253,25 @@ export default function GameMemoryDetailPage() {
     }
   }, [tocItems, contentRenderVersion])
 
+  const clearEditImage = () => {
+    setImageFile(null)
+    setKeepOriginalImage(false)
+  }
+
+  const setMetadataValue = (key: string, value: string) => {
+    setMetadataValues((prev) => ({ ...prev, [key]: value }))
+  }
+
   const resetEditDialog = () => {
     setImageFile(null)
-    setImagePreviewUrl('')
+    setKeepOriginalImage(true)
     setTitle('')
-    setDescription('')
+    setSummary('')
+    setTagsInput('')
+    setOstSongIds([])
+    setMetadataValues({})
+    setExtraEntries([])
+    setBody('')
   }
 
   const openEditDialog = () => {
@@ -234,53 +279,18 @@ export default function GameMemoryDetailPage() {
       return
     }
 
+    const parsed = parseMemoryFrontmatter(item.description || '')
+    const { values, unmatched } = splitMemoryMetadataValues(parsed.extraEntries, metadataFields)
     setImageFile(null)
-    setImagePreviewUrl(item.imageUrl || '')
-    setTitle(item.title || '')
-    setDescription(item.description || '')
+    setKeepOriginalImage(true)
+    setTitle(item.title || parsed.title)
+    setSummary(parsed.summary)
+    setTagsInput(parsed.tags.join(', '))
+    setOstSongIds(parsed.ostSongIds)
+    setMetadataValues(values)
+    setExtraEntries(unmatched)
+    setBody(parsed.body)
     setEditOpen(true)
-  }
-
-  const compressImageForUpload = async (file: File) => {
-    // Balance quality and upload speed for screenshots.
-    const bitmap = await createImageBitmap(file)
-    const maxWidth = 1920
-    const maxHeight = 1080
-
-    let targetWidth = bitmap.width
-    let targetHeight = bitmap.height
-    const widthRatio = maxWidth / targetWidth
-    const heightRatio = maxHeight / targetHeight
-    const ratio = Math.min(1, widthRatio, heightRatio)
-
-    targetWidth = Math.max(1, Math.round(targetWidth * ratio))
-    targetHeight = Math.max(1, Math.round(targetHeight * ratio))
-
-    const canvas = document.createElement('canvas')
-    canvas.width = targetWidth
-    canvas.height = targetHeight
-
-    const context = canvas.getContext('2d')
-    if (!context) {
-      return file
-    }
-
-    context.drawImage(bitmap, 0, 0, targetWidth, targetHeight)
-
-    const blob = await new Promise<Blob | null>((resolve) => {
-      canvas.toBlob(resolve, 'image/webp', 0.82)
-    })
-
-    if (!blob || blob.size >= file.size) {
-      return file
-    }
-
-    const safeName = file.name.replace(/\.[^.]+$/, '').replace(/[^a-zA-Z0-9_-]/g, '_') || 'memory'
-
-    return new File([blob], `${safeName}.webp`, {
-      type: 'image/webp',
-      lastModified: Date.now(),
-    })
   }
 
   const handleSave = async () => {
@@ -290,11 +300,23 @@ export default function GameMemoryDetailPage() {
 
     setIsSaving(true)
     try {
-      const optimizedImage = imageFile ? await compressImageForUpload(imageFile) : undefined
+      const optimizedImage = imageFile ? await compressMemoryImageForUpload(imageFile) : undefined
+      const mergedExtraEntries = buildMemoryMetadataEntries(
+        metadataValues,
+        metadataFields,
+        extraEntries,
+      )
+      const serializedDescription = serializeMemoryMarkdown({
+        summary,
+        tags: parseTagsInput(tagsInput),
+        ostSongIds,
+        extraEntries: mergedExtraEntries,
+        body,
+      })
 
       await updateGameMemoryById(gameId, item.id, {
         title: title.trim(),
-        description: description.trim(),
+        description: serializedDescription,
         image: optimizedImage,
       })
 
@@ -312,34 +334,32 @@ export default function GameMemoryDetailPage() {
     }
   }
 
-  const editableImageUrl = imagePreviewUrl || item?.imageUrl || ''
+  const editableImageUrl = selectedPreviewUrl || (keepOriginalImage ? item?.imageUrl || '' : '')
 
   return (
     <div ref={scrollContainerRef} className="mx-auto max-h-[100cqh] w-full overflow-y-auto">
-      <div className="relative mx-auto w-full max-w-7xl px-4 pt-4 pb-12 md:px-6">
-        <div
-          className={`grid gap-6 ${hasToc ? 'lg:grid-cols-[minmax(0,1fr)_280px]' : 'lg:grid-cols-1'}`}
-        >
-          <main className="space-y-6">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <Button asChild variant="outline" className="backdrop-blur-sm">
-                <Link href={`/game/info/${gameId}/memory`}>
-                  <ArrowLeftIcon className="mr-2 size-4" />
-                  返回回忆列表
-                </Link>
-              </Button>
+      <div className="@container relative mx-auto w-full max-w-7xl space-y-6 px-4 pt-4 pb-12 md:px-6">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <Button asChild variant="outline">
+            <Link href={`/game/info/${gameId}/memory`}>
+              <ArrowLeftIcon className="mr-2 size-4" />
+              返回回忆列表
+            </Link>
+          </Button>
 
-              <Button
-                type="button"
-                className="shadow-sm"
-                disabled={!item || isLoading || isRefetching}
-                onClick={openEditDialog}
-              >
-                <PencilIcon className="mr-2 size-4" />
-                编辑并保存
-              </Button>
-            </div>
+          <Button
+            type="button"
+            variant="outline"
+            disabled={!item || isLoading || isRefetching}
+            onClick={openEditDialog}
+          >
+            <PencilIcon className="mr-2 size-4" />
+            编辑并保存
+          </Button>
+        </div>
 
+        <div className={`grid gap-6 ${hasToc ? '@2xl:grid-cols-[minmax(0,1fr)_220px]' : ''}`}>
+          <main className="min-w-0 space-y-6">
             {isLoading ? (
               <DetailStateCard title="加载中..." description="正在获取回忆详情，请稍候。" />
             ) : error || !item ? (
@@ -354,7 +374,7 @@ export default function GameMemoryDetailPage() {
                     {item.imageUrl ? (
                       <img
                         src={item.imageUrl}
-                        alt={item.title || '回忆截图'}
+                        alt={item.title || parsedMemory.title || '回忆截图'}
                         className="h-full w-full object-cover"
                         loading="lazy"
                         decoding="async"
@@ -368,21 +388,60 @@ export default function GameMemoryDetailPage() {
 
                   <CardHeader className="space-y-3">
                     <CardTitle className="text-3xl leading-tight md:text-4xl">
-                      {item.title || '未命名回忆'}
+                      {item.title || parsedMemory.title || '未命名回忆'}
                     </CardTitle>
-                    <CardDescription className="flex flex-wrap items-center gap-4 text-xs tracking-wide uppercase">
+                    {parsedMemory.summary ? (
+                      <p className="text-muted-foreground text-sm leading-relaxed">
+                        {parsedMemory.summary}
+                      </p>
+                    ) : null}
+                    {parsedMemory.tags.length > 0 ? (
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        {parsedMemory.tags.map((tag) => (
+                          <Badge
+                            key={tag}
+                            variant="outline"
+                            className="rounded-full text-xs font-normal"
+                          >
+                            {tag}
+                          </Badge>
+                        ))}
+                      </div>
+                    ) : null}
+                    <CardDescription className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs">
                       <span className="inline-flex items-center gap-1.5">
                         <Clock3Icon className="size-3" />
                         更新于 {dayjs(item.updatedAt).format('YYYY-MM-DD HH:mm')}
                       </span>
+                      {metadataItems.map((meta) => (
+                        <span
+                          key={`${meta.key}-${meta.value}`}
+                          title={`${meta.label}: ${meta.value}`}
+                          className="inline-flex items-center gap-1.5"
+                        >
+                          <MemoryMetadataIcon icon={meta.icon} className="size-3 shrink-0" />
+                          <span>
+                            {meta.icon === 'hash' ? `${meta.label}: ${meta.value}` : meta.value}
+                          </span>
+                        </span>
+                      ))}
                     </CardDescription>
+                    <GameMemoryOstBar
+                      songs={memoryOst.songs}
+                      activeSongId={memoryOst.activeSongId}
+                      isPlaying={memoryOst.isPlaying}
+                      isBuffering={memoryOst.isBuffering}
+                      isMemoryPlaying={memoryOst.isMemoryPlaying}
+                      onTogglePlayAll={memoryOst.togglePlayAll}
+                      onSelectTrack={memoryOst.playTrack}
+                    />
                   </CardHeader>
                 </Card>
 
                 <Card variant="outline" className="shadow-sm">
                   <CardContent className="px-5 py-6 md:px-8 md:py-8">
                     <MdxRemoteContent
-                      markdown={item.description || ''}
+                      markdown={parsedMemory.body}
                       tocItems={tocItems}
                       onRendered={handleContentRendered}
                     />
@@ -393,156 +452,85 @@ export default function GameMemoryDetailPage() {
           </main>
 
           {hasToc ? (
-            <aside className="h-fit lg:sticky lg:top-16">
-              <Card
-                variant="outline"
-                className="via-background to-background overflow-hidden border-amber-200/40 bg-linear-to-b from-amber-100/35 shadow-sm"
-              >
-                <CardHeader className="border-border/70 border-b pb-3">
-                  <CardTitle className="flex items-center gap-2 text-base font-semibold tracking-wide"></CardTitle>
-                </CardHeader>
-                <CardContent className="max-h-[65vh] overflow-y-auto px-3 py-3">
-                  <nav className="space-y-1.5">
-                    {tocItems.map((tocItem) => {
-                      const active = activeHeadingId === tocItem.id
-                      return (
-                        <a
-                          key={tocItem.id}
-                          href={`#${tocItem.id}`}
-                          onClick={(event) => {
-                            event.preventDefault()
-                            const targetElement = document.getElementById(tocItem.id)
-                            if (!targetElement) {
-                              return
-                            }
+            <aside className="order-first h-fit @2xl:sticky @2xl:top-6 @2xl:order-last">
+              <div className="bg-background/60 dark:border-input dark:bg-input/30 rounded-xl border">
+                <div className="border-border/60 text-muted-foreground border-b px-3.5 py-2.5 text-xs font-medium">
+                  目录
+                </div>
+                <nav className="max-h-56 space-y-0.5 overflow-y-auto p-2 @2xl:max-h-[65vh]">
+                  {tocItems.map((tocItem) => {
+                    const active = activeHeadingId === tocItem.id
+                    return (
+                      <a
+                        key={tocItem.id}
+                        href={`#${tocItem.id}`}
+                        onClick={(event) => {
+                          event.preventDefault()
+                          const targetElement = document.getElementById(tocItem.id)
+                          if (!targetElement) {
+                            return
+                          }
 
-                            targetElement.scrollIntoView({
-                              behavior: 'smooth',
-                              block: 'start',
-                            })
-                            window.history.replaceState(null, '', `#${tocItem.id}`)
-                            setActiveHeadingId(tocItem.id)
-                          }}
-                          className={`group relative block rounded-lg border px-3 py-2 text-sm transition-all ${
-                            tocIndentClassByLevel[tocItem.level] || 'pl-0'
-                          } ${
-                            active
-                              ? 'text-foreground border-amber-500/40 bg-amber-500/10 font-medium shadow-xs'
-                              : 'text-muted-foreground hover:text-foreground border-transparent hover:border-amber-500/20 hover:bg-amber-500/5'
-                          }`}
-                          title={tocItem.text}
-                        >
-                          <span
-                            className={`absolute top-1/2 left-1.5 h-5 w-1 -translate-y-1/2 rounded-full transition-all ${
-                              active
-                                ? 'bg-amber-500/70 opacity-100'
-                                : 'bg-amber-400/40 opacity-0 group-hover:opacity-100'
-                            }`}
-                          />
-                          <span className="line-clamp-2 block pr-1">{tocItem.text}</span>
-                        </a>
-                      )
-                    })}
-                  </nav>
-                </CardContent>
-              </Card>
+                          targetElement.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start',
+                          })
+                          window.history.replaceState(null, '', `#${tocItem.id}`)
+                          setActiveHeadingId(tocItem.id)
+                        }}
+                        className={`relative block rounded-md py-1.5 pr-2.5 text-sm transition-colors ${
+                          tocIndentClassByLevel[tocItem.level] || 'pl-3'
+                        } ${
+                          active
+                            ? 'text-foreground bg-muted/60 font-medium'
+                            : 'text-muted-foreground hover:text-foreground hover:bg-muted/35'
+                        }`}
+                        title={tocItem.text}
+                      >
+                        {active ? (
+                          <span className="bg-foreground/70 absolute top-1/2 left-1 h-4 w-0.5 -translate-y-1/2 rounded-full" />
+                        ) : null}
+                        <span className="line-clamp-2 block">{tocItem.text}</span>
+                      </a>
+                    )
+                  })}
+                </nav>
+              </div>
             </aside>
           ) : null}
         </div>
       </div>
 
-      <Dialog
+      <GameMemoryFormDialog
+        mode="edit"
+        gameId={gameId}
         open={editOpen}
+        isSaving={isSaving}
+        imagePreviewUrl={editableImageUrl}
+        title={title}
+        summary={summary}
+        tagsInput={tagsInput}
+        ostSongIds={ostSongIds}
+        metadataValues={metadataValues}
+        extraEntries={extraEntries}
+        body={body}
         onOpenChange={(open) => {
           setEditOpen(open)
           if (!open) {
             resetEditDialog()
           }
         }}
-      >
-        <DialogContent className="sm:max-w-xl">
-          <DialogHeader>
-            <DialogTitle>编辑游戏回忆</DialogTitle>
-            <DialogDescription className="sr-only">
-              修改回忆的截图、内容与日期等信息
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-5">
-            <div className="space-y-3">
-              <div className="text-sm font-medium">截图（不上传则保留原图）</div>
-
-              {editableImageUrl ? (
-                <div className="group relative overflow-hidden rounded-xl border">
-                  <img
-                    src={editableImageUrl}
-                    alt="截图预览"
-                    className="h-48 w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                    loading="lazy"
-                    decoding="async"
-                  />
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    size="icon"
-                    className="absolute top-2 right-2 opacity-0 transition-opacity duration-200 group-hover:opacity-100"
-                    onClick={() => {
-                      setImageFile(null)
-                      setImagePreviewUrl(null)
-                    }}
-                  >
-                    <Trash2Icon className="size-4" />
-                  </Button>
-                </div>
-              ) : (
-                <div className="border-border hover:border-primary/50 rounded-xl border-2 border-dashed transition-colors duration-200">
-                  <label className="flex cursor-pointer flex-col items-center justify-center p-8">
-                    <ImageIcon className="text-muted-foreground mb-2 size-10" />
-                    <span className="text-muted-foreground text-sm">点击上传截图</span>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="sr-only"
-                      onChange={(event) => {
-                        const file = event.target.files?.[0] ?? null
-                        setImageFile(file)
-                      }}
-                    />
-                  </label>
-                </div>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <div className="text-sm font-medium">标题（可选）</div>
-              <Input
-                value={title}
-                onChange={(event) => setTitle(event.target.value)}
-                placeholder="给这个回忆起个名字..."
-              />
-            </div>
-
-            <div className="space-y-2">
-              <div className="text-sm font-medium">文本内容（支持 Markdown）</div>
-              <Textarea
-                value={description}
-                onChange={(event) => setDescription(event.target.value)}
-                className="min-h-32 resize-none text-sm"
-                placeholder="记录你的游戏体验，支持 Markdown 语法..."
-              />
-            </div>
-          </div>
-
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setEditOpen(false)}>
-              取消
-            </Button>
-            <Button type="button" disabled={isSaving} onClick={handleSave}>
-              {isSaving ? '保存中...' : '保存回忆'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        onSelectImage={setImageFile}
+        onClearImage={clearEditImage}
+        onTitleChange={setTitle}
+        onSummaryChange={setSummary}
+        onTagsInputChange={setTagsInput}
+        onOstSongIdsChange={setOstSongIds}
+        onMetadataValueChange={setMetadataValue}
+        onExtraEntriesChange={setExtraEntries}
+        onBodyChange={setBody}
+        onSubmit={() => void handleSave()}
+      />
     </div>
   )
 }
@@ -653,6 +641,98 @@ const Heading = ({
   )
 }
 
+const BLOCK_TAGS = new Set([
+  'div',
+  'center',
+  'pre',
+  'blockquote',
+  'table',
+  'ul',
+  'ol',
+  'figure',
+  'hr',
+  'section',
+  'article',
+  'form',
+  'h1',
+  'h2',
+  'h3',
+  'h4',
+  'h5',
+  'h6',
+])
+
+function MdxCenter({ children, className, ...props }: ComponentProps<'span'>) {
+  return (
+    <span {...props} className={`my-1 block text-center ${className || ''}`.trim()}>
+      {children}
+    </span>
+  )
+}
+
+function MdxPre({ children }: { children?: ReactNode }) {
+  return (
+    <pre className="mb-4 overflow-x-auto rounded-xl border border-slate-700/50 bg-[#282c34]! p-4 shadow-sm">
+      {children}
+    </pre>
+  )
+}
+
+function MdxBlockquote({ children }: { children?: ReactNode }) {
+  return (
+    <blockquote className="border-primary/40 bg-primary/5 text-muted-foreground mb-4 rounded-r-lg border-l-4 px-4 py-2 italic">
+      {children}
+    </blockquote>
+  )
+}
+
+function MdxImg({ alt, title, className, ...props }: ComponentProps<'img'>) {
+  const caption = typeof alt === 'string' ? alt.trim() : ''
+  const tooltipText = title || caption || undefined
+
+  if (!caption) {
+    return (
+      <img
+        {...props}
+        alt=""
+        title={tooltipText}
+        className={cn('my-3 max-w-full rounded-lg', className)}
+      />
+    )
+  }
+
+  return (
+    <span className="my-4 flex flex-col items-center gap-2">
+      <img
+        {...props}
+        alt={caption}
+        title={tooltipText}
+        className={cn('max-w-full rounded-lg', className)}
+      />
+      <span className="text-muted-foreground text-center text-sm leading-normal">{caption}</span>
+    </span>
+  )
+}
+
+function hasBlockChild(children: ReactNode): boolean {
+  return Children.toArray(children).some((child) => {
+    if (!isValidElement(child)) {
+      return false
+    }
+    if (
+      (typeof child.type === 'string' && BLOCK_TAGS.has(child.type)) ||
+      child.type === MdxCenter ||
+      child.type === MdxPre ||
+      child.type === MdxBlockquote ||
+      child.type === MdxImg
+    ) {
+      return true
+    }
+    const nested = (child.props as { children?: ReactNode } | null)?.children
+    return nested ? hasBlockChild(nested) : false
+  })
+}
+
 const mdxComponents = {
   h1: ({ children }: any) => (
     <Heading tag="h1" className="mt-10 mb-4 text-3xl font-semibold first:mt-0 md:text-4xl">
@@ -674,9 +754,16 @@ const mdxComponents = {
       {children}
     </Heading>
   ),
-  p: ({ children }: any) => (
-    <p className="text-foreground mb-5 text-[1.05rem] leading-8 md:text-[1.1rem]">{children}</p>
-  ),
+  p: ({ children }: any) =>
+    hasBlockChild(children) ? (
+      <div className="text-foreground mb-5 text-[1.05rem] leading-8 md:text-[1.1rem]">
+        {children}
+      </div>
+    ) : (
+      <p className="text-foreground mb-5 text-[1.05rem] leading-8 md:text-[1.1rem]">{children}</p>
+    ),
+  center: MdxCenter,
+  img: MdxImg,
   ul: ({ children }: any) => <ul className="mb-4 list-disc space-y-1.5 pl-6">{children}</ul>,
   ol: ({ children }: any) => <ol className="mb-4 list-decimal space-y-1.5 pl-6">{children}</ol>,
   li: ({ children }: any) => (
@@ -693,27 +780,15 @@ const mdxComponents = {
     const isInline = !className
     if (isInline) {
       return (
-        <code className="bg-muted text-primary rounded px-1.5 py-0.5 text-[0.9em]">
-          {children}
-        </code>
+        <code className="bg-muted text-primary rounded px-1.5 py-0.5 text-[0.9em]">{children}</code>
       )
     }
     return (
-      <code className={`${className} bg-transparent p-0 text-sm leading-relaxed`}>
-        {children}
-      </code>
+      <code className={`${className} bg-transparent p-0 text-sm leading-relaxed`}>{children}</code>
     )
   },
-  pre: ({ children }: any) => (
-    <pre className="mb-4 overflow-x-auto rounded-xl border border-slate-700/50 bg-[#282c34]! p-4 shadow-sm">
-      {children}
-    </pre>
-  ),
-  blockquote: ({ children }: any) => (
-    <blockquote className="border-primary/40 bg-primary/5 text-muted-foreground mb-4 rounded-r-lg border-l-4 px-4 py-2 italic">
-      {children}
-    </blockquote>
-  ),
+  pre: MdxPre,
+  blockquote: MdxBlockquote,
   hr: () => <hr className="border-border my-8" />,
   a: ({ children, href }: any) => (
     <a

@@ -1,5 +1,10 @@
 import { api } from '@/lib/request-utils'
 
+import type {
+  MemoryMetadataFieldConfig,
+  MemoryPlaybackSettings,
+  MemorySettings,
+} from '@/lib/settings/memory-metadata-settings'
 import type { GameMemoryItem } from '@/types/media'
 
 export const getGameMemoriesById = async (id: number, title?: string) => {
@@ -83,4 +88,59 @@ export const deleteGameMemoryById = async (gameId: number, memoryId: number) => 
       id: number
     }
   }
+}
+
+export async function batchDeleteGameMemoriesById(gameId: number, ids: number[]) {
+  const response = await api.request<{
+    data: {
+      deleted: number
+      ids: number[]
+    }
+  }>({
+    method: 'DELETE',
+    url: `/game/${gameId}/memory`,
+    data: { ids },
+  })
+  return response.data.data
+}
+
+export async function getMemorySettingsApi(): Promise<MemorySettings> {
+  const response = await api.request<{
+    data: MemorySettings
+  }>({
+    method: 'GET',
+    url: '/settings/memory',
+  })
+  return response.data.data
+}
+
+export async function getMemoryMetadataSettingsApi(): Promise<MemoryMetadataFieldConfig[]> {
+  const settings = await getMemorySettingsApi()
+  return settings.fields
+}
+
+export async function saveMemoryMetadataSettingsApi(
+  fields: MemoryMetadataFieldConfig[],
+): Promise<MemoryMetadataFieldConfig[]> {
+  const response = await api.request<{
+    data: MemorySettings
+  }>({
+    method: 'PUT',
+    url: '/settings/memory',
+    data: { fields },
+  })
+  return response.data.data.fields
+}
+
+export async function saveMemoryPlaybackSettingsApi(
+  playback: MemoryPlaybackSettings,
+): Promise<MemorySettings> {
+  const response = await api.request<{
+    data: MemorySettings
+  }>({
+    method: 'PUT',
+    url: '/settings/memory',
+    data: { playback },
+  })
+  return response.data.data
 }
