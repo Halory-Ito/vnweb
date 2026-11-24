@@ -25,7 +25,18 @@ const nextConfig: NextConfig = {
     '10.180.55.235',
   ],
   images: {
-    unoptimized: true,
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**',
+      },
+      {
+        protocol: 'http',
+        hostname: '**',
+      },
+    ],
+    dangerouslyAllowLocalIP: true,
+    // unoptimized: true,
   },
   transpilePackages: ['next-mdx-remote'],
   devIndicators: false,

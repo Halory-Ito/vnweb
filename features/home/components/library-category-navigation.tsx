@@ -9,6 +9,7 @@ import LibraryFolderContextMenu from './library-folder-context-menu'
 import LibraryFolderLogoDialog from './library-folder-logo-dialog'
 import { Button } from '@/components/ui/button'
 import { resolveLayoutLibraryGroup } from '@/lib/settings/layout-settings'
+import { cn } from '@/lib/utils'
 
 export default function LibraryCategoryNavigation() {
   const pathname = usePathname()
@@ -35,14 +36,21 @@ export default function LibraryCategoryNavigation() {
             key={href}
             asChild
             variant={active ? 'outline' : 'ghost'}
-            className="max-w-56 justify-start md:w-full md:max-w-none"
+            className={cn(
+              'max-w-56 justify-between px-3 md:w-full md:max-w-none',
+              !active && 'border border-transparent',
+            )}
           >
             <Link href={href} aria-current={active ? 'page' : undefined}>
-              <LibraryCategoryIcon key={logo} logo={logo} />
-              <span className="min-w-0 flex-1 truncate" title={title}>
-                {title}
+              <span className="flex min-w-0 flex-1 items-center gap-2">
+                <LibraryCategoryIcon key={logo} logo={logo} />
+                <span className="min-w-0 flex-1 truncate text-left" title={title}>
+                  {title}
+                </span>
               </span>
-              <span className="text-muted-foreground text-xs tabular-nums">{games.length}</span>
+              <span className="text-muted-foreground shrink-0 text-right text-xs tabular-nums">
+                {games.length}
+              </span>
             </Link>
           </Button>
         )

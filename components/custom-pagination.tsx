@@ -29,7 +29,7 @@ type PaginationProps = {
   itemUnit?: string
   itemName?: string
   extraControls?: ReactNode
-  sizeSelection?: { label: string; value: number }
+  sizeSelection?: { label: string; value: number; unit?: string }
 }
 
 const DEFAULT_PAGE_SIZE_OPTIONS = ['10', '20', '50', '100']
@@ -100,7 +100,7 @@ export function Pagination({
               ))}
             </SelectContent>
           </Select>
-          <span className="text-muted-foreground text-sm">{itemUnit}</span>
+          <span className="text-muted-foreground text-sm">{sizeSelection?.unit ?? itemUnit}</span>
         </div>
 
         {/* 页码导航 */}

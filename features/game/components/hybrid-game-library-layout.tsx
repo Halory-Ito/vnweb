@@ -30,8 +30,16 @@ export default function HybridGameLibraryLayout({ children }: { children: ReactN
 
   return (
     <ResizablePanelGroup orientation="horizontal" className="min-w-0 overflow-hidden">
-      <ResizablePanel id="library-categories" defaultSize="22%" minSize="10rem" maxSize="45%">
-        <aside className="h-full min-w-0 overflow-y-auto">{categories}</aside>
+      <ResizablePanel
+        id="library-categories"
+        defaultSize="22%"
+        minSize="0%"
+        maxSize="45%"
+        collapsible
+        collapsedSize="0%"
+        className="h-full min-w-0 overflow-x-hidden"
+      >
+        <aside className="h-full min-w-0 overflow-x-hidden overflow-y-auto">{categories}</aside>
       </ResizablePanel>
       <ResizableHandle aria-label="调整游戏库面板宽度" />
       <ResizablePanel id="library-content" defaultSize="78%">
