@@ -2,6 +2,11 @@ import fs from 'fs'
 import { NextRequest, NextResponse } from 'next/server'
 import path from 'path'
 
+import {
+  LEGACY_LIBRARY_FOLDER_LOGO_DIRECTORY,
+  LIBRARY_FOLDER_LOGO_DIRECTORY,
+} from '@/lib/library-folder-logo-path'
+
 const MIME_TYPES: Record<string, string> = {
   '.png': 'image/png',
   '.jpg': 'image/jpeg',
@@ -44,7 +49,16 @@ export async function GET(
   try {
     const resolvedParams = await params
     const pathArray = Array.isArray(resolvedParams?.path) ? resolvedParams.path : []
-    const filePath = path.join(process.cwd(), 'assets', ...pathArray)
+    let filePath = path.join(process.cwd(), 'assets', ...pathArray)
+
+    if (!fs.existsSync(filePath) && pathArray[0] === LEGACY_LIBRARY_FOLDER_LOGO_DIRECTORY) {
+      filePath = path.join(
+        process.cwd(),
+        'assets',
+        LIBRARY_FOLDER_LOGO_DIRECTORY,
+        ...pathArray.slice(1),
+      )
+    }
 
     if (!fs.existsSync(filePath)) {
       return new NextResponse('File not found', { status: 404 })

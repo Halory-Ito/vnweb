@@ -123,7 +123,7 @@ export async function collectLocalResourceReferences() {
     collectRefs(description, refs)
   }
   collectRefs(cgs, refs, 'cg')
-  collectRefs(logos, refs, 'logo')
+  collectRefs(logos, refs, 'brand')
   collectRefs([pvs, ostSongs, guides, guideSteps], refs)
 
   const configFiles = [

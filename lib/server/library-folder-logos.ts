@@ -1,9 +1,16 @@
 import { and, eq, isNotNull, like, sql } from 'drizzle-orm'
 
 import { readConfig, updateConfigSection } from './config-rw'
-import { migrateLibraryLogoSource } from './library-folder-logo-files'
+import {
+  migrateLegacyLibraryLogoDirectory,
+  migrateLibraryLogoSource,
+} from './library-folder-logo-files'
 import { LibraryFolderLogoTable } from '@/db/schema'
 import { db } from '@/lib/drizzle'
+import {
+  LEGACY_LIBRARY_FOLDER_LOGO_URL_PREFIX,
+  toBrandLogoUrl,
+} from '@/lib/library-folder-logo-path'
 import { isAppearanceImageSource } from '@/lib/settings/appearance-image'
 
 export function isDeveloperFolderHref(value: unknown): value is string {
@@ -29,6 +36,7 @@ async function initialize() {
   await db.run(
     sql`CREATE TABLE IF NOT EXISTS library_folder_logo (href TEXT PRIMARY KEY NOT NULL, source TEXT)`,
   )
+  await migrateLegacyLibraryLogoDirectory()
   const config = await readConfig()
   const legacy = (
     config.settings as { appearance?: { layout?: { folderLogos?: Record<string, unknown> } } }
@@ -38,6 +46,7 @@ async function initialize() {
   let migratedLegacy = false
   for (const [href, source] of Object.entries(legacy ?? {})) {
     if (isDeveloperFolderHref(href) && isAppearanceImageSource(source)) {
+      const normalizedSource = toBrandLogoUrl(source)
       const [existing] = await db
         .select({ href: LibraryFolderLogoTable.href })
         .from(LibraryFolderLogoTable)
@@ -45,11 +54,14 @@ async function initialize() {
       if (!existing) {
         await db
           .insert(LibraryFolderLogoTable)
-          .values({ href, source: await migrateLibraryLogoSource(source) })
+          .values({ href, source: await migrateLibraryLogoSource(normalizedSource) })
           .onConflictDoNothing()
       }
       if (/^data:/i.test(source)) {
         delete remainingLegacy[href]
+        migratedLegacy = true
+      } else if (normalizedSource !== source) {
+        remainingLegacy[href] = normalizedSource
         migratedLegacy = true
       }
     }
@@ -65,6 +77,19 @@ async function initialize() {
     await db
       .update(LibraryFolderLogoTable)
       .set({ source: file })
+      .where(and(eq(LibraryFolderLogoTable.href, href), eq(LibraryFolderLogoTable.source, source)))
+  }
+
+  const legacyFiles = await db
+    .select()
+    .from(LibraryFolderLogoTable)
+    .where(like(LibraryFolderLogoTable.source, `${LEGACY_LIBRARY_FOLDER_LOGO_URL_PREFIX}%`))
+  for (const { href, source } of legacyFiles) {
+    if (!source) continue
+    const nextSource = toBrandLogoUrl(source)
+    await db
+      .update(LibraryFolderLogoTable)
+      .set({ source: nextSource })
       .where(and(eq(LibraryFolderLogoTable.href, href), eq(LibraryFolderLogoTable.source, source)))
   }
 

@@ -4,6 +4,7 @@ export const IMAGE_USAGE_LABELS = {
   cover: '封面',
   character: '角色立绘',
   logo: 'Logo',
+  brand: '品牌图标',
   background: '背景',
   icon: '游戏图标',
   cg: '游戏 CG',

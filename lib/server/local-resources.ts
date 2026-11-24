@@ -2,7 +2,10 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 
 import { collectLocalResourceReferences } from './local-resource-references'
-import { LIBRARY_FOLDER_LOGO_DIRECTORY } from '@/lib/library-folder-logo-path'
+import {
+  LEGACY_LIBRARY_FOLDER_LOGO_DIRECTORY,
+  LIBRARY_FOLDER_LOGO_DIRECTORY,
+} from '@/lib/library-folder-logo-path'
 
 import type {
   ImageUsage,
@@ -16,14 +19,15 @@ const imageFolderUsage = new Map<string, ImageUsage>([
   ['ost', 'cover'],
   ['characters', 'character'],
   ['logo', 'logo'],
-  [LIBRARY_FOLDER_LOGO_DIRECTORY, 'logo'],
+  [LIBRARY_FOLDER_LOGO_DIRECTORY, 'brand'],
+  [LEGACY_LIBRARY_FOLDER_LOGO_DIRECTORY, 'brand'],
   ['bg', 'background'],
   ['icon', 'icon'],
   ['cg', 'cg'],
   ['memory', 'memory'],
 ])
 
-const EXTENSION_CATEGORY_MAP: Record<string, ResourceCategory> = {
+export const EXTENSION_CATEGORY_MAP: Record<string, ResourceCategory> = {
   '.png': 'image',
   '.jpg': 'image',
   '.jpeg': 'image',

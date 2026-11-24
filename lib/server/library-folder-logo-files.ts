@@ -4,6 +4,7 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 
 import {
+  LEGACY_LIBRARY_FOLDER_LOGO_DIRECTORY,
   LIBRARY_FOLDER_LOGO_DIRECTORY,
   LIBRARY_FOLDER_LOGO_URL_PREFIX,
 } from '@/lib/library-folder-logo-path'
@@ -20,6 +21,46 @@ const imageExtensions = new Map([
 
 export function getLibraryFolderLogoDirectory() {
   return path.join(process.cwd(), 'assets', LIBRARY_FOLDER_LOGO_DIRECTORY)
+}
+
+export function getLegacyLibraryFolderLogoDirectory() {
+  return path.join(process.cwd(), 'assets', LEGACY_LIBRARY_FOLDER_LOGO_DIRECTORY)
+}
+
+export async function migrateLegacyLibraryLogoDirectory(): Promise<void> {
+  const legacyDir = getLegacyLibraryFolderLogoDirectory()
+  let entries
+  try {
+    entries = await fs.readdir(legacyDir, { withFileTypes: true })
+  } catch {
+    return
+  }
+
+  const targetDir = getLibraryFolderLogoDirectory()
+  await fs.mkdir(targetDir, { recursive: true })
+
+  for (const entry of entries) {
+    if (!entry.isFile()) continue
+    const from = path.join(legacyDir, entry.name)
+    const to = path.join(targetDir, entry.name)
+    try {
+      await fs.access(to)
+      await fs.rm(from, { force: true })
+    } catch {
+      try {
+        await fs.rename(from, to)
+      } catch {
+        await fs.copyFile(from, to)
+        await fs.unlink(from)
+      }
+    }
+  }
+
+  try {
+    await fs.rmdir(legacyDir)
+  } catch {
+    // Ignore if directory still has remaining entries
+  }
 }
 
 export function decodeLibraryLogo(source: string) {
