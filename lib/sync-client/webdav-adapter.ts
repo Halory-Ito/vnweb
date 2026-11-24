@@ -54,6 +54,20 @@ export class WebDAVSyncClient implements SyncClient {
     return this.client.downloadFile(remotePath, localPath, onProgress)
   }
 
+  uploadBuffer(content: Buffer | string, remotePath: string, contentType?: string): Promise<void> {
+    return this.client.uploadBuffer(content, remotePath, contentType)
+  }
+
+  downloadBuffer(remotePath: string): Promise<Buffer | null> {
+    return this.client.downloadBuffer(remotePath)
+  }
+
+  listFilesRecursive(
+    remoteDir: string,
+  ): Promise<Array<{ relativePath: string; size: number; lastmod: string }>> {
+    return this.client.listFilesRecursive(remoteDir)
+  }
+
   uploadDirectory(
     localDir: string,
     remoteDir: string,

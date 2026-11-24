@@ -1,4 +1,5 @@
 export { SyncServerPanel } from './components/sync-server-panel'
+export { BackupContentSection } from './components/backup-content-section'
 export { GameSaveSection } from './components/game-save-section'
 export { LocalBackupSection } from './components/local-backup-section'
 export { ExportSection } from './components/export-section'

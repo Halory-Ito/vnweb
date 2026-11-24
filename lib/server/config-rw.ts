@@ -1,6 +1,10 @@
 import fs from 'node:fs'
 import path from 'node:path'
 
+import { normalizeBackupContentOptions } from '@/lib/backup-content'
+
+import type { BackupContentOptions } from '@/types'
+
 export const DATA_SETTINGS_DIR = path.join(process.cwd(), 'data', 'settings')
 export const APPEARANCE_SETTINGS_FILE = path.join(DATA_SETTINGS_DIR, 'appearance.json')
 export const BACKUP_SETTINGS_FILE = path.join(DATA_SETTINGS_DIR, 'backup.json')
@@ -182,4 +186,18 @@ export async function readGameSaveBackupConfig(): Promise<{
     enabled: Boolean(save.active),
     directory: typeof save.dir === 'string' ? save.dir : '',
   }
+}
+
+/** 读取备份内容可选项配置（data/settings/backup.json） */
+export async function readBackupContentConfig(): Promise<BackupContentOptions> {
+  const fullConfig = await readConfig()
+  const settings = (fullConfig['settings'] || {}) as Record<string, unknown>
+  const backup = (settings['backup'] || {}) as Record<string, unknown>
+  return normalizeBackupContentOptions(backup['content'])
+}
+
+/** 写入备份内容可选项配置（data/settings/backup.json） */
+export async function writeBackupContentConfig(options: BackupContentOptions): Promise<void> {
+  const normalized = normalizeBackupContentOptions(options)
+  await updateConfigSection(['settings', 'backup', 'content'], normalized)
 }

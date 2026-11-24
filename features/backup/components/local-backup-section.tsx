@@ -3,15 +3,10 @@
 import { Trash2Icon } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
+import { Skeleton } from '@/components/ui/skeleton'
 import { BackupConfirmDialog } from '@/features/backup/components/backup-confirm-dialog'
 import { useBackupSettingsContext } from '@/features/backup/context/backup-settings-context'
-
-function formatSize(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
-  if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
-  return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)} GB`
-}
+import { formatBackupSize } from '@/features/backup/lib/format-backup-size'
 
 export function LocalBackupSection() {
   const {
@@ -29,10 +24,16 @@ export function LocalBackupSection() {
 
   return (
     <>
-      <section className="dark:border-input dark:bg-input/20 space-y-4 rounded-xl border p-6">
+      <section
+        aria-labelledby="local-backup-settings"
+        className="dark:border-input dark:bg-input/20 space-y-4 rounded-xl border p-4 sm:p-6"
+      >
         <div className="flex min-h-8 items-center justify-between gap-3">
-          <h2 className="text-base font-semibold">本地备份</h2>
+          <h2 id="local-backup-settings" className="text-base font-semibold">
+            本地备份
+          </h2>
           <Button
+            type="button"
             variant="outline"
             disabled={isCreatingBackup}
             onClick={() => void handleCreateLocalBackup()}
@@ -42,29 +43,45 @@ export function LocalBackupSection() {
         </div>
 
         {isLoadingBackups ? (
-          <p className="text-muted-foreground text-sm">加载中...</p>
+          <div className="space-y-2">
+            {Array.from({ length: 2 }).map((_, index) => (
+              <Skeleton key={index} className="h-12 w-full rounded-lg" />
+            ))}
+          </div>
         ) : localBackups.length === 0 ? (
           <p className="text-muted-foreground text-sm">暂无备份</p>
         ) : (
-          <div className="divide-border max-h-64 divide-y overflow-y-auto">
+          <div className="divide-border/60 max-h-64 divide-y overflow-y-auto">
             {localBackups.map((backup) => (
               <div
                 key={backup.id}
-                className="flex min-h-12 items-center justify-between gap-3 py-2"
+                className="flex min-h-12 items-center justify-between gap-3 py-2.5"
               >
                 <div className="min-w-0">
                   <p className="truncate text-sm font-medium">{backup.name}</p>
-                  <p className="text-muted-foreground truncate text-sm">
+                  <p className="text-muted-foreground truncate text-xs">
                     {backup.createdAt ? new Date(backup.createdAt).toLocaleString() : '未知'} ·{' '}
-                    {formatSize(backup.size)}
+                    {formatBackupSize(backup.size)}
                   </p>
                 </div>
-                <div className="flex shrink-0 items-center gap-2">
-                  <Button variant="outline" size="sm" onClick={() => setRestoreTargetId(backup.id)}>
+                <div className="flex shrink-0 items-center gap-1.5">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setRestoreTargetId(backup.id)}
+                  >
                     恢复
                   </Button>
-                  <Button variant="ghost" size="icon" onClick={() => setDeleteTargetId(backup.id)}>
-                    <Trash2Icon className="size-4 text-red-500" />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon-sm"
+                    aria-label={`删除备份 ${backup.name}`}
+                    className="text-muted-foreground hover:text-destructive hover:border-destructive/40"
+                    onClick={() => setDeleteTargetId(backup.id)}
+                  >
+                    <Trash2Icon className="size-3.5" />
                   </Button>
                 </div>
               </div>

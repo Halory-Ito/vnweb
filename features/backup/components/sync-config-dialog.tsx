@@ -3,10 +3,12 @@
 import { Loader2Icon, WifiIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
+import { SyncConfigProviderFields } from './sync-config-provider-fields'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -20,7 +22,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Switch } from '@/components/ui/switch'
 import { createEmptySyncConfig } from '@/features/backup/hooks/use-sync-server'
 
 import type { SyncProvider, SyncServerConfig } from '@/types'
@@ -72,12 +73,13 @@ export function SyncConfigDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
+      <DialogContent className="flex max-h-[85dvh] w-full max-w-[calc(100%-2rem)] flex-col overflow-hidden sm:max-w-md">
+        <DialogHeader className="shrink-0">
           <DialogTitle>{editData ? '编辑服务器' : '新增服务器'}</DialogTitle>
+          <DialogDescription className="sr-only">配置同步服务器连接参数</DialogDescription>
         </DialogHeader>
 
-        <div className="max-h-[60vh] space-y-4 overflow-y-auto pr-1">
+        <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-1 py-1">
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="sync-name">名称</Label>
@@ -94,7 +96,7 @@ export function SyncConfigDialog({
                 value={draft.provider}
                 onValueChange={(v) => changeProvider(v as SyncProvider)}
               >
-                <SelectTrigger id="sync-provider">
+                <SelectTrigger id="sync-provider" className="w-full">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -105,101 +107,7 @@ export function SyncConfigDialog({
             </div>
           </div>
 
-          {draft.provider === 'webdav' ? (
-            <>
-              <div className="space-y-2">
-                <Label htmlFor="sync-server">服务器地址</Label>
-                <Input
-                  id="sync-server"
-                  value={draft.server || ''}
-                  onChange={(e) => update('server', e.target.value)}
-                  placeholder="https://dav.example.com"
-                />
-              </div>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="sync-username">用户名</Label>
-                  <Input
-                    id="sync-username"
-                    value={draft.username || ''}
-                    onChange={(e) => update('username', e.target.value)}
-                    autoComplete="username"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="sync-password">密码</Label>
-                  <Input
-                    id="sync-password"
-                    type="password"
-                    value={draft.password || ''}
-                    onChange={(e) => update('password', e.target.value)}
-                    autoComplete="current-password"
-                  />
-                </div>
-              </div>
-            </>
-          ) : (
-            <>
-              <div className="space-y-2">
-                <Label htmlFor="sync-endpoint">服务地址（Endpoint）</Label>
-                <Input
-                  id="sync-endpoint"
-                  value={draft.endpoint || ''}
-                  onChange={(e) => update('endpoint', e.target.value)}
-                  placeholder="https://s3.example.com"
-                />
-              </div>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="sync-bucket">存储桶（Bucket）</Label>
-                  <Input
-                    id="sync-bucket"
-                    value={draft.bucket || ''}
-                    onChange={(e) => update('bucket', e.target.value)}
-                    placeholder="vnweb-backup"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="sync-region">区域（Region）</Label>
-                  <Input
-                    id="sync-region"
-                    value={draft.region || ''}
-                    onChange={(e) => update('region', e.target.value)}
-                    placeholder="us-east-1"
-                  />
-                </div>
-              </div>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="sync-access-key">Access Key ID</Label>
-                  <Input
-                    id="sync-access-key"
-                    value={draft.accessKeyId || ''}
-                    onChange={(e) => update('accessKeyId', e.target.value)}
-                    autoComplete="off"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="sync-secret-key">Secret Access Key</Label>
-                  <Input
-                    id="sync-secret-key"
-                    type="password"
-                    value={draft.secretAccessKey || ''}
-                    onChange={(e) => update('secretAccessKey', e.target.value)}
-                    autoComplete="off"
-                  />
-                </div>
-              </div>
-              <div className="flex min-h-8 items-center justify-between gap-3">
-                <Label htmlFor="sync-path-style">路径样式（Path Style）</Label>
-                <Switch
-                  id="sync-path-style"
-                  checked={draft.forcePathStyle ?? true}
-                  onCheckedChange={(v) => update('forcePathStyle', v)}
-                />
-              </div>
-            </>
-          )}
+          <SyncConfigProviderFields draft={draft} onUpdate={update} />
 
           <div className="space-y-2">
             <Label htmlFor="sync-path">远程备份目录</Label>
@@ -212,7 +120,7 @@ export function SyncConfigDialog({
           </div>
         </div>
 
-        <DialogFooter>
+        <DialogFooter className="shrink-0">
           <Button
             type="button"
             variant="outline"
@@ -226,7 +134,7 @@ export function SyncConfigDialog({
             )}
             测试连接
           </Button>
-          <Button type="button" disabled={busy} onClick={() => void handleSave()}>
+          <Button type="button" variant="outline" disabled={busy} onClick={() => void handleSave()}>
             {savingId !== null ? <Loader2Icon className="size-4 animate-spin" /> : null}
             保存
           </Button>

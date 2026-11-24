@@ -1,8 +1,22 @@
 import { api } from '@/lib/request-utils'
 
-import type { SyncServerConfig } from '@/types'
+import type {
+  BackupContentOptions,
+  BackupImageCategoryKey,
+  RemoteBackupStatus,
+  SyncDownloadPreviewSummary,
+  SyncServerConfig,
+  SyncUploadPreviewSummary,
+} from '@/types'
 
-export type { SyncServerConfig }
+export type {
+  BackupContentOptions,
+  BackupImageCategoryKey,
+  RemoteBackupStatus,
+  SyncDownloadPreviewSummary,
+  SyncServerConfig,
+  SyncUploadPreviewSummary,
+}
 
 export type RemoteBackupInfo = {
   name: string
@@ -15,6 +29,9 @@ export type SyncTaskProgress = {
   status: 'running' | 'success' | 'error'
   total: number
   uploaded: number
+  percent: number
+  currentCategory: string
+  categories: string[]
   currentFile: string
   message: string
   error?: string
@@ -30,6 +47,23 @@ export type SyncConfigResponse = {
 export type SyncConnectionPayload = SyncServerConfig
 
 const BASE_URL = '/settings/backup/sync-server'
+
+// 获取备份内容可选项配置
+export function getBackupContentConfigApi() {
+  return api.request<{ data: BackupContentOptions }>({
+    method: 'GET',
+    url: '/settings/backup/content',
+  })
+}
+
+// 更新备份内容可选项配置
+export function updateBackupContentConfigApi(options: BackupContentOptions) {
+  return api.request<{ data: BackupContentOptions }>({
+    method: 'PUT',
+    url: '/settings/backup/content',
+    data: options,
+  })
+}
 
 // 获取配置列表
 export function getSyncConfigsApi() {
@@ -56,14 +90,42 @@ export function testSyncConnectionApi(payload: SyncConnectionPayload) {
   return api.request({ method: 'POST', url: `${BASE_URL}/test`, data: payload })
 }
 
+// 查询上传前备份统计
+export function getUploadSyncPreviewApi() {
+  return api.request<{ data: SyncUploadPreviewSummary }>({
+    method: 'GET',
+    url: `${BASE_URL}/upload/preview`,
+  })
+}
+
 // 启动上传备份任务（返回 taskId）
-export function startUploadSyncBackupApi() {
-  return api.request({ method: 'POST', url: `${BASE_URL}/upload` })
+export function startUploadSyncBackupApi(options?: BackupContentOptions) {
+  return api.request({
+    method: 'POST',
+    url: `${BASE_URL}/upload`,
+    data: options ? { options, saveOptions: true } : undefined,
+  })
 }
 
 // 查询上传任务进度
 export function getUploadSyncProgressApi(taskId: string) {
   return api.request({ method: 'GET', url: `${BASE_URL}/upload`, params: { taskId } })
+}
+
+// 检测远端最新备份日期与元信息
+export function getRemoteBackupStatusApi() {
+  return api.request<{ data: RemoteBackupStatus }>({
+    method: 'GET',
+    url: `${BASE_URL}/status`,
+  })
+}
+
+// 查询下载前远端备份统计
+export function getDownloadSyncPreviewApi() {
+  return api.request<{ data: SyncDownloadPreviewSummary }>({
+    method: 'GET',
+    url: `${BASE_URL}/download/preview`,
+  })
 }
 
 // 列出远程备份
@@ -72,10 +134,10 @@ export function listSyncBackupsApi() {
 }
 
 // 从同步服务器下载备份并覆盖本地
-export function downloadSyncBackupApi(backupName: string) {
+export function downloadSyncBackupApi(backupName?: string) {
   return api.request({
     method: 'POST',
     url: `${BASE_URL}/download`,
-    data: { backupName },
+    data: backupName ? { backupName } : {},
   })
 }

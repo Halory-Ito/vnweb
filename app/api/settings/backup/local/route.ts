@@ -3,30 +3,15 @@ import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 
-import { LIBRARY_FOLDER_LOGO_DIRECTORY } from '@/lib/library-folder-logo-path'
+import { collectSelectedBackupAssets, copyBackupAssetFiles } from '@/lib/server/backup-content'
+import {
+  readBackupContentConfig,
+  readGameSaveBackupConfig as getGameSaveConfig,
+} from '@/lib/server/config-rw'
 import { getDbPath } from '@/lib/server/database-config.mjs'
 
 // 默认保留备份数量
 const BACKUP_KEEP_COUNT = 10
-
-// 获取 assets 目录路径
-function getAssetsPath() {
-  return path.join(process.cwd(), 'assets')
-}
-
-// 需要包含的 assets 子目录
-const ASSET_DIRS = [
-  'cover',
-  'bg',
-  'icon',
-  'logo',
-  'ost',
-  'characters',
-  'pv',
-  LIBRARY_FOLDER_LOGO_DIRECTORY,
-]
-
-import { readGameSaveBackupConfig as getGameSaveConfig } from '@/lib/server/config-rw'
 
 // 获取备份目录
 function getBackupDir() {
@@ -125,6 +110,9 @@ export async function POST(_req: NextRequest) {
 
     await fs.promises.mkdir(backupPath, { recursive: true })
 
+    const options = await readBackupContentConfig()
+    const assetFiles = await collectSelectedBackupAssets(options)
+
     // 1. 复制数据库
     const dbPath = getDbPath()
     if (fs.existsSync(dbPath)) {
@@ -133,25 +121,20 @@ export async function POST(_req: NextRequest) {
       await fs.promises.copyFile(dbPath, path.join(dbDir, 'local.db'))
     }
 
-    // 2. 复制 assets 目录
-    const assetsPath = getAssetsPath()
-    if (fs.existsSync(assetsPath)) {
-      for (const dir of ASSET_DIRS) {
-        const srcDir = path.join(assetsPath, dir)
-        if (fs.existsSync(srcDir)) {
-          const destDir = path.join(backupPath, 'assets', dir)
-          await fs.promises.cp(srcDir, destDir, { recursive: true })
-        }
-      }
+    // 2. 按所选分类复制静态资源
+    if (assetFiles.length > 0) {
+      await copyBackupAssetFiles(assetFiles, backupPath)
     }
 
     // 3. 复制游戏存档目录
-    const gameSaveConfig = await getGameSaveConfig()
-    if (gameSaveConfig.enabled && gameSaveConfig.directory) {
-      const saveDir = gameSaveConfig.directory.trim()
-      if (fs.existsSync(saveDir)) {
-        const destSaveDir = path.join(backupPath, 'game-saves')
-        await fs.promises.cp(saveDir, destSaveDir, { recursive: true })
+    if (options.gameSaves) {
+      const gameSaveConfig = await getGameSaveConfig()
+      if (gameSaveConfig.enabled && gameSaveConfig.directory) {
+        const saveDir = gameSaveConfig.directory.trim()
+        if (fs.existsSync(saveDir)) {
+          const destSaveDir = path.join(backupPath, 'game-saves')
+          await fs.promises.cp(saveDir, destSaveDir, { recursive: true })
+        }
       }
     }
 
@@ -160,6 +143,7 @@ export async function POST(_req: NextRequest) {
       version: '1.0.0',
       createdAt: new Date().toISOString(),
       description: 'VNWeb Local Backup',
+      content: options,
     }
     await fs.promises.writeFile(
       path.join(backupPath, 'backup-info.json'),

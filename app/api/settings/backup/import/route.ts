@@ -2,11 +2,19 @@ import { NextRequest, NextResponse } from 'next/server'
 import fs from 'node:fs'
 import path from 'node:path'
 
+import { mergeBackupAssetDirectory } from '@/lib/server/backup-content'
+import { readGameSaveBackupConfig as getGameSaveConfig } from '@/lib/server/config-rw'
 import { getDbPath } from '@/lib/server/database-config.mjs'
+import { migrateLegacyLibraryLogoDirectory } from '@/lib/server/library-folder-logo-files'
 
 // 获取 assets 目录路径
 function getAssetsPath() {
   return path.join(process.cwd(), 'assets')
+}
+
+// 获取 public/assets 目录路径
+function getPublicAssetsPath() {
+  return path.join(process.cwd(), 'public', 'assets')
 }
 
 // 解压 zip 文件
@@ -16,11 +24,13 @@ async function extractZip(
 ): Promise<{
   dbPath: string | null
   assetsDir: string | null
+  publicAssetsDir: string | null
   gameSavesDir: string | null
 }> {
   // 动态导入 adm-zip
   const AdmZip = (await import('adm-zip')).default
   const zip = new AdmZip(buffer)
+  const resolvedRoot = path.resolve(targetDir)
 
   let dbPath: string | null = null
 
@@ -34,40 +44,34 @@ async function extractZip(
       continue
     }
 
-    // 处理数据库文件
+    if (
+      !entryPath.startsWith('database/') &&
+      !entryPath.startsWith('assets/') &&
+      !entryPath.startsWith('public-assets/') &&
+      !entryPath.startsWith('game-saves/')
+    ) {
+      continue
+    }
+
+    const targetPath = path.resolve(targetDir, entryPath)
+    if (!targetPath.startsWith(resolvedRoot + path.sep)) {
+      continue
+    }
+
+    await fs.promises.mkdir(path.dirname(targetPath), { recursive: true })
+    await fs.promises.writeFile(targetPath, entry.getData())
     if (entryPath.startsWith('database/')) {
-      const targetPath = path.join(targetDir, entryPath)
-      const targetDirPath = path.dirname(targetPath)
-      await fs.promises.mkdir(targetDirPath, { recursive: true })
-      await fs.promises.writeFile(targetPath, entry.getData())
       dbPath = targetPath
-    }
-
-    // 处理 assets 文件
-    if (entryPath.startsWith('assets/')) {
-      const targetPath = path.join(targetDir, entryPath)
-      const targetDirPath = path.dirname(targetPath)
-      await fs.promises.mkdir(targetDirPath, { recursive: true })
-      await fs.promises.writeFile(targetPath, entry.getData())
-    }
-
-    // 处理游戏存档文件
-    if (entryPath.startsWith('game-saves/')) {
-      const targetPath = path.join(targetDir, entryPath)
-      const targetDirPath = path.dirname(targetPath)
-      await fs.promises.mkdir(targetDirPath, { recursive: true })
-      await fs.promises.writeFile(targetPath, entry.getData())
     }
   }
 
   return {
     dbPath,
     assetsDir: path.join(targetDir, 'assets'),
+    publicAssetsDir: path.join(targetDir, 'public-assets'),
     gameSavesDir: path.join(targetDir, 'game-saves'),
   }
 }
-
-import { readGameSaveBackupConfig as getGameSaveConfig } from '@/lib/server/config-rw'
 
 export async function POST(req: NextRequest) {
   try {
@@ -92,10 +96,12 @@ export async function POST(req: NextRequest) {
 
     try {
       // 解压文件
-      const { dbPath: extractedDbPath, gameSavesDir: extractedGameSavesDir } = await extractZip(
-        buffer,
-        tempDir,
-      )
+      const {
+        dbPath: extractedDbPath,
+        assetsDir: extractedAssetsPath,
+        publicAssetsDir: extractedPublicAssetsPath,
+        gameSavesDir: extractedGameSavesDir,
+      } = await extractZip(buffer, tempDir)
 
       // 替换数据库文件
       const currentDbPath = getDbPath()
@@ -110,22 +116,14 @@ export async function POST(req: NextRequest) {
         await fs.promises.copyFile(extractedDbPath, currentDbPath)
       }
 
-      // 替换 assets 目录
-      const currentAssetsPath = getAssetsPath()
-      const extractedAssetsPath = path.join(tempDir, 'assets')
-      if (fs.existsSync(extractedAssetsPath)) {
-        // 备份当前 assets
-        if (fs.existsSync(currentAssetsPath)) {
-          const backupPath = currentAssetsPath + '.bak'
-          await fs.promises.rm(backupPath, { force: true })
-          await fs.promises.rename(currentAssetsPath, backupPath)
-        }
-
-        // 复制新 assets
-        await fs.promises.cp(extractedAssetsPath, currentAssetsPath, {
-          recursive: true,
-        })
+      // 合并恢复 assets 与 public/assets 目录
+      if (extractedAssetsPath) {
+        await mergeBackupAssetDirectory(extractedAssetsPath, getAssetsPath())
       }
+      if (extractedPublicAssetsPath) {
+        await mergeBackupAssetDirectory(extractedPublicAssetsPath, getPublicAssetsPath())
+      }
+      await migrateLegacyLibraryLogoDirectory()
 
       // 恢复游戏存档目录
       if (extractedGameSavesDir && fs.existsSync(extractedGameSavesDir)) {

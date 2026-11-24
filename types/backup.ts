@@ -40,3 +40,93 @@ export type SyncConfigStore = {
 
 /** 返回给前端的配置（密码类字段以掩码形式呈现） */
 export type SyncServerConfigView = SyncServerConfig
+
+export type BackupImageCategoryKey =
+  | 'cover'
+  | 'ostCover'
+  | 'background'
+  | 'customBackground'
+  | 'character'
+  | 'cg'
+  | 'icon'
+  | 'logo'
+  | 'brand'
+  | 'memory'
+  | 'other'
+
+export type BackupContentOptions = {
+  gameSaves: boolean
+  images: Record<BackupImageCategoryKey, boolean>
+  video: boolean
+  audio: boolean
+  font: boolean
+}
+
+export type BackupCategoryStat = {
+  label: string
+  fileCount: number
+  size: number
+}
+
+export type BackupImageSubCategoryStat = BackupCategoryStat & {
+  key: BackupImageCategoryKey
+}
+
+export type SyncUploadPreviewSummary = {
+  options: BackupContentOptions
+  database: BackupCategoryStat & {
+    available: boolean
+    unavailableReason?: string
+  }
+  gameSaves: BackupCategoryStat & {
+    status: 'available' | 'disabled' | 'missing'
+    unavailableReason?: string
+  }
+  images: {
+    label: string
+    totalFileCount: number
+    totalSize: number
+    items: BackupImageSubCategoryStat[]
+  }
+  video: BackupCategoryStat
+  audio: BackupCategoryStat
+  font: BackupCategoryStat
+}
+
+export type RemoteBackupMeta = {
+  version: number
+  backupName: string
+  backupDate: string
+  totalSize: number
+  totalFiles: number
+  categories: string[]
+  options?: BackupContentOptions
+}
+
+export type RemoteBackupStatus = {
+  exists: boolean
+  backupName?: string
+  backupDate?: string
+  categories?: string[]
+  totalSize?: number
+  totalFiles?: number
+}
+
+export type RemoteDownloadCategorySummary = {
+  key: 'database' | 'game-saves' | 'images' | 'video' | 'audio' | 'font'
+  label: string
+  fileCount: number
+  size: number
+}
+
+export type SyncDownloadPreviewSummary = {
+  exists: boolean
+  backupName: string
+  backupDate: string
+  totalSize: number
+  totalFiles: number
+  categories: RemoteDownloadCategorySummary[]
+  imageItems: BackupImageSubCategoryStat[]
+  gameSaveEnabled: boolean
+  hasGameSaves: boolean
+}

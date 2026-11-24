@@ -8,9 +8,14 @@ export function ImportSection() {
   const { isImporting, importFileInputRef, handleImportFileChange } = useBackupSettingsContext()
 
   return (
-    <section className="dark:border-input dark:bg-input/20 space-y-4 rounded-xl border p-6">
-      <h2 className="text-base font-semibold">导入备份</h2>
-      <div className="flex min-h-8 items-center justify-between gap-3">
+    <section
+      aria-labelledby="import-backup-settings"
+      className="dark:border-input dark:bg-input/20 space-y-4 rounded-xl border p-4 sm:p-6"
+    >
+      <h2 id="import-backup-settings" className="text-base font-semibold">
+        导入备份
+      </h2>
+      <div className="flex min-h-9 items-center justify-between gap-3">
         <Label>导入 ZIP</Label>
         <div>
           <input
@@ -21,6 +26,7 @@ export function ImportSection() {
             onChange={(event) => void handleImportFileChange(event)}
           />
           <Button
+            type="button"
             variant="outline"
             disabled={isImporting}
             onClick={() => importFileInputRef.current?.click()}

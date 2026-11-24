@@ -3,11 +3,19 @@ import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 
+import { mergeBackupAssetDirectory } from '@/lib/server/backup-content'
+import { readGameSaveBackupConfig as getGameSaveConfig } from '@/lib/server/config-rw'
 import { getDbPath } from '@/lib/server/database-config.mjs'
+import { migrateLegacyLibraryLogoDirectory } from '@/lib/server/library-folder-logo-files'
 
 // 获取 assets 目录路径
 function getAssetsPath() {
   return path.join(process.cwd(), 'assets')
+}
+
+// 获取 public/assets 目录路径
+function getPublicAssetsPath() {
+  return path.join(process.cwd(), 'public', 'assets')
 }
 
 // 获取备份目录
@@ -15,8 +23,6 @@ function getBackupDir() {
   const documentsPath = path.join(os.homedir(), 'Documents')
   return path.join(documentsPath, 'VnBackups')
 }
-
-import { readGameSaveBackupConfig as getGameSaveConfig } from '@/lib/server/config-rw'
 
 export async function POST(req: NextRequest) {
   try {
@@ -51,23 +57,10 @@ export async function POST(req: NextRequest) {
       await fs.promises.copyFile(extractedDbPath, currentDbPath)
     }
 
-    // 2. 恢复 assets 目录
-    const extractedAssetsPath = path.join(backupPath, 'assets')
-    const currentAssetsPath = getAssetsPath()
-
-    if (fs.existsSync(extractedAssetsPath)) {
-      // 备份当前 assets
-      if (fs.existsSync(currentAssetsPath)) {
-        const backupAssetsPath = currentAssetsPath + '.bak'
-        await fs.promises.rm(backupAssetsPath, { force: true })
-        await fs.promises.rename(currentAssetsPath, backupAssetsPath)
-      }
-
-      // 复制新 assets
-      await fs.promises.cp(extractedAssetsPath, currentAssetsPath, {
-        recursive: true,
-      })
-    }
+    // 2. 合并恢复 assets 与 public/assets 目录（避免部分备份恢复覆盖后丢失未包含资源）
+    await mergeBackupAssetDirectory(path.join(backupPath, 'assets'), getAssetsPath())
+    await mergeBackupAssetDirectory(path.join(backupPath, 'public-assets'), getPublicAssetsPath())
+    await migrateLegacyLibraryLogoDirectory()
 
     // 3. 恢复游戏存档目录
     const extractedSavePath = path.join(backupPath, 'game-saves')

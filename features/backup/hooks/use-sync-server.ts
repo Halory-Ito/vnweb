@@ -1,5 +1,6 @@
 'use client'
 
+import { useQueryClient } from '@tanstack/react-query'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 
@@ -7,18 +8,18 @@ import {
   createSyncConfigApi,
   deleteSyncConfigApi,
   downloadSyncBackupApi,
+  getRemoteBackupStatusApi,
   getSyncConfigsApi,
   getUploadSyncProgressApi,
-  listSyncBackupsApi,
   startUploadSyncBackupApi,
   testSyncConnectionApi,
   updateSyncConfigApi,
-  type RemoteBackupInfo,
+  type RemoteBackupStatus,
   type SyncConnectionPayload,
   type SyncTaskProgress,
 } from '@/features/backup/sync-server-api'
 
-import type { SyncServerConfig } from '@/types'
+import type { BackupContentOptions, SyncServerConfig } from '@/types'
 
 export const createEmptySyncConfig = (): SyncServerConfig => ({
   id: '',
@@ -40,6 +41,7 @@ export const createEmptySyncConfig = (): SyncServerConfig => ({
 const POLL_INTERVAL = 800
 
 export function useSyncServer() {
+  const queryClient = useQueryClient()
   const [configs, setConfigs] = useState<SyncServerConfig[]>([])
   const [isLoadingConfigs, setIsLoadingConfigs] = useState(false)
   const [testingId, setTestingId] = useState<string | null>(null)
@@ -47,14 +49,15 @@ export function useSyncServer() {
 
   const [isUploading, setIsUploading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState<SyncTaskProgress | null>(null)
+  const [uploadPreviewOpen, setUploadPreviewOpen] = useState(false)
   const [isDownloading, setIsDownloading] = useState(false)
-  const [backupList, setBackupList] = useState<RemoteBackupInfo[]>([])
-  const [isLoadingBackups, setIsLoadingBackups] = useState(false)
-  const [selectedBackup, setSelectedBackup] = useState<string | null>(null)
-  const [downloadConfirmOpen, setDownloadConfirmOpen] = useState(false)
+  const [remoteStatus, setRemoteStatus] = useState<RemoteBackupStatus | null>(null)
+  const [isCheckingRemote, setIsCheckingRemote] = useState(false)
+  const [downloadPreviewOpen, setDownloadPreviewOpen] = useState(false)
   const hasLoadedRef = useRef(false)
 
   const activeConfig = configs.find((item) => item.enabled) ?? null
+  const activeConfigId = activeConfig?.id ?? null
 
   const loadConfigs = useCallback(async () => {
     setIsLoadingConfigs(true)
@@ -74,6 +77,31 @@ export function useSyncServer() {
     hasLoadedRef.current = true
     void loadConfigs()
   }, [loadConfigs])
+
+  const checkRemoteBackup = useCallback(async (silent = false) => {
+    setIsCheckingRemote(true)
+    try {
+      const response = await getRemoteBackupStatusApi()
+      const status = response.data.data
+      setRemoteStatus(status)
+      return status
+    } catch (error) {
+      if (!silent) {
+        toast.error((error as Error).message || '检测远端备份日期失败')
+      }
+      return null
+    } finally {
+      setIsCheckingRemote(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!activeConfigId) {
+      setRemoteStatus(null)
+      return
+    }
+    void checkRemoteBackup(true)
+  }, [activeConfigId, checkRemoteBackup])
 
   const testConnection = useCallback(async (draft: SyncServerConfig) => {
     if (draft.provider === 's3' ? !draft.endpoint || !draft.bucket : !draft.server) {
@@ -140,60 +168,48 @@ export function useSyncServer() {
     [loadConfigs],
   )
 
-  const loadBackups = useCallback(async () => {
-    setIsLoadingBackups(true)
-    try {
-      const response = await listSyncBackupsApi()
-      const data = (response.data as { data: RemoteBackupInfo[] }).data
-      setBackupList(data)
-      return data
-    } catch (error) {
-      toast.error((error as Error).message || '获取远程备份列表失败')
-      return []
-    } finally {
-      setIsLoadingBackups(false)
-    }
-  }, [])
-
-  const uploadBackup = useCallback(async () => {
-    setIsUploading(true)
-    setUploadProgress(null)
-    try {
-      const response = await startUploadSyncBackupApi()
-      const { taskId } = (response.data as { data: { taskId: string } }).data
-
-      let finished = false
-      while (!finished) {
-        await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL))
-        const progressResponse = await getUploadSyncProgressApi(taskId)
-        const progress = (progressResponse.data as { data: SyncTaskProgress }).data
-        setUploadProgress(progress)
-        if (progress.status === 'success') {
-          toast.success(progress.message || '上传成功')
-          void loadBackups()
-          finished = true
-        } else if (progress.status === 'error') {
-          toast.error(progress.error || progress.message || '上传失败')
-          finished = true
+  const uploadBackup = useCallback(
+    async (options?: BackupContentOptions) => {
+      setIsUploading(true)
+      setUploadProgress(null)
+      try {
+        if (options) {
+          queryClient.setQueryData(['backup-content-config'], options)
         }
-      }
-      return true
-    } catch (error) {
-      toast.error((error as Error).message || '上传失败')
-      return false
-    } finally {
-      setIsUploading(false)
-    }
-  }, [loadBackups])
+        const response = await startUploadSyncBackupApi(options)
+        void queryClient.invalidateQueries({ queryKey: ['backup-content-config'] })
+        const { taskId } = (response.data as { data: { taskId: string } }).data
 
-  const downloadBackup = useCallback(async () => {
-    if (!selectedBackup) {
-      toast.error('请先选择要下载的备份')
-      return false
-    }
+        let finished = false
+        while (!finished) {
+          await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL))
+          const progressResponse = await getUploadSyncProgressApi(taskId)
+          const progress = (progressResponse.data as { data: SyncTaskProgress }).data
+          setUploadProgress(progress)
+          if (progress.status === 'success') {
+            toast.success(progress.message || '上传成功')
+            void checkRemoteBackup(true)
+            finished = true
+          } else if (progress.status === 'error') {
+            toast.error(progress.error || progress.message || '上传失败')
+            finished = true
+          }
+        }
+        return true
+      } catch (error) {
+        toast.error((error as Error).message || '上传失败')
+        return false
+      } finally {
+        setIsUploading(false)
+      }
+    },
+    [checkRemoteBackup, queryClient],
+  )
+
+  const downloadBackup = useCallback(async (backupName?: string) => {
     setIsDownloading(true)
     try {
-      const response = await downloadSyncBackupApi(selectedBackup)
+      const response = await downloadSyncBackupApi(backupName)
       const data = response.data as { data: { message: string } }
       toast.success(data.data.message || '下载成功')
       return true
@@ -203,7 +219,7 @@ export function useSyncServer() {
     } finally {
       setIsDownloading(false)
     }
-  }, [selectedBackup])
+  }, [])
 
   return {
     configs,
@@ -216,14 +232,14 @@ export function useSyncServer() {
     deleteConfig,
     isUploading,
     uploadProgress,
+    uploadPreviewOpen,
+    setUploadPreviewOpen,
     uploadBackup,
-    backupList,
-    isLoadingBackups,
-    loadBackups,
-    selectedBackup,
-    setSelectedBackup,
-    downloadConfirmOpen,
-    setDownloadConfirmOpen,
+    remoteStatus,
+    isCheckingRemote,
+    checkRemoteBackup,
+    downloadPreviewOpen,
+    setDownloadPreviewOpen,
     isDownloading,
     downloadBackup,
   }

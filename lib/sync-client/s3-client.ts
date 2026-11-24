@@ -45,10 +45,15 @@ export class S3SyncClient implements SyncClient {
     })
   }
 
-  /** 拼接完整对象 key */
+  /** 拼接完整对象 key（已包含 basePrefix 时不再重复拼接） */
   private buildKey(remotePath?: string): string {
     const rest = normalizeKey(remotePath || '')
-    return rest ? `${this.basePrefix}/${rest}` : this.basePrefix
+    if (!this.basePrefix) return rest
+    if (!rest) return this.basePrefix
+    if (rest === this.basePrefix || rest.startsWith(`${this.basePrefix}/`)) {
+      return rest
+    }
+    return `${this.basePrefix}/${rest}`
   }
 
   async testConnection(): Promise<boolean> {
@@ -159,6 +164,76 @@ export class S3SyncClient implements SyncClient {
     await fs.promises.writeFile(localPath, Buffer.concat(chunks))
   }
 
+  async uploadBuffer(
+    content: Buffer | string,
+    remotePath: string,
+    contentType = 'application/octet-stream',
+  ): Promise<void> {
+    const body = typeof content === 'string' ? Buffer.from(content, 'utf-8') : content
+    await this.client.send(
+      new PutObjectCommand({
+        Bucket: this.bucket,
+        Key: this.buildKey(remotePath),
+        Body: body,
+        ContentType: contentType,
+      }),
+    )
+  }
+
+  async downloadBuffer(remotePath: string): Promise<Buffer | null> {
+    try {
+      const response = await this.client.send(
+        new GetObjectCommand({ Bucket: this.bucket, Key: this.buildKey(remotePath) }),
+      )
+      if (!response.Body) return null
+      const chunks: Buffer[] = []
+      const stream = response.Body as Readable
+      for await (const chunk of stream) {
+        chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk))
+      }
+      return Buffer.concat(chunks)
+    } catch (error) {
+      const err = error as { name?: string; $metadata?: { httpStatusCode?: number } }
+      if (
+        err.name === 'NoSuchKey' ||
+        err.name === 'NotFound' ||
+        err.$metadata?.httpStatusCode === 404
+      ) {
+        return null
+      }
+      throw error
+    }
+  }
+
+  async listFilesRecursive(
+    remoteDir: string,
+  ): Promise<Array<{ relativePath: string; size: number; lastmod: string }>> {
+    const prefix = `${this.buildKey(remoteDir)}/`
+    const files: Array<{ relativePath: string; size: number; lastmod: string }> = []
+    let continuationToken: string | undefined
+    do {
+      const response = await this.client.send(
+        new ListObjectsV2Command({
+          Bucket: this.bucket,
+          Prefix: prefix,
+          ContinuationToken: continuationToken,
+        }),
+      )
+      for (const item of response.Contents ?? []) {
+        if (!item.Key || item.Key.endsWith('/')) continue
+        const relativePath = item.Key.slice(prefix.length)
+        if (!relativePath) continue
+        files.push({
+          relativePath,
+          size: item.Size ?? 0,
+          lastmod: item.LastModified?.toISOString() ?? '',
+        })
+      }
+      continuationToken = response.NextContinuationToken
+    } while (continuationToken)
+    return files
+  }
+
   async uploadDirectory(
     localDir: string,
     remoteDir: string,
@@ -259,8 +334,9 @@ export class S3SyncClient implements SyncClient {
         if (!item.Key || item.Key.endsWith('/')) continue
         const relative = item.Key.slice(prefix.length)
         if (!relative) continue
+        const normalizedRemoteDir = remoteDir.replace(/\/+$/g, '')
         files.push({
-          remotePath: item.Key,
+          remotePath: normalizedRemoteDir ? `${normalizedRemoteDir}/${relative}` : relative,
           localPath: path.join(localDir, ...relative.split('/')),
           size: item.Size ?? 0,
         })

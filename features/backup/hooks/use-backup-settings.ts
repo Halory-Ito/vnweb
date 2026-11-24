@@ -4,8 +4,15 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useRef, useState } from 'react'
 import { toast } from 'sonner'
 
+import {
+  getBackupContentConfigApi,
+  updateBackupContentConfigApi,
+} from '@/features/backup/sync-server-api'
 import { selectDirectory } from '@/features/game/lib/scan-utils'
+import { DEFAULT_BACKUP_CONTENT_OPTIONS } from '@/lib/backup-content'
 import { api } from '@/lib/request-utils'
+
+import type { BackupContentOptions } from '@/types'
 
 export type LocalBackup = {
   id: string
@@ -51,6 +58,30 @@ export function useBackupSettings() {
       return config
     },
   })
+
+  const {
+    data: backupContent = DEFAULT_BACKUP_CONTENT_OPTIONS,
+    isLoading: isLoadingBackupContent,
+  } = useQuery({
+    queryKey: ['backup-content-config'],
+    queryFn: async () => {
+      const response = await getBackupContentConfigApi()
+      return response.data.data
+    },
+  })
+
+  const updateBackupContent = async (next: BackupContentOptions) => {
+    const previous =
+      queryClient.getQueryData<BackupContentOptions>(['backup-content-config']) ?? backupContent
+    queryClient.setQueryData(['backup-content-config'], next)
+    try {
+      const response = await updateBackupContentConfigApi(next)
+      queryClient.setQueryData(['backup-content-config'], response.data.data)
+    } catch (error) {
+      queryClient.setQueryData(['backup-content-config'], previous)
+      toast.error((error as Error).message || '保存备份内容配置失败')
+    }
+  }
 
   const downloadBlobFile = (
     blob: Blob,
@@ -208,6 +239,9 @@ export function useBackupSettings() {
     gameSaveDir,
     setGameSaveDir,
     isSavingGameSave,
+    backupContent,
+    isLoadingBackupContent,
+    updateBackupContent,
     localBackups,
     isLoadingBackups,
     handleExport,

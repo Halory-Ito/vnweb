@@ -7,6 +7,9 @@ export type WebDAVTaskProgress = {
   status: WebDAVTaskStatus
   total: number
   uploaded: number
+  percent: number
+  currentCategory: string
+  categories: string[]
   currentFile: string
   message: string
   error?: string
@@ -33,12 +36,19 @@ function scheduleCleanup(taskId: string): void {
   cleanupTimers.set(taskId, timer)
 }
 
-export function createTask(taskId: string, total: number): WebDAVTaskProgress {
+export function createTask(
+  taskId: string,
+  total: number,
+  categories: string[] = [],
+): WebDAVTaskProgress {
   const task: WebDAVTaskProgress = {
     taskId,
     status: 'running',
     total,
     uploaded: 0,
+    percent: 0,
+    currentCategory: '',
+    categories,
     currentFile: '',
     message: '准备中...',
     createdAt: Date.now(),
@@ -68,6 +78,12 @@ export function finishTask(
   if (task) {
     task.status = status
     task.message = message
+    if (status === 'success') {
+      task.uploaded = task.total
+      task.percent = 100
+      task.currentCategory = ''
+      task.currentFile = ''
+    }
     if (error) {
       task.error = error
     }

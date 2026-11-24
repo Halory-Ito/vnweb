@@ -44,6 +44,8 @@ export interface SyncClient {
     localPath: string,
     onProgress?: SyncProgressCallback,
   ): Promise<void>
+  uploadBuffer(content: Buffer | string, remotePath: string, contentType?: string): Promise<void>
+  downloadBuffer(remotePath: string): Promise<Buffer | null>
   uploadDirectory(
     localDir: string,
     remoteDir: string,
@@ -54,6 +56,9 @@ export interface SyncClient {
     localDir: string,
     onProgress?: SyncProgressCallback,
   ): Promise<void>
+  listFilesRecursive(
+    remoteDir: string,
+  ): Promise<Array<{ relativePath: string; size: number; lastmod: string }>>
   listBackupDirectories(): Promise<RemoteBackupInfo[]>
   deleteRemoteDirectory(remoteDir: string): Promise<void>
 }

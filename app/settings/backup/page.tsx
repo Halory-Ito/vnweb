@@ -1,4 +1,5 @@
 import {
+  BackupContentSection,
   BackupSettingsProvider,
   ExportSection,
   GameSaveSection,
@@ -16,18 +17,13 @@ export const metadata: Metadata = {
 export default function BackupPage() {
   return (
     <BackupSettingsProvider>
-      <div className="space-y-8">
-        <div className="space-y-4">
-          <h2 className="text-lg font-semibold tracking-tight">同步服务器</h2>
-          <SyncServerPanel />
-        </div>
-        <div className="space-y-4">
-          <h2 className="text-lg font-semibold tracking-tight">本地备份</h2>
-          <GameSaveSection />
-          <LocalBackupSection />
-          <ExportSection />
-          <ImportSection />
-        </div>
+      <div className="space-y-6">
+        <SyncServerPanel />
+        <BackupContentSection />
+        <GameSaveSection />
+        <LocalBackupSection />
+        <ExportSection />
+        <ImportSection />
       </div>
     </BackupSettingsProvider>
   )

@@ -9,17 +9,28 @@ export function ExportSection() {
     useBackupSettingsContext()
 
   return (
-    <section className="dark:border-input dark:bg-input/20 space-y-4 rounded-xl border p-6">
-      <h2 className="text-base font-semibold">导出备份</h2>
-      <div className="flex min-h-8 items-center justify-between gap-3">
+    <section
+      aria-labelledby="export-backup-settings"
+      className="dark:border-input dark:bg-input/20 space-y-4 rounded-xl border p-4 sm:p-6"
+    >
+      <h2 id="export-backup-settings" className="text-base font-semibold">
+        导出备份
+      </h2>
+      <div className="border-border/60 flex min-h-9 items-center justify-between gap-3 border-b pb-4">
         <Label>导出 ZIP</Label>
-        <Button variant="outline" disabled={isExporting} onClick={() => void handleExport()}>
+        <Button
+          type="button"
+          variant="outline"
+          disabled={isExporting}
+          onClick={() => void handleExport()}
+        >
           {isExporting ? '导出中...' : 'ZIP'}
         </Button>
       </div>
-      <div className="flex min-h-8 items-center justify-between gap-3">
+      <div className="flex min-h-9 items-center justify-between gap-3">
         <Label>导出 XLSX</Label>
         <Button
+          type="button"
           variant="outline"
           disabled={isExportingXlsx}
           onClick={() => void handleExportXlsx()}

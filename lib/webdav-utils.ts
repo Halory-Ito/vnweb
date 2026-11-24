@@ -52,10 +52,14 @@ export class WebDAVClient {
     })
   }
 
-  // 拼接远程 URL（处理 server 尾斜杠与 remotePath）
+  // 拼接远程 URL（处理 server 尾斜杠与 remotePath，逐段编码以兼容中文与特殊字符）
   private buildUrl(remotePath: string): string {
     const server = this.config.server.replace(/\/+$/, '')
-    return `${server}${remotePath}`
+    const encodedPath = remotePath
+      .split('/')
+      .map((segment) => (segment ? encodeURIComponent(segment) : ''))
+      .join('/')
+    return `${server}${encodedPath.startsWith('/') ? encodedPath : `/${encodedPath}`}`
   }
 
   // 测试连接（远程目录不存在时自动创建后再次确认）
@@ -74,6 +78,60 @@ export class WebDAVClient {
         return false
       }
     }
+  }
+
+  // 上传内存缓冲区内容（如 JSON 元信息）
+  async uploadBuffer(
+    content: Buffer | string,
+    remotePath: string,
+    contentType = 'application/octet-stream',
+  ): Promise<void> {
+    const body = typeof content === 'string' ? Buffer.from(content, 'utf-8') : content
+    await this.axios.put(this.buildUrl(remotePath), body, {
+      headers: {
+        'Content-Type': contentType,
+      },
+    })
+  }
+
+  // 下载内存缓冲区内容（不存在时返回 null）
+  async downloadBuffer(remotePath: string): Promise<Buffer | null> {
+    try {
+      const response = await this.axios.get(this.buildUrl(remotePath), {
+        responseType: 'arraybuffer',
+      })
+      return Buffer.from(response.data)
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response?.status === 404) {
+        return null
+      }
+      throw error
+    }
+  }
+
+  // 递归列出目录下全部文件（相对路径与大小）
+  async listFilesRecursive(
+    remoteDir: string,
+  ): Promise<Array<{ relativePath: string; size: number; lastmod: string }>> {
+    const files: Array<{ relativePath: string; size: number; lastmod: string }> = []
+    const walk = async (remote: string, prefix: string) => {
+      const contents = await this.listDirectory(remote)
+      for (const item of contents) {
+        if (!item.basename || item.basename === '.' || item.basename === '..') continue
+        const nextRelative = prefix ? `${prefix}/${item.basename}` : item.basename
+        if (item.type === 'directory') {
+          await walk(`${remote}/${item.basename}`, nextRelative)
+        } else {
+          files.push({
+            relativePath: nextRelative,
+            size: item.size,
+            lastmod: item.lastmod,
+          })
+        }
+      }
+    }
+    await walk(remoteDir.replace(/\/+$/g, ''), '')
+    return files
   }
 
   // 列出目录内容
