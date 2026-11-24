@@ -22,6 +22,33 @@ export const getOstSongs = async (ostId: number) => {
   return (response.data as { data: { items: OstSongItem[] } }).data
 }
 
+export type OstSongsByIdsAlbum = {
+  name: string
+  cover: string
+  resource: string
+}
+
+export async function getOstSongsByIdsApi(ids: number[]): Promise<{
+  items: OstSongItem[]
+  albums: Record<number, OstSongsByIdsAlbum>
+}> {
+  const cleanIds = [...new Set(ids.filter((id) => Number.isInteger(id) && id > 0))]
+  if (cleanIds.length === 0) {
+    return { items: [], albums: {} }
+  }
+  const response = await api.request<{
+    data: {
+      items: OstSongItem[]
+      albums: Record<number, OstSongsByIdsAlbum>
+    }
+  }>({
+    method: 'GET',
+    url: '/ost/songs',
+    params: { ids: cleanIds.join(',') },
+  })
+  return response.data.data
+}
+
 export const createOstSong = async (payload: {
   gameId: number
   ostId: number

@@ -1,9 +1,15 @@
 'use client'
 
-import { ChevronLeft, Disc3, LoaderCircle, Pause, Play } from 'lucide-react'
+import { Disc3Icon, ExternalLinkIcon } from 'lucide-react'
+import Link from 'next/link'
 
 import { useGameOst } from '../../hooks/use-game-ost'
 import { Button } from '@/components/ui/button'
+import { EmptyArtwork } from '@/components/ui/empty-artwork'
+import { Skeleton } from '@/components/ui/skeleton'
+import { OstAlbumHero } from '@/features/ost/components/ost-album-hero'
+import { SongLyricDialog } from '@/features/ost/components/song-lyric-dialog'
+import { SongManageContent } from '@/features/ost/components/song-manage-content'
 
 export default function GameOST({
   gameId,
@@ -14,99 +20,149 @@ export default function GameOST({
   cover: string
   bg?: string
 }) {
-  const { albums, album, tracks, items, player, setAlbumId } = useGameOst(gameId, cover, bg)
-  const query = album ? tracks : albums
+  const {
+    albums,
+    albumItems,
+    activeAlbum,
+    canGoBack,
+    tracks,
+    items,
+    player,
+    isAlbumPlaying,
+    playFirst,
+    lyricPreviewItem,
+    setLyricPreviewItem,
+    selectAlbum,
+    backToAlbums,
+  } = useGameOst(gameId, cover, bg)
 
-  if (query.isPending)
+  if (albums.isPending) {
     return (
-      <p role="status" className="text-muted-foreground py-8 text-center text-sm">
-        正在加载 OST…
-      </p>
+      <div className="@container">
+        <div className="grid grid-cols-2 gap-4 pt-2 pb-40 @lg:grid-cols-3 @2xl:grid-cols-4 @4xl:grid-cols-5">
+          {Array.from({ length: 4 }).map((_, index) => (
+            <div key={index} className="space-y-2 rounded-xl border p-2.5">
+              <Skeleton className="aspect-square w-full rounded-lg" />
+              <Skeleton className="mx-auto h-4 w-3/4" />
+            </div>
+          ))}
+        </div>
+      </div>
     )
-  if (query.isError)
+  }
+
+  if (albums.isError) {
     return (
       <div className="space-y-3 py-8 text-center">
-        <p role="alert">OST 加载失败</p>
-        <Button variant="outline" onClick={() => void query.refetch()}>
+        <p role="alert" className="text-sm font-medium">
+          OST 加载失败
+        </p>
+        <Button variant="outline" onClick={() => void albums.refetch()}>
           重试
         </Button>
-        {album && (
-          <Button variant="ghost" onClick={() => setAlbumId(null)}>
-            返回专辑
-          </Button>
-        )}
       </div>
     )
+  }
 
-  if (!album)
-    return albums.data?.items.length ? (
-      <div className="grid grid-cols-2 gap-4 pb-40 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-7">
-        {albums.data.items.map((item) => (
-          <button
-            key={item.id}
-            type="button"
-            onClick={() => setAlbumId(item.id)}
-            className="group min-w-0 space-y-2 rounded-xl text-sm focus-visible:outline-2"
-            title={item.name}
-          >
-            <div className="bg-muted grid aspect-square place-items-center overflow-hidden rounded-xl border">
-              {item.cover || cover ? (
-                <img
-                  src={item.cover || cover}
-                  alt=""
-                  className="size-full object-cover group-hover:scale-105 motion-safe:transition-transform"
-                />
-              ) : (
-                <Disc3 />
-              )}
-            </div>
-            <p className="truncate text-center">{item.name}</p>
-          </button>
-        ))}
+  if (albumItems.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center gap-3 py-12 text-center">
+        <EmptyArtwork />
+        <p className="text-muted-foreground text-sm">暂无 OST 专辑</p>
+        <Button asChild variant="outline" size="sm" className="rounded-full">
+          <Link href="/ost">前往 OST 唱片架</Link>
+        </Button>
       </div>
-    ) : (
-      <p className="text-muted-foreground py-12 text-center text-sm">暂无 OST 专辑</p>
     )
+  }
+
+  if (!activeAlbum) {
+    return (
+      <div className="@container">
+        <div className="grid grid-cols-2 gap-4 pt-2 pb-40 @lg:grid-cols-3 @2xl:grid-cols-4 @4xl:grid-cols-5">
+          {albumItems.map((item) => {
+            const albumCover = item.cover || cover
+            return (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => selectAlbum(item.id)}
+                className="group bg-muted/20 hover:border-primary/40 hover:bg-muted/35 min-w-0 space-y-2 rounded-xl border p-2.5 text-sm transition-all focus-visible:outline-2"
+                title={item.name}
+              >
+                <div className="bg-muted/40 grid aspect-square place-items-center overflow-hidden rounded-lg">
+                  {albumCover ? (
+                    <img
+                      src={albumCover}
+                      alt=""
+                      className="size-full object-cover group-hover:scale-105 motion-safe:transition-transform"
+                    />
+                  ) : (
+                    <Disc3Icon className="text-muted-foreground/50 size-8" />
+                  )}
+                </div>
+                <p className="truncate text-center">{item.name}</p>
+              </button>
+            )
+          })}
+        </div>
+      </div>
+    )
+  }
 
   return (
-    <div className="space-y-3 pb-40">
-      <div className="flex min-w-0 items-center gap-2">
-        <Button variant="ghost" size="icon" aria-label="返回专辑" onClick={() => setAlbumId(null)}>
-          <ChevronLeft />
-        </Button>
-        <h3 className="truncate font-semibold">{album.name}</h3>
-      </div>
-      <ul className="divide-y overflow-hidden rounded-xl border">
-        {items.map((song, index) => {
-          const active = player.id === song.id
-          const playing = active && player.isPlaying
-          return (
-            <li key={song.id}>
-              <button
-                type="button"
-                onClick={() => player.playSong(song)}
-                aria-label={`${playing ? '暂停' : '播放'} ${song.name}`}
-                className={`hover:bg-muted focus-visible:ring-ring flex min-h-11 w-full items-center gap-3 px-3 py-2 text-left text-sm focus-visible:ring-2 focus-visible:ring-inset ${active ? 'bg-muted font-semibold' : ''}`}
-              >
-                <span className="text-muted-foreground w-6 shrink-0 text-right tabular-nums">
-                  {index + 1}
-                </span>
-                <span className="flex-1 truncate">{song.name}</span>
-                {active && player.isBuffering ? (
-                  <LoaderCircle className="size-4 animate-spin" />
-                ) : playing ? (
-                  <Pause className="size-4" />
-                ) : (
-                  <Play className="size-4" />
-                )}
-              </button>
-            </li>
-          )
-        })}
-        {!items.length && (
-          <li className="text-muted-foreground py-8 text-center text-sm">暂无曲目</li>
-        )}
-      </ul>
+    <div className="space-y-4 pt-2 pb-40">
+      <OstAlbumHero
+        ostId={activeAlbum.id}
+        ostItem={activeAlbum}
+        songCount={items.length}
+        isPlaying={isAlbumPlaying}
+        onPlayAll={playFirst}
+        showBackButton={canGoBack}
+        backLabel="返回专辑列表"
+        onBack={backToAlbums}
+        showGameBadge={false}
+        enableSharedLayout={false}
+        actions={
+          <Button asChild variant="outline" size="sm" className="rounded-full">
+            <Link href={`/ost/${activeAlbum.id}`}>
+              <ExternalLinkIcon className="size-3.5" />
+              管理曲目
+            </Link>
+          </Button>
+        }
+      />
+
+      {tracks.isError ? (
+        <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed p-10 text-center">
+          <p role="alert" className="text-sm font-medium">
+            曲目加载失败
+          </p>
+          <Button variant="outline" size="sm" onClick={() => void tracks.refetch()}>
+            重试
+          </Button>
+        </div>
+      ) : (
+        <SongManageContent
+          items={items}
+          isLoading={tracks.isPending}
+          isRefetching={tracks.isRefetching && !tracks.isPending}
+          playingSongId={player.id}
+          isPlaying={player.isPlaying}
+          isBuffering={player.isBuffering}
+          onPlay={(item) => player.playSong(item)}
+          onPreviewLyric={setLyricPreviewItem}
+          emptyTitle="暂无曲目"
+          emptyHint={null}
+        />
+      )}
+
+      <SongLyricDialog
+        item={lyricPreviewItem}
+        onOpenChange={(open) => {
+          if (!open) setLyricPreviewItem(null)
+        }}
+      />
     </div>
   )
 }

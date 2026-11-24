@@ -16,9 +16,11 @@ type SongManageContentProps = {
   isPlaying: boolean
   isBuffering: boolean
   onPlay: (item: OstSongItem) => void
-  onEdit: (item: OstSongItem) => void
-  onDelete: (item: OstSongItem) => void
-  onPreviewLyric: (item: OstSongItem) => void
+  onEdit?: (item: OstSongItem) => void
+  onDelete?: (item: OstSongItem) => void
+  onPreviewLyric?: (item: OstSongItem) => void
+  emptyTitle?: string
+  emptyHint?: string | null
 }
 
 export function SongManageContent({
@@ -32,13 +34,17 @@ export function SongManageContent({
   onEdit,
   onDelete,
   onPreviewLyric,
+  emptyTitle = '这张唱片里还没有收录曲目',
+  emptyHint = '点击右上角“添加歌曲”，把专辑里的音轨收录进来吧',
 }: SongManageContentProps) {
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 gap-2 rounded-2xl border-2 p-4 md:grid-cols-2 xl:grid-cols-3">
-        {Array.from({ length: 9 }).map((_, i) => (
-          <Skeleton key={i} className="h-13 w-full rounded-xl" />
-        ))}
+      <div className="@container rounded-2xl border-2 p-3 sm:p-4">
+        <div className="grid grid-cols-1 gap-2 @xl:grid-cols-2 @5xl:grid-cols-3">
+          {Array.from({ length: 9 }).map((_, i) => (
+            <Skeleton key={i} className="h-13 w-full rounded-xl" />
+          ))}
+        </div>
       </div>
     )
   }
@@ -47,16 +53,14 @@ export function SongManageContent({
     return (
       <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed p-12 text-center">
         <EmptyArtwork className="mb-3" />
-        <p className="text-sm font-medium">这张唱片里还没有收录曲目</p>
-        <p className="text-muted-foreground mt-1 text-xs">
-          点击右上角“添加歌曲”，把专辑里的音轨收录进来吧
-        </p>
+        <p className="text-sm font-medium">{emptyTitle}</p>
+        {emptyHint ? <p className="text-muted-foreground mt-1 text-xs">{emptyHint}</p> : null}
       </div>
     )
   }
 
   return (
-    <div className="relative rounded-2xl border-2 p-3 sm:p-4">
+    <div className="@container relative rounded-2xl border-2 p-3 sm:p-4">
       {isRefetching ? (
         <div className="bg-background/85 absolute top-3 right-3 z-10 flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs shadow-xs backdrop-blur-xs">
           <Loader2Icon className="size-3 animate-spin" />
@@ -64,7 +68,7 @@ export function SongManageContent({
         </div>
       ) : null}
 
-      <div className="grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-3">
+      <div className="grid grid-cols-1 gap-2 @xl:grid-cols-2 @5xl:grid-cols-3">
         {items.map((item, index) => (
           <SongTrackRow
             key={item.id}

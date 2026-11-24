@@ -2,7 +2,7 @@
 
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useSetAtom } from 'jotai'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react'
 import { toast } from 'sonner'
 
 import {
@@ -44,6 +44,33 @@ const getDefaultSettingsBg = () => {
   return settings.lastGameBackgroundImage
 }
 
+const WIDE_RECORDS_PER_TIER = 10
+const NARROW_RECORDS_PER_TIER = 5
+const NARROW_SCREEN_QUERY = '(width < 768px)'
+
+function getDefaultRecordsPerTierSnapshot(): number {
+  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
+    return WIDE_RECORDS_PER_TIER
+  }
+  return window.matchMedia(NARROW_SCREEN_QUERY).matches
+    ? NARROW_RECORDS_PER_TIER
+    : WIDE_RECORDS_PER_TIER
+}
+
+function getServerDefaultRecordsPerTierSnapshot(): number {
+  return WIDE_RECORDS_PER_TIER
+}
+
+function subscribeDefaultRecordsPerTier(onStoreChange: () => void): () => void {
+  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
+    return () => {}
+  }
+
+  const mql = window.matchMedia(NARROW_SCREEN_QUERY)
+  mql.addEventListener('change', onStoreChange)
+  return () => mql.removeEventListener('change', onStoreChange)
+}
+
 export function useOstManage() {
   const queryClient = useQueryClient()
   const setBg = useSetAtom(bgAtom)
@@ -62,7 +89,13 @@ export function useOstManage() {
   const [keywordInput, setKeywordInputState] = useState('')
   const [page, setPage] = useState(1)
   const [pageDirection, setPageDirection] = useState(0)
-  const [recordsPerTier, setRecordsPerTierState] = useState(10)
+  const defaultRecordsPerTier = useSyncExternalStore(
+    subscribeDefaultRecordsPerTier,
+    getDefaultRecordsPerTierSnapshot,
+    getServerDefaultRecordsPerTierSnapshot,
+  )
+  const [customRecordsPerTier, setCustomRecordsPerTier] = useState<number | null>(null)
+  const recordsPerTier = customRecordsPerTier ?? defaultRecordsPerTier
   const [tierCount, setTierCountState] = useState(2)
   const pageSize = recordsPerTier * tierCount
 
@@ -139,7 +172,7 @@ export function useOstManage() {
   }, [])
 
   const setRecordsPerTier = useCallback((count: number) => {
-    setRecordsPerTierState(count)
+    setCustomRecordsPerTier(count)
     setPageDirection(0)
     setPage(1)
   }, [])

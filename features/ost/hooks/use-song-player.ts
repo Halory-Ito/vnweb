@@ -18,20 +18,77 @@ export type PlayerAlbum = {
   gameBg?: string
   gameCover?: string
 }
-type Selection = { items: OstSongItem[]; song: OstSongItem; album?: PlayerAlbum }
+
+type Selection = {
+  items: OstSongItem[]
+  song: OstSongItem
+  album?: PlayerAlbum
+  albumsByOstId?: Record<number, PlayerAlbum>
+  forcePlay?: boolean
+  mode?: PlayMode
+  silentAutoPlayError?: boolean
+}
+
+type PlayPlaylistOptions = {
+  album?: PlayerAlbum
+  albumsByOstId?: Record<number, PlayerAlbum>
+  mode?: PlayMode
+  forcePlay?: boolean
+  silentAutoPlayError?: boolean
+}
+
 const modeAtom = atomWithStorage<PlayMode>('ost-player-mode', 'sequence')
 const requestAtom = atom<Selection | null>(null)
+const stopRequestAtom = atom<{ songIds?: number[]; token: number } | null>(null)
 const statusAtom = atom({ id: null as number | null, isPlaying: false, isBuffering: false })
+
+let stopTokenCounter = 0
+
+function resolveSelectionAlbum(selection: Selection): Selection {
+  const songAlbum = selection.albumsByOstId?.[selection.song.ostId] ?? selection.album
+  return songAlbum ? { ...selection, album: songAlbum } : selection
+}
 
 export function useSongPlayer(items: OstSongItem[], album?: PlayerAlbum) {
   const status = useAtomValue(statusAtom)
   const request = useSetAtom(requestAtom)
-  return { ...status, playSong: (song: OstSongItem) => request({ items, song, album }) }
+  const stopRequest = useSetAtom(stopRequestAtom)
+
+  const playSong = useCallback(
+    (song: OstSongItem) => request({ items, song, album }),
+    [request, items, album],
+  )
+
+  const playPlaylist = useCallback(
+    (playlist: OstSongItem[], song: OstSongItem, options?: PlayPlaylistOptions) =>
+      request({
+        items: playlist,
+        song,
+        album: options?.album ?? album,
+        albumsByOstId: options?.albumsByOstId,
+        mode: options?.mode,
+        forcePlay: options?.forcePlay,
+        silentAutoPlayError: options?.silentAutoPlayError,
+      }),
+    [request, album],
+  )
+
+  const stopIfPlayingIds = useCallback(
+    (songIds: number[]) => {
+      if (songIds.length > 0) {
+        stopRequest({ songIds, token: ++stopTokenCounter })
+      }
+    },
+    [stopRequest],
+  )
+
+  return { ...status, playSong, playPlaylist, stopIfPlayingIds }
 }
 
 export function useGlobalSongPlayer() {
   const [mode, setMode] = useAtom(modeAtom)
   const request = useAtomValue(requestAtom)
+  const stopRequest = useAtomValue(stopRequestAtom)
   const setStatus = useSetAtom(statusAtom)
   const audio = useRef<HTMLAudioElement>(null)
   const active = useRef<Selection | null>(null)
@@ -65,9 +122,10 @@ export function useGlobalSongPlayer() {
   async function start(next: Selection) {
     const media = audio.current
     if (!media) return
+    const resolvedNext = resolveSelectionAlbum(next)
     const version = ++revision.current
-    active.current = next
-    setSelection(next)
+    active.current = resolvedNext
+    setSelection(resolvedNext)
     media.pause()
     media.removeAttribute('src')
     media.load()
@@ -75,11 +133,12 @@ export function useGlobalSongPlayer() {
     setDuration(0)
     updateStatus({ isPlaying: false, isBuffering: true })
     try {
-      let url = next.song.url
+      let url = resolvedNext.song.url
+      const songAlbum = resolvedNext.album
       const id = url.match(/[?&]id=(\d+)/)?.[1]
-      const isLegacyNeteaseUrl = next.album?.resource === 'netease' && url.includes('/song/url/v1')
+      const isLegacyNeteaseUrl = songAlbum?.resource === 'netease' && url.includes('/song/url/v1')
       const storedMeting =
-        next.album?.resource === 'meting-api' || next.album?.resource === 'netease'
+        songAlbum?.resource === 'meting-api' || songAlbum?.resource === 'netease'
           ? getMetingMediaRef(url, 'url')
           : undefined
       if (id && (url.startsWith(NETEASE_PLAYBACK_PATH + '?') || isLegacyNeteaseUrl))
@@ -95,9 +154,16 @@ export function useGlobalSongPlayer() {
       if (!url) throw new Error('Missing source')
       media.src = url
       await media.play()
-    } catch {
+    } catch (error) {
       if (version !== revision.current) return
       updateStatus({ isPlaying: false, isBuffering: false })
+      if (
+        resolvedNext.silentAutoPlayError &&
+        (error as { name?: string })?.name === 'NotAllowedError'
+      ) {
+        toast.info('浏览器限制了自动播放，可点击配乐手动播放')
+        return
+      }
       toast.error('无法播放这首曲目')
     }
   }
@@ -119,6 +185,32 @@ export function useGlobalSongPlayer() {
 
   useEffect(() => {
     if (!request) return
+    if (request.mode) {
+      setMode(request.mode)
+    }
+    if (request.forcePlay && active.current?.song.id === request.song.id) {
+      const synced = resolveSelectionAlbum(request)
+      active.current = synced
+      setSelection(synced)
+      const media = audio.current
+      if (media && (!media.getAttribute('src') || media.error)) {
+        void start(synced)
+      } else if (media?.paused) {
+        const version = revision.current
+        void media.play().catch((error) => {
+          if (version !== revision.current) return
+          if (
+            synced.silentAutoPlayError &&
+            (error as { name?: string })?.name === 'NotAllowedError'
+          ) {
+            toast.info('浏览器限制了自动播放，可点击配乐手动播放')
+            return
+          }
+          toast.error('无法播放这首曲目')
+        })
+      }
+      return
+    }
     if (active.current?.song.id === request.song.id) toggle()
     else void start(request)
   }, [request])
@@ -152,7 +244,7 @@ export function useGlobalSongPlayer() {
     setDuration(Number.isFinite(media.duration) ? media.duration : 0)
   }
 
-  function close() {
+  const close = useCallback(() => {
     ++revision.current
     active.current = null
     const media = audio.current
@@ -161,7 +253,14 @@ export function useGlobalSongPlayer() {
     media?.load()
     setSelection(null)
     updateStatus({ isPlaying: false, isBuffering: false })
-  }
+  }, [])
+
+  useEffect(() => {
+    if (!stopRequest || !active.current) return
+    if (!stopRequest.songIds || stopRequest.songIds.includes(active.current.song.id)) {
+      close()
+    }
+  }, [stopRequest, close])
 
   const seek = useCallback((value: number) => {
     const media = audio.current

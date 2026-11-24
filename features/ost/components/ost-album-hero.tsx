@@ -3,7 +3,7 @@
 import { ArrowLeftIcon, Disc3Icon, Music2Icon, PlayIcon } from 'lucide-react'
 import { motion } from 'motion/react'
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { type ReactNode, useState } from 'react'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -17,6 +17,12 @@ type OstAlbumHeroProps = {
   songCount: number
   isPlaying: boolean
   onPlayAll: () => void
+  onBack?: () => void
+  backLabel?: string
+  showBackButton?: boolean
+  showGameBadge?: boolean
+  enableSharedLayout?: boolean
+  actions?: ReactNode
 }
 
 export function OstAlbumHero({
@@ -25,6 +31,12 @@ export function OstAlbumHero({
   songCount,
   isPlaying,
   onPlayAll,
+  onBack,
+  backLabel = '返回唱片架',
+  showBackButton = true,
+  showGameBadge = true,
+  enableSharedLayout = true,
+  actions,
 }: OstAlbumHeroProps) {
   const router = useRouter()
   const [failedCover, setFailedCover] = useState<string | null>(null)
@@ -35,21 +47,23 @@ export function OstAlbumHero({
   return (
     <div className="bg-muted/20 flex flex-col gap-5 rounded-2xl border-2 p-4 sm:flex-row sm:items-center sm:p-5">
       <div className="flex items-center gap-4">
-        <Button
-          type="button"
-          variant="outline"
-          size="icon"
-          className="shrink-0 rounded-full"
-          onClick={() => router.back()}
-          aria-label="返回唱片架"
-        >
-          <ArrowLeftIcon className="size-4" />
-        </Button>
+        {showBackButton ? (
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            className="shrink-0 rounded-full"
+            onClick={onBack ?? (() => router.back())}
+            aria-label={backLabel}
+          >
+            <ArrowLeftIcon className="size-4" />
+          </Button>
+        ) : null}
 
         {/* 专辑封面 + 右侧露出的旋转黑胶 */}
         <div className="relative shrink-0 pr-8">
           <motion.div
-            layoutId={`ost-vinyl-${ostId}`}
+            layoutId={enableSharedLayout ? `ost-vinyl-${ostId}` : undefined}
             transition={{ type: 'spring', stiffness: 320, damping: 30 }}
             aria-hidden="true"
             className={cn(
@@ -65,7 +79,7 @@ export function OstAlbumHero({
           </motion.div>
 
           <motion.div
-            layoutId={`ost-cover-${ostId}`}
+            layoutId={enableSharedLayout ? `ost-cover-${ostId}` : undefined}
             transition={{ type: 'spring', stiffness: 320, damping: 30 }}
             className="bg-background relative z-1 size-28 overflow-hidden rounded-xl border-2 shadow-md sm:size-32"
           >
@@ -88,7 +102,7 @@ export function OstAlbumHero({
       {/* 专辑元信息 */}
       <div className="min-w-0 flex-1 space-y-2.5">
         <div className="flex flex-wrap items-center gap-2">
-          {gameTitle ? (
+          {showGameBadge && gameTitle ? (
             <Badge
               variant="outline"
               className="max-w-full truncate rounded-full px-2.5 py-0.5 text-xs"
@@ -103,24 +117,29 @@ export function OstAlbumHero({
         </div>
 
         <motion.h1
-          layoutId={`ost-title-${ostId}`}
+          layoutId={enableSharedLayout ? `ost-title-${ostId}` : undefined}
           transition={{ type: 'spring', stiffness: 320, damping: 30 }}
           className="line-clamp-2 text-lg font-semibold tracking-tight sm:text-xl"
         >
           {ostItem?.name || '正在打开专辑...'}
         </motion.h1>
 
-        {songCount > 0 ? (
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="rounded-full"
-            onClick={onPlayAll}
-          >
-            <PlayIcon className="size-3.5" />
-            从第一首播放
-          </Button>
+        {songCount > 0 || actions ? (
+          <div className="flex flex-wrap items-center gap-2">
+            {songCount > 0 ? (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="rounded-full"
+                onClick={onPlayAll}
+              >
+                <PlayIcon className="size-3.5" />
+                从第一首播放
+              </Button>
+            ) : null}
+            {actions}
+          </div>
         ) : null}
       </div>
     </div>
