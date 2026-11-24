@@ -1,10 +1,15 @@
 'use client'
 
-import { CheckCircle2, CircleDot, Skull, Star } from 'lucide-react'
+import { CircleCheckIcon, CircleDot, Skull, Star } from 'lucide-react'
 import Image from 'next/image'
 
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
+import {
+  getGuideProgressColor,
+  GUIDE_COMPLETED_CARD_CLASS,
+  GUIDE_PROGRESS_BAR_CLASS,
+} from '@/features/guide/lib/guide-progress'
 import { cn } from '@/lib/utils'
 
 const endingTypeConfig: Record<
@@ -53,18 +58,19 @@ function getCharacterInitial(name: string) {
 export function EndingCard({ name, type, cover, progress, onClick }: EndingCardProps) {
   const config = endingTypeConfig[type] ?? endingTypeConfig.normal
 
-  const isCompleted = progress.percentage === 100
+  const isCompleted = progress.percentage >= 100
+  const progressColor = getGuideProgressColor(progress.percentage)
 
   return (
     <button
       type="button"
       onClick={onClick}
       className={cn(
-        'group relative flex w-full items-center gap-5 rounded-xl border bg-card p-5 text-left',
+        'group relative flex w-full items-center gap-5 rounded-xl border bg-background p-5 text-left shadow-xs dark:border-input dark:bg-input/30',
         'transition-all duration-200',
         'hover:-translate-y-1 hover:border-primary/40 hover:shadow-lg',
         'focus-visible:ring-2 focus-visible:ring-primary/40',
-        isCompleted && 'border-emerald-500/40',
+        isCompleted && GUIDE_COMPLETED_CARD_CLASS,
       )}
     >
       {/* Cover */}
@@ -91,7 +97,6 @@ export function EndingCard({ name, type, cover, progress, onClick }: EndingCardP
           <h3 className="line-clamp-2 text-sm leading-5 font-semibold">{name}</h3>
 
           <div className="flex shrink-0 items-center gap-1.5">
-            {isCompleted && <CheckCircle2 className="h-4 w-4 fill-emerald-500 text-white" />}
             <Badge
               variant="outline"
               className={cn('gap-1 rounded-md px-2 py-0.5 text-[10px]', config.className)}
@@ -105,7 +110,7 @@ export function EndingCard({ name, type, cover, progress, onClick }: EndingCardP
         {/* Progress */}
         <Progress
           value={progress.percentage}
-          className={cn('h-2', isCompleted && '[&>div]:bg-emerald-500')}
+          className={cn('h-2', GUIDE_PROGRESS_BAR_CLASS, progressColor)}
         />
 
         {/* Footer */}
@@ -114,14 +119,16 @@ export function EndingCard({ name, type, cover, progress, onClick }: EndingCardP
             {progress.completed}/{progress.total} 步骤
           </span>
 
-          <span
-            className={cn(
-              'tabular-nums font-medium',
-              isCompleted ? 'text-emerald-500' : 'text-muted-foreground',
-            )}
-          >
-            {progress.percentage}%
-          </span>
+          {isCompleted ? (
+            <span className={cn('inline-flex items-center gap-1 font-medium', progressColor)}>
+              <CircleCheckIcon aria-hidden="true" className="size-3.5" />
+              已完成
+            </span>
+          ) : (
+            <span className={cn('font-medium tabular-nums', progressColor)}>
+              {progress.percentage}%
+            </span>
+          )}
         </div>
       </div>
     </button>

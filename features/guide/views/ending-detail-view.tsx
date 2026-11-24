@@ -106,6 +106,9 @@ export function EndingDetailView({ gameId, routeId, endingId }: EndingDetailView
     if (!step) return
 
     const newFinished = !step.finished
+    const allCompleted =
+      newFinished &&
+      (steps || []).every((s) => (s.id === stepId ? newFinished : Boolean(s.finished)))
 
     // 乐观更新
     queryClient.setQueryData(['steps', endingId], (old: typeof steps) => {
@@ -119,6 +122,9 @@ export function EndingDetailView({ gameId, routeId, endingId }: EndingDetailView
         id: Number(stepId),
         finished: newFinished,
       })
+      if (allCompleted) {
+        toast.success(`已完成结局「${ending.name}」`)
+      }
     } catch {
       // 回滚
       queryClient.invalidateQueries({ queryKey: ['steps', endingId] })

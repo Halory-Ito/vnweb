@@ -1,6 +1,14 @@
 'use client'
 
-import { ChevronDown, ChevronRight, Lock, Star, Skull, CircleDot } from 'lucide-react'
+import {
+  ChevronDown,
+  ChevronRight,
+  CircleCheckIcon,
+  CircleDot,
+  Lock,
+  Skull,
+  Star,
+} from 'lucide-react'
 import { useState } from 'react'
 
 import { GuideStep } from './guide-step'
@@ -8,6 +16,10 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { Progress } from '@/components/ui/progress'
+import {
+  getGuideProgressColor,
+  GUIDE_PROGRESS_BAR_CLASS,
+} from '@/features/guide/lib/guide-progress'
 import { cn } from '@/lib/utils'
 
 const endingTypeConfig: Record<
@@ -59,18 +71,29 @@ interface EndingProgress {
 interface GuideEndingProps {
   ending: Ending
   progress: EndingProgress
+  hideCompleted?: boolean
   onToggleStep: (stepId: string) => void
 }
 
-export function GuideEnding({ ending, progress, onToggleStep }: GuideEndingProps) {
-  const [isOpen, setIsOpen] = useState(true)
+export function GuideEnding({
+  ending,
+  progress,
+  hideCompleted = false,
+  onToggleStep,
+}: GuideEndingProps) {
+  const [isOpen, setIsOpen] = useState(() => progress.percentage < 100)
+  const isCompleted = progress.percentage >= 100
+  const progressColor = getGuideProgressColor(progress.percentage)
 
   // 处理步骤分组，相同group只显示一次日期
   const renderStepsWithGroups = () => {
     let lastGroup: string | undefined
     const elements: React.ReactNode[] = []
+    const visibleSteps = hideCompleted
+      ? ending.steps.filter((step) => !step.finished)
+      : ending.steps
 
-    ending.steps.forEach((step, index) => {
+    visibleSteps.forEach((step, index) => {
       // 如果当前步骤有group，且与上一个不同，或者是第一个步骤
       if (step.group && step.group !== lastGroup) {
         elements.push(
@@ -100,25 +123,27 @@ export function GuideEnding({ ending, progress, onToggleStep }: GuideEndingProps
     return elements
   }
 
+  const stepElements = renderStepsWithGroups()
+
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-      <div className="bg-card overflow-hidden rounded-lg border">
+      <div className={cn(isCompleted && 'bg-emerald-500/5')}>
         <CollapsibleTrigger asChild>
-          <div className="hover:bg-accent/30 flex cursor-pointer items-center justify-between p-4 transition-all duration-200">
-            <div className="flex items-center gap-3">
-              <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+          <div className="hover:bg-accent/25 flex cursor-pointer items-center justify-between gap-3 px-4 py-3 transition-colors duration-200">
+            <div className="flex min-w-0 items-center gap-2.5">
+              <Button variant="ghost" size="sm" className="h-6 w-6 shrink-0 p-0">
                 {isOpen ? (
                   <ChevronDown className="h-4 w-4" />
                 ) : (
                   <ChevronRight className="h-4 w-4" />
                 )}
               </Button>
-              <div className="flex items-center gap-2">
-                <h4 className="font-medium">{ending.name}</h4>
+              <div className="flex min-w-0 flex-wrap items-center gap-2">
+                <h4 className="truncate text-sm font-medium">{ending.name}</h4>
                 {(() => {
                   const config = endingTypeConfig[ending.type] || endingTypeConfig.normal
                   return (
-                    <Badge variant="outline" className={cn('text-xs gap-1', config.className)}>
+                    <Badge variant="outline" className={cn('gap-1 text-xs', config.className)}>
                       {config.icon}
                       {config.label}
                     </Badge>
@@ -126,18 +151,27 @@ export function GuideEnding({ ending, progress, onToggleStep }: GuideEndingProps
                 })()}
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              <span className="text-muted-foreground text-sm">
+            <div className="flex shrink-0 items-center gap-3">
+              <span
+                className={cn(
+                  'inline-flex items-center gap-1 text-xs tabular-nums sm:text-sm',
+                  isCompleted ? cn('font-medium', progressColor) : 'text-muted-foreground',
+                )}
+              >
+                {isCompleted && <CircleCheckIcon aria-hidden="true" className="size-3.5" />}
                 {progress.completed}/{progress.total}
               </span>
-              <div className="w-24">
-                <Progress value={progress.percentage} className="h-2" />
+              <div className="w-20 sm:w-24">
+                <Progress
+                  value={progress.percentage}
+                  className={cn('h-2', GUIDE_PROGRESS_BAR_CLASS, progressColor)}
+                />
               </div>
             </div>
           </div>
         </CollapsibleTrigger>
         <CollapsibleContent>
-          <div className="space-y-2 border-t px-4 pt-3 pb-4">
+          <div className="space-y-2 px-4 pt-1 pb-4">
             {ending.requirements && (
               <div className="flex items-start gap-2 rounded-md border border-amber-500/20 bg-amber-500/10 px-3 py-2 text-sm text-amber-600 dark:text-amber-400">
                 <Lock className="mt-0.5 h-4 w-4 shrink-0" />
@@ -145,7 +179,13 @@ export function GuideEnding({ ending, progress, onToggleStep }: GuideEndingProps
                 <span>{ending.requirements}</span>
               </div>
             )}
-            {renderStepsWithGroups()}
+            {stepElements.length > 0 ? (
+              stepElements
+            ) : (
+              <p className="text-muted-foreground py-2 text-center text-xs">
+                当前结局步骤已全部完成
+              </p>
+            )}
           </div>
         </CollapsibleContent>
       </div>

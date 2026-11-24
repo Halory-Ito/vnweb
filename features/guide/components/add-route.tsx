@@ -40,7 +40,7 @@ export default function AddRoute() {
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button type="button" variant="outline" className="h-10 gap-2">
+        <Button type="button" variant="outline">
           <Route className="h-4 w-4" />
           新增路线
         </Button>

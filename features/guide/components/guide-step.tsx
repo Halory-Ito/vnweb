@@ -31,7 +31,7 @@ export function GuideStep({ step, isCompleted, onToggle }: GuideStepProps) {
         'hover:scale-[1.01] active:scale-[0.99]',
         isCompleted
           ? 'bg-muted/50 border-muted-foreground/20 opacity-75 hover:opacity-90'
-          : 'bg-background border-border hover:border-primary/50 hover:bg-accent/40 hover:shadow-md',
+          : 'bg-background border-border dark:border-input dark:bg-input/30 hover:border-primary/50 hover:bg-accent/40 hover:shadow-md',
       )}
     >
       <Checkbox

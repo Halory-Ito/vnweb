@@ -37,7 +37,7 @@ export default function AddStep() {
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button type="button" variant="outline" className="h-10 gap-2">
+        <Button type="button" variant="outline">
           <Footprints className="h-4 w-4" />
           新增步骤
         </Button>

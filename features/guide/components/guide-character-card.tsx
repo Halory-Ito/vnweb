@@ -1,10 +1,15 @@
 'use client'
 
-import { Star, Skull, CircleDot } from 'lucide-react'
+import { CircleCheckIcon, CircleDot, Skull, Star } from 'lucide-react'
 import Image from 'next/image'
 
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
+import {
+  getGuideProgressColor,
+  GUIDE_COMPLETED_CARD_CLASS,
+  GUIDE_PROGRESS_BAR_CLASS,
+} from '@/features/guide/lib/guide-progress'
 import { cn } from '@/lib/utils'
 
 const endingTypeConfig: Record<
@@ -62,7 +67,8 @@ function getCharacterInitial(name: string): string {
 }
 
 export function GuideCharacterCard({ ending, progress, onClick }: GuideCharacterCardProps) {
-  const isCompleted = progress.percentage === 100
+  const isCompleted = progress.percentage >= 100
+  const progressColor = getGuideProgressColor(progress.percentage)
 
   return (
     <button
@@ -70,8 +76,8 @@ export function GuideCharacterCard({ ending, progress, onClick }: GuideCharacter
       onClick={onClick}
       className={cn(
         'group relative flex flex-col items-center gap-3 rounded-xl border p-4 transition-all duration-200 cursor-pointer text-left',
-        'bg-card hover:shadow-md hover:scale-[1.02] active:scale-[0.98]',
-        isCompleted && 'ring-2 ring-emerald-500/50',
+        'bg-background shadow-xs dark:border-input dark:bg-input/30 hover:shadow-md hover:scale-[1.02] active:scale-[0.98]',
+        isCompleted && cn(GUIDE_COMPLETED_CARD_CLASS, 'ring-2 ring-emerald-500/50'),
       )}
     >
       {/* 头像 */}
@@ -103,13 +109,22 @@ export function GuideCharacterCard({ ending, progress, onClick }: GuideCharacter
       <div className="w-full space-y-1">
         <Progress
           value={progress.percentage}
-          className={cn('h-1.5', isCompleted && '[&>div]:bg-emerald-500')}
+          className={cn('h-1.5', GUIDE_PROGRESS_BAR_CLASS, progressColor)}
         />
-        <div className="text-muted-foreground flex items-center justify-between text-xs">
-          <span>
+        <div className="flex items-center justify-between text-xs">
+          <span className="text-muted-foreground">
             {progress.completed}/{progress.total} 步骤
           </span>
-          <span className="tabular-nums">{progress.percentage}%</span>
+          {isCompleted ? (
+            <span className={cn('inline-flex items-center gap-1 font-medium', progressColor)}>
+              <CircleCheckIcon aria-hidden="true" className="size-3.5" />
+              已完成
+            </span>
+          ) : (
+            <span className={cn('font-medium tabular-nums', progressColor)}>
+              {progress.percentage}%
+            </span>
+          )}
         </div>
       </div>
 

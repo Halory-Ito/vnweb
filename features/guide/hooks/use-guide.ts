@@ -2,6 +2,7 @@
 
 import { useQueryClient } from '@tanstack/react-query'
 import { useCallback, useState } from 'react'
+import { toast } from 'sonner'
 
 import { updateGuideProgressApi, type GuideData } from '@/features/guide/guide-api'
 
@@ -108,6 +109,9 @@ export function useGuide(guideData: GuideData | null, gameId: number) {
 
       try {
         await Promise.all(updates.map((u) => updateGuideProgressApi(gameId, u)))
+        if (newEndingFinished && !parentEnding.finished) {
+          toast.success(`已完成结局「${parentEnding.name}」`)
+        }
       } catch {
         queryClient.invalidateQueries({ queryKey: ['guide', gameId] })
       } finally {
@@ -197,8 +201,10 @@ export function useGuide(guideData: GuideData | null, gameId: number) {
       })
       // 重置所有子项需要逐个更新，或者直接刷新
       queryClient.invalidateQueries({ queryKey: ['guide', gameId] })
+      toast.success('攻略进度已重置')
     } catch {
       queryClient.invalidateQueries({ queryKey: ['guide', gameId] })
+      toast.error('重置攻略进度失败')
     }
   }, [guideData, gameId, queryClient])
 
@@ -231,8 +237,10 @@ export function useGuide(guideData: GuideData | null, gameId: number) {
         finished: true,
       })
       queryClient.invalidateQueries({ queryKey: ['guide', gameId] })
+      toast.success('攻略已全部标记完成')
     } catch {
       queryClient.invalidateQueries({ queryKey: ['guide', gameId] })
+      toast.error('标记全部完成失败')
     }
   }, [guideData, gameId, queryClient])
   const resetRouteProgress = useCallback(
@@ -268,8 +276,10 @@ export function useGuide(guideData: GuideData | null, gameId: number) {
         })
         // 重置所有子项需要刷新
         queryClient.invalidateQueries({ queryKey: ['guide', gameId] })
+        toast.success(`路线「${route.name}」进度已重置`)
       } catch {
         queryClient.invalidateQueries({ queryKey: ['guide', gameId] })
+        toast.error('重置路线进度失败')
       }
     },
     [guideData, gameId, queryClient],

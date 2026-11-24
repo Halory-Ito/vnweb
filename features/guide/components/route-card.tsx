@@ -1,10 +1,16 @@
 'use client'
 
-import { ChevronRight, GripVertical } from 'lucide-react'
+import { ChevronRight, CircleCheckIcon, GripVertical } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
+import {
+  getGuideProgressColor,
+  GUIDE_COMPLETED_BADGE_CLASS,
+  GUIDE_COMPLETED_CARD_CLASS,
+  GUIDE_PROGRESS_BAR_CLASS,
+} from '@/features/guide/lib/guide-progress'
 import { cn } from '@/lib/utils'
 
 interface RouteCardProps {
@@ -18,11 +24,20 @@ interface RouteCardProps {
   }
   onClick?: () => void
   onDragStart?: (e: React.DragEvent) => void
+  onDragEnd?: (e: React.DragEvent) => void
 }
 
-export function RouteCard({ name, endingCount, progress, onClick, onDragStart }: RouteCardProps) {
-  const isCompleted = progress.percentage === 100
+export function RouteCard({
+  name,
+  endingCount,
+  progress,
+  onClick,
+  onDragStart,
+  onDragEnd,
+}: RouteCardProps) {
+  const isCompleted = progress.percentage >= 100
   const isNotStarted = progress.percentage === 0
+  const progressColor = getGuideProgressColor(progress.percentage)
 
   return (
     <Card
@@ -30,12 +45,13 @@ export function RouteCard({ name, endingCount, progress, onClick, onDragStart }:
       onClick={onClick}
       draggable={!!onDragStart}
       onDragStart={onDragStart}
+      onDragEnd={onDragEnd}
       className={cn(
         'group relative overflow-hidden transition-all duration-300',
         // 优化悬停时的浮动幅度和阴影
         'hover:-translate-y-1 hover:border-primary/50 hover:shadow-lg dark:hover:shadow-primary/10',
-        // 100% 状态给予微弱的背景色反馈
-        isCompleted && 'border-primary/20 bg-primary/5',
+        // 100% 状态给予明显的完成反馈
+        isCompleted && GUIDE_COMPLETED_CARD_CLASS,
         // 0% 状态降低整体视觉权重
         isNotStarted && 'opacity-80 hover:opacity-100',
         // 可拖拽状态
@@ -69,8 +85,11 @@ export function RouteCard({ name, endingCount, progress, onClick, onDragStart }:
 
             <div className="flex shrink-0 items-center gap-1.5">
               <Badge
-                variant={isCompleted ? 'default' : 'secondary'}
-                className="rounded-md px-2 py-0 text-[10px] font-medium tracking-wide uppercase"
+                variant={isCompleted ? 'outline' : 'secondary'}
+                className={cn(
+                  'rounded-md px-2 py-0 text-[10px] font-medium tracking-wide uppercase',
+                  isCompleted && GUIDE_COMPLETED_BADGE_CLASS,
+                )}
               >
                 {endingCount} END
               </Badge>
@@ -83,20 +102,26 @@ export function RouteCard({ name, endingCount, progress, onClick, onDragStart }:
           <div className="flex items-center gap-3">
             <Progress
               value={progress.percentage}
-              className={cn(
-                'h-2 flex-1 rounded-full',
-                isNotStarted && 'bg-secondary/50 dark:bg-secondary/30', // 弱化未开始状态的轨道底色
-              )}
+              className={cn('h-2 flex-1 rounded-full', GUIDE_PROGRESS_BAR_CLASS, progressColor)}
             />
 
-            <span
-              className={cn(
-                'w-10 text-right tabular-nums text-xs font-medium',
-                isCompleted ? 'text-primary' : 'text-muted-foreground',
-              )}
-            >
-              {progress.percentage}%
-            </span>
+            {isCompleted ? (
+              <span
+                className={cn(
+                  'inline-flex shrink-0 items-center gap-1 text-xs font-medium',
+                  progressColor,
+                )}
+              >
+                <CircleCheckIcon aria-hidden="true" className="size-3.5" />
+                已完成
+              </span>
+            ) : (
+              <span
+                className={cn('w-10 text-right text-xs font-medium tabular-nums', progressColor)}
+              >
+                {progress.percentage}%
+              </span>
+            )}
           </div>
         </div>
       </CardContent>

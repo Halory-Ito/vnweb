@@ -42,7 +42,7 @@ export default function AddEnding() {
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button type="button" variant="outline" className="h-10 gap-2">
+        <Button type="button" variant="outline">
           <Flag className="h-4 w-4" />
           新增结局
         </Button>

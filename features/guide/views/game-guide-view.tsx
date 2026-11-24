@@ -1,46 +1,25 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
-import { BookOpen, List, Lock, RotateCcw, Star, Skull, CircleDot, Users } from 'lucide-react'
+import { BookOpen, ExternalLink, Lightbulb } from 'lucide-react'
+import Link from 'next/link'
 import { useState } from 'react'
 
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Label } from '@/components/ui/label'
-import { Progress } from '@/components/ui/progress'
-import { Switch } from '@/components/ui/switch'
-import { getGuideApi, type GuideEndingWithProgress } from '@/features/guide'
-import { GuideCharacterCard } from '@/features/guide/components/guide-character-card'
+import { EmptyArtwork } from '@/components/ui/empty-artwork'
+import { getGuideApi } from '@/features/guide'
+import { CompleteAllButton } from '@/features/guide/components/complete-all-botton'
+import { GameGuideCharacterPanel } from '@/features/guide/components/game-guide-character-panel'
+import { GameGuideToolbar } from '@/features/guide/components/game-guide-toolbar'
+import { GuideDetailHeader } from '@/features/guide/components/guide-detail-header'
 import { GuideRoute } from '@/features/guide/components/guide-route'
-import { GuideStep } from '@/features/guide/components/guide-step'
+import { ResetAllButton } from '@/features/guide/components/reset-all-botton'
 import { useGuide } from '@/features/guide/hooks/use-guide'
-import { cn } from '@/lib/utils'
-
-const endingTypeConfig: Record<
-  string,
-  { label: string; icon: React.ReactNode; className: string }
-> = {
-  true: {
-    label: '真结局',
-    icon: <Star className="h-3 w-3" />,
-    className: 'bg-amber-500/20 text-amber-600 dark:text-amber-400 border-amber-500/30',
-  },
-  bad: {
-    label: '坏结局',
-    icon: <Skull className="h-3 w-3" />,
-    className: 'bg-red-500/20 text-red-600 dark:text-red-400 border-red-500/30',
-  },
-  normal: {
-    label: '普通结局',
-    icon: <CircleDot className="h-3 w-3" />,
-    className: 'bg-primary/10 text-primary border-primary/20',
-  },
-}
 
 export default function GameGuideView({ gameId }: { gameId: number }) {
   const [characterMode, setCharacterMode] = useState(false)
-  const [selectedEnding, setSelectedEnding] = useState<GuideEndingWithProgress | null>(null)
+  const [hideCompleted, setHideCompleted] = useState(false)
+  const [selectedEndingId, setSelectedEndingId] = useState<string | null>(null)
 
   const { data: guide, isLoading } = useQuery({
     queryKey: ['guide', gameId],
@@ -53,175 +32,114 @@ export default function GameGuideView({ gameId }: { gameId: number }) {
     getRouteProgress,
     getTotalProgress,
     resetProgress,
+    completeProgress,
     resetRouteProgress,
   } = useGuide(guide ?? null, gameId)
 
   if (isLoading) {
     return (
-      <div className="flex h-64 items-center justify-center">
-        <div className="text-muted-foreground">加载中...</div>
+      <div className="flex h-48 items-center justify-center">
+        <div className="text-muted-foreground text-sm">加载中...</div>
       </div>
     )
   }
 
   if (!guide) {
     return (
-      <div className="flex h-64 flex-col items-center justify-center gap-3">
-        <BookOpen className="text-muted-foreground h-10 w-10" />
+      <div className="flex min-h-48 flex-col items-center justify-center gap-3 py-6">
+        <EmptyArtwork />
         <p className="text-muted-foreground text-sm">暂无攻略数据</p>
-        <p className="text-muted-foreground text-xs">请先导入攻略</p>
+        <Button asChild variant="outline" size="sm">
+          <Link href="/guide">
+            <BookOpen className="size-4" />
+            前往导入攻略
+          </Link>
+        </Button>
       </div>
     )
   }
 
   const totalProgress = getTotalProgress()
+  const allEndings = guide.routes.flatMap((route) => route.endings)
+  const selectedEnding = selectedEndingId
+    ? (allEndings.find((ending) => ending.id === selectedEndingId) ?? null)
+    : null
 
   return (
-    <div className="max-h-[calc(100cqh-4.625rem)] w-full space-y-4 overflow-y-auto p-4">
-      {/* 颜色提示 */}
-      <Card variant="outline">
-        <CardHeader className="py-3">
-          <CardTitle className="text-sm font-medium">颜色说明</CardTitle>
-          <div className="flex flex-wrap items-center gap-4 text-sm">
-            <span className="inline-flex items-center gap-1.5">
-              <span className="bg-primary h-2.5 w-2.5 rounded-full" />
-              <span className="text-foreground">选项</span>
-            </span>
-            <span className="inline-flex items-center gap-1.5">
-              <span className="h-2.5 w-2.5 rounded-full bg-emerald-600 dark:bg-emerald-400" />
-              <span className="text-foreground">保存</span>
-            </span>
-            <span className="inline-flex items-center gap-1.5">
-              <span className="h-2.5 w-2.5 rounded-full bg-amber-600 dark:bg-amber-400" />
-              <span className="text-foreground">读取</span>
-            </span>
-            <span className="inline-flex items-center gap-1.5">
-              <span className="bg-muted-foreground h-2.5 w-2.5 rounded-full" />
-              <span className="text-foreground">备注</span>
-            </span>
-          </div>
-        </CardHeader>
-      </Card>
-
-      {/* 总体进度 */}
-      <Card variant="default">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle>攻略进度</CardTitle>
-              <CardDescription>
-                {totalProgress.completed}/{totalProgress.total} 步骤完成
-              </CardDescription>
-            </div>
-            <Button variant="outline" size="sm" onClick={resetProgress}>
-              <RotateCcw className="mr-2 h-4 w-4" />
-              重置全部
+    <div className="w-full space-y-4 pt-2">
+      <GuideDetailHeader
+        title="攻略进度"
+        description={`${totalProgress.completed}/${totalProgress.total} 步骤完成`}
+        progress={totalProgress}
+        actions={
+          <>
+            <Button
+              asChild
+              variant="outline"
+              size="icon"
+              className="h-8 w-8"
+              title="打开独立攻略页"
+            >
+              <Link href={`/guide/${gameId}`} aria-label="打开独立攻略页">
+                <ExternalLink className="h-4 w-4" />
+              </Link>
             </Button>
-          </div>
-          <div className="flex items-center gap-3">
-            <Progress value={totalProgress.percentage} className="h-3 flex-1" />
-            <span className="text-muted-foreground min-w-12 text-right text-sm font-medium tabular-nums">
-              {totalProgress.percentage}%
-            </span>
-          </div>
-        </CardHeader>
-      </Card>
+            <ResetAllButton
+              title="重置全部进度"
+              description="确定要重置所有攻略进度吗？此操作将清除所有步骤的完成状态。"
+              onConfirm={resetProgress}
+              disabled={totalProgress.completed === 0}
+              buttonTitle="重置全部"
+            />
+            <CompleteAllButton
+              title="标记全部完成"
+              description="确定要将所有攻略步骤标记为已完成吗？"
+              onConfirm={completeProgress}
+              disabled={totalProgress.completed === totalProgress.total}
+              buttonTitle="标记全部完成"
+            />
+          </>
+        }
+      />
 
-      {/* 提示信息 */}
       {guide.tips.length > 0 && (
-        <Card variant="outline" className="border-yellow-200 dark:border-yellow-800">
-          <CardHeader className="py-3">
-            <div className="text-sm text-yellow-600 dark:text-yellow-400">
-              {guide.tips.map((tip, index) => (
-                <p key={index}>💡 {tip}</p>
-              ))}
+        <div className="flex flex-col gap-1.5 rounded-lg border border-yellow-500/20 bg-yellow-500/10 px-4 py-3 text-sm text-yellow-700 dark:text-yellow-400">
+          {guide.tips.map((tip, index) => (
+            <div key={index} className="flex items-start gap-2">
+              <Lightbulb className="mt-0.5 h-4 w-4 shrink-0 text-yellow-500/80" />
+              <span className="leading-relaxed">{tip}</span>
             </div>
-          </CardHeader>
-        </Card>
+          ))}
+        </div>
       )}
 
-      {/* 视图模式切换 */}
-      <div className="flex items-center gap-2">
-        <List className="text-muted-foreground h-4 w-4" />
-        <Switch
-          checked={characterMode}
-          onCheckedChange={(checked) => {
-            setCharacterMode(checked)
-            if (!checked) setSelectedEnding(null)
-          }}
-        />
-        <Users className="text-muted-foreground h-4 w-4" />
-        <Label className="text-muted-foreground text-sm">
-          {characterMode ? '角色卡片模式' : '路线列表模式'}
-        </Label>
-      </div>
+      <GameGuideToolbar
+        characterMode={characterMode}
+        onCharacterModeChange={(checked) => {
+          setCharacterMode(checked)
+          if (!checked) setSelectedEndingId(null)
+        }}
+        hideCompleted={hideCompleted}
+        onToggleHideCompleted={() => setHideCompleted((prev) => !prev)}
+      />
 
-      {/* 内容区域 */}
       {characterMode ? (
-        selectedEnding ? (
-          <div className="space-y-4">
-            <Button variant="ghost" size="sm" onClick={() => setSelectedEnding(null)}>
-              ← 返回角色列表
-            </Button>
-            <Card variant="default">
-              <CardHeader>
-                <div className="flex items-center gap-2">
-                  <CardTitle>{selectedEnding.name}</CardTitle>
-                  {(() => {
-                    const config = endingTypeConfig[selectedEnding.type] || endingTypeConfig.normal
-                    return (
-                      <Badge variant="outline" className={cn('text-xs gap-1', config.className)}>
-                        {config.icon}
-                        {config.label}
-                      </Badge>
-                    )
-                  })()}
-                </div>
-                <CardDescription>
-                  {getEndingProgress(selectedEnding).completed}/
-                  {getEndingProgress(selectedEnding).total} 步骤完成
-                </CardDescription>
-              </CardHeader>
-            </Card>
-            {selectedEnding.requirements && (
-              <div className="flex items-start gap-2 rounded-md border border-amber-500/20 bg-amber-500/10 px-3 py-2 text-sm text-amber-600 dark:text-amber-400">
-                <Lock className="mt-0.5 h-4 w-4 shrink-0" />
-                <span className="font-medium">开启条件：</span>
-                <span>{selectedEnding.requirements}</span>
-              </div>
-            )}
-            <div className="space-y-2">
-              {selectedEnding.steps.map((step) => (
-                <GuideStep
-                  key={step.id}
-                  step={step}
-                  isCompleted={!!step.finished}
-                  onToggle={() => toggleStep(step.id)}
-                />
-              ))}
-            </div>
-          </div>
-        ) : (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {guide.routes
-              .flatMap((route) => route.endings)
-              .map((ending) => (
-                <GuideCharacterCard
-                  key={ending.id}
-                  ending={ending}
-                  progress={getEndingProgress(ending)}
-                  onClick={() => setSelectedEnding(ending)}
-                />
-              ))}
-          </div>
-        )
+        <GameGuideCharacterPanel
+          endings={allEndings}
+          selectedEnding={selectedEnding}
+          hideCompleted={hideCompleted}
+          getEndingProgress={getEndingProgress}
+          onSelectEnding={setSelectedEndingId}
+          onToggleStep={toggleStep}
+        />
       ) : (
-        <div className="space-y-6">
+        <div className="space-y-4">
           {guide.routes.map((route) => (
             <GuideRoute
               key={route.id}
               route={route}
               progress={getRouteProgress(route)}
+              hideCompleted={hideCompleted}
               onToggleStep={toggleStep}
               onResetRoute={() => resetRouteProgress(route)}
             />

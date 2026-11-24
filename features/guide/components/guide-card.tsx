@@ -1,7 +1,10 @@
 'use client'
 
-import { CheckIcon } from 'lucide-react'
+import { CheckIcon, CircleCheckIcon } from 'lucide-react'
 import Image from 'next/image'
+
+import { getGuideProgressColor } from '@/features/guide/lib/guide-progress'
+import { cn } from '@/lib/utils'
 
 import type { GuideListItem } from '@/features/guide/guide-api'
 
@@ -43,9 +46,15 @@ export default function GuideCard({
     onToggleSelect?.(guide.id)
   }
 
+  const isCompleted = guide.percentage >= 100
+  const progressColor = getGuideProgressColor(guide.percentage)
+
   return (
     <div
-      className="group relative h-64 cursor-pointer overflow-hidden rounded-lg transition-all hover:shadow-md"
+      className={cn(
+        'group relative aspect-3/4 w-full cursor-pointer overflow-hidden rounded-lg transition-all hover:shadow-md',
+        isCompleted && 'ring-2 ring-emerald-500/60',
+      )}
       onClick={handleCardClick}
     >
       {/* 封面 */}
@@ -53,13 +62,13 @@ export default function GuideCard({
         <Image
           src={guide.cover}
           alt={guide.name}
-          sizes="256"
+          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 220px"
           loading="eager"
           fill
           className="object-cover"
         />
       ) : (
-        <div className="bg-muted flex h-64 w-full items-center justify-center">
+        <div className="bg-muted flex h-full w-full items-center justify-center">
           <span className="text-muted-foreground text-xs">暂无封面</span>
         </div>
       )}
@@ -79,16 +88,34 @@ export default function GuideCard({
       </button>
 
       {/* 底部进度条 */}
-      <div className="bg-primary/60 absolute bottom-0 left-0 h-2 w-full transition-all group-hover:h-3">
+      <div
+        className={cn(
+          'absolute bottom-0 left-0 h-2 w-full bg-current/25 transition-all group-hover:h-3',
+          progressColor,
+        )}
+      >
         <div
-          className="bg-primary h-full shadow-[0_0_8px_var(--primary)] transition-all group-hover:shadow-[0_0_12px_var(--primary)]"
+          className="h-full bg-current transition-all"
           style={{ width: `${guide.percentage}%` }}
         />
       </div>
 
-      {/* 移动端始终显示百分比，PC端悬停显示 */}
-      <div className="bg-primary/80 text-primary-foreground absolute right-1 bottom-3 rounded px-1.5 py-0.5 text-xs font-medium transition-opacity md:opacity-0 md:group-hover:opacity-100">
-        {guide.percentage}%
+      {/* 移动端始终显示进度，PC端悬停显示（已完成始终提示） */}
+      <div
+        className={cn(
+          'bg-background/85 absolute right-1 bottom-3 inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-xs font-medium backdrop-blur-xs transition-opacity',
+          progressColor,
+          isCompleted ? 'opacity-100' : 'md:opacity-0 md:group-hover:opacity-100',
+        )}
+      >
+        {isCompleted ? (
+          <>
+            <CircleCheckIcon aria-hidden="true" className="size-3" />
+            已完成
+          </>
+        ) : (
+          `${guide.percentage}%`
+        )}
       </div>
     </div>
   )

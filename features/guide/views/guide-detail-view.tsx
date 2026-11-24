@@ -1,10 +1,9 @@
 'use client'
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { ArrowLeftIcon, BookOpen, Lightbulb } from 'lucide-react'
 import { motion } from 'motion/react'
 import { useRouter } from 'next/navigation'
-import { useCallback, useEffect, useState } from 'react'
 
 import { Button } from '@/components/ui/button'
 import { CompleteAllButton } from '@/features/guide/components/complete-all-botton'
@@ -13,9 +12,10 @@ import { GuideDetailHeader } from '@/features/guide/components/guide-detail-head
 import { ResetAllButton } from '@/features/guide/components/reset-all-botton'
 import { RouteCard } from '@/features/guide/components/route-card'
 import { containerVariants, itemVariants, cardVariants } from '@/features/guide/data/motion'
-import { getGuideApi, updateRouteSortApi } from '@/features/guide/guide-api'
-import { GuideRouteWithProgress } from '@/features/guide/guide-api'
+import { getGuideApi } from '@/features/guide/guide-api'
 import { useGuide } from '@/features/guide/hooks/use-guide'
+import { useRouteSort } from '@/features/guide/hooks/use-route-sort'
+import { cn } from '@/lib/utils'
 
 interface GuideDetailViewProps {
   gameId: number
@@ -23,7 +23,6 @@ interface GuideDetailViewProps {
 
 export function GuideDetailView({ gameId }: GuideDetailViewProps) {
   const router = useRouter()
-  const queryClient = useQueryClient()
 
   const { data: guide, isLoading } = useQuery({
     queryKey: ['guide', gameId],
@@ -35,58 +34,16 @@ export function GuideDetailView({ gameId }: GuideDetailViewProps) {
     gameId,
   )
 
-  // 本地排序状态
-  const [routes, setRoutes] = useState<GuideRouteWithProgress[]>([])
-
-  // 当 guide 数据加载时，同步本地状态
-  useEffect(() => {
-    if (guide?.routes) {
-      setRoutes(guide.routes)
-    }
-  }, [guide?.routes])
-
-  // 更新排序的 mutation
-  const updateSortMutation = useMutation({
-    mutationFn: updateRouteSortApi,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['guide', gameId] })
-    },
-  })
-
-  // 拖拽状态
-  const [dragIndex, setDragIndex] = useState<number | null>(null)
-  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null)
-
-  // 处理拖拽开始
-  const handleDragStart = useCallback((index: number) => {
-    setDragIndex(index)
-  }, [])
-
-  // 处理拖拽进入
-  const handleDragEnter = useCallback((index: number) => {
-    setDragOverIndex(index)
-  }, [])
-
-  // 处理拖拽结束
-  const handleDragEnd = useCallback(() => {
-    if (dragIndex !== null && dragOverIndex !== null && dragIndex !== dragOverIndex) {
-      const newRoutes = [...routes]
-      const [draggedItem] = newRoutes.splice(dragIndex, 1)
-      newRoutes.splice(dragOverIndex, 0, draggedItem)
-
-      setRoutes(newRoutes)
-
-      // 更新排序到数据库
-      const sortData = newRoutes.map((route, index) => ({
-        id: Number(route.id),
-        sortOrder: index,
-      }))
-      updateSortMutation.mutate(sortData)
-    }
-
-    setDragIndex(null)
-    setDragOverIndex(null)
-  }, [dragIndex, dragOverIndex, routes, updateSortMutation])
+  const {
+    routes,
+    dragIndex,
+    dragOverIndex,
+    handleDragStart,
+    handleDragOver,
+    handleDragEnter,
+    handleDrop,
+    handleDragEnd,
+  } = useRouteSort(gameId, guide?.routes)
 
   if (isLoading) {
     return (
@@ -179,22 +136,27 @@ export function GuideDetailView({ gameId }: GuideDetailViewProps) {
             const isDragging = dragIndex === index
             const isDragOver = dragOverIndex === index
             return (
-              <motion.div
-                key={route.id}
-                variants={cardVariants}
-                className={`h-full w-full ${isDragOver && !isDragging ? 'ring-primary rounded-lg ring-2' : ''}`}
-                onDragOver={(e) => e.preventDefault()}
-                onDragEnter={() => handleDragEnter(index)}
-                onDragEnd={handleDragEnd}
-              >
-                <RouteCard
-                  routeId={route.id}
-                  name={route.name}
-                  endingCount={route.endings.length}
-                  progress={progress}
-                  onClick={() => router.push(`/guide/${gameId}/${route.id}`)}
-                  onDragStart={() => handleDragStart(index)}
-                />
+              <motion.div key={route.id} variants={cardVariants} layout className="h-full w-full">
+                <div
+                  className={cn(
+                    'h-full w-full rounded-xl transition-all',
+                    isDragging && 'opacity-50',
+                    isDragOver && !isDragging && 'ring-primary ring-2',
+                  )}
+                  onDragOver={(e) => handleDragOver(e, index)}
+                  onDragEnter={(e) => handleDragEnter(e, index)}
+                  onDrop={(e) => handleDrop(e, index)}
+                >
+                  <RouteCard
+                    routeId={route.id}
+                    name={route.name}
+                    endingCount={route.endings.length}
+                    progress={progress}
+                    onClick={() => router.push(`/guide/${gameId}/${route.id}`)}
+                    onDragStart={(e) => handleDragStart(e, index)}
+                    onDragEnd={handleDragEnd}
+                  />
+                </div>
               </motion.div>
             )
           })}

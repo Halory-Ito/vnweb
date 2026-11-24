@@ -58,7 +58,7 @@ export default function ImportGuide() {
     <>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>
-          <Button type="button" variant="outline" className="h-10 gap-2">
+          <Button type="button" variant="outline">
             <ImportIcon className="h-4 w-4" />
             导入攻略
           </Button>

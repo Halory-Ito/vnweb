@@ -33,7 +33,7 @@ export async function GET(
       .select()
       .from(GuideRouteTable)
       .where(eq(GuideRouteTable.guideId, guide.id))
-      .orderBy(asc(GuideRouteTable.sortOrder))
+      .orderBy(asc(GuideRouteTable.sortOrder), asc(GuideRouteTable.id))
 
     // 查询所有结局和步骤
     const routesWithDetails = await Promise.all(

@@ -68,14 +68,16 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     }
   }, [setBg])
 
-  const isGameInfoPage = pathname.startsWith('/game/info/')
-  const isOstManagePage = pathname.startsWith('/ost')
+  const isDynamicBgPage =
+    pathname.startsWith('/game/info/') ||
+    pathname.startsWith('/ost') ||
+    pathname.startsWith('/guide/')
 
   // 获取当前设备对应的自定义背景
   const currentDeviceCustomBackground = getCurrentDeviceBackgroundImage(backgroundSettings)
 
   useEffect(() => {
-    if (isGameInfoPage || isOstManagePage) {
+    if (isDynamicBgPage) {
       return
     }
 
@@ -89,15 +91,14 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     backgroundSettings.customBackgroundEnabled,
     currentDeviceCustomBackground,
     backgroundSettings.lastGameBackgroundImage,
-    isGameInfoPage,
-    isOstManagePage,
+    isDynamicBgPage,
     setBg,
   ])
 
   const nonGameInfoBackground = backgroundSettings.customBackgroundEnabled
     ? currentDeviceCustomBackground || bg
     : bg
-  const activeBackground = isGameInfoPage || isOstManagePage ? bg : nonGameInfoBackground
+  const activeBackground = isDynamicBgPage ? bg : nonGameInfoBackground
 
   useEffect(() => {
     setTransitionStyle(backgroundSettings.transitionStyle)
