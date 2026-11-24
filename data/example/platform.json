@@ -6,9 +6,7 @@
     "useMirror": false,
     "mirrorUrl": "",
     "baseUrl": "",
-    "apiKey": "",
-    "oauthClientId": "",
-    "oauthClientSecret": ""
+    "tokenUrl": ""
   },
   "vndb": {
     "baseUrl": "https://api.vndb.org/kana",

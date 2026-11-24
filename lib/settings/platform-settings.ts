@@ -20,9 +20,7 @@ export type PlatformSettingsDTO = {
     useMirror: boolean
     mirrorUrl: string
     baseUrl: string
-    apiKey: string
-    oauthClientId: string
-    oauthClientSecret: string
+    tokenUrl: string
   }
   vndb: {
     baseUrl: string

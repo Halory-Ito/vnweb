@@ -25,6 +25,7 @@ export function usePlatformAccounts() {
   const searchParams = useSearchParams()
   const queryClient = useQueryClient()
   const [processingProvider, setProcessingProvider] = useState<PlatformProvider | null>(null)
+  const [bangumiToken, setBangumiToken] = useState('')
   const [vndbToken, setVndbToken] = useState('')
   const [steamUid, setSteamUid] = useState('')
   const [ymgalUserId, setYmgalUserId] = useState('')
@@ -42,9 +43,7 @@ export function usePlatformAccounts() {
     const reason = searchParams.get('reason') || ''
 
     const providerLabel =
-      provider === 'steam' || provider === 'bangumi' || provider === 'vndb' || provider === 'ymgal'
-        ? PLATFORM_LABELS[provider]
-        : ''
+      provider === 'steam' || provider === 'vndb' ? PLATFORM_LABELS[provider] : ''
 
     if (!providerLabel || (status !== 'success' && status !== 'failed')) {
       return
@@ -78,14 +77,27 @@ export function usePlatformAccounts() {
     return map
   }, [data?.items])
 
-  const startOAuthLogin = (provider: 'steam' | 'bangumi') => {
+  const startOAuthLogin = (provider: 'steam') => {
     setProcessingProvider(provider)
     window.location.href = `/api/settings/cloud-sync/auth/${provider}/start`
   }
 
-  const handleBind = async (provider: 'steam' | 'vndb' | 'ymgal') => {
+  const handleBind = async (provider: 'steam' | 'bangumi' | 'vndb' | 'ymgal') => {
     setProcessingProvider(provider)
     try {
+      if (provider === 'bangumi') {
+        const token = bangumiToken.trim()
+        if (!token) {
+          toast.error('请输入 Bangumi 个人令牌')
+          return
+        }
+
+        await bindThirdPartyAccount({
+          provider,
+          accessToken: token,
+        })
+      }
+
       if (provider === 'vndb') {
         const token = vndbToken.trim()
         if (!token) {
@@ -97,7 +109,6 @@ export function usePlatformAccounts() {
           provider,
           accessToken: token,
         })
-        setVndbToken('')
       }
 
       if (provider === 'steam') {
@@ -111,7 +122,6 @@ export function usePlatformAccounts() {
           provider,
           accountId: uid,
         })
-        setSteamUid('')
       }
 
       if (provider === 'ymgal') {
@@ -125,10 +135,18 @@ export function usePlatformAccounts() {
           provider,
           accountId: userId,
         })
-        setYmgalUserId('')
       }
 
-      await refetch()
+      const result = await refetch()
+      if (result.data?.items.some((item) => item.provider.toLowerCase() === provider)) {
+        const clearInput: Record<typeof provider, () => void> = {
+          bangumi: () => setBangumiToken(''),
+          vndb: () => setVndbToken(''),
+          steam: () => setSteamUid(''),
+          ymgal: () => setYmgalUserId(''),
+        }
+        clearInput[provider]()
+      }
       toast.success(`${PLATFORM_LABELS[provider]} 已绑定`)
     } catch (error) {
       const err = error as {
@@ -188,6 +206,8 @@ export function usePlatformAccounts() {
     processingProvider,
     steamUid,
     setSteamUid,
+    bangumiToken,
+    setBangumiToken,
     vndbToken,
     setVndbToken,
     ymgalUserId,

@@ -6,6 +6,7 @@ import { PLATFORM_SETTINGS_FILE } from '@/lib/server/config-rw'
 import {
   BANGUMI_OFFICIAL_API_URL,
   BANGUMI_OFFICIAL_BASE_URL,
+  BANGUMI_OFFICIAL_TOKEN_URL,
 } from '@/lib/settings/bangumi-settings'
 import {
   DEFAULT_ENHANCED_QUALITY,
@@ -36,9 +37,7 @@ export type BangumiPlatformConfig = {
   useMirror: boolean
   mirrorUrl: string
   baseUrl: string
-  apiKey: string
-  oauthClientId: string
-  oauthClientSecret: string
+  tokenUrl: string
 }
 
 export type VndbPlatformConfig = {
@@ -91,7 +90,7 @@ export type PlatformSettingsData = {
 
 const SECRET_FIELDS: Record<PlatformKey, readonly string[]> = {
   steam: ['apiKey'],
-  bangumi: ['apiKey', 'oauthClientSecret'],
+  bangumi: [],
   vndb: ['oauthToken', 'oauthClientSecret'],
   ymgal: ['clientSecret', 'oauthClientSecret'],
   steamgriddb: ['apiKey'],
@@ -102,6 +101,7 @@ const SECRET_FIELDS: Record<PlatformKey, readonly string[]> = {
 const URL_FIELDS: ReadonlySet<string> = new Set([
   'mirrorUrl',
   'baseUrl',
+  'tokenUrl',
   'apiBase',
   'oauthAuthorizeUrl',
   'oauthTokenUrl',
@@ -123,9 +123,7 @@ function getDefaultPlatformSettings(): PlatformSettingsData {
       useMirror: false,
       mirrorUrl: '',
       baseUrl: '',
-      apiKey: '',
-      oauthClientId: '',
-      oauthClientSecret: '',
+      tokenUrl: '',
     },
     vndb: {
       baseUrl: 'https://api.vndb.org/kana',
@@ -166,16 +164,19 @@ function getDefaultPlatformSettings(): PlatformSettingsData {
 export function resolveBangumiEndpoints(bangumi: BangumiPlatformConfig): {
   apiUrl: string
   baseUrl: string
+  tokenUrl: string
 } {
   if (!bangumi.useMirror) {
     return {
       apiUrl: BANGUMI_OFFICIAL_API_URL,
       baseUrl: BANGUMI_OFFICIAL_BASE_URL,
+      tokenUrl: BANGUMI_OFFICIAL_TOKEN_URL,
     }
   }
   return {
     apiUrl: trimTrailingSlash(bangumi.mirrorUrl || BANGUMI_OFFICIAL_API_URL),
     baseUrl: trimTrailingSlash(bangumi.baseUrl || BANGUMI_OFFICIAL_BASE_URL),
+    tokenUrl: trimTrailingSlash(bangumi.tokenUrl || BANGUMI_OFFICIAL_TOKEN_URL),
   }
 }
 
@@ -218,7 +219,12 @@ function mergeWithDefaults(raw: Partial<PlatformSettingsData>): PlatformSettings
   const defaults = getDefaultPlatformSettings()
   return {
     steam: { ...defaults.steam, ...raw.steam },
-    bangumi: { ...defaults.bangumi, ...raw.bangumi },
+    bangumi: {
+      useMirror: raw.bangumi?.useMirror ?? defaults.bangumi.useMirror,
+      mirrorUrl: raw.bangumi?.mirrorUrl ?? defaults.bangumi.mirrorUrl,
+      baseUrl: raw.bangumi?.baseUrl ?? defaults.bangumi.baseUrl,
+      tokenUrl: raw.bangumi?.tokenUrl ?? defaults.bangumi.tokenUrl,
+    },
     vndb: { ...defaults.vndb, ...raw.vndb },
     ymgal: { ...defaults.ymgal, ...raw.ymgal },
     steamgriddb: { ...defaults.steamgriddb, ...raw.steamgriddb },

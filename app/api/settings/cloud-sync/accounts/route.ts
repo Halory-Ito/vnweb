@@ -94,9 +94,13 @@ const fetchSteamPlayerSummary = async (steamId: string) => {
 
 const validateBangumiToken = async (accessToken: string) => {
   const { bangumi } = await readPlatformSettings()
+  if (bangumi.useMirror && !bangumi.mirrorUrl.trim()) {
+    throw new Error('请先在平台设置中填写 Bangumi 接口镜像地址')
+  }
   const { apiUrl } = resolveBangumiEndpoints(bangumi)
   const response = await axios.get(`${apiUrl}/v0/me`, {
     timeout: 10_000,
+    maxRedirects: 0,
     headers: {
       Authorization: `Bearer ${accessToken}`,
       'User-Agent': 'vnweb/1.0',
@@ -482,6 +486,10 @@ const loginByToken = async (req: NextRequest) => {
       return NextResponse.json({ error: 'accessToken 不能为空' }, { status: 400 })
     }
 
+    if (provider === 'bangumi' && /[^\x21-\x7E]/.test(accessToken)) {
+      return NextResponse.json({ error: 'Bangumi 个人令牌格式无效' }, { status: 400 })
+    }
+
     const validated =
       provider === 'bangumi'
         ? await validateBangumiToken(accessToken)
@@ -551,6 +559,9 @@ const loginByToken = async (req: NextRequest) => {
       const status = error.response?.status
       if (status === 401) {
         return NextResponse.json({ error: 'Token 无效或已过期' }, { status: 401 })
+      }
+      if (status === 403) {
+        return NextResponse.json({ error: 'Token 权限不足或被拒绝' }, { status: 403 })
       }
     }
 

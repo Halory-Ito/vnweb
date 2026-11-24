@@ -1,6 +1,7 @@
 import {
   BANGUMI_OFFICIAL_API_URL,
   BANGUMI_OFFICIAL_BASE_URL,
+  BANGUMI_OFFICIAL_TOKEN_URL,
 } from '@/lib/settings/bangumi-settings'
 import { METING_BITRATES, METING_COVER_SIZES } from '@/lib/settings/meting-settings'
 
@@ -50,6 +51,13 @@ export const PLATFORM_CONFIG_FIELDS: Record<
       visibleWhen: ({ useMirror }) => useMirror === true,
     },
     {
+      key: 'tokenUrl',
+      label: '令牌镜像',
+      type: 'url',
+      placeholder: 'https://next.bgm.lat/demo/access-token',
+      visibleWhen: ({ useMirror }) => useMirror === true,
+    },
+    {
       key: 'officialApiUrl',
       label: '官方接口',
       type: 'url',
@@ -64,18 +72,12 @@ export const PLATFORM_CONFIG_FIELDS: Record<
       visibleWhen: ({ useMirror }) => useMirror === false,
     },
     {
-      key: 'apiKey',
-      label: 'API Key',
-      credentialLink: {
-        href: 'https://next.bgm.tv/demo/access-token',
-        usageLabel: 'Bangumi 个人令牌的用途',
-        usage: 'VNWeb 会在查询 Bangumi 的游戏和角色资料时附上此个人令牌，用于 API 验证。',
-        label: '获取 Bangumi 个人令牌',
-      },
-      placeholder: 'Bangumi Access Token',
+      key: 'officialTokenUrl',
+      label: '官方令牌',
+      type: 'url',
+      readOnlyValue: BANGUMI_OFFICIAL_TOKEN_URL,
+      visibleWhen: ({ useMirror }) => useMirror === false,
     },
-    { key: 'oauthClientId', label: 'OAuth Client ID', placeholder: 'Client ID' },
-    { key: 'oauthClientSecret', label: 'OAuth Client Secret', placeholder: 'Client Secret' },
   ],
   ymgal: [
     { key: 'baseUrl', label: '站点地址', type: 'url', placeholder: 'https://www.ymgal.games' },

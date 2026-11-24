@@ -3,6 +3,10 @@
 import { Link2, Loader2, Plus } from 'lucide-react'
 import { useId } from 'react'
 
+import {
+  PlatformCredentialLink,
+  type PlatformCredentialLinkProps,
+} from './platform-credential-link'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -14,6 +18,7 @@ export function AccountBindForm({
   inputValue,
   onInputChange,
   inputLabel,
+  credentialLink,
   inputPlaceholder,
   inputType,
   isProcessing,
@@ -24,6 +29,7 @@ export function AccountBindForm({
   inputValue: string
   onInputChange: (value: string) => void
   inputLabel?: string
+  credentialLink?: PlatformCredentialLinkProps
   inputPlaceholder: string
   inputType: 'text' | 'password'
   isProcessing: boolean
@@ -32,28 +38,11 @@ export function AccountBindForm({
 }) {
   const inputId = useId()
 
-  if (provider === 'bangumi' && onOAuthLogin) {
-    return (
-      <Button type="button" variant="outline" disabled={isProcessing} onClick={onOAuthLogin}>
-        {isProcessing ? (
-          <>
-            <Loader2 className="animate-spin" />
-            跳转中...
-          </>
-        ) : (
-          <>
-            <Link2 />
-            OAuth 授权登录
-          </>
-        )}
-      </Button>
-    )
-  }
-
   const input = (
     <Input
       id={inputId}
       type={inputType}
+      autoComplete={inputType === 'password' ? 'off' : undefined}
       value={inputValue}
       onChange={(e) => onInputChange(e.target.value)}
       placeholder={inputPlaceholder}
@@ -72,7 +61,10 @@ export function AccountBindForm({
     return (
       <div className="flex flex-col gap-4">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
-          <Label htmlFor={inputId}>{inputLabel}</Label>
+          <div className="flex flex-wrap items-center gap-2">
+            <Label htmlFor={inputId}>{inputLabel}</Label>
+            {credentialLink && <PlatformCredentialLink {...credentialLink} />}
+          </div>
           {input}
         </div>
         <div className="flex justify-end pt-1">{bindButton}</div>

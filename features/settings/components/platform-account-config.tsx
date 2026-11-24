@@ -1,4 +1,5 @@
 import { PLATFORM_LABELS } from '../hooks/use-platform-accounts'
+import { BANGUMI_OFFICIAL_TOKEN_URL } from '@/lib/settings/bangumi-settings'
 
 import type { PlatformProvider } from './platform-account-section'
 import type { PlatformCredentialLinkProps } from './platform-credential-link'
@@ -22,11 +23,19 @@ export const providerConfig: Record<
   },
   bangumi: {
     label: PLATFORM_LABELS.bangumi,
+    inputLabel: '个人令牌',
+    credentialLink: {
+      href: BANGUMI_OFFICIAL_TOKEN_URL,
+      usageLabel: 'Bangumi 个人令牌的用途',
+      usage:
+        '绑定时，VNWeb 会使用该个人令牌验证 Bangumi 账号、查询游戏和角色资料、导入收藏以及同步游玩状态。',
+      label: '获取 Bangumi 个人令牌',
+    },
     icon: (
       <img src="/logos/bangumi.ico" alt="Bangumi" className="size-4 rounded-xs object-contain" />
     ),
-    description: '使用 OAuth 授权登录',
-    inputPlaceholder: '',
+    description: '通过个人令牌绑定账号',
+    inputPlaceholder: '请输入 Bangumi 个人令牌',
   },
   vndb: {
     label: PLATFORM_LABELS.vndb,

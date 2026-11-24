@@ -13,6 +13,7 @@ import { PlatformConfigFields } from './platform-config-fields'
 import { PlatformStatusMappings } from './platform-status-mappings'
 import { PlatformVisibilityGrid } from './platform-visibility-grid'
 import { Button } from '@/components/ui/button'
+import { resolveBangumiTokenUrl } from '@/lib/settings/bangumi-settings'
 import { getPlatformSettingsApi } from '@/lib/settings/platform-settings'
 
 import type { PlatformVisibilityKey } from '@/lib/settings/platform-visibility'
@@ -24,6 +25,8 @@ export default function PlatformSettings() {
     processingProvider,
     steamUid,
     setSteamUid,
+    bangumiToken,
+    setBangumiToken,
     vndbToken,
     setVndbToken,
     ymgalUserId,
@@ -42,6 +45,15 @@ export default function PlatformSettings() {
     queryFn: getPlatformSettingsApi,
   })
   const { data: platformSettings, isLoading: isLoadingPlatformSettings } = platformQuery
+  const bangumiConfig = providerConfig.bangumi.credentialLink
+    ? {
+        ...providerConfig.bangumi,
+        credentialLink: {
+          ...providerConfig.bangumi.credentialLink,
+          href: resolveBangumiTokenUrl(platformSettings?.bangumi),
+        },
+      }
+    : providerConfig.bangumi
 
   if (accountsQuery.isLoadingError || platformQuery.isLoadingError) {
     return (
@@ -105,16 +117,15 @@ export default function PlatformSettings() {
       {visibility.data && isVisible('bangumi') && (
         <PlatformAccountSection
           provider="bangumi"
-          config={providerConfig.bangumi}
+          config={bangumiConfig}
           account={accountMap.get('bangumi')}
           isLoading={isLoading}
           isProcessing={processingProvider === 'bangumi'}
-          onBind={() => {}}
+          onBind={() => void handleBind('bangumi')}
           onUnlink={() => void handleUnlink('bangumi')}
-          onOAuthLogin={() => startOAuthLogin('bangumi')}
-          inputValue=""
-          onInputChange={() => {}}
-          onBindDisabled
+          inputValue={bangumiToken}
+          onInputChange={setBangumiToken}
+          inputType="password"
         >
           <PlatformConfigFields
             platform="bangumi"
