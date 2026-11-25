@@ -3,35 +3,62 @@ name: Windows Desktop Release
 on:
   push:
     branches: [main]
+    paths:
+      - crates/vnweb-desktop/tauri.conf.json
 
 permissions:
   contents: read
 
-concurrency:
-  group: desktop-release-${{ github.ref }}
-  cancel-in-progress: true
-
 jobs:
-  build:
-    name: Build Windows x64 installer
-    runs-on: windows-2025
+  check-version:
+    name: Check for a Tauri version change
+    runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.desktop-version.outputs.version }}
+      changed: ${{ steps.desktop-version.outputs.changed }}
     steps:
       - uses: actions/checkout@v6
         with:
+          fetch-depth: 0
           persist-credentials: false
 
-      - name: Read Tauri version
+      - name: Compare Tauri versions
         id: desktop-version
         shell: pwsh
+        env:
+          BEFORE_SHA: ${{ github.event.before }}
         run: |
-          $config = Get-Content -LiteralPath 'crates/vnweb-desktop/tauri.conf.json' -Raw -Encoding utf8 | ConvertFrom-Json
+          $path = 'crates/vnweb-desktop/tauri.conf.json'
+          $config = Get-Content -LiteralPath $path -Raw -Encoding utf8 | ConvertFrom-Json
           $version = $config.version
           if ($version -cnotmatch '^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$') {
             throw 'Expected a version number in the Tauri configuration.'
           }
+
+          $changed = $false
+          if ($env:BEFORE_SHA -ne '0000000000000000000000000000000000000000') {
+            $previousJson = git show "${env:BEFORE_SHA}:$path"
+            if ($LASTEXITCODE -ne 0) {
+              throw 'Could not read the Tauri configuration before this push.'
+            }
+            $previousVersion = ($previousJson | Out-String | ConvertFrom-Json).version
+            $changed = $version -cne $previousVersion
+          }
           Add-Content -LiteralPath $env:GITHUB_OUTPUT -Value "version=$version" -Encoding utf8
+          Add-Content -LiteralPath $env:GITHUB_OUTPUT -Value "changed=$($changed.ToString().ToLowerInvariant())" -Encoding utf8
+
+  build:
+    name: Build Windows x64 installer
+    needs: check-version
+    if: needs.check-version.outputs.changed == 'true'
+    runs-on: windows-2025
+    concurrency:
+      group: desktop-build-${{ github.ref }}
+      cancel-in-progress: true
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
 
       - uses: actions/setup-node@v6
         with:
@@ -60,7 +87,7 @@ jobs:
 
   publish:
     name: Publish GitHub Release
-    needs: build
+    needs: [check-version, build]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -76,12 +103,14 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
           RELEASE_TAG: desktop-build-${{ github.run_number }}
-          RELEASE_TITLE: v${{ needs.build.outputs.version }}
+          RELEASE_TITLE: v${{ needs.check-version.outputs.version }}
+          TAURI_VERSION: ${{ needs.check-version.outputs.version }}
           BEFORE_SHA: ${{ github.event.before }}
         run: |
-          main_head="$(gh api "repos/$GH_REPO/git/ref/heads/main" --jq '.object.sha')"
-          if [[ "$main_head" != "$GITHUB_SHA" ]]; then
-            echo "A newer commit is on main. Skipping release of $GITHUB_SHA."
+          main_version="$(gh api "repos/$GH_REPO/contents/crates/vnweb-desktop/tauri.conf.json?ref=main" \
+            --jq '.content | gsub("\\s"; "") | @base64d | fromjson | .version')"
+          if [[ "$main_version" != "$TAURI_VERSION" ]]; then
+            echo "The Tauri version on main has changed. Skipping release of $GITHUB_SHA."
             exit 0
           fi
 
