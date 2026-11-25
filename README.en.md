@@ -27,6 +27,7 @@
     <a href="#quick-start">Quick Start</a> ·
     <a href="#ai-assistant-and-webmcp">AI Assistant</a> ·
     <a href="#cli">CLI</a> ·
+    <a href="./ROADMAP.md">Roadmap</a> ·
     <a href="docs/guide/intro/what-is-vnweb.md">Docs (zh-CN)</a> ·
     <a href="https://github.com/Halory-Ito/vnweb/issues/new">Issues</a>
   </p>
@@ -36,6 +37,12 @@
 
 > [!NOTE]
 > On Windows x64, download `*_x64-setup.exe` from the [latest release](https://github.com/Halory-Ito/vnweb/releases/latest). GitHub Actions builds the desktop app after pushes to `main` and publishes the installer when the build succeeds. See Quick Start below to run from source.
+
+## Project Vision
+
+**Open-source, local-first, agent-native infrastructure for digital culture.** Starting with visual novels, vnweb brings scattered community metadata, media, and personal play records into a self-hosted library. Its WebMCP tools and interactive generative UI explore how people and agents can manage that library together.
+
+The long-term goal is to make works, characters, and narrative material easier to connect, search, and reuse across sources while giving users control over which data stays local and which data external services can process. vnweb aims to publish open-source components and reference implementations for cultural knowledge graphs, narrative understanding, and agent tool integration.
 
 ## Features
 
@@ -157,15 +164,7 @@ vnweb start               # Quick-launch the most recently played game
 
 ## Roadmap
 
-- [x] Home dashboard (overview stats, playtime heatmap, goal tracking, random quotes)
-- [x] Game library, multi-directory scanner, multi-source scraping & Bangumi / VNDB status sync
-- [x] Game details (Overview, Characters, PV, OST, Records, Memories, Quotes, Guides)
-- [x] Analytics reports, appearance customization & WebDAV / S3 backup sync
-- [x] AI assistant, WebMCP tools & interactive Generative UI
-- [ ] CG gallery module
-- [ ] Patch manager (toggle patches selectively on game launch)
-
-Track upcoming work in [Issues](https://github.com/Halory-Ito/vnweb/issues).
+Proposed work includes multimodal narrative understanding, semantic knowledge graphs, spoiler-aware GraphRAG based on play progress, and permission controls and evaluation for agent workflows. The public roadmap also tracks the CG gallery and patch manager. See the [roadmap](./ROADMAP.md) and follow individual tasks in [Issues](https://github.com/Halory-Ito/vnweb/issues).
 
 ## Contributing
 

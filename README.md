@@ -27,6 +27,7 @@
     <a href="#快速开始">快速开始</a> ·
     <a href="#ai-助手与-webmcp">AI 助手</a> ·
     <a href="#命令行工具">命令行工具</a> ·
+    <a href="./ROADMAP.md">路线图</a> ·
     <a href="docs/guide/intro/what-is-vnweb.md">文档</a> ·
     <a href="https://github.com/Halory-Ito/vnweb/issues/new">问题反馈</a>
   </p>
@@ -36,6 +37,12 @@
 
 > [!NOTE]
 > Windows x64 用户可在[最新 Release](https://github.com/Halory-Ito/vnweb/releases/latest)下载 `*_x64-setup.exe`。源码运行方式见下方「快速开始」。
+
+## 项目愿景
+
+**面向数字文化的开源、本地优先、Agent 原生基础设施。** vnweb 从视觉小说出发，把分散的作品资料、媒体和个人游玩记录组织到可自托管的资料库中，并通过 WebMCP 和可交互的生成式 UI 探索人与 Agent 如何协作管理这些内容。
+
+长期目标是让作品、角色和叙事内容可以跨来源关联、检索和复用，让用户决定哪些数据留在本地、哪些可以交给外部服务处理。项目计划为文化知识图谱、叙事理解和 Agent 工具集成提供开源组件与参考实现，供其他开发者和文化社区使用。
 
 ## 功能特性
 
@@ -157,15 +164,7 @@ vnweb start               # 快速启动最近一次游玩的游戏
 
 ## 路线图
 
-- [x] 主页仪表盘（数据速览 / 游玩热力图 / 目标追踪 / 随机摘录）
-- [x] 游戏库、多目录扫描、多数据源导入与 Bangumi / VNDB 状态同步
-- [x] 游戏详情（资料 / 人物 / PV / OST / 记录 / 回忆 / 摘录 / 攻略）
-- [x] 统计总览、周期报告、外观定制与 WebDAV / S3 备份同步
-- [x] AI 助手、WebMCP 工具与可交互生成式 UI
-- [ ] CG 模块
-- [ ] 补丁管理（启动时选择性开关补丁）
-
-更多规划与进度见 [Issues](https://github.com/Halory-Ito/vnweb/issues)。
+拟议方向包括多模态叙事理解、语义知识图谱、按游玩进度控制剧透的 GraphRAG，以及 Agent 工作流的权限控制与评估。CG 模块和补丁管理也列在公开路线图中。详见 [ROADMAP.md（英文）](./ROADMAP.md)，具体任务可在 [Issues](https://github.com/Halory-Ito/vnweb/issues) 中跟踪。
 
 ## 参与贡献
 
