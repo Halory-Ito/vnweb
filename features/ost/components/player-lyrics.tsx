@@ -36,7 +36,7 @@ export function PlayerLyrics({
         aria-label="实时歌词"
         tabIndex={0}
         className={cn(
-          'relative overflow-y-auto overscroll-contain focus-visible:outline-none',
+          'relative overflow-x-hidden overflow-y-auto overscroll-contain focus-visible:outline-none',
           immersive
             ? 'h-full max-h-[58dvh] px-1 py-16 [mask-image:linear-gradient(to_bottom,transparent,black_14%,black_86%,transparent)] sm:px-3'
             : 'max-h-[min(32dvh,13rem)] px-3 py-6 text-center [mask-image:linear-gradient(to_bottom,transparent,black_16%,black_84%,transparent)]',

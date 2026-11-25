@@ -1,10 +1,13 @@
 'use client'
 
+import { AnimatePresence, motion, useIsPresent, useReducedMotion } from 'motion/react'
+
 import { PlayerLyrics } from './player-lyrics'
 import { PlayerQueue } from './player-queue'
 
 import type { useGlobalSongPlayer } from '../hooks/use-song-player'
 import type { PlayerFormId } from '../lib/player-forms'
+import type { ReactNode } from 'react'
 
 export type DrawerTab = 'none' | 'lyrics' | 'queue'
 
@@ -20,9 +23,41 @@ export function PlayerFloatingDrawer({
   form = 'classic',
 }: PlayerFloatingDrawerProps) {
   const selection = player.selection
-  if (drawer === 'none' || !selection) return null
 
-  const { song, items } = selection
+  return (
+    <AnimatePresence initial={false}>
+      {drawer !== 'none' && selection && (
+        <FloatingDrawerPanel key="drawer">
+          <FloatingDrawerContent drawer={drawer} player={player} form={form} />
+        </FloatingDrawerPanel>
+      )}
+    </AnimatePresence>
+  )
+}
+
+function FloatingDrawerPanel({ children }: { children: ReactNode }) {
+  const isPresent = useIsPresent()
+  const reduceMotion = useReducedMotion()
+
+  return (
+    <motion.div
+      data-no-drag="true"
+      inert={!isPresent}
+      className="overflow-hidden"
+      initial={{ height: 0, opacity: 0 }}
+      animate={{ height: 'auto', opacity: 1 }}
+      exit={{ height: 0, opacity: 0 }}
+      transition={{ duration: reduceMotion ? 0 : 0.22, ease: [0.32, 0.72, 0, 1] }}
+    >
+      {children}
+    </motion.div>
+  )
+}
+
+function FloatingDrawerContent({ drawer, player, form }: PlayerFloatingDrawerProps) {
+  if (!player.selection) return null
+
+  const { song, items } = player.selection
 
   const content =
     drawer === 'lyrics' ? (
