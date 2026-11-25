@@ -12,8 +12,8 @@ import {
 
 export const primaryNavigation = [
   { title: '主页', href: '/', icon: HomeIcon },
-  { title: '游戏库', href: '/game', icon: Gamepad2Icon },
-  { title: '记录', href: '/record', icon: BoxIcon },
+  { title: '游戏库', href: '/game/home', icon: Gamepad2Icon },
+  { title: '记录', href: '/record/overview', icon: BoxIcon },
   { title: '扫描', href: '/scan', icon: ScanIcon },
   { title: '攻略', href: '/guide', icon: MapIcon },
   { title: 'PV', href: '/pv', icon: VideoIcon },
@@ -21,8 +21,12 @@ export const primaryNavigation = [
   { title: '摘录', href: '/quote', icon: TextQuoteIcon },
 ]
 
-export const settingsNavigation = { title: '设置', href: '/settings', icon: SettingsIcon }
+export const settingsNavigation = {
+  title: '设置',
+  href: '/settings/appearance',
+  icon: SettingsIcon,
+}
 
-export function isActivePath(pathname: string, href: string) {
-  return pathname === href || (href !== '/' && pathname.startsWith(`${href}/`))
+export function isActiveSection(section: string | null, href: string) {
+  return (section ?? '') === href.split('/')[1]
 }

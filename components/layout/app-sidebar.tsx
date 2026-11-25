@@ -2,9 +2,9 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { useSelectedLayoutSegment } from 'next/navigation'
 
-import { isActivePath, primaryNavigation, settingsNavigation } from './app-navigation'
+import { isActiveSection, primaryNavigation, settingsNavigation } from './app-navigation'
 import {
   Sidebar,
   SidebarContent,
@@ -21,13 +21,13 @@ const SIDEBAR_BUTTON_SIZE = 'h-10 w-10'
 
 function SidebarIconButton({
   item,
-  pathname,
+  section,
 }: {
   item: (typeof primaryNavigation)[number]
-  pathname: string
+  section: string | null
 }) {
   const Icon = item.icon
-  const isActive = isActivePath(pathname, item.href)
+  const isActive = isActiveSection(section, item.href)
 
   return (
     <SidebarMenuItem>
@@ -62,7 +62,7 @@ function SidebarIconButton({
 }
 
 export default function AppSideBar() {
-  const pathname = usePathname()
+  const section = useSelectedLayoutSegment()
 
   return (
     <Sidebar
@@ -89,14 +89,14 @@ export default function AppSideBar() {
       <SidebarContent className="p-4">
         <SidebarMenu className="flex flex-col items-center justify-center">
           {primaryNavigation.map((item) => (
-            <SidebarIconButton key={item.title} item={item} pathname={pathname} />
+            <SidebarIconButton key={item.title} item={item} section={section} />
           ))}
         </SidebarMenu>
       </SidebarContent>
 
       <SidebarFooter className="items-center pb-4">
         <SidebarMenu className="gap-4 p-4">
-          <SidebarIconButton item={settingsNavigation} pathname={pathname} />
+          <SidebarIconButton item={settingsNavigation} section={section} />
         </SidebarMenu>
       </SidebarFooter>
     </Sidebar>

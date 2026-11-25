@@ -1,7 +1,7 @@
 'use client'
 
 import { ArrowLeftIcon, ArrowRightIcon } from 'lucide-react'
-import { usePathname, useRouter } from 'next/navigation'
+import { useSelectedLayoutSegment, useRouter } from 'next/navigation'
 
 import MobileHeaderMenu from './mobile-header-menu'
 import R18Switch from './r18-switch'
@@ -22,7 +22,7 @@ export function AppHeaderActions({
   onOpenAgent: () => void
   windowControls?: ReactNode
 }) {
-  const pathname = usePathname()
+  const section = useSelectedLayoutSegment()
   const router = useRouter()
 
   return (
@@ -40,7 +40,7 @@ export function AppHeaderActions({
         </div>
       </div>
 
-      {pathname.startsWith('/game') ? (
+      {section === 'game' ? (
         <div className="order-last w-full min-w-0 md:order-none md:w-auto md:flex-1">
           <GameHeaderControls />
         </div>

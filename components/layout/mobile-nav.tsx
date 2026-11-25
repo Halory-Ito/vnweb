@@ -3,9 +3,9 @@
 import { MenuIcon } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { useSelectedLayoutSegment } from 'next/navigation'
 
-import { isActivePath, primaryNavigation, settingsNavigation } from './app-navigation'
+import { isActiveSection, primaryNavigation, settingsNavigation } from './app-navigation'
 import { Button } from '@/components/ui/button'
 import {
   Sheet,
@@ -29,7 +29,7 @@ export default function MobileNav({
   onOpenChange: (open: boolean) => void
   showTrigger: boolean
 }) {
-  const pathname = usePathname()
+  const section = useSelectedLayoutSegment()
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -62,7 +62,7 @@ export default function MobileNav({
           <ul className="flex flex-col gap-1">
             {navItems.map((item) => {
               const Icon = item.icon
-              const isActive = isActivePath(pathname, item.href)
+              const isActive = isActiveSection(section, item.href)
 
               return (
                 <li key={item.title}>

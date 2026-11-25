@@ -1,7 +1,7 @@
 'use client'
 
 import { atom, useAtomValue, useStore, type WritableAtom } from 'jotai'
-import { useEffect } from 'react'
+import { useEffect, useLayoutEffect } from 'react'
 
 import {
   borderlessAtom,
@@ -84,15 +84,18 @@ function syncLayoutAtomIfUnmodified<K extends keyof LayoutSettings>(
 
 export function useAppAppearance() {
   const store = useStore()
-  const borderless = useAtomValue(borderlessAtom)
   const nativeTitleBar = useAtomValue(nativeTitleBarAtom)
   const layoutBootstrapReady = useAtomValue(layoutBootstrapReadyAtom)
 
-  useEffect(() => {
-    const root = document.documentElement
-    root.toggleAttribute('data-borderless', borderless)
-    return () => root.removeAttribute('data-borderless')
-  }, [borderless])
+  useLayoutEffect(() => {
+    const syncBorderless = () => {
+      document.documentElement.toggleAttribute('data-borderless', store.get(borderlessAtom))
+    }
+
+    const unsubscribe = store.sub(borderlessAtom, syncBorderless)
+    syncBorderless()
+    return unsubscribe
+  }, [store])
 
   useEffect(() => {
     const current = store.get(nativeTitleBarAtom)

@@ -29,6 +29,7 @@ export type LayoutSettings = {
 export const DEFAULT_FOLDER_PALETTE = ['#5b85d6', '#4b9c8d', '#a17bd3', '#ce805d', '#bd6e94']
 export const MAX_FOLDER_PALETTE_SIZE = 16
 export const MAX_GAME_CARD_RADIUS = 40
+export const BORDERLESS_STORAGE_KEY = 'vnweb.layout.borderless'
 
 export const DEFAULT_LAYOUT_SETTINGS: LayoutSettings = {
   sidebarHidden: false,

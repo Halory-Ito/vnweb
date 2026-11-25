@@ -3,7 +3,11 @@
 import { useAtom } from 'jotai'
 import { atomWithStorage } from 'jotai/utils'
 
-import { createLayoutSyncedStorage, DEFAULT_LAYOUT_SETTINGS } from '@/lib/settings/layout-settings'
+import {
+  BORDERLESS_STORAGE_KEY,
+  createLayoutSyncedStorage,
+  DEFAULT_LAYOUT_SETTINGS,
+} from '@/lib/settings/layout-settings'
 
 const isBoolean = (value: unknown): value is boolean => typeof value === 'boolean'
 
@@ -18,7 +22,7 @@ export const headerHiddenAtom = atomWithStorage(
   createLayoutSyncedStorage('headerHidden', isBoolean),
 )
 export const borderlessAtom = atomWithStorage(
-  'vnweb.layout.borderless',
+  BORDERLESS_STORAGE_KEY,
   DEFAULT_LAYOUT_SETTINGS.borderless,
   createLayoutSyncedStorage('borderless', isBoolean),
 )
