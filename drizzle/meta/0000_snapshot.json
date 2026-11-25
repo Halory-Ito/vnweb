@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "104f7e30-c3d1-45c3-a3fc-6df3365b8d7f",
+  "id": "aeb8bd24-bfa7-4707-a76b-2efd403ac0e9",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "cg": {
@@ -103,7 +103,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "'Tue, 21 Jul 2026 04:51:52 GMT'"
+          "default": "''"
         },
         "updatedAt": {
           "name": "updatedAt",
@@ -111,7 +111,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "'Tue, 21 Jul 2026 04:51:52 GMT'"
+          "default": "''"
         }
       },
       "indexes": {},
@@ -261,7 +261,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "'Tue, 21 Jul 2026 04:51:52 GMT'"
+          "default": "''"
         },
         "updatedAt": {
           "name": "updatedAt",
@@ -269,7 +269,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "'Tue, 21 Jul 2026 04:51:52 GMT'"
+          "default": "''"
         }
       },
       "indexes": {
@@ -338,7 +338,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "'Tue, 21 Jul 2026 04:51:52 GMT'"
+          "default": "''"
         },
         "updatedAt": {
           "name": "updatedAt",
@@ -346,7 +346,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "'Tue, 21 Jul 2026 04:51:52 GMT'"
+          "default": "''"
         }
       },
       "indexes": {},
@@ -417,7 +417,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "'Tue, 21 Jul 2026 04:51:52 GMT'"
+          "default": "''"
         },
         "updatedAt": {
           "name": "updatedAt",
@@ -425,7 +425,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "'Tue, 21 Jul 2026 04:51:52 GMT'"
+          "default": "''"
         }
       },
       "indexes": {},
@@ -660,7 +660,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "'Tue, 21 Jul 2026 04:51:52 GMT'"
+          "default": "''"
         },
         "updatedAt": {
           "name": "updatedAt",
@@ -668,7 +668,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "'Tue, 21 Jul 2026 04:51:52 GMT'"
+          "default": "''"
         }
       },
       "indexes": {},
@@ -724,7 +724,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "'Tue, 21 Jul 2026 04:51:52 GMT'"
+          "default": "''"
         },
         "updatedAt": {
           "name": "updatedAt",
@@ -732,7 +732,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "'Tue, 21 Jul 2026 04:51:52 GMT'"
+          "default": "''"
         }
       },
       "indexes": {},
@@ -809,7 +809,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "'Tue, 21 Jul 2026 04:51:52 GMT'"
+          "default": "''"
         },
         "updatedAt": {
           "name": "updatedAt",
@@ -817,7 +817,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "'Tue, 21 Jul 2026 04:51:52 GMT'"
+          "default": "''"
         }
       },
       "indexes": {},
@@ -871,7 +871,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "'Tue, 21 Jul 2026 04:51:52 GMT'"
+          "default": "''"
         },
         "updatedAt": {
           "name": "updatedAt",
@@ -879,7 +879,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "'Tue, 21 Jul 2026 04:51:52 GMT'"
+          "default": "''"
         }
       },
       "indexes": {},
@@ -960,10 +960,60 @@
           "notNull": false,
           "autoincrement": false,
           "default": 0
+        },
+        "completedAt": {
+          "name": "completedAt",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "''"
+        },
+        "pid": {
+          "name": "pid",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": 0
         }
       },
       "indexes": {},
       "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "game_pv_metadata": {
+      "name": "game_pv_metadata",
+      "columns": {
+        "pvId": {
+          "name": "pvId",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "metadata": {
+          "name": "metadata",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "game_pv_metadata_pvId_game_pv_id_fk": {
+          "name": "game_pv_metadata_pvId_game_pv_id_fk",
+          "tableFrom": "game_pv_metadata",
+          "tableTo": "game_pv",
+          "columnsFrom": ["pvId"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "checkConstraints": {}
@@ -1005,7 +1055,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "'Tue, 21 Jul 2026 04:51:52 GMT'"
+          "default": "''"
         },
         "updatedAt": {
           "name": "updatedAt",
@@ -1013,7 +1063,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "'Tue, 21 Jul 2026 04:51:52 GMT'"
+          "default": "''"
         }
       },
       "indexes": {},
@@ -1068,7 +1118,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "'Tue, 21 Jul 2026 04:51:52 GMT'"
+          "default": "''"
         },
         "updatedAt": {
           "name": "updatedAt",
@@ -1076,7 +1126,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "'Tue, 21 Jul 2026 04:51:52 GMT'"
+          "default": "''"
         }
       },
       "indexes": {},
@@ -1117,6 +1167,125 @@
           "notNull": false,
           "autoincrement": false,
           "default": "''"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "game_status_mapping": {
+      "name": "game_status_mapping",
+      "columns": {
+        "status_id": {
+          "name": "status_id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "bangumi": {
+          "name": "bangumi",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "vndb": {
+          "name": "vndb",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "game_status_push": {
+      "name": "game_status_push",
+      "columns": {
+        "game_id": {
+          "name": "game_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "provider": {
+          "name": "provider",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "account_id": {
+          "name": "account_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "external_id": {
+          "name": "external_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "target": {
+          "name": "target",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "pushed_at": {
+          "name": "pushed_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "game_status_push_game_id_provider_pk": {
+          "columns": ["game_id", "provider"],
+          "name": "game_status_push_game_id_provider_pk"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "game_status": {
+      "name": "game_status",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "color": {
+          "name": "color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
         }
       },
       "indexes": {},
@@ -1203,7 +1372,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "'Tue, 21 Jul 2026 04:51:52 GMT'"
+          "default": "''"
         },
         "updatedAt": {
           "name": "updatedAt",
@@ -1211,7 +1380,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "'Tue, 21 Jul 2026 04:51:52 GMT'"
+          "default": "''"
         }
       },
       "indexes": {},
@@ -1266,7 +1435,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "'Tue, 21 Jul 2026 04:51:52 GMT'"
+          "default": "''"
         },
         "updatedAt": {
           "name": "updatedAt",
@@ -1274,7 +1443,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "'Tue, 21 Jul 2026 04:51:52 GMT'"
+          "default": "''"
         }
       },
       "indexes": {},
@@ -1361,7 +1530,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "'Tue, 21 Jul 2026 04:51:52 GMT'"
+          "default": "''"
         },
         "updatedAt": {
           "name": "updatedAt",
@@ -1369,7 +1538,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "'Tue, 21 Jul 2026 04:51:52 GMT'"
+          "default": "''"
         }
       },
       "indexes": {},
@@ -1378,8 +1547,32 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
-    "proxy_config": {
-      "name": "proxy_config",
+    "library_folder_logo": {
+      "name": "library_folder_logo",
+      "columns": {
+        "href": {
+          "name": "href",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "source": {
+          "name": "source",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "recent_visit": {
+      "name": "recent_visit",
       "columns": {
         "id": {
           "name": "id",
@@ -1388,9 +1581,9 @@
           "notNull": true,
           "autoincrement": true
         },
-        "name": {
-          "name": "name",
-          "type": "text",
+        "gameId": {
+          "name": "gameId",
+          "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
@@ -1402,59 +1595,20 @@
           "notNull": true,
           "autoincrement": false
         },
-        "host": {
-          "name": "host",
+        "href": {
+          "name": "href",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
-        "port": {
-          "name": "port",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "username": {
-          "name": "username",
+        "visitedAt": {
+          "name": "visitedAt",
           "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
           "default": "''"
-        },
-        "password": {
-          "name": "password",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false,
-          "default": "''"
-        },
-        "enabled": {
-          "name": "enabled",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false,
-          "default": 0
-        },
-        "createdAt": {
-          "name": "createdAt",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false,
-          "default": "'Tue, 21 Jul 2026 04:51:52 GMT'"
-        },
-        "updatedAt": {
-          "name": "updatedAt",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false,
-          "default": "'Tue, 21 Jul 2026 04:51:52 GMT'"
         }
       },
       "indexes": {},
@@ -1501,7 +1655,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "'Tue, 21 Jul 2026 04:51:52 GMT'"
+          "default": "''"
         },
         "updatedAt": {
           "name": "updatedAt",
@@ -1509,7 +1663,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "'Tue, 21 Jul 2026 04:51:52 GMT'"
+          "default": "''"
         }
       },
       "indexes": {},
@@ -1588,7 +1742,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "'Tue, 21 Jul 2026 04:51:52 GMT'"
+          "default": "''"
         },
         "updatedAt": {
           "name": "updatedAt",
@@ -1596,7 +1750,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "'Tue, 21 Jul 2026 04:51:52 GMT'"
+          "default": "''"
         }
       },
       "indexes": {},
@@ -1673,7 +1827,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "'Tue, 21 Jul 2026 04:51:52 GMT'"
+          "default": "''"
         },
         "updatedAt": {
           "name": "updatedAt",
@@ -1681,7 +1835,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "'Tue, 21 Jul 2026 04:51:52 GMT'"
+          "default": "''"
         }
       },
       "indexes": {},

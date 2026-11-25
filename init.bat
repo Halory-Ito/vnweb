@@ -108,8 +108,8 @@ if exist "!DB_PATH!" (
 )
 
 if not exist "!DB_DIR!" mkdir "!DB_DIR!"
-echo   正在根据 db\schema.ts 创建新数据库...
-call npm run db:push -- --force
+echo   正在根据 drizzle 迁移创建并初始化数据库...
+call npm run db:migrate
 if errorlevel 1 (
   echo   [错误] 数据库初始化失败。
   if defined BACKUP_FILE echo   原数据库已备份在：!BACKUP_FILE!

@@ -5,6 +5,7 @@ import path from 'node:path'
 
 import { GameInfoTable } from '@/db/schema'
 import { db } from '@/lib/drizzle'
+import { getAssetsDir } from '@/lib/server/runtime-paths.mjs'
 
 const MAX_UPLOAD_SIZE = 100 * 1024 * 1024
 
@@ -68,7 +69,7 @@ const importOst = async (req: NextRequest, context: { params: Promise<{ id: stri
     const ext = getSafeExt(file.name)
     const baseName = sanitizeFileName(path.basename(file.name, path.extname(file.name)))
     const fileName = `${baseName}_${Date.now()}${ext}`
-    const targetDir = path.join(process.cwd(), 'public', 'assets', 'ost', String(gameId))
+    const targetDir = path.join(getAssetsDir(), 'ost', String(gameId))
     const targetPath = path.join(targetDir, fileName)
 
     await fs.mkdir(targetDir, { recursive: true })

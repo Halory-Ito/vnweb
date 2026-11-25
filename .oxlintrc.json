@@ -45,6 +45,9 @@
     "**/.next/**",
     "**/out/**",
     "**/coverage/**",
-    "**/oxlint-report.*"
+    "**/oxlint-report.*",
+    "**/target/**",
+    "**/crates/vnweb-desktop/resources/**",
+    "**/crates/vnweb-desktop/gen/**"
   ]
 }

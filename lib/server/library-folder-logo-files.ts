@@ -8,6 +8,7 @@ import {
   LIBRARY_FOLDER_LOGO_DIRECTORY,
   LIBRARY_FOLDER_LOGO_URL_PREFIX,
 } from '@/lib/library-folder-logo-path'
+import { getAssetsDir } from '@/lib/server/runtime-paths.mjs'
 import { APPEARANCE_MAX_IMAGE_BYTES } from '@/lib/settings/appearance-image'
 
 const imageExtensions = new Map([
@@ -20,11 +21,11 @@ const imageExtensions = new Map([
 ])
 
 export function getLibraryFolderLogoDirectory() {
-  return path.join(process.cwd(), 'assets', LIBRARY_FOLDER_LOGO_DIRECTORY)
+  return path.join(getAssetsDir(), LIBRARY_FOLDER_LOGO_DIRECTORY)
 }
 
 export function getLegacyLibraryFolderLogoDirectory() {
-  return path.join(process.cwd(), 'assets', LEGACY_LIBRARY_FOLDER_LOGO_DIRECTORY)
+  return path.join(getAssetsDir(), LEGACY_LIBRARY_FOLDER_LOGO_DIRECTORY)
 }
 
 export async function migrateLegacyLibraryLogoDirectory(): Promise<void> {

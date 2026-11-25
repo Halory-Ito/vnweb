@@ -2,16 +2,27 @@ import fs from 'node:fs'
 import path from 'node:path'
 
 import { normalizeBackupContentOptions } from '@/lib/backup-content'
+import { getDataSettingsDir, getLegacyAppConfigPath } from '@/lib/server/runtime-paths.mjs'
 
 import type { BackupContentOptions } from '@/types'
 
-export const DATA_SETTINGS_DIR = path.join(process.cwd(), 'data', 'settings')
+function getSettingsFiles() {
+  const settingsDir = getDataSettingsDir()
+  return {
+    settingsDir,
+    appearanceFile: path.join(settingsDir, 'appearance.json'),
+    backupFile: path.join(settingsDir, 'backup.json'),
+    generalFile: path.join(settingsDir, 'general.json'),
+    platformFile: path.join(settingsDir, 'platform.json'),
+    legacyConfigFile: getLegacyAppConfigPath(),
+  }
+}
+
+export const DATA_SETTINGS_DIR = getDataSettingsDir()
 export const APPEARANCE_SETTINGS_FILE = path.join(DATA_SETTINGS_DIR, 'appearance.json')
 export const BACKUP_SETTINGS_FILE = path.join(DATA_SETTINGS_DIR, 'backup.json')
 export const GENERAL_SETTINGS_FILE = path.join(DATA_SETTINGS_DIR, 'general.json')
 export const PLATFORM_SETTINGS_FILE = path.join(DATA_SETTINGS_DIR, 'platform.json')
-
-const LEGACY_CONFIG_FILE = path.join(process.cwd(), 'app', 'config.json')
 
 // Promise 队列，确保对配置文件的读写串行执行
 let queue: Promise<void> = Promise.resolve()
@@ -73,25 +84,24 @@ async function ensureLegacyConfigMigrated(): Promise<void> {
   if (migratedLegacy) return
   migratedLegacy = true
 
-  if (!fs.existsSync(LEGACY_CONFIG_FILE)) return
+  const { appearanceFile, backupFile, generalFile, legacyConfigFile } = getSettingsFiles()
+  if (!fs.existsSync(legacyConfigFile)) return
   const hasNewFiles =
-    fs.existsSync(APPEARANCE_SETTINGS_FILE) ||
-    fs.existsSync(BACKUP_SETTINGS_FILE) ||
-    fs.existsSync(GENERAL_SETTINGS_FILE)
+    fs.existsSync(appearanceFile) || fs.existsSync(backupFile) || fs.existsSync(generalFile)
   if (hasNewFiles) return
 
-  const legacy = await readJsonObject(LEGACY_CONFIG_FILE)
+  const legacy = await readJsonObject(legacyConfigFile)
   const settings = (legacy['settings'] ?? {}) as Record<string, unknown>
   const { appearance, backup, ...rest } = settings
 
   if (appearance && typeof appearance === 'object' && !Array.isArray(appearance)) {
-    await writeJsonObject(APPEARANCE_SETTINGS_FILE, appearance as Record<string, unknown>, true)
+    await writeJsonObject(appearanceFile, appearance as Record<string, unknown>, true)
   }
   if (backup && typeof backup === 'object' && !Array.isArray(backup)) {
-    await writeJsonObject(BACKUP_SETTINGS_FILE, backup as Record<string, unknown>, true)
+    await writeJsonObject(backupFile, backup as Record<string, unknown>, true)
   }
   if (Object.keys(rest).length > 0) {
-    await writeJsonObject(GENERAL_SETTINGS_FILE, rest, true)
+    await writeJsonObject(generalFile, rest, true)
   }
 }
 
@@ -99,10 +109,11 @@ async function ensureLegacyConfigMigrated(): Promise<void> {
 export async function readConfig(): Promise<Record<string, unknown>> {
   return enqueue(async () => {
     await ensureLegacyConfigMigrated()
+    const { appearanceFile, backupFile, generalFile } = getSettingsFiles()
     const [appearance, backup, general] = await Promise.all([
-      readJsonObject(APPEARANCE_SETTINGS_FILE),
-      readJsonObject(BACKUP_SETTINGS_FILE),
-      readJsonObject(GENERAL_SETTINGS_FILE),
+      readJsonObject(appearanceFile),
+      readJsonObject(backupFile),
+      readJsonObject(generalFile),
     ])
 
     return {
@@ -119,16 +130,17 @@ export async function readConfig(): Promise<Record<string, unknown>> {
 export async function writeConfig(config: Record<string, unknown>): Promise<void> {
   return enqueue(async () => {
     await ensureLegacyConfigMigrated()
+    const { appearanceFile, backupFile, generalFile } = getSettingsFiles()
     const settings = (config['settings'] ?? {}) as Record<string, unknown>
     const { appearance, backup, ...rest } = settings
 
     if (appearance && typeof appearance === 'object' && !Array.isArray(appearance)) {
-      await writeJsonObject(APPEARANCE_SETTINGS_FILE, appearance as Record<string, unknown>)
+      await writeJsonObject(appearanceFile, appearance as Record<string, unknown>)
     }
     if (backup && typeof backup === 'object' && !Array.isArray(backup)) {
-      await writeJsonObject(BACKUP_SETTINGS_FILE, backup as Record<string, unknown>)
+      await writeJsonObject(backupFile, backup as Record<string, unknown>)
     }
-    await writeJsonObject(GENERAL_SETTINGS_FILE, rest)
+    await writeJsonObject(generalFile, rest)
   })
 }
 
@@ -141,35 +153,36 @@ export async function writeConfig(config: Record<string, unknown>): Promise<void
 export async function updateConfigSection(keys: string[], value: unknown): Promise<void> {
   return enqueue(async () => {
     await ensureLegacyConfigMigrated()
+    const { appearanceFile, backupFile, generalFile } = getSettingsFiles()
 
     if (keys[0] === 'settings' && keys[1] === 'appearance') {
-      const target = await readJsonObject(APPEARANCE_SETTINGS_FILE)
+      const target = await readJsonObject(appearanceFile)
       const subKeys = keys.slice(2)
       if (subKeys.length === 0 && value && typeof value === 'object' && !Array.isArray(value)) {
-        await writeJsonObject(APPEARANCE_SETTINGS_FILE, value as Record<string, unknown>)
+        await writeJsonObject(appearanceFile, value as Record<string, unknown>)
       } else {
         setNestedValue(target, subKeys, value)
-        await writeJsonObject(APPEARANCE_SETTINGS_FILE, target)
+        await writeJsonObject(appearanceFile, target)
       }
       return
     }
 
     if (keys[0] === 'settings' && keys[1] === 'backup') {
-      const target = await readJsonObject(BACKUP_SETTINGS_FILE)
+      const target = await readJsonObject(backupFile)
       const subKeys = keys.slice(2)
       if (subKeys.length === 0 && value && typeof value === 'object' && !Array.isArray(value)) {
-        await writeJsonObject(BACKUP_SETTINGS_FILE, value as Record<string, unknown>)
+        await writeJsonObject(backupFile, value as Record<string, unknown>)
       } else {
         setNestedValue(target, subKeys, value)
-        await writeJsonObject(BACKUP_SETTINGS_FILE, target)
+        await writeJsonObject(backupFile, target)
       }
       return
     }
 
-    const target = await readJsonObject(GENERAL_SETTINGS_FILE)
+    const target = await readJsonObject(generalFile)
     const subKeys = keys[0] === 'settings' ? keys.slice(1) : keys
     setNestedValue(target, subKeys, value)
-    await writeJsonObject(GENERAL_SETTINGS_FILE, target)
+    await writeJsonObject(generalFile, target)
   })
 }
 

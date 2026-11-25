@@ -1,6 +1,11 @@
 {
   "$schema": "./node_modules/oxfmt/configuration_schema.json",
-  "ignorePatterns": [],
+  "ignorePatterns": [
+    "target/**",
+    "crates/vnweb-desktop/resources/**",
+    "crates/vnweb-desktop/gen/**",
+    "Cargo.lock"
+  ],
   "printWidth": 100,
   "semi": false,
   "singleQuote": true,

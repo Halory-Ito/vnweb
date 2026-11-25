@@ -14,6 +14,7 @@ import {
   LibraryFolderLogoTable,
 } from '@/db/schema'
 import { db } from '@/lib/drizzle'
+import { getCustomCssPath, getDataSettingsDir } from '@/lib/server/runtime-paths.mjs'
 
 import type { ImageUsage } from '@/types/local-resource'
 
@@ -126,10 +127,7 @@ export async function collectLocalResourceReferences() {
   collectRefs(logos, refs, 'brand')
   collectRefs([pvs, ostSongs, guides, guideSteps], refs)
 
-  const configFiles = [
-    path.join(process.cwd(), 'data', 'settings', 'appearance.json'),
-    path.join(process.cwd(), 'app', 'custom.css'),
-  ]
+  const configFiles = [path.join(getDataSettingsDir(), 'appearance.json'), getCustomCssPath()]
   for (const filePath of configFiles) {
     try {
       const text = await fs.readFile(filePath, 'utf8')

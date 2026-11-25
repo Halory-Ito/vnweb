@@ -7,6 +7,7 @@ import path from 'node:path'
 
 import { GameInfoTable, GamePlayTable } from '@/db/schema'
 import { db } from '@/lib/drizzle'
+import { getAssetsDir } from '@/lib/server/runtime-paths.mjs'
 import extractIconFromExe from '@/win/extract-icon'
 
 type LaunchBody = {
@@ -102,18 +103,19 @@ const launchGame = async (req: NextRequest, context: { params: Promise<{ id: str
     const safeDate = sanitizeFileName(game.date || dayjs().format('YYYY-MM-DD'))
     const iconFileName = `${safeName}_${safeDate}.ico`
 
-    const assetsIconDir = path.join(process.cwd(), 'assets', 'icon')
-    const publicIconDir = path.join(process.cwd(), 'assets', 'icon')
+    const assetsIconDir = path.join(getAssetsDir(), 'icon')
 
     await fs.promises.mkdir(assetsIconDir, { recursive: true })
-    await fs.promises.mkdir(publicIconDir, { recursive: true })
 
     const iconTargetPath = path.join(assetsIconDir, iconFileName)
     const extractedPath = await extractIconFromExe(finalExePath, iconTargetPath)
     const finalExtractedPath = path.resolve(extractedPath)
     const finalIconName = path.basename(finalExtractedPath)
+    const targetInAssets = path.join(assetsIconDir, finalIconName)
 
-    await fs.promises.copyFile(finalExtractedPath, path.join(publicIconDir, finalIconName))
+    if (path.resolve(targetInAssets) !== finalExtractedPath) {
+      await fs.promises.copyFile(finalExtractedPath, targetInAssets)
+    }
 
     const iconPublicPath = `/assets/icon/${finalIconName}`
     const now = dayjs().toISOString()

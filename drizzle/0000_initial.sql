@@ -11,8 +11,8 @@ CREATE TABLE `cg` (
 	`height` integer,
 	`fileSize` integer,
 	`sortOrder` integer DEFAULT 0,
-	`createdAt` text DEFAULT 'Tue, 21 Jul 2026 04:51:52 GMT',
-	`updatedAt` text DEFAULT 'Tue, 21 Jul 2026 04:51:52 GMT'
+	`createdAt` text DEFAULT '',
+	`updatedAt` text DEFAULT ''
 );
 --> statement-breakpoint
 CREATE TABLE `character` (
@@ -34,8 +34,8 @@ CREATE TABLE `character` (
 	`birthdayDay` integer,
 	`sex` text DEFAULT '',
 	`gender` text DEFAULT '',
-	`createdAt` text DEFAULT 'Tue, 21 Jul 2026 04:51:52 GMT',
-	`updatedAt` text DEFAULT 'Tue, 21 Jul 2026 04:51:52 GMT'
+	`createdAt` text DEFAULT '',
+	`updatedAt` text DEFAULT ''
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX `character_game_vndb_unique` ON `character` (`gameId`,`vndbId`);--> statement-breakpoint
@@ -48,8 +48,8 @@ CREATE TABLE `collection_game` (
 CREATE TABLE `collection` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`name` text NOT NULL,
-	`createdAt` text DEFAULT 'Tue, 21 Jul 2026 04:51:52 GMT',
-	`updatedAt` text DEFAULT 'Tue, 21 Jul 2026 04:51:52 GMT'
+	`createdAt` text DEFAULT '',
+	`updatedAt` text DEFAULT ''
 );
 --> statement-breakpoint
 CREATE TABLE `game_guide` (
@@ -60,8 +60,8 @@ CREATE TABLE `game_guide` (
 	`level` integer DEFAULT 0,
 	`tips` text DEFAULT '',
 	`finished` integer DEFAULT 0,
-	`createdAt` text DEFAULT 'Tue, 21 Jul 2026 04:51:52 GMT',
-	`updatedAt` text DEFAULT 'Tue, 21 Jul 2026 04:51:52 GMT'
+	`createdAt` text DEFAULT '',
+	`updatedAt` text DEFAULT ''
 );
 --> statement-breakpoint
 CREATE TABLE `game_id_map` (
@@ -97,8 +97,8 @@ CREATE TABLE `game_info` (
 	`publisher` text NOT NULL,
 	`programmer` text NOT NULL,
 	`saveDir` text DEFAULT '',
-	`createdAt` text DEFAULT 'Tue, 21 Jul 2026 04:51:52 GMT',
-	`updatedAt` text DEFAULT 'Tue, 21 Jul 2026 04:51:52 GMT'
+	`createdAt` text DEFAULT '',
+	`updatedAt` text DEFAULT ''
 );
 --> statement-breakpoint
 CREATE TABLE `game_memory` (
@@ -107,8 +107,8 @@ CREATE TABLE `game_memory` (
 	`title` text DEFAULT '',
 	`description` text DEFAULT '',
 	`imageUrl` text DEFAULT '',
-	`createdAt` text DEFAULT 'Tue, 21 Jul 2026 04:51:52 GMT',
-	`updatedAt` text DEFAULT 'Tue, 21 Jul 2026 04:51:52 GMT'
+	`createdAt` text DEFAULT '',
+	`updatedAt` text DEFAULT ''
 );
 --> statement-breakpoint
 CREATE TABLE `game_ost_songs` (
@@ -120,8 +120,8 @@ CREATE TABLE `game_ost_songs` (
 	`mediaType` text DEFAULT '',
 	`lyricsText` text DEFAULT '',
 	`lyricsPath` text DEFAULT '',
-	`createdAt` text DEFAULT 'Tue, 21 Jul 2026 04:51:52 GMT',
-	`updatedAt` text DEFAULT 'Tue, 21 Jul 2026 04:51:52 GMT'
+	`createdAt` text DEFAULT '',
+	`updatedAt` text DEFAULT ''
 );
 --> statement-breakpoint
 CREATE TABLE `game_ost` (
@@ -130,8 +130,8 @@ CREATE TABLE `game_ost` (
 	`name` text NOT NULL,
 	`cover` text NOT NULL,
 	`resource` text DEFAULT '',
-	`createdAt` text DEFAULT 'Tue, 21 Jul 2026 04:51:52 GMT',
-	`updatedAt` text DEFAULT 'Tue, 21 Jul 2026 04:51:52 GMT'
+	`createdAt` text DEFAULT '',
+	`updatedAt` text DEFAULT ''
 );
 --> statement-breakpoint
 CREATE TABLE `game_play` (
@@ -143,7 +143,15 @@ CREATE TABLE `game_play` (
 	`playCount` integer DEFAULT 0,
 	`rating` integer DEFAULT 0,
 	`lastLaunchedAt` text DEFAULT '',
-	`status` integer DEFAULT 0
+	`status` integer DEFAULT 0,
+	`completedAt` text DEFAULT '',
+	`pid` integer DEFAULT 0
+);
+--> statement-breakpoint
+CREATE TABLE `game_pv_metadata` (
+	`pvId` integer PRIMARY KEY NOT NULL,
+	`metadata` text NOT NULL,
+	FOREIGN KEY (`pvId`) REFERENCES `game_pv`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
 CREATE TABLE `game_pv` (
@@ -151,8 +159,8 @@ CREATE TABLE `game_pv` (
 	`gameId` integer NOT NULL,
 	`name` text NOT NULL,
 	`url` text NOT NULL,
-	`createdAt` text DEFAULT 'Tue, 21 Jul 2026 04:51:52 GMT',
-	`updatedAt` text DEFAULT 'Tue, 21 Jul 2026 04:51:52 GMT'
+	`createdAt` text DEFAULT '',
+	`updatedAt` text DEFAULT ''
 );
 --> statement-breakpoint
 CREATE TABLE `game_quote` (
@@ -161,8 +169,8 @@ CREATE TABLE `game_quote` (
 	`content` text NOT NULL,
 	`characterId` text DEFAULT '',
 	`context` text DEFAULT '',
-	`createdAt` text DEFAULT 'Tue, 21 Jul 2026 04:51:52 GMT',
-	`updatedAt` text DEFAULT 'Tue, 21 Jul 2026 04:51:52 GMT'
+	`createdAt` text DEFAULT '',
+	`updatedAt` text DEFAULT ''
 );
 --> statement-breakpoint
 CREATE TABLE `game_record` (
@@ -170,6 +178,28 @@ CREATE TABLE `game_record` (
 	`gameId` integer NOT NULL,
 	`playTime` integer DEFAULT 0,
 	`playDate` text DEFAULT ''
+);
+--> statement-breakpoint
+CREATE TABLE `game_status_mapping` (
+	`status_id` integer PRIMARY KEY NOT NULL,
+	`bangumi` integer,
+	`vndb` integer
+);
+--> statement-breakpoint
+CREATE TABLE `game_status_push` (
+	`game_id` integer NOT NULL,
+	`provider` text NOT NULL,
+	`account_id` text NOT NULL,
+	`external_id` text NOT NULL,
+	`target` integer NOT NULL,
+	`pushed_at` text NOT NULL,
+	PRIMARY KEY(`game_id`, `provider`)
+);
+--> statement-breakpoint
+CREATE TABLE `game_status` (
+	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+	`name` text NOT NULL,
+	`color` text NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE `guide_ending` (
@@ -182,8 +212,8 @@ CREATE TABLE `guide_ending` (
 	`requirements` text DEFAULT '',
 	`finished` integer DEFAULT 0,
 	`sortOrder` integer DEFAULT 0,
-	`createdAt` text DEFAULT 'Tue, 21 Jul 2026 04:51:52 GMT',
-	`updatedAt` text DEFAULT 'Tue, 21 Jul 2026 04:51:52 GMT'
+	`createdAt` text DEFAULT '',
+	`updatedAt` text DEFAULT ''
 );
 --> statement-breakpoint
 CREATE TABLE `guide_route` (
@@ -192,8 +222,8 @@ CREATE TABLE `guide_route` (
 	`name` text NOT NULL,
 	`finished` integer DEFAULT 0,
 	`sortOrder` integer DEFAULT 0,
-	`createdAt` text DEFAULT 'Tue, 21 Jul 2026 04:51:52 GMT',
-	`updatedAt` text DEFAULT 'Tue, 21 Jul 2026 04:51:52 GMT'
+	`createdAt` text DEFAULT '',
+	`updatedAt` text DEFAULT ''
 );
 --> statement-breakpoint
 CREATE TABLE `guide_step` (
@@ -206,21 +236,21 @@ CREATE TABLE `guide_step` (
 	`subfix` text DEFAULT '',
 	`finished` integer DEFAULT 0,
 	`sortOrder` integer DEFAULT 0,
-	`createdAt` text DEFAULT 'Tue, 21 Jul 2026 04:51:52 GMT',
-	`updatedAt` text DEFAULT 'Tue, 21 Jul 2026 04:51:52 GMT'
+	`createdAt` text DEFAULT '',
+	`updatedAt` text DEFAULT ''
 );
 --> statement-breakpoint
-CREATE TABLE `proxy_config` (
+CREATE TABLE `library_folder_logo` (
+	`href` text PRIMARY KEY NOT NULL,
+	`source` text
+);
+--> statement-breakpoint
+CREATE TABLE `recent_visit` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
-	`name` text NOT NULL,
+	`gameId` integer NOT NULL,
 	`type` text NOT NULL,
-	`host` text NOT NULL,
-	`port` integer NOT NULL,
-	`username` text DEFAULT '',
-	`password` text DEFAULT '',
-	`enabled` integer DEFAULT 0,
-	`createdAt` text DEFAULT 'Tue, 21 Jul 2026 04:51:52 GMT',
-	`updatedAt` text DEFAULT 'Tue, 21 Jul 2026 04:51:52 GMT'
+	`href` text NOT NULL,
+	`visitedAt` text DEFAULT ''
 );
 --> statement-breakpoint
 CREATE TABLE `scan_error` (
@@ -228,8 +258,8 @@ CREATE TABLE `scan_error` (
 	`directory` text NOT NULL,
 	`error` text NOT NULL,
 	`status` integer DEFAULT 0,
-	`createdAt` text DEFAULT 'Tue, 21 Jul 2026 04:51:52 GMT',
-	`updatedAt` text DEFAULT 'Tue, 21 Jul 2026 04:51:52 GMT'
+	`createdAt` text DEFAULT '',
+	`updatedAt` text DEFAULT ''
 );
 --> statement-breakpoint
 CREATE TABLE `scanner` (
@@ -241,8 +271,8 @@ CREATE TABLE `scanner` (
 	`scanMode` integer DEFAULT 0,
 	`scanLevel` integer DEFAULT 0,
 	`excludeDirs` text DEFAULT '',
-	`createdAt` text DEFAULT 'Tue, 21 Jul 2026 04:51:52 GMT',
-	`updatedAt` text DEFAULT 'Tue, 21 Jul 2026 04:51:52 GMT'
+	`createdAt` text DEFAULT '',
+	`updatedAt` text DEFAULT ''
 );
 --> statement-breakpoint
 CREATE TABLE `third_party_account` (
@@ -254,8 +284,8 @@ CREATE TABLE `third_party_account` (
 	`username` text DEFAULT '',
 	`avatar` text DEFAULT '',
 	`expiresAt` text NOT NULL,
-	`createdAt` text DEFAULT 'Tue, 21 Jul 2026 04:51:52 GMT',
-	`updatedAt` text DEFAULT 'Tue, 21 Jul 2026 04:51:52 GMT'
+	`createdAt` text DEFAULT '',
+	`updatedAt` text DEFAULT ''
 );
 --> statement-breakpoint
 CREATE TABLE `relate_website` (

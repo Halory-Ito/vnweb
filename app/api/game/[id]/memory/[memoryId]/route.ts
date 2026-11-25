@@ -6,6 +6,7 @@ import path from 'node:path'
 
 import { GameInfoTable, GameMemoryTable } from '@/db/schema'
 import { db } from '@/lib/drizzle'
+import { getAssetsDir, getLegacyPublicAssetsDir } from '@/lib/server/runtime-paths.mjs'
 
 const MAX_UPLOAD_SIZE = 20 * 1024 * 1024
 
@@ -62,13 +63,21 @@ const getSafeExt = (fileName: string) => {
   return '.png'
 }
 
-const getMemoryFilePath = (url: string | null) => {
+const getMemoryFilePaths = (url: string | null) => {
   const normalized = normalizeText(url)
   if (!normalized.startsWith('/assets/memory/')) {
-    return null
+    return []
   }
-  const filePath = path.join(process.cwd(), 'public', ...normalized.split('/'))
-  return filePath
+  const relativeSegments = normalized.slice('/assets/'.length).split('/').filter(Boolean)
+  const paths: string[] = []
+  for (const root of [getAssetsDir(), getLegacyPublicAssetsDir()]) {
+    const resolvedRoot = path.resolve(root)
+    const candidate = path.resolve(resolvedRoot, ...relativeSegments)
+    if (candidate.startsWith(resolvedRoot + path.sep)) {
+      paths.push(candidate)
+    }
+  }
+  return paths
 }
 
 const getGameMemory = async (
@@ -151,7 +160,7 @@ const updateGameMemory = async (
       const ext = getSafeExt(image.name)
       const baseName = sanitizeFileName(path.basename(image.name, path.extname(image.name)))
       const fileName = `${baseName}_${Date.now()}${ext}`
-      const targetDir = path.join(process.cwd(), 'public', 'assets', 'memory', String(gameId))
+      const targetDir = path.join(getAssetsDir(), 'memory', String(gameId))
       const targetPath = path.join(targetDir, fileName)
 
       await fs.mkdir(targetDir, { recursive: true })
@@ -160,10 +169,11 @@ const updateGameMemory = async (
 
       nextImageUrl = `/assets/memory/${gameId}/${fileName}`
 
-      const oldFilePath = getMemoryFilePath(memory.imageUrl)
-      if (oldFilePath) {
-        await fs.unlink(oldFilePath).catch(() => undefined)
-      }
+      await Promise.allSettled(
+        getMemoryFilePaths(memory.imageUrl).map((filePath) =>
+          fs.unlink(filePath).catch(() => undefined),
+        ),
+      )
     }
 
     const now = dayjs().toISOString()
@@ -225,10 +235,11 @@ const deleteGameMemory = async (
       .delete(GameMemoryTable)
       .where(and(eq(GameMemoryTable.id, memoryItemId), eq(GameMemoryTable.gameId, gameId)))
 
-    const filePath = getMemoryFilePath(memory.imageUrl)
-    if (filePath) {
-      await fs.unlink(filePath).catch(() => undefined)
-    }
+    await Promise.allSettled(
+      getMemoryFilePaths(memory.imageUrl).map((filePath) =>
+        fs.unlink(filePath).catch(() => undefined),
+      ),
+    )
 
     return NextResponse.json({ data: { deleted: true, id: memoryItemId } })
   } catch (error) {

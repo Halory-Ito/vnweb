@@ -7,6 +7,28 @@ const projectRoot = path.dirname(fileURLToPath(import.meta.url))
 
 const nextConfig: NextConfig = {
   /* config options here */
+  output: 'standalone',
+  outputFileTracingExcludes: {
+    '/*': [
+      '.agents/**',
+      '.claude/**',
+      '.git/**',
+      '.husky/**',
+      '.workbuddy/**',
+      'Cargo.lock',
+      'Cargo.toml',
+      'assets/**',
+      'backups/**',
+      'crates/**',
+      'data/services/**',
+      'data/settings/**',
+      'docs/**',
+      'images/**',
+      'local.db*',
+      'public/assets/**',
+      'target/**',
+    ],
+  },
   // reactCompiler: true,
   turbopack: {
     root: projectRoot,

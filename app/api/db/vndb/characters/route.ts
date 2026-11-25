@@ -5,6 +5,7 @@ import path from 'node:path'
 
 import { CharacterTable, GameIdMapTable } from '@/db/schema'
 import { db } from '@/lib/drizzle'
+import { getAssetsDir, getLegacyPublicAssetsDir } from '@/lib/server/runtime-paths.mjs'
 import { syncVndbCharactersByGameId } from '@/lib/server/vndb-character-sync'
 
 const normalizeVnId = (rawId: string) => {
@@ -144,14 +145,11 @@ const clearCharactersByGameId = async (req: NextRequest) => {
 
     await db.delete(CharacterTable).where(eq(CharacterTable.gameId, gameId))
 
-    const localCharacterDir = path.join(
-      process.cwd(),
-      'public',
-      'assets',
-      'characters',
-      String(gameId),
-    )
-    await fs.rm(localCharacterDir, { recursive: true, force: true })
+    const localCharacterDirs = [
+      path.join(getAssetsDir(), 'characters', String(gameId)),
+      path.join(getLegacyPublicAssetsDir(), 'characters', String(gameId)),
+    ]
+    await Promise.all(localCharacterDirs.map((dir) => fs.rm(dir, { recursive: true, force: true })))
 
     return NextResponse.json({
       data: {

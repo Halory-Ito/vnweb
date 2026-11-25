@@ -3,6 +3,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 
 import { api } from '@/lib/request-utils'
+import { getAssetsDir } from '@/lib/server/runtime-paths.mjs'
 
 /**
  * 下载图片到本地
@@ -28,7 +29,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 创建目录
-    const assetsDir = path.join(process.cwd(), 'assets', 'ost')
+    const assetsDir = path.join(getAssetsDir(), 'ost')
     const ostDir = path.join(assetsDir, String(ostId))
 
     if (!fs.existsSync(ostDir)) {

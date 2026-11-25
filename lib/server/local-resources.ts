@@ -6,6 +6,7 @@ import {
   LEGACY_LIBRARY_FOLDER_LOGO_DIRECTORY,
   LIBRARY_FOLDER_LOGO_DIRECTORY,
 } from '@/lib/library-folder-logo-path'
+import { getAssetsDir, getUserPublicDir } from '@/lib/server/runtime-paths.mjs'
 
 import type {
   ImageUsage,
@@ -65,16 +66,15 @@ type ScanRoot = {
 }
 
 export const getScanRoots = (): ScanRoot[] => {
-  const cwd = process.cwd()
   return [
     {
-      dir: path.join(cwd, 'assets'),
+      dir: getAssetsDir(),
       relativePrefix: 'assets',
       urlPrefix: '/assets',
       defaultFolder: 'assets',
     },
     {
-      dir: path.join(cwd, 'public', 'fonts'),
+      dir: path.join(getUserPublicDir(), 'fonts'),
       relativePrefix: 'public/fonts',
       urlPrefix: '/fonts',
       defaultFolder: 'public/fonts',

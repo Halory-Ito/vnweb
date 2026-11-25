@@ -6,8 +6,15 @@ import path from 'node:path'
 import readline from 'node:readline'
 
 import { CollectionGameTable, CollectionTable, GameInfoTable, GamePlayTable } from '../db/schema'
-import { finalizeGameSession } from '../features/game/lib/game-session-utils'
-import { db } from '../lib/drizzle'
+
+async function loadDbRuntime() {
+  const [{ ensureRuntimeInitialized }, { db }] = await Promise.all([
+    import('../lib/server/bootstrap'),
+    import('../lib/drizzle'),
+  ])
+  await ensureRuntimeInitialized()
+  return db
+}
 
 type GameRow = {
   id: number
@@ -92,6 +99,7 @@ const renderPaginatedGameTable = (
 }
 
 const getGames = async (keyword?: string) => {
+  const db = await loadDbRuntime()
   const text = (keyword ?? '').trim()
   const whereClause = text
     ? or(like(GameInfoTable.name, `%${text}%`), like(GameInfoTable.nameCn, `%${text}%`))
@@ -141,6 +149,7 @@ const listGames = async (page: number, pageSize: number) => {
 }
 
 const listCollections = async () => {
+  const db = await loadDbRuntime()
   const rows = await db
     .select({ id: CollectionTable.id, name: CollectionTable.name })
     .from(CollectionTable)
@@ -166,6 +175,7 @@ const searchGames = async (keyword: string, page: number, pageSize: number) => {
 }
 
 const openCollection = async (collectionInput: string, page: number, pageSize: number) => {
+  const db = await loadDbRuntime()
   const input = collectionInput.trim()
   if (!input) {
     console.log('请提供收藏夹名称，例如: vnweb open 我的收藏')
@@ -224,6 +234,7 @@ const openCollection = async (collectionInput: string, page: number, pageSize: n
 }
 
 const startGame = async (gameIdText?: string) => {
+  const db = await loadDbRuntime()
   const rows = await db
     .select({
       id: GameInfoTable.id,
@@ -273,6 +284,7 @@ const launchGameRow = async (game: {
   playId: number | null
   isRunning: number | null
 }) => {
+  const db = await loadDbRuntime()
   const gameTitle = game.nameCn || game.name
   const finalExePath = normalizeWindowsPathInput(game.exePath ?? '')
   if (!finalExePath) {
@@ -388,6 +400,7 @@ const launchGameRow = async (game: {
     }
 
     try {
+      const { finalizeGameSession } = await import('../features/game/lib/game-session-utils')
       await finalizeGameSession(game.id)
       cleanup()
       process.exit(0)

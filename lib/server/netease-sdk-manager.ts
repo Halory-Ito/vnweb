@@ -4,11 +4,12 @@ import path from 'node:path'
 import { promisify } from 'node:util'
 
 import { readPlatformSettings, updatePlatformSettings } from '@/lib/server/platform-settings'
+import { getDataServicesDir } from '@/lib/server/runtime-paths.mjs'
 
 const execFileAsync = promisify(execFile)
 
 const SDK_PACKAGE_NAME = '@neteasecloudmusicapienhanced/api'
-const SDK_DIR = path.join(process.cwd(), 'data', 'services', 'netease-enhanced-api')
+const getSdkDir = () => path.join(getDataServicesDir(), 'netease-enhanced-api')
 const DEFAULT_PORT = 3001
 
 type NeteaseSdkRuntime = {
@@ -43,7 +44,13 @@ export type NeteaseSdkStatus = {
 }
 
 function getInstalledPackageJsonPath() {
-  return path.join(SDK_DIR, 'node_modules', '@neteasecloudmusicapienhanced', 'api', 'package.json')
+  return path.join(
+    getSdkDir(),
+    'node_modules',
+    '@neteasecloudmusicapienhanced',
+    'api',
+    'package.json',
+  )
 }
 
 function readInstalledVersion(): string | null {
@@ -90,9 +97,10 @@ export function getNeteaseSdkStatus(): NeteaseSdkStatus {
 export async function installNeteaseSdk(): Promise<NeteaseSdkStatus> {
   const runtime = getRuntime()
   runtime.lastError = null
+  const sdkDir = getSdkDir()
 
-  await fs.promises.mkdir(SDK_DIR, { recursive: true })
-  const pkgFile = path.join(SDK_DIR, 'package.json')
+  await fs.promises.mkdir(sdkDir, { recursive: true })
+  const pkgFile = path.join(sdkDir, 'package.json')
   if (!fs.existsSync(pkgFile)) {
     await fs.promises.writeFile(
       pkgFile,
@@ -107,14 +115,14 @@ export async function installNeteaseSdk(): Promise<NeteaseSdkStatus> {
         process.env.ComSpec || 'cmd.exe',
         ['/d', '/s', '/c', `npm install ${SDK_PACKAGE_NAME} --no-audit --no-fund`],
         {
-          cwd: SDK_DIR,
+          cwd: sdkDir,
           timeout: 180_000,
           windowsHide: true,
         },
       )
     } else {
       await execFileAsync('npm', ['install', SDK_PACKAGE_NAME, '--no-audit', '--no-fund'], {
-        cwd: SDK_DIR,
+        cwd: sdkDir,
         timeout: 180_000,
       })
     }
@@ -173,7 +181,7 @@ Promise.resolve(api.serveNcmApi({ port, host: '127.0.0.1' })).catch((err) => {
 `
 
   const child = spawn(process.execPath, ['-e', bootstrapScript], {
-    cwd: SDK_DIR,
+    cwd: getSdkDir(),
     env: { ...process.env, PORT: String(targetPort), HOST: '127.0.0.1' },
     stdio: ['ignore', 'pipe', 'pipe'],
     windowsHide: true,
@@ -218,9 +226,10 @@ export async function uninstallNeteaseSdk(): Promise<NeteaseSdkStatus> {
   const runtime = getRuntime()
   await stopNeteaseSdk()
   runtime.lastError = null
+  const sdkDir = getSdkDir()
 
-  if (fs.existsSync(SDK_DIR)) {
-    await fs.promises.rm(SDK_DIR, { recursive: true, force: true })
+  if (fs.existsSync(sdkDir)) {
+    await fs.promises.rm(sdkDir, { recursive: true, force: true })
   }
 
   return getNeteaseSdkStatus()

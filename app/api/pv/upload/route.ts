@@ -2,9 +2,11 @@ import { NextRequest, NextResponse } from 'next/server'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 
+import { getAssetsDir } from '@/lib/server/runtime-paths.mjs'
+
 const MAX_UPLOAD_SIZE = 500 * 1024 * 1024 // 500MB
 
-const PV_DIR = path.join(process.cwd(), 'assets', 'pv')
+const getPvDir = () => path.join(getAssetsDir(), 'pv')
 
 const VIDEO_MIME_TYPES = [
   'video/mp4',
@@ -70,7 +72,7 @@ const uploadPvVideo = async (req: NextRequest) => {
 
     const ext = getSafeExt(file.name, file.type)
     const fileName = `${Date.now()}${ext}`
-    const targetDir = path.join(PV_DIR, String(gameIdNum))
+    const targetDir = path.join(getPvDir(), String(gameIdNum))
     const targetPath = path.join(targetDir, fileName)
 
     await fs.mkdir(targetDir, { recursive: true })

@@ -6,6 +6,7 @@ import path from 'node:path'
 
 import { GameInfoTable, GameMemoryTable } from '@/db/schema'
 import { db } from '@/lib/drizzle'
+import { getAssetsDir, getLegacyPublicAssetsDir } from '@/lib/server/runtime-paths.mjs'
 
 const MAX_UPLOAD_SIZE = 20 * 1024 * 1024
 
@@ -119,7 +120,7 @@ const createGameMemory = async (req: NextRequest, context: { params: Promise<{ i
     const ext = getSafeExt(image.name)
     const baseName = sanitizeFileName(path.basename(image.name, path.extname(image.name)))
     const fileName = `${baseName}_${Date.now()}${ext}`
-    const targetDir = path.join(process.cwd(), 'public', 'assets', 'memory', String(gameId))
+    const targetDir = path.join(getAssetsDir(), 'memory', String(gameId))
     const targetPath = path.join(targetDir, fileName)
 
     await fs.mkdir(targetDir, { recursive: true })
@@ -163,12 +164,21 @@ const createGameMemory = async (req: NextRequest, context: { params: Promise<{ i
   }
 }
 
-const getMemoryFilePath = (url: string | null) => {
+const getMemoryFilePaths = (url: string | null) => {
   const normalized = normalizeText(url)
   if (!normalized.startsWith('/assets/memory/')) {
-    return null
+    return []
   }
-  return path.join(process.cwd(), 'public', ...normalized.split('/'))
+  const relativeSegments = normalized.slice('/assets/'.length).split('/').filter(Boolean)
+  const paths: string[] = []
+  for (const root of [getAssetsDir(), getLegacyPublicAssetsDir()]) {
+    const resolvedRoot = path.resolve(root)
+    const candidate = path.resolve(resolvedRoot, ...relativeSegments)
+    if (candidate.startsWith(resolvedRoot + path.sep)) {
+      paths.push(candidate)
+    }
+  }
+  return paths
 }
 
 const deleteGameMemories = async (
@@ -219,9 +229,7 @@ const deleteGameMemories = async (
       .delete(GameMemoryTable)
       .where(and(eq(GameMemoryTable.gameId, gameId), inArray(GameMemoryTable.id, foundIds)))
 
-    const filePaths = rows
-      .map((row) => getMemoryFilePath(row.imageUrl))
-      .filter((filePath): filePath is string => Boolean(filePath))
+    const filePaths = rows.flatMap((row) => getMemoryFilePaths(row.imageUrl))
 
     await Promise.allSettled(
       filePaths.map((filePath) => fs.unlink(filePath).catch(() => undefined)),

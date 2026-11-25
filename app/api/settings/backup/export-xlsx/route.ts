@@ -8,6 +8,7 @@ import path from 'node:path'
 
 import { GameInfoTable, GameRecordTable } from '@/db/schema'
 import { db } from '@/lib/drizzle'
+import { getAssetsDir, getDataDir, getLegacyPublicAssetsDir } from '@/lib/server/runtime-paths.mjs'
 
 export const dynamic = 'force-dynamic'
 
@@ -39,12 +40,17 @@ const resolveCoverFilePath = (cover: string) => {
 
   const normalized = raw.replace(/\\/g, '/')
   const publicRelative = normalized.replace(/^\/+/, '')
+  const withoutAssetsPrefix = publicRelative.startsWith('assets/')
+    ? publicRelative.slice('assets/'.length)
+    : publicRelative
+  const dataDir = getDataDir()
 
   const candidates = [
     path.isAbsolute(raw) ? raw : '',
-    path.join(process.cwd(), publicRelative),
-    path.join(process.cwd(), publicRelative),
-    path.join(process.cwd(), normalized),
+    path.join(dataDir, publicRelative),
+    path.join(getAssetsDir(), withoutAssetsPrefix),
+    path.join(getLegacyPublicAssetsDir(), withoutAssetsPrefix),
+    path.join(dataDir, normalized),
   ].filter(Boolean)
 
   for (const candidate of candidates) {
@@ -58,9 +64,14 @@ const resolveCoverFilePath = (cover: string) => {
     return ''
   }
 
-  const fallback = path.join(process.cwd(), 'public', 'assets', 'cover', basename)
-  if (fs.existsSync(fallback)) {
-    return fallback
+  const fallbacks = [
+    path.join(getAssetsDir(), 'cover', basename),
+    path.join(getLegacyPublicAssetsDir(), 'cover', basename),
+  ]
+  for (const fallback of fallbacks) {
+    if (fs.existsSync(fallback)) {
+      return fallback
+    }
   }
 
   return ''

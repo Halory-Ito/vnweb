@@ -5,6 +5,7 @@ import path from 'node:path'
 
 import { GameInfoTable, GameOstSongsTable } from '@/db/schema'
 import { db } from '@/lib/drizzle'
+import { getAssetsDir } from '@/lib/server/runtime-paths.mjs'
 
 const MAX_UPLOAD_SIZE = 2 * 1024 * 1024
 
@@ -86,7 +87,7 @@ const uploadOstLyric = async (req: NextRequest, context: { params: Promise<{ id:
     const safeBaseName = normalizeName(item.name) || `song_${itemId}`
     const targetFileName = `${safeBaseName}.lrc`
 
-    const targetDir = path.join(process.cwd(), 'public', 'assets', 'ost', String(item.ostId))
+    const targetDir = path.join(getAssetsDir(), 'ost', String(item.ostId))
     const targetPath = path.join(targetDir, targetFileName)
 
     await fs.mkdir(targetDir, { recursive: true })

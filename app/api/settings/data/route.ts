@@ -7,6 +7,7 @@ import {
   getScanRoots,
   summarizeLocalResources,
 } from '@/lib/server/local-resources'
+import { getDataDir } from '@/lib/server/runtime-paths.mjs'
 
 async function pruneEmptySubdirs(dir: string, isRoot = true): Promise<boolean> {
   let entries
@@ -105,14 +106,14 @@ export async function DELETE(req: NextRequest) {
       }
     }
 
-    const cwd = process.cwd()
+    const dataDir = getDataDir()
     const allowedRoots = getScanRoots().map((root) => root.dir)
     const deleted: string[] = []
     const failed: Array<{ path: string; reason: string }> = []
     let freedBytes = 0
 
     for (const relativePath of paths) {
-      const resolvedPath = path.resolve(cwd, relativePath)
+      const resolvedPath = path.resolve(dataDir, relativePath)
       const isAllowed = allowedRoots.some((rootDir) => isPathWithinRoot(resolvedPath, rootDir))
 
       if (!isAllowed) {

@@ -3,6 +3,8 @@ import fs from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
 
+import { getAssetsDir } from '@/lib/server/runtime-paths.mjs'
+
 const FONT_EXTENSIONS = new Set(['.ttf', '.otf', '.ttc', '.woff', '.woff2'])
 
 type Payload = {
@@ -62,7 +64,7 @@ const importLocalFont = async (req: NextRequest) => {
       path.basename(resolvedSourcePath, path.extname(resolvedSourcePath)),
     )
     const fileName = `${baseName}_${Date.now()}${ext}`
-    const targetDir = path.join(process.cwd(), 'assets', 'fonts')
+    const targetDir = path.join(getAssetsDir(), 'fonts')
     const targetPath = path.join(targetDir, fileName)
 
     await fs.mkdir(targetDir, { recursive: true })

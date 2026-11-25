@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 
+import { getAssetsDir } from '@/lib/server/runtime-paths.mjs'
+
 type Payload = {
   paths?: string[]
 }
@@ -24,7 +26,7 @@ const cleanupPreviewFonts = async (req: NextRequest) => {
       return NextResponse.json({ data: { deleted: [] as string[] } })
     }
 
-    const fontsDir = path.join(process.cwd(), 'assets', 'fonts')
+    const fontsDir = path.join(getAssetsDir(), 'fonts')
     const deleted: string[] = []
 
     for (const publicPath of paths) {

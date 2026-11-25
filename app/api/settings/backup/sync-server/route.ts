@@ -1,14 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { randomUUID } from 'node:crypto'
 import fs from 'node:fs'
-import path from 'node:path'
 
+import { getLegacyWebdavConfigPath } from '@/lib/server/runtime-paths.mjs'
 import { readSyncStoreNode, writeSyncStoreNode } from '@/lib/server/sync-config-store'
 import { resolveEnabledWebDAVConfig } from '@/lib/webdav-utils'
 
 import type { SyncConfigStore, SyncProvider, SyncServerConfig } from '@/types'
-
-const LEGACY_WEBDAV_CONFIG_FILE = path.join(process.cwd(), 'app', 'webdav-config.json')
 
 const DEFAULT_STORE: SyncConfigStore = {
   configs: [],
@@ -49,9 +47,10 @@ async function readStore(): Promise<SyncConfigStore> {
   const legacy = resolveEnabledWebDAVConfig(syncNode)
   let migrated: Partial<SyncServerConfig> = legacy || {}
 
-  if (!migrated.server && fs.existsSync(LEGACY_WEBDAV_CONFIG_FILE)) {
+  const legacyWebdavConfigFile = getLegacyWebdavConfigPath()
+  if (!migrated.server && fs.existsSync(legacyWebdavConfigFile)) {
     try {
-      const content = await fs.promises.readFile(LEGACY_WEBDAV_CONFIG_FILE, 'utf-8')
+      const content = await fs.promises.readFile(legacyWebdavConfigFile, 'utf-8')
       migrated = JSON.parse(content) as Partial<SyncServerConfig>
     } catch {
       // ignore

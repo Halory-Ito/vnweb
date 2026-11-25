@@ -22,6 +22,7 @@
 
 # production
 /build
+/dist
 
 # misc
 .DS_Store
@@ -72,3 +73,8 @@ next-env.d.ts
 docs/.vitepress/dist
 docs/.vitepress/cache
 errors.md
+
+# tauri / rust
+/target
+/crates/vnweb-desktop/resources
+/crates/vnweb-desktop/gen

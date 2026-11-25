@@ -2,16 +2,31 @@ import { NextRequest, NextResponse } from 'next/server'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 
-const CUSTOM_CSS_PATH = path.join(process.cwd(), 'app', 'custom.css')
+import { getAppCustomCssPath, getCustomCssPath } from '@/lib/server/runtime-paths.mjs'
+
 const MAX_CSS_SIZE = 1024 * 1024
 
 const readThemeCss = async () => {
+  const customCssPath = getCustomCssPath()
   try {
-    const content = await fs.readFile(CUSTOM_CSS_PATH, 'utf-8')
+    const content = await fs.readFile(customCssPath, 'utf-8')
     return NextResponse.json({ data: { content } })
   } catch (error) {
     const code = (error as NodeJS.ErrnoException).code
     if (code === 'ENOENT') {
+      const appCssPath = getAppCustomCssPath()
+      if (path.resolve(appCssPath) !== path.resolve(customCssPath)) {
+        try {
+          const fallbackContent = await fs.readFile(appCssPath, 'utf-8')
+          return NextResponse.json({ data: { content: fallbackContent } })
+        } catch (fallbackError) {
+          if ((fallbackError as NodeJS.ErrnoException).code === 'ENOENT') {
+            return NextResponse.json({ data: { content: '' } })
+          }
+          console.error('Read fallback custom.css failed:', fallbackError)
+          return NextResponse.json({ error: '读取主题文件失败' }, { status: 500 })
+        }
+      }
       return NextResponse.json({ data: { content: '' } })
     }
 
@@ -39,7 +54,9 @@ const updateThemeCss = async (req: NextRequest) => {
       return NextResponse.json({ error: '主题内容过大（超过 1MB）' }, { status: 400 })
     }
 
-    await fs.writeFile(CUSTOM_CSS_PATH, payload.content, 'utf-8')
+    const customCssPath = getCustomCssPath()
+    await fs.mkdir(path.dirname(customCssPath), { recursive: true })
+    await fs.writeFile(customCssPath, payload.content, 'utf-8')
 
     return NextResponse.json({
       data: {

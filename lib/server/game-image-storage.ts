@@ -2,6 +2,7 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 
 import { api } from '@/lib/request-utils'
+import { getAssetsDir } from '@/lib/server/runtime-paths.mjs'
 
 type ImageAssetType = 'cover' | 'bg' | 'icon' | 'logo'
 
@@ -118,8 +119,8 @@ const toImageFileInfo = ({
   const fileExt = extFromHeader || extFromDataUrl || extFromUrl || 'jpg'
   const fileName = `${safeName}_${safeDate}_${imageType}.${fileExt}`
 
-  const assetsDir = path.join(process.cwd(), 'assets', imageType)
-  const publicDir = path.join(process.cwd(), 'assets', imageType)
+  const assetsDir = path.join(getAssetsDir(), imageType)
+  const publicDir = path.join(getAssetsDir(), imageType)
 
   return {
     fileName,

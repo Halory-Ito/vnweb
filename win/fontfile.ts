@@ -1,6 +1,8 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
 
+import { getUserPublicDir } from '@/lib/server/runtime-paths.mjs'
+
 export type FontMetadata = {
   filePath: string
   fileName: string
@@ -251,8 +253,7 @@ export const getFontMetadata = async (fontfile: string): Promise<FontMetadata> =
 // 将电脑中的字体文件复制到项目的 public 目录下，并返回新的路径
 export const copyFontFileToPublic = async (source: string, target: string): Promise<string> => {
   const resolvedSource = path.resolve(source)
-  const projectRoot = process.cwd()
-  const publicDir = path.join(projectRoot, 'public')
+  const publicDir = getUserPublicDir()
 
   const sourceStat = await fs.stat(resolvedSource).catch(() => null)
   if (!sourceStat || !sourceStat.isFile()) {

@@ -46,6 +46,7 @@ export const localizeCharacterImage = async (
 ): Promise<string> => {
   const fs = await import('node:fs/promises')
   const path = await import('node:path')
+  const { getAssetsDir } = await import('@/lib/server/runtime-paths.mjs')
 
   const normalized = sourceUrl.trim()
   if (!normalized) {
@@ -110,7 +111,7 @@ export const localizeCharacterImage = async (
   const ext = pickImageExt(normalized, null)
   const safeCharacterId = sanitizeFileNamePart(characterId) || 'character'
 
-  const publicDir = path.join(process.cwd(), 'assets', 'characters', String(gameId))
+  const publicDir = path.join(getAssetsDir(), 'characters', String(gameId))
 
   await fs.mkdir(publicDir, { recursive: true })
 

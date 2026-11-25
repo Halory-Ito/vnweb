@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 
-const PV_DIR = path.join(process.cwd(), 'assets', 'pv')
+import { getAssetsDir, getLegacyPublicAssetsDir } from '@/lib/server/runtime-paths.mjs'
 
 const VIDEO_MIME_TYPES: Record<string, string> = {
   '.mp4': 'video/mp4',
@@ -20,16 +20,37 @@ const serveVideo = async (
 ) => {
   try {
     const { path: pathSegments } = await params
-    const filePath = path.join(PV_DIR, ...pathSegments)
+    const pvRoots = [
+      path.resolve(getAssetsDir(), 'pv'),
+      path.resolve(getLegacyPublicAssetsDir(), 'pv'),
+    ]
 
-    // Security: ensure the resolved path is within PV_DIR
-    const resolved = path.resolve(filePath)
-    if (!resolved.startsWith(path.resolve(PV_DIR))) {
+    const candidates = pvRoots.map((root) => {
+      const resolved = path.resolve(root, ...pathSegments)
+      return resolved.startsWith(root + path.sep) ? resolved : null
+    })
+
+    if (candidates.every((item) => item === null)) {
       return NextResponse.json({ error: 'Invalid path' }, { status: 400 })
     }
 
-    const stat = await fs.stat(resolved)
-    if (!stat.isFile()) {
+    let resolved: string | null = null
+    let stat: Awaited<ReturnType<typeof fs.stat>> | null = null
+    for (const candidate of candidates) {
+      if (!candidate) continue
+      try {
+        const s = await fs.stat(candidate)
+        if (s.isFile()) {
+          resolved = candidate
+          stat = s
+          break
+        }
+      } catch {
+        // Try next root
+      }
+    }
+
+    if (!resolved || !stat) {
       return NextResponse.json({ error: 'File not found' }, { status: 404 })
     }
 

@@ -29,8 +29,12 @@ export const GameInfoTable = sqliteTable('game_info', {
   publisher: text().notNull(), // 发行商
   programmer: text().notNull(), // 程序制作
   saveDir: text().default(''), // 游戏存档目录
-  createdAt: text().default(dayjs().toString()), // 创建时间
-  updatedAt: text().default(dayjs().toString()), // 更新时间
+  createdAt: text()
+    .default('')
+    .$defaultFn(() => dayjs().toString()), // 创建时间
+  updatedAt: text()
+    .default('')
+    .$defaultFn(() => dayjs().toString()), // 更新时间
 })
 
 // 游戏 PV 表
@@ -39,8 +43,12 @@ export const GamePvTable = sqliteTable('game_pv', {
   gameId: int().notNull(),
   name: text().notNull(), // pv名称
   url: text().notNull(), // pv链接地址
-  createdAt: text().default(dayjs().toString()), // 创建时间
-  updatedAt: text().default(dayjs().toString()), // 更新时间
+  createdAt: text()
+    .default('')
+    .$defaultFn(() => dayjs().toString()), // 创建时间
+  updatedAt: text()
+    .default('')
+    .$defaultFn(() => dayjs().toString()), // 更新时间
 })
 
 export const GamePvMetadataTable = sqliteTable('game_pv_metadata', {
@@ -57,8 +65,12 @@ export const GameOstTable = sqliteTable('game_ost', {
   name: text().notNull(), // ost名称
   cover: text().notNull(), // ost封面图片链接
   resource: text().default(''), // OST 曲目资源来源，如 khinsider、netease 等
-  createdAt: text().default(dayjs().toString()), // 创建时间
-  updatedAt: text().default(dayjs().toString()), // 更新时间
+  createdAt: text()
+    .default('')
+    .$defaultFn(() => dayjs().toString()), // 创建时间
+  updatedAt: text()
+    .default('')
+    .$defaultFn(() => dayjs().toString()), // 更新时间
 })
 
 // 游戏 OST 曲目表（包含歌词信息）
@@ -71,8 +83,12 @@ export const GameOstSongsTable = sqliteTable('game_ost_songs', {
   mediaType: text().default(''), // OST 曲目媒体类型，如 mp3、flac 等
   lyricsText: text().default(''), // 歌词文本
   lyricsPath: text().default(''), // 歌词文件路径（如 .lrc 文件本地路径）
-  createdAt: text().default(dayjs().toString()), // 创建时间
-  updatedAt: text().default(dayjs().toString()), // 更新时间
+  createdAt: text()
+    .default('')
+    .$defaultFn(() => dayjs().toString()), // 创建时间
+  updatedAt: text()
+    .default('')
+    .$defaultFn(() => dayjs().toString()), // 更新时间
 })
 
 export const GameStatusTable = sqliteTable('game_status', {
@@ -163,8 +179,12 @@ export const CharacterTable = sqliteTable(
     birthdayDay: int(), // 生日(日)
     sex: text().default(''), // 生理性别信息(JSON)
     gender: text().default(''), // 社会性别信息(JSON)
-    createdAt: text().default(dayjs().toString()), // 创建时间
-    updatedAt: text().default(dayjs().toString()), // 更新时间
+    createdAt: text()
+      .default('')
+      .$defaultFn(() => dayjs().toString()), // 创建时间
+    updatedAt: text()
+      .default('')
+      .$defaultFn(() => dayjs().toString()), // 更新时间
   },
   (table) => [uniqueIndex('character_game_vndb_unique').on(table.gameId, table.vndbId)],
 )
@@ -176,8 +196,12 @@ export const GameMemoryTable = sqliteTable('game_memory', {
   title: text().default(''), // 回忆标题
   description: text().default(''), // 回忆描述
   imageUrl: text().default(''), // 回忆图片链接
-  createdAt: text().default(dayjs().toString()), // 创建时间
-  updatedAt: text().default(dayjs().toString()), // 更新时间
+  createdAt: text()
+    .default('')
+    .$defaultFn(() => dayjs().toString()), // 创建时间
+  updatedAt: text()
+    .default('')
+    .$defaultFn(() => dayjs().toString()), // 更新时间
 })
 
 // 第三方账号表
@@ -190,8 +214,12 @@ export const ThirdPartyAccountTable = sqliteTable('third_party_account', {
   username: text().default(''), // 第三方账号的用户名
   avatar: text().default(''), // 第三方账号的头像链接
   expiresAt: text().notNull(), // 访问令牌过期时间
-  createdAt: text().default(dayjs().toString()), // 创建时间
-  updatedAt: text().default(dayjs().toString()), // 更新时间
+  createdAt: text()
+    .default('')
+    .$defaultFn(() => dayjs().toString()), // 创建时间
+  updatedAt: text()
+    .default('')
+    .$defaultFn(() => dayjs().toString()), // 更新时间
 })
 
 // 游戏相关网站表
@@ -206,8 +234,12 @@ export const relateWebsiteTable = sqliteTable('relate_website', {
 export const CollectionTable = sqliteTable('collection', {
   id: int().primaryKey({ autoIncrement: true }),
   name: text().notNull(), // 收藏夹名称
-  createdAt: text().default(dayjs().toString()), // 创建时间
-  updatedAt: text().default(dayjs().toString()), // 更新时间
+  createdAt: text()
+    .default('')
+    .$defaultFn(() => dayjs().toString()), // 创建时间
+  updatedAt: text()
+    .default('')
+    .$defaultFn(() => dayjs().toString()), // 更新时间
 })
 
 // 收藏夹关联游戏表
@@ -227,8 +259,12 @@ export const ScannerTable = sqliteTable('scanner', {
   scanMode: int().default(0), // 分为按照层级和按照可执行文件两种扫描方式，0层级扫描、1可执行文件扫描
   scanLevel: int().default(0), // 层级扫描深度，0 表示第一层子目录
   excludeDirs: text().default(''), // 扫描时排除的目录，逗号分隔
-  createdAt: text().default(dayjs().toString()), // 创建时间
-  updatedAt: text().default(dayjs().toString()), // 更新时间
+  createdAt: text()
+    .default('')
+    .$defaultFn(() => dayjs().toString()), // 创建时间
+  updatedAt: text()
+    .default('')
+    .$defaultFn(() => dayjs().toString()), // 更新时间
 })
 
 // 扫描失败表
@@ -237,8 +273,12 @@ export const ScanErrorTable = sqliteTable('scan_error', {
   directory: text().notNull(), // 目录路径
   error: text().notNull(), // 错误信息
   status: int().default(0), // 错误状态，0未处理、1已修复
-  createdAt: text().default(dayjs().toString()), // 创建时间
-  updatedAt: text().default(dayjs().toString()), // 更新时间
+  createdAt: text()
+    .default('')
+    .$defaultFn(() => dayjs().toString()), // 创建时间
+  updatedAt: text()
+    .default('')
+    .$defaultFn(() => dayjs().toString()), // 更新时间
 })
 
 // 游戏台词摘录表
@@ -248,8 +288,12 @@ export const GameQuoteTable = sqliteTable('game_quote', {
   content: text().notNull(), // 台词内容
   characterId: text().default(''), // 说台词的角色id，关联 CharacterTable 的 id
   context: text().default(''), // 台词上下文信息
-  createdAt: text().default(dayjs().toString()), // 创建时间
-  updatedAt: text().default(dayjs().toString()), // 更新时间
+  createdAt: text()
+    .default('')
+    .$defaultFn(() => dayjs().toString()), // 创建时间
+  updatedAt: text()
+    .default('')
+    .$defaultFn(() => dayjs().toString()), // 更新时间
 })
 
 /**
@@ -265,8 +309,12 @@ export const GameGuideTable = sqliteTable('game_guide', {
   level: int().default(0), // 难度等级
   tips: text().default(''), // 提示信息，JSON 数组
   finished: int().default(0), // 是否完成，0否1是
-  createdAt: text().default(dayjs().toString()), // 创建时间
-  updatedAt: text().default(dayjs().toString()), // 更新时间
+  createdAt: text()
+    .default('')
+    .$defaultFn(() => dayjs().toString()), // 创建时间
+  updatedAt: text()
+    .default('')
+    .$defaultFn(() => dayjs().toString()), // 更新时间
 })
 
 // 攻略路线表
@@ -276,8 +324,12 @@ export const GuideRouteTable = sqliteTable('guide_route', {
   name: text().notNull(), // 路线名称
   finished: int().default(0), // 是否完成，0否1是
   sortOrder: int().default(0), // 排序顺序
-  createdAt: text().default(dayjs().toString()), // 创建时间
-  updatedAt: text().default(dayjs().toString()), // 更新时间
+  createdAt: text()
+    .default('')
+    .$defaultFn(() => dayjs().toString()), // 创建时间
+  updatedAt: text()
+    .default('')
+    .$defaultFn(() => dayjs().toString()), // 更新时间
 })
 
 // 攻略结局表
@@ -291,8 +343,12 @@ export const GuideEndingTable = sqliteTable('guide_ending', {
   requirements: text().default(''), // 开启条件
   finished: int().default(0), // 是否完成，0否1是
   sortOrder: int().default(0), // 排序顺序
-  createdAt: text().default(dayjs().toString()), // 创建时间
-  updatedAt: text().default(dayjs().toString()), // 更新时间
+  createdAt: text()
+    .default('')
+    .$defaultFn(() => dayjs().toString()), // 创建时间
+  updatedAt: text()
+    .default('')
+    .$defaultFn(() => dayjs().toString()), // 更新时间
 })
 
 // 攻略步骤表
@@ -306,8 +362,12 @@ export const GuideStepTable = sqliteTable('guide_step', {
   subfix: text().default(''), // 后缀说明
   finished: int().default(0), // 是否完成，0否1是
   sortOrder: int().default(0), // 排序顺序
-  createdAt: text().default(dayjs().toString()), // 创建时间
-  updatedAt: text().default(dayjs().toString()), // 更新时间
+  createdAt: text()
+    .default('')
+    .$defaultFn(() => dayjs().toString()), // 创建时间
+  updatedAt: text()
+    .default('')
+    .$defaultFn(() => dayjs().toString()), // 更新时间
 })
 
 // 游戏 CG 表
@@ -324,8 +384,12 @@ export const CGTable = sqliteTable('cg', {
   height: int(), // 图片高度
   fileSize: int(), // 文件大小（字节）
   sortOrder: int().default(0), // 排序顺序
-  createdAt: text().default(dayjs().toString()), // 创建时间
-  updatedAt: text().default(dayjs().toString()), // 更新时间
+  createdAt: text()
+    .default('')
+    .$defaultFn(() => dayjs().toString()), // 创建时间
+  updatedAt: text()
+    .default('')
+    .$defaultFn(() => dayjs().toString()), // 更新时间
 })
 
 // 最近访问记录表

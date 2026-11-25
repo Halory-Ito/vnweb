@@ -6,6 +6,7 @@ import path from 'node:path'
 import { GameInfoTable, GameOstTable, GameOstSongsTable } from '@/db/schema'
 import { db } from '@/lib/drizzle'
 import { api } from '@/lib/request-utils'
+import { getAssetsDir, getLegacyPublicAssetsDir } from '@/lib/server/runtime-paths.mjs'
 
 import type { OstCreateAlbum } from '@/types/ost'
 
@@ -104,7 +105,7 @@ const downloadCoverToLocal = async (
   ostName: string,
 ): Promise<string | null> => {
   try {
-    const assetsDir = path.join(process.cwd(), 'assets', 'ost')
+    const assetsDir = path.join(getAssetsDir(), 'ost')
     const ostDir = path.join(assetsDir, String(ostId))
 
     if (!fs.existsSync(ostDir)) {
@@ -267,10 +268,12 @@ const syncCoverToLocal = async () => {
       // 检查本地文件是否已存在
       const extension = getExtensionFromUrl(ost.cover)
       const sanitizedName = ost.name.replace(/[/\\?%*:|"<>]/g, '-')
-      const localPath = `/assets/ost/${ost.id}/${sanitizedName}.${extension}`
-      const fullPath = path.join(process.cwd(), localPath)
+      const fileName = `${sanitizedName}.${extension}`
+      const localPath = `/assets/ost/${ost.id}/${fileName}`
+      const fullPath = path.join(getAssetsDir(), 'ost', String(ost.id), fileName)
+      const legacyPath = path.join(getLegacyPublicAssetsDir(), 'ost', String(ost.id), fileName)
 
-      if (fs.existsSync(fullPath)) {
+      if (fs.existsSync(fullPath) || fs.existsSync(legacyPath)) {
         // 文件已存在，更新数据库路径
         const now = new Date().toISOString()
         await db

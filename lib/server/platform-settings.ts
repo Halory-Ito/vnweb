@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto'
 import fs from 'node:fs'
 import path from 'node:path'
 
-import { PLATFORM_SETTINGS_FILE } from '@/lib/server/config-rw'
+import { getDataSettingsDir } from '@/lib/server/runtime-paths.mjs'
 import {
   BANGUMI_OFFICIAL_API_URL,
   BANGUMI_OFFICIAL_BASE_URL,
@@ -249,12 +249,17 @@ function mergeWithDefaults(raw: Partial<PlatformSettingsData>): PlatformSettings
   }
 }
 
+function getPlatformSettingsFile(): string {
+  return path.join(getDataSettingsDir(), 'platform.json')
+}
+
 async function writePlatformSettingsFile(data: PlatformSettingsData): Promise<void> {
-  await fs.promises.mkdir(path.dirname(PLATFORM_SETTINGS_FILE), { recursive: true })
-  const temporary = `${PLATFORM_SETTINGS_FILE}.${randomUUID()}.tmp`
+  const filePath = getPlatformSettingsFile()
+  await fs.promises.mkdir(path.dirname(filePath), { recursive: true })
+  const temporary = `${filePath}.${randomUUID()}.tmp`
   try {
     await fs.promises.writeFile(temporary, JSON.stringify(data, null, 2), { mode: 0o600 })
-    await fs.promises.rename(temporary, PLATFORM_SETTINGS_FILE)
+    await fs.promises.rename(temporary, filePath)
   } finally {
     await fs.promises.rm(temporary, { force: true })
   }
@@ -280,7 +285,7 @@ function isSettingsRecord(value: unknown): value is Record<string, unknown> {
 async function readOrInitializePlatformSettings(): Promise<PlatformSettingsData> {
   let content: string
   try {
-    content = await fs.promises.readFile(PLATFORM_SETTINGS_FILE, 'utf-8')
+    content = await fs.promises.readFile(getPlatformSettingsFile(), 'utf-8')
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error
     const initial = getDefaultPlatformSettings()
