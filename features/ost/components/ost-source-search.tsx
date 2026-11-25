@@ -43,8 +43,8 @@ export function OstSourceSearch({
         <div className="min-w-0 space-y-2">
           <Label htmlFor="ost-service">{mode === 'search' ? '曲目数据服务' : '数据服务'}</Label>
           <Select
-            value={service}
-            disabled={isBusy}
+            value={service || undefined}
+            disabled={isBusy || state.availableServices.length === 0}
             onValueChange={(value) => {
               const nextService = value as OstService
               resetResults()
@@ -55,11 +55,14 @@ export function OstSourceSearch({
             }}
           >
             <SelectTrigger id="ost-service" className="w-full">
-              <SelectValue />
+              <SelectValue placeholder="未开启音乐服务" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="enhanced-api">Enhanced API</SelectItem>
-              <SelectItem value="meting-api">Meting SDK</SelectItem>
+              {state.availableServices.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
@@ -67,7 +70,7 @@ export function OstSourceSearch({
           <Label htmlFor="ost-platform">音乐平台</Label>
           <Select
             value={mode === 'search' ? 'netease' : server}
-            disabled={isBusy || mode === 'search' || service === 'enhanced-api'}
+            disabled={isBusy || mode === 'search' || !service || service === 'enhanced-api'}
             onValueChange={(value) => {
               resetResults()
               setServer(value as MetingServer)

@@ -8,6 +8,7 @@ import { getAlbumDetails, type OstService } from '../lib/ost-utils'
 import { METING_ID_PATTERN } from '../meting-types'
 import { searchOstAlbums } from '../ost-api'
 import { getGameCardList } from '@/api'
+import { useEnabledPlatforms } from '@/hooks/use-enabled-platforms'
 
 import type { MetingServer } from '../meting-types'
 import type { UnifiedAlbumDetails, UnifiedSearchResult } from '../types'
@@ -25,6 +26,15 @@ export type OstFormDialogProps = {
   onSubmit: (data: OstFormSubmission) => void
 }
 
+const OST_SERVICE_OPTIONS: ReadonlyArray<{
+  value: OstService
+  label: string
+  platformKey: 'enhanced' | 'meting'
+}> = [
+  { value: 'enhanced-api', label: 'Enhanced API', platformKey: 'enhanced' },
+  { value: 'meting-api', label: 'Meting SDK', platformKey: 'meting' },
+]
+
 const emptyForm = { gameId: '', name: '', cover: '', searchKeyword: '' }
 const validId = /^\d{1,30}$/
 
@@ -40,8 +50,15 @@ export function parseOstAlbumIds(input: string) {
 }
 
 export function useOstForm({ open, editingItem, onSubmit }: OstFormDialogProps) {
+  const { isPlatformEnabled } = useEnabledPlatforms()
   const [form, setForm] = useState(emptyForm)
   const [service, setService] = useState<OstService>('enhanced-api')
+  const availableServices = OST_SERVICE_OPTIONS.filter((option) =>
+    isPlatformEnabled(option.platformKey, 'music-service'),
+  )
+  const activeService: OstService | '' = availableServices.some((item) => item.value === service)
+    ? service
+    : (availableServices[0]?.value ?? '')
   const [server, setServer] = useState<MetingServer>('netease')
   const [mode, setMode] = useState<'search' | 'album'>('search')
   const [searchResults, setSearchResults] = useState<UnifiedSearchResult[]>([])
@@ -83,17 +100,19 @@ export function useOstForm({ open, editingItem, onSubmit }: OstFormDialogProps) 
 
   const keyword = form.searchKeyword.trim()
   const ids = mode === 'album' ? parseOstAlbumIds(keyword) : []
-  const idPattern = service === 'meting-api' ? METING_ID_PATTERN : validId
+  const idPattern = activeService === 'meting-api' ? METING_ID_PATTERN : validId
   const hasInvalidIds = ids.some((id) => !idPattern.test(id))
   const canSearch =
-    mode === 'search'
+    Boolean(activeService) &&
+    (mode === 'search'
       ? keyword.length > 0 && keyword.length <= 200
-      : ids.length > 0 && !hasInvalidIds
+      : ids.length > 0 && !hasInvalidIds)
 
   const loadAlbums = useMutation({
     mutationFn: async (
       references: Array<{ id: string; label: string; name?: string; cover?: string }>,
     ) => {
+      if (!activeService) return
       const current = ++version.current
       setShowResults(false)
       setAlbums([])
@@ -102,7 +121,7 @@ export function useOstForm({ open, editingItem, onSubmit }: OstFormDialogProps) 
       for (const { id, label, name, cover } of references) {
         if (current !== version.current) return
         try {
-          const details = await getAlbumDetails(service, id)
+          const details = await getAlbumDetails(activeService, id)
           if (!details.songs.length) throw new Error('专辑没有曲目')
           loaded.push({ ...details, name: name || details.name, cover: cover || details.cover })
         } catch {
@@ -186,7 +205,8 @@ export function useOstForm({ open, editingItem, onSubmit }: OstFormDialogProps) 
   return {
     form,
     setForm,
-    service,
+    availableServices,
+    service: activeService,
     setService,
     server,
     setServer,

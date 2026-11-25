@@ -20,6 +20,7 @@ import {
   getGamePlayStatusOptions,
   normalizeGamePlayStatus,
 } from '@/features/game/lib/game-status'
+import { useEnabledPlatforms } from '@/hooks/use-enabled-platforms'
 import { DEFAULT_GAME_STATUS_PUSH_COLORS } from '@/lib/settings/game-status-sync'
 
 import type { GameStatusSyncProvider } from '@/types'
@@ -43,8 +44,12 @@ export default function GamePlayStatusDialog({
   onStatusChange,
   disabled,
 }: GamePlayStatusDialogProps) {
+  const { isPlatformEnabled } = useEnabledPlatforms()
   const { data: pushColors = DEFAULT_GAME_STATUS_PUSH_COLORS } = useStatusPushColors()
   const availability = useGameStatusSyncAvailability(gameId)
+  const visiblePlatforms = (availability.data ?? []).filter((platform) =>
+    isPlatformEnabled(platform.provider, 'status-sync'),
+  )
   const [bindingProvider, setBindingProvider] = useState<GameStatusSyncProvider>()
   const sync = useGameStatusSync(gameId)
   const busy = disabled || sync.isPending
@@ -121,22 +126,24 @@ export default function GamePlayStatusDialog({
           <div className="text-muted-foreground grid gap-2 text-sm" aria-live="polite">
             {availability.isPending && <p>正在读取平台同步配置…</p>}
             {availability.isError && <p>无法读取平台同步配置</p>}
-            <div className="grid grid-cols-2 gap-2">
-              {availability.data?.map((platform) => (
-                <GameStatusPlatformButton
-                  key={platform.provider}
-                  platform={platform}
-                  colors={pushColors}
-                  status={selectedStatus}
-                  disabled={busy}
-                  onBind={() => setBindingProvider(platform.provider)}
-                  syncing={sync.isPending && sync.variables.provider === platform.provider}
-                  onSync={() =>
-                    sync.mutate({ provider: platform.provider, status: selectedStatus })
-                  }
-                />
-              ))}
-            </div>
+            {visiblePlatforms.length > 0 && (
+              <div className="grid grid-cols-2 gap-2">
+                {visiblePlatforms.map((platform) => (
+                  <GameStatusPlatformButton
+                    key={platform.provider}
+                    platform={platform}
+                    colors={pushColors}
+                    status={selectedStatus}
+                    disabled={busy}
+                    onBind={() => setBindingProvider(platform.provider)}
+                    syncing={sync.isPending && sync.variables.provider === platform.provider}
+                    onSync={() =>
+                      sync.mutate({ provider: platform.provider, status: selectedStatus })
+                    }
+                  />
+                ))}
+              </div>
+            )}
           </div>
         </DialogContent>
       </Dialog>

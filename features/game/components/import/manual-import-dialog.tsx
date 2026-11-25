@@ -1,6 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
@@ -29,7 +29,9 @@ import {
   searchGameByNameApi,
   type GameSearchItem,
 } from '@/features/game/import-api'
+import { useEnabledPlatforms } from '@/hooks/use-enabled-platforms'
 import { getManualSearchProviderOptions } from '@/lib/providers'
+import { isPlatformVisibilityKey } from '@/lib/settings/platform-visibility'
 
 import type { GameImportDialogProps } from './types'
 import type { GameInfo } from '@/types/game'
@@ -54,12 +56,27 @@ export const ManualImportDialog = ({
 }: GameImportDialogProps) => {
   const router = useRouter()
   const queryClient = useQueryClient()
+  const { isPlatformEnabled } = useEnabledPlatforms()
   const pageSize = 10
   const [gameName, setGameName] = useState<string>('')
   const [gameId, setGameId] = useState<string>('')
-  const providerOptions = getManualSearchProviderOptions()
+  const allProviderOptions = useMemo(() => getManualSearchProviderOptions(), [])
+  const providerOptions = useMemo(
+    () =>
+      allProviderOptions.filter((option) =>
+        isPlatformVisibilityKey(option.value)
+          ? isPlatformEnabled(option.value, 'game-metadata')
+          : true,
+      ),
+    [allProviderOptions, isPlatformEnabled],
+  )
   const defaultProvider = initialProvider ?? providerOptions[0]?.value ?? 'bangumi'
   const [provider, setProvider] = useState<string>(defaultProvider)
+  const activeProvider = lockProvider
+    ? (initialProvider ?? provider)
+    : providerOptions.some((option) => option.value === provider)
+      ? provider
+      : (providerOptions[0]?.value ?? '')
   const [searchDialogOpen, setSearchDialogOpen] = useState<boolean>(false)
   const [searchResultDialogOpen, setSearchResultDialogOpen] = useState<boolean>(false)
   const [editDialogOpen, setEditDialogOpen] = useState<boolean>(false)
@@ -86,6 +103,10 @@ export const ManualImportDialog = ({
   }
 
   const handleSearchById = async () => {
+    if (!activeProvider) {
+      toast.error('请先在「设置 → 平台」开启至少一个数据源')
+      return
+    }
     const trimmedId = gameId.trim()
     if (!trimmedId) {
       toast.error('请输入游戏 ID')
@@ -94,7 +115,7 @@ export const ManualImportDialog = ({
 
     setIsIdentifying(true)
     try {
-      const res = await getGameInfoByIdApi(trimmedId, provider)
+      const res = await getGameInfoByIdApi(trimmedId, activeProvider)
       if (res === null) {
         toast.error('未找到对应的游戏信息')
         return
@@ -113,6 +134,10 @@ export const ManualImportDialog = ({
   }
 
   const loadSearchResults = async (page: number) => {
+    if (!activeProvider) {
+      toast.error('请先在「设置 → 平台」开启至少一个数据源')
+      return
+    }
     const keyword = gameName.trim()
     if (!keyword) {
       return
@@ -121,7 +146,7 @@ export const ManualImportDialog = ({
     setIsSearching(true)
     try {
       const nextOffset = (page - 1) * pageSize
-      const result = await searchGameByNameApi(keyword, provider, nextOffset, pageSize)
+      const result = await searchGameByNameApi(keyword, activeProvider, nextOffset, pageSize)
       setSearchResults(result.items)
       setSearchTotal(result.total)
       setSearchPage(page)
@@ -183,7 +208,7 @@ export const ManualImportDialog = ({
     setIsSaving(true)
     try {
       const result = await createGameInfoApi(nextGameInfo, {
-        provider,
+        provider: activeProvider,
         externalId: gameId.trim(),
       })
       setGameInfo(nextGameInfo)
@@ -219,12 +244,17 @@ export const ManualImportDialog = ({
               <div className="min-w-16">数据来源</div>
               {lockProvider ? (
                 <div className="text-sm font-medium">
-                  {providerOptions.find((option) => option.value === provider)?.label ?? provider}
+                  {providerOptions.find((option) => option.value === activeProvider)?.label ??
+                    activeProvider}
                 </div>
               ) : (
-                <Select value={provider} onValueChange={setProvider}>
+                <Select
+                  value={activeProvider || undefined}
+                  onValueChange={setProvider}
+                  disabled={providerOptions.length === 0}
+                >
                   <SelectTrigger className="min-w-32">
-                    <SelectValue defaultValue={provider} />
+                    <SelectValue placeholder="未开启可用数据源" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectGroup>
@@ -244,7 +274,7 @@ export const ManualImportDialog = ({
               <Button
                 type="button"
                 variant="outline"
-                disabled={isSearching || gameName.trim().length === 0}
+                disabled={isSearching || gameName.trim().length === 0 || !activeProvider}
                 onClick={handleSearchByName}
               >
                 {isSearching ? '搜索中...' : '搜索'}
@@ -256,7 +286,7 @@ export const ManualImportDialog = ({
               <Button
                 type="button"
                 variant="outline"
-                disabled={isIdentifying || gameId.trim().length === 0}
+                disabled={isIdentifying || gameId.trim().length === 0 || !activeProvider}
                 onClick={handleSearchById}
               >
                 {isIdentifying ? '识别中...' : '识别'}

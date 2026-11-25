@@ -42,7 +42,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { useEnabledPlatforms } from '@/hooks/use-enabled-platforms'
 import { getCharacterProviders } from '@/lib/providers'
+import { isPlatformVisibilityKey } from '@/lib/settings/platform-visibility'
 
 import type { CharacterSyncSource, VndbCharacterListItem } from '@/types'
 
@@ -94,7 +96,20 @@ export default function GameCharacters({ gameId }: GameCharactersProps) {
   const [gameIdInput, setGameIdInput] = useState('')
   const [saveImagesToLocal, setSaveImagesToLocal] = useState(true)
 
-  const characterProviders = useMemo(() => getCharacterProviders(), [])
+  const { isPlatformEnabled } = useEnabledPlatforms()
+  const allCharacterProviders = useMemo(() => getCharacterProviders(), [])
+  const characterProviders = useMemo(
+    () =>
+      allCharacterProviders.filter((provider) =>
+        isPlatformVisibilityKey(provider.sourceId)
+          ? isPlatformEnabled(provider.sourceId, 'character-metadata')
+          : true,
+      ),
+    [allCharacterProviders, isPlatformEnabled],
+  )
+  const activeSelectedSource = characterProviders.some((p) => p.sourceId === selectedSource)
+    ? selectedSource
+    : (characterProviders[0]?.sourceId ?? '')
 
   const { data: gameDetail } = useQuery({
     queryKey: ['game', String(gameId)],
@@ -210,7 +225,7 @@ export default function GameCharacters({ gameId }: GameCharactersProps) {
   }
 
   const saveSettingsAndSync = async () => {
-    const provider = characterProviders.find((p) => p.sourceId === selectedSource)
+    const provider = characterProviders.find((p) => p.sourceId === activeSelectedSource)
     if (!provider) {
       toast.error('请先选择角色数据来源')
       return
@@ -229,7 +244,7 @@ export default function GameCharacters({ gameId }: GameCharactersProps) {
     }
 
     // 构建 externalSourceIds：保留非角色数据源的绑定，更新当前选中的角色数据源
-    const characterSourceIds = new Set(characterProviders.map((p) => p.sourceId))
+    const characterSourceIds = new Set(allCharacterProviders.map((p) => p.sourceId))
     const nextSourceIds = [
       ...parsedSourceIds.filter((item) => !characterSourceIds.has(item.provider.toLowerCase())),
       { provider: provider.sourceId, externalId: normalized },
@@ -361,14 +376,17 @@ export default function GameCharacters({ gameId }: GameCharactersProps) {
             <div className="space-y-1">
               <div className="text-sm">角色数据来源</div>
               <Select
-                value={selectedSource}
+                value={activeSelectedSource || undefined}
+                disabled={characterProviders.length === 0}
                 onValueChange={(value) => {
                   setSelectedSource(value)
                   setGameIdInput(getBoundIdForSource(value))
                 }}
               >
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder="选择来源" />
+                  <SelectValue
+                    placeholder={characterProviders.length > 0 ? '选择来源' : '未开启角色数据源'}
+                  />
                 </SelectTrigger>
                 <SelectContent>
                   {characterProviders.map((provider) => (
@@ -386,8 +404,8 @@ export default function GameCharacters({ gameId }: GameCharactersProps) {
                 value={gameIdInput}
                 onChange={(event) => setGameIdInput(event.target.value)}
                 placeholder={
-                  characterProviders.find((p) => p.sourceId === selectedSource)?.description ||
-                  '请输入游戏 ID'
+                  characterProviders.find((p) => p.sourceId === activeSelectedSource)
+                    ?.description || '请输入游戏 ID'
                 }
               />
             </div>
@@ -413,7 +431,7 @@ export default function GameCharacters({ gameId }: GameCharactersProps) {
             </Button>
             <Button
               type="button"
-              disabled={isSavingSettings || isSyncing}
+              disabled={isSavingSettings || isSyncing || !activeSelectedSource}
               onClick={() => void saveSettingsAndSync()}
             >
               {isSavingSettings || isSyncing ? '保存中...' : '保存'}

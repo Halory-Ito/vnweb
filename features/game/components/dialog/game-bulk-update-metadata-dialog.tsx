@@ -24,8 +24,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { useEnabledPlatforms } from '@/hooks/use-enabled-platforms'
 
 type BulkProvider = 'bangumi' | 'steamgriddb'
+
+const BULK_PROVIDERS: ReadonlyArray<{ value: BulkProvider; label: string }> = [
+  { value: 'bangumi', label: 'Bangumi' },
+  { value: 'steamgriddb', label: 'SteamGrid DB' },
+]
 type MergeStrategy = 'replace' | 'merge' | 'append'
 type FieldKey =
   | 'date'
@@ -98,8 +104,16 @@ export default function GameBulkUpdateMetadataDialog({
 }: BulkUpdateDialogProps) {
   const router = useRouter()
   const queryClient = useQueryClient()
+  const { isPlatformEnabled } = useEnabledPlatforms()
+  const enabledProviders = useMemo(
+    () => BULK_PROVIDERS.filter((item) => isPlatformEnabled(item.value, 'game-metadata')),
+    [isPlatformEnabled],
+  )
 
   const [provider, setProvider] = useState<BulkProvider>('bangumi')
+  const activeProvider: BulkProvider | '' = enabledProviders.some((item) => item.value === provider)
+    ? provider
+    : (enabledProviders[0]?.value ?? '')
   const [strategy, setStrategy] = useState<MergeStrategy>('replace')
   const [queryText, setQueryText] = useState('')
   const [isUpdating, setIsUpdating] = useState(false)
@@ -143,6 +157,11 @@ export default function GameBulkUpdateMetadataDialog({
   }
 
   const handleSubmit = async () => {
+    if (!activeProvider) {
+      toast.error('请先在「设置 → 平台」开启至少一个数据源')
+      return
+    }
+
     if (gameIds.length === 0) {
       return
     }
@@ -156,7 +175,7 @@ export default function GameBulkUpdateMetadataDialog({
     try {
       const result = await batchUpdateGameMetadata({
         gameIds: gameIds.map((id) => Number(id)),
-        provider,
+        provider: activeProvider,
         query: queryText.trim(),
         fields: selectedFieldKeys,
         strategy,
@@ -197,15 +216,21 @@ export default function GameBulkUpdateMetadataDialog({
             <div className="space-y-1">
               <div className="text-sm font-medium">指定数据源</div>
               <Select
-                value={provider}
+                value={activeProvider || undefined}
+                disabled={enabledProviders.length === 0}
                 onValueChange={(value) => setProvider(value as BulkProvider)}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="选择数据源" />
+                  <SelectValue
+                    placeholder={enabledProviders.length > 0 ? '选择数据源' : '未开启数据源'}
+                  />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="bangumi">Bangumi</SelectItem>
-                  <SelectItem value="steamgriddb">SteamGrid DB</SelectItem>
+                  {enabledProviders.map((item) => (
+                    <SelectItem key={item.value} value={item.value}>
+                      {item.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -272,7 +297,11 @@ export default function GameBulkUpdateMetadataDialog({
           <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
             取消
           </Button>
-          <Button type="button" disabled={isUpdating} onClick={() => void handleSubmit()}>
+          <Button
+            type="button"
+            disabled={isUpdating || !activeProvider}
+            onClick={() => void handleSubmit()}
+          >
             {isUpdating ? '批量更新中...' : '批量更新'}
           </Button>
         </DialogFooter>

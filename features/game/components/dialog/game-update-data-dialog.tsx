@@ -25,8 +25,14 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { getGameInfoByIdApi, searchGameByNameApi } from '@/features/game/import-api'
+import { useEnabledPlatforms } from '@/hooks/use-enabled-platforms'
 
 import type { GameInfo } from '@/types/game'
+
+const UPDATE_DATA_PROVIDERS = [
+  { value: 'bangumi', label: 'Bangumi' },
+  { value: 'steamgriddb', label: 'SteamGrid DB' },
+] as const
 
 type GameUpdateDataDialogProps = {
   gameId: number
@@ -74,7 +80,15 @@ export default function GameUpdateDataDialog({
   const pageSize = 5
   const router = useRouter()
   const queryClient = useQueryClient()
+  const { isPlatformEnabled } = useEnabledPlatforms()
+  const enabledProviders = useMemo(
+    () => UPDATE_DATA_PROVIDERS.filter((item) => isPlatformEnabled(item.value, 'game-metadata')),
+    [isPlatformEnabled],
+  )
   const [provider, setProvider] = useState('bangumi')
+  const activeProvider = enabledProviders.some((item) => item.value === provider)
+    ? provider
+    : (enabledProviders[0]?.value ?? '')
   const [keyword, setKeyword] = useState('')
   const [results, setResults] = useState<GameSearchItem[]>([])
   const [searchPage, setSearchPage] = useState(1)
@@ -103,6 +117,10 @@ export default function GameUpdateDataDialog({
   )
 
   const loadSearchResults = async (page: number) => {
+    if (!activeProvider) {
+      toast.error('请先在「设置 → 平台」开启至少一个数据源')
+      return
+    }
     const trimmed = keyword.trim()
     if (!trimmed) {
       toast.error('请输入关键词')
@@ -112,7 +130,7 @@ export default function GameUpdateDataDialog({
     setIsSearching(true)
     try {
       const nextOffset = (page - 1) * pageSize
-      const response = await searchGameByNameApi(trimmed, provider, nextOffset, pageSize)
+      const response = await searchGameByNameApi(trimmed, activeProvider, nextOffset, pageSize)
       setResults(response.items)
       setSearchTotal(response.total)
       setSearchPage(page)
@@ -129,6 +147,10 @@ export default function GameUpdateDataDialog({
   }
 
   const handleFetchInfoById = async (id: string) => {
+    if (!activeProvider) {
+      toast.error('请先在「设置 → 平台」开启至少一个数据源')
+      return
+    }
     if (!id) {
       toast.error('请先选择或输入 ID')
       return
@@ -136,7 +158,7 @@ export default function GameUpdateDataDialog({
 
     setIsFetchingInfo(true)
     try {
-      const info = await getGameInfoByIdApi(id, provider)
+      const info = await getGameInfoByIdApi(id, activeProvider)
       if (!info) {
         toast.error('未获取到资料')
         return
@@ -213,13 +235,22 @@ export default function GameUpdateDataDialog({
 
         <div className="space-y-4">
           <div className="grid gap-2 md:grid-cols-[180px_1fr_auto]">
-            <Select value={provider} onValueChange={setProvider}>
+            <Select
+              value={activeProvider || undefined}
+              disabled={enabledProviders.length === 0}
+              onValueChange={setProvider}
+            >
               <SelectTrigger>
-                <SelectValue placeholder="选择数据源" />
+                <SelectValue
+                  placeholder={enabledProviders.length > 0 ? '选择数据源' : '未开启数据源'}
+                />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="bangumi">Bangumi</SelectItem>
-                <SelectItem value="steamgriddb">SteamGrid DB</SelectItem>
+                {enabledProviders.map((item) => (
+                  <SelectItem key={item.value} value={item.value}>
+                    {item.label}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
             <Input
@@ -231,7 +262,7 @@ export default function GameUpdateDataDialog({
               type="button"
               variant="outline"
               onClick={() => void handleSearch()}
-              disabled={isSearching}
+              disabled={isSearching || !activeProvider}
             >
               {isSearching ? '搜索中...' : '搜索'}
             </Button>

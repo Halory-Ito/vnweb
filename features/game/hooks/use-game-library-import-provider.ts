@@ -18,7 +18,9 @@ export function useGameLibraryImportProvider(fixedProvider?: GameLibraryImportPr
     providers.find((item) => item.id === selectedProvider)?.id ??
     providers[0]?.id ??
     'steam'
-  const config = GAME_LIBRARY_IMPORT_PROVIDERS.find((item) => item.id === activeProvider)!
+  const config =
+    GAME_LIBRARY_IMPORT_PROVIDERS.find((item) => item.id === activeProvider) ??
+    GAME_LIBRARY_IMPORT_PROVIDERS[0]
 
   const selectProvider = (value: string) => {
     if (isBusy) return
