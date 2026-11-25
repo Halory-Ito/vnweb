@@ -1,6 +1,7 @@
 ---
 layout: home
-title: 使用文档
+title: vnweb — Open Infrastructure for Digital Culture
+titleTemplate: false
 markdownStyles: false
 ---
 

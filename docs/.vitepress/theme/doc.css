@@ -1,0 +1,230 @@
+/* ---------- Editorial Typography ---------- */
+.vp-doc h1 {
+  font-family: var(--docs-font-display);
+  font-size: clamp(2rem, 3.8vw, 2.75rem);
+  font-weight: 500;
+  line-height: 1.15;
+  letter-spacing: -0.028em;
+  color: var(--vp-c-text-1);
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--vp-c-divider);
+  margin-bottom: 1.5rem;
+}
+
+.vp-doc h2 {
+  font-family: var(--vp-font-family-base);
+  font-size: 1.375rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.35;
+  margin-top: 2.75rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--vp-c-divider);
+}
+
+.vp-doc h3 {
+  font-family: var(--vp-font-family-base);
+  font-size: 1.09375rem;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  line-height: 1.4;
+  margin-top: 1.85rem;
+}
+
+.vp-doc :is(p, li) {
+  font-size: 0.96875rem;
+  line-height: 1.78;
+  color: var(--vp-c-text-1);
+}
+
+.vp-doc li {
+  color: var(--vp-c-text-2);
+}
+
+.vp-doc li strong,
+.vp-doc p strong {
+  color: var(--vp-c-text-1);
+  font-weight: 600;
+}
+
+/* ---------- Links ---------- */
+.vp-doc a:not(.header-anchor) {
+  color: var(--vp-c-brand-1);
+  font-weight: 500;
+  text-decoration: underline;
+  text-decoration-color: color-mix(in oklab, var(--vp-c-brand-1) 35%, transparent);
+  text-underline-offset: 3px;
+  transition:
+    color 160ms ease,
+    text-decoration-color 160ms ease;
+}
+
+.vp-doc a:not(.header-anchor):hover {
+  color: var(--vp-c-brand-2);
+  text-decoration-color: var(--vp-c-brand-1);
+}
+
+/* ---------- Blockquote ---------- */
+.vp-doc blockquote {
+  margin: 1.35rem 0;
+  padding: 0.35rem 0 0.35rem 1.125rem;
+  border-left: 2px solid var(--vp-c-brand-1);
+  color: var(--vp-c-text-2);
+}
+
+.vp-doc blockquote > p {
+  font-family: var(--docs-font-display);
+  font-style: italic;
+  font-size: 1.0625rem;
+  line-height: 1.68;
+  color: var(--vp-c-text-2);
+}
+
+/* ---------- Code ---------- */
+.vp-doc :not(pre) > code {
+  font-family: var(--vp-font-family-mono);
+  font-size: 0.84em;
+  padding: 0.15rem 0.38rem;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 5px;
+  background-color: var(--vp-code-bg);
+  color: var(--vp-code-color);
+}
+
+.vp-doc div[class*='language-'] {
+  margin: 1.25rem 0;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: var(--docs-radius);
+  background-color: var(--vp-code-block-bg);
+}
+
+.vp-doc div[class*='language-'] pre,
+.vp-doc div[class*='language-'] code {
+  font-family: var(--vp-font-family-mono);
+}
+
+.vp-doc div[class*='language-'] > span.lang {
+  font-family: var(--vp-font-family-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--vp-c-text-3);
+}
+
+/* ---------- Images ---------- */
+.vp-doc p > img {
+  margin: 1.25rem 0;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: var(--docs-radius);
+  box-shadow: 0 12px 32px -20px rgba(0, 0, 0, 0.45);
+}
+
+/* ---------- Tables ---------- */
+.vp-doc table {
+  border-collapse: collapse;
+  margin: 1.35rem 0;
+  font-size: 0.875rem;
+}
+
+.vp-doc th {
+  font-family: var(--vp-font-family-mono);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--vp-c-text-2);
+  background-color: var(--vp-c-bg-soft);
+  border-color: var(--vp-c-divider);
+}
+
+.vp-doc td {
+  border-color: var(--vp-c-divider);
+  line-height: 1.65;
+  color: var(--vp-c-text-2);
+}
+
+.vp-doc tr:nth-child(2n) {
+  background-color: transparent;
+}
+
+.vp-doc tbody tr {
+  transition: background-color 140ms ease;
+}
+
+.vp-doc tbody tr:hover {
+  background-color: var(--docs-hover);
+}
+
+/* ---------- Custom Containers ---------- */
+.vp-doc .custom-block {
+  margin: 1.35rem 0;
+  padding: 0.9rem 1.125rem;
+  border: 1px solid var(--vp-c-divider);
+  border-left-width: 3px;
+  border-radius: var(--docs-radius-sm);
+}
+
+.vp-doc .custom-block.tip {
+  border-left-color: var(--docs-emerald);
+}
+
+.vp-doc .custom-block.info {
+  border-left-color: var(--docs-sky);
+}
+
+.vp-doc .custom-block.warning {
+  border-left-color: var(--docs-amber);
+}
+
+.vp-doc .custom-block.danger {
+  border-left-color: var(--docs-danger);
+}
+
+.vp-doc .custom-block .custom-block-title {
+  font-family: var(--vp-font-family-mono);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 0.35rem;
+}
+
+.vp-doc .custom-block :is(p, li) {
+  font-size: 0.90625rem;
+  line-height: 1.68;
+}
+
+/* ---------- Aside Outline & Pager ---------- */
+.VPDocAsideOutline .outline-title {
+  font-family: var(--vp-font-family-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--vp-c-text-3);
+}
+
+.VPDocAsideOutline .outline-link {
+  font-size: 0.8125rem;
+  line-height: 1.6;
+}
+
+.VPDocFooter a.pager-link {
+  border: 1px solid var(--vp-c-divider);
+  border-radius: var(--docs-radius);
+  background-color: var(--docs-surface);
+  transition:
+    border-color 180ms ease,
+    background-color 180ms ease;
+}
+
+.VPDocFooter a.pager-link:hover {
+  border-color: var(--vp-c-brand-1);
+  background-color: var(--docs-surface-elevated);
+}
+
+.VPDocFooter .pager-link .desc {
+  font-family: var(--vp-font-family-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
