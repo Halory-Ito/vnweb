@@ -82,11 +82,12 @@ export type GameResolveItem = {
 }
 
 export type GameSearchImageItem = {
-  id: number
+  id: string | number
   url: string
   thumb: string
   width: number
   height: number
+  label?: string
 }
 
 export type GameInfo = {

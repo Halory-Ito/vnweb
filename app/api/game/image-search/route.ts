@@ -1,118 +1,64 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-import { SGDBClient } from '@/lib/vndb-client'
+import {
+  DEFAULT_GAME_IMAGE_SOURCE,
+  GAME_IMAGE_TYPE_LABELS,
+  isGameImageSource,
+  supportsGameImageType,
+  type GameImageType,
+} from '@/lib/game-image-sources'
+import { searchGameImagesFromSource } from '@/lib/server/game-image-search'
+import { isPlatformEnabledOnServer } from '@/lib/server/platform-visibility'
+import { GAME_IMAGE_TYPE_TO_FEATURE_CATEGORY } from '@/lib/settings/platform-visibility'
 
 type SearchImagePayload = {
   source?: string
   keyword?: string
-  imageType?: 'cover' | 'bg' | 'icon' | 'logo'
+  imageType?: GameImageType
+  includeNsfw?: boolean
 }
 
-type SGDBImageItem = {
-  id: number
-  url: string
-  thumb: string
-  width: number
-  height: number
-}
-
-const resolveGameIdByKeyword = async (keyword: string) => {
-  const trimmed = keyword.trim()
-  if (!trimmed) {
-    return null
-  }
-
-  if (/^\d+$/.test(trimmed)) {
-    return {
-      id: Number(trimmed),
-      name: `#${trimmed}`,
-    }
-  }
-
-  const matches = await SGDBClient.searchGame(trimmed)
-  if (!matches || matches.length === 0) {
-    return null
-  }
-
-  return {
-    id: matches[0].id,
-    name: matches[0].name,
-  }
-}
-
-const normalizeSGDBImages = (images: unknown[]): SGDBImageItem[] => {
-  return images
-    .map((item) => {
-      if (!item || typeof item !== 'object') {
-        return null
-      }
-
-      const source = item as {
-        id?: number
-        url?: URL | string
-        thumb?: URL | string
-        width?: number
-        height?: number
-      }
-
-      if (typeof source.id !== 'number') {
-        return null
-      }
-
-      return {
-        id: source.id,
-        url: String(source.url ?? ''),
-        thumb: String(source.thumb ?? ''),
-        width: Number(source.width ?? 0),
-        height: Number(source.height ?? 0),
-      }
-    })
-    .filter((item): item is SGDBImageItem => item !== null)
-}
+const VALID_IMAGE_TYPES = new Set<GameImageType>(['cover', 'bg', 'icon', 'logo'])
 
 const searchImages = async (req: NextRequest) => {
   try {
     const payload = (await req.json().catch(() => ({}))) as SearchImagePayload
-    const source = (payload.source || 'steamgriddb').trim().toLowerCase()
+    const rawSource = (payload.source || DEFAULT_GAME_IMAGE_SOURCE).trim().toLowerCase()
     const keyword = (payload.keyword || '').trim()
-    const imageType = payload.imageType || 'cover'
+    const imageType = VALID_IMAGE_TYPES.has(payload.imageType as GameImageType)
+      ? (payload.imageType as GameImageType)
+      : 'cover'
+    const includeNsfw = typeof payload.includeNsfw === 'boolean' ? payload.includeNsfw : undefined
 
     if (!keyword) {
       return NextResponse.json({ error: '请输入名称或 id' }, { status: 400 })
     }
 
-    if (source !== 'steamgriddb') {
-      return NextResponse.json({ error: `暂不支持的数据源: ${source}` }, { status: 400 })
+    if (!isGameImageSource(rawSource)) {
+      return NextResponse.json({ error: `暂不支持的数据源: ${rawSource}` }, { status: 400 })
     }
 
-    const game = await resolveGameIdByKeyword(keyword)
-    if (!game) {
-      return NextResponse.json({
-        data: {
-          game: null,
-          items: [],
-        },
-      })
+    if (
+      !(await isPlatformEnabledOnServer(rawSource, GAME_IMAGE_TYPE_TO_FEATURE_CATEGORY[imageType]))
+    ) {
+      return NextResponse.json({ error: '该平台未在「设置 → 平台」中开启' }, { status: 403 })
     }
 
-    let images: unknown[] = []
-
-    if (imageType === 'cover') {
-      images = await SGDBClient.getGridsById(game.id)
-    } else if (imageType === 'bg') {
-      images = await SGDBClient.getHeroesById(game.id)
-    } else if (imageType === 'icon') {
-      images = await SGDBClient.getIconsById(game.id)
-    } else {
-      images = await SGDBClient.getLogosById(game.id)
+    if (!supportsGameImageType(rawSource, imageType)) {
+      return NextResponse.json(
+        { error: `该数据源暂不提供${GAME_IMAGE_TYPE_LABELS[imageType]}资源` },
+        { status: 400 },
+      )
     }
 
-    return NextResponse.json({
-      data: {
-        game,
-        items: normalizeSGDBImages(images).slice(0, 30),
-      },
+    const result = await searchGameImagesFromSource({
+      source: rawSource,
+      keyword,
+      imageType,
+      includeNsfw,
     })
+
+    return NextResponse.json({ data: result })
   } catch (error) {
     console.error('Search game images failed:', error)
     return NextResponse.json({ error: (error as Error).message || '搜索图片失败' }, { status: 500 })

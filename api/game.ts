@@ -1,5 +1,6 @@
 import { api } from '@/lib/request-utils'
 
+import type { GameImageSource, GameImageType } from '@/lib/game-image-sources'
 import type { LayoutLibraryGroup } from '@/lib/settings/layout-settings'
 import type {
   GameCardListItem,
@@ -220,20 +221,25 @@ export const updateGameInfoById = async (
 }
 
 export const searchGameImages = async (payload: {
-  source: string
+  source: GameImageSource
   keyword: string
-  imageType: 'cover' | 'bg' | 'icon' | 'logo'
+  imageType: GameImageType
+  includeNsfw?: boolean
 }) => {
-  const response = await api.post('/game/image-search', payload)
-  return response.data as {
+  const response = await api.request<{
     data: {
       game: {
-        id: number
+        id: string | number
         name: string
       } | null
       items: GameSearchImageItem[]
     }
-  }
+  }>({
+    method: 'POST',
+    url: '/game/image-search',
+    data: payload,
+  })
+  return response.data
 }
 
 export const getGameCardList = async (payload?: { includeNsfw?: boolean }) => {
