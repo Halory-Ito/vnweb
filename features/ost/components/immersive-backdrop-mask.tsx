@@ -37,7 +37,7 @@ export function ImmersiveBackdropMask({ imageUrl, isPlaying }: ImmersiveBackdrop
         />
         <div
           style={{ animationPlayState: playState }}
-          className="ost-backdrop-sheen via-white/15 dark:via-white/10 pointer-events-none absolute -inset-1/3 bg-gradient-to-r from-transparent to-transparent blur-2xl"
+          className="ost-backdrop-sheen pointer-events-none absolute -inset-1/3 bg-gradient-to-r from-transparent via-white/15 to-transparent blur-2xl dark:via-white/10"
         />
       </div>
       <div className="from-background/85 via-background/20 to-background/60 absolute inset-0 bg-gradient-to-t" />

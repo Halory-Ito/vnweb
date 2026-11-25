@@ -2,11 +2,10 @@
 
 import { Music2 } from 'lucide-react'
 
-import { cn } from '@/lib/utils'
-
 import { usePlayerLyrics } from '../hooks/use-player-lyrics'
 import { PlayerLyricLine } from './player-lyric-line'
 import { PlayerLyricTrackToggles } from './player-lyric-track-toggles'
+import { cn } from '@/lib/utils'
 
 import type { OstSongItem } from '@/types'
 

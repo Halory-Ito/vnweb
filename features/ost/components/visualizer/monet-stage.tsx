@@ -3,10 +3,9 @@
 import { Disc3 } from 'lucide-react'
 import { AnimatePresence, motion } from 'motion/react'
 
-import { cn } from '@/lib/utils'
-
 import { CueTimePill } from './cue-time-pill'
 import { getNeighborCueText, resolveCueTracks, type VisualizerStageProps } from './types'
+import { cn } from '@/lib/utils'
 
 export function MonetStage({
   songId,
@@ -111,7 +110,9 @@ export function MonetStage({
                 onClick={() => onSeek(cue.time)}
                 className={cn(
                   'group/cue inline-flex max-w-full cursor-pointer items-center gap-2 font-medium transition-colors hover:text-foreground/85',
-                  i === 0 ? 'text-foreground/45 text-base sm:text-lg' : 'text-foreground/25 text-sm sm:text-base',
+                  i === 0
+                    ? 'text-foreground/45 text-base sm:text-lg'
+                    : 'text-foreground/25 text-sm sm:text-base',
                 )}
               >
                 <span className="truncate">{getNeighborCueText(cue, tracks)}</span>

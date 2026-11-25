@@ -25,9 +25,7 @@ export function WebMcpToolItem({ tool }: { tool: WebMCP.RegisteredTool }) {
         </span>
         <span className="min-w-0 flex-1">
           <span className="block truncate text-sm font-medium">{tool.title || tool.name}</span>
-          <span className="text-muted-foreground block truncate text-xs">
-            {tool.name}
-          </span>
+          <span className="text-muted-foreground block truncate text-xs">{tool.name}</span>
         </span>
         <ChevronDownIcon className="text-muted-foreground size-4 shrink-0 transition-transform group-data-[state=open]:rotate-180" />
       </CollapsibleTrigger>

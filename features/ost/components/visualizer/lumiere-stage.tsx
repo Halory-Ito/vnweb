@@ -2,10 +2,9 @@
 
 import { AnimatePresence, motion } from 'motion/react'
 
-import { cn } from '@/lib/utils'
-
 import { CueTimePill } from './cue-time-pill'
 import { getNeighborCueText, resolveCueTracks, type VisualizerStageProps } from './types'
+import { cn } from '@/lib/utils'
 
 export function LumiereStage({
   songId,
@@ -71,7 +70,7 @@ export function LumiereStage({
               </p>
             ) : null}
 
-            <div className="mx-auto h-px w-28 overflow-hidden rounded-full bg-foreground/15 sm:w-44">
+            <div className="bg-foreground/15 mx-auto h-px w-28 overflow-hidden rounded-full sm:w-44">
               <div
                 className="h-full rounded-full bg-gradient-to-r from-amber-200 via-amber-400 to-sky-300 transition-[width] duration-150"
                 style={{ width: `${sweepPercent}%` }}

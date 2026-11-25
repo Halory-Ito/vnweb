@@ -106,9 +106,7 @@ export function drawMonetCanvas(
     const norm = i / (bars - 1)
     const envelope = Math.sin(norm * Math.PI)
     const wave =
-      0.45 +
-      0.32 * Math.sin(phase * 3.1 + i * 0.42) +
-      0.23 * Math.cos(phase * 5.2 - i * 0.71)
+      0.45 + 0.32 * Math.sin(phase * 3.1 + i * 0.42) + 0.23 * Math.cos(phase * 5.2 - i * 0.71)
     const h = Math.max(3, maxBarH * Math.abs(wave) * (0.35 + 0.65 * envelope) * ampScale)
     const x = i * step + (step - barW) / 2
     const y = height - h

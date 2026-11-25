@@ -2,6 +2,7 @@
 
 import { ExternalLinkIcon, RotateCwIcon } from 'lucide-react'
 
+import { useSongLyricPreview } from '../hooks/use-song-lyric-preview'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -12,8 +13,6 @@ import {
 } from '@/components/ui/dialog'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Skeleton } from '@/components/ui/skeleton'
-
-import { useSongLyricPreview } from '../hooks/use-song-lyric-preview'
 
 import type { OstSongItem } from '@/types'
 
@@ -31,7 +30,11 @@ export function SongLyricDialog({ item, onOpenChange }: SongLyricDialogProps) {
         <DialogHeader>
           <DialogTitle className="truncate">{item?.name || '歌词预览'}</DialogTitle>
           <DialogDescription>
-            {lyric.isRemote ? '在线歌词' : lyric.path && !lyric.content ? '本地歌词文件' : '歌曲歌词文本'}
+            {lyric.isRemote
+              ? '在线歌词'
+              : lyric.path && !lyric.content
+                ? '本地歌词文件'
+                : '歌曲歌词文本'}
           </DialogDescription>
         </DialogHeader>
 
@@ -72,9 +75,7 @@ export function SongLyricDialog({ item, onOpenChange }: SongLyricDialogProps) {
             </pre>
           ) : (
             <p className="text-muted-foreground py-4 text-center text-sm">
-              {lyric.path
-                ? `当前仅关联了本地歌词文件路径：${lyric.path}`
-                : '暂无歌词内容'}
+              {lyric.path ? `当前仅关联了本地歌词文件路径：${lyric.path}` : '暂无歌词内容'}
             </p>
           )}
         </ScrollArea>

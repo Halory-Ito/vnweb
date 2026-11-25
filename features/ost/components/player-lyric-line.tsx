@@ -3,9 +3,8 @@
 import { Play } from 'lucide-react'
 import { forwardRef, memo } from 'react'
 
-import { cn } from '@/lib/utils'
-
 import { formatPlayerTime } from '../lib/play-mode'
+import { cn } from '@/lib/utils'
 
 import type { LrcCue } from '../lib/parse-lrc'
 

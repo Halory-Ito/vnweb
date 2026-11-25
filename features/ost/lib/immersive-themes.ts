@@ -2,7 +2,10 @@ import { atomWithStorage } from 'jotai/utils'
 
 export type ImmersiveThemeId = 'monet' | 'lumiere' | 'fume' | 'partita' | 'hanabi' | 'backdrop'
 
-export const immersiveThemeAtom = atomWithStorage<ImmersiveThemeId>('ost-player-immersive-theme', 'monet')
+export const immersiveThemeAtom = atomWithStorage<ImmersiveThemeId>(
+  'ost-player-immersive-theme',
+  'monet',
+)
 
 export type ImmersiveThemeMeta = {
   id: ImmersiveThemeId

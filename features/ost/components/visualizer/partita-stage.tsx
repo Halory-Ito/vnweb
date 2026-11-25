@@ -2,18 +2,11 @@
 
 import { motion } from 'motion/react'
 
-import { cn } from '@/lib/utils'
-
 import { CueTimePill } from './cue-time-pill'
 import { resolveCueTracks, type VisualizerStageProps } from './types'
+import { cn } from '@/lib/utils'
 
-const STEP_INDENTS = [
-  'sm:pl-0',
-  'sm:pl-8',
-  'sm:pl-16',
-  'sm:pl-24',
-  'sm:pl-32',
-] as const
+const STEP_INDENTS = ['sm:pl-0', 'sm:pl-8', 'sm:pl-16', 'sm:pl-24', 'sm:pl-32'] as const
 
 export function PartitaStage({
   songId,
@@ -70,9 +63,7 @@ export function PartitaStage({
 
               <div className="min-w-0 flex-1 space-y-1">
                 {hasRomaji && !romajiAsPrimary ? (
-                  <p className="text-foreground/60 text-xs font-medium sm:text-sm">
-                    {cue.romaji}
-                  </p>
+                  <p className="text-foreground/60 text-xs font-medium sm:text-sm">{cue.romaji}</p>
                 ) : null}
 
                 <div className="flex flex-wrap items-center gap-2">

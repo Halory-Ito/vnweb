@@ -2,10 +2,9 @@
 
 import { motion } from 'motion/react'
 
-import { cn } from '@/lib/utils'
-
 import { CueTimePill } from './cue-time-pill'
 import { resolveCueTracks, type VisualizerStageProps } from './types'
+import { cn } from '@/lib/utils'
 
 const DEPTH_STYLE = [
   { opacity: 1, scale: 1, blur: 'blur(0px)' },

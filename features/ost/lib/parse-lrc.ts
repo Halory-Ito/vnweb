@@ -26,7 +26,11 @@ function isLikelyRomaji(text: string, original: string): boolean {
 }
 
 function isLikelyChineseTranslation(text: string, original: string): boolean {
-  return HAN_RE.test(text) && !KANA_OR_HANGUL_RE.test(text) && (KANA_OR_HANGUL_RE.test(original) || ROMAJI_RE.test(original))
+  return (
+    HAN_RE.test(text) &&
+    !KANA_OR_HANGUL_RE.test(text) &&
+    (KANA_OR_HANGUL_RE.test(original) || ROMAJI_RE.test(original))
+  )
 }
 
 /** 尝试将单行双语/三语歌词（如 "原文 / 翻译"、"原文 / 音译 / 翻译"、"原文（翻译）"）拆分 */
@@ -64,8 +68,7 @@ export function parseLrc(text: string): ParsedLyrics {
       if (!lyric) return []
       const segments = splitInlineTracks(lyric)
       return tags.flatMap(([, minutes, seconds, fraction = '']) => {
-        const time =
-          Number(minutes) * 60 + Number(seconds) + Number(fraction.padEnd(3, '0')) / 1000
+        const time = Number(minutes) * 60 + Number(seconds) + Number(fraction.padEnd(3, '0')) / 1000
         return segments.map((segment, segIndex) => ({
           time,
           text: segment,

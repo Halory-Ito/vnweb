@@ -3,16 +3,15 @@
 import { Check, ImageIcon, Palette } from 'lucide-react'
 import { useState } from 'react'
 
-import { Button } from '@/components/ui/button'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { cn } from '@/lib/utils'
-
 import {
   getImmersiveTheme,
   IMMERSIVE_THEMES,
   resolveImmersiveThemeId,
   type ImmersiveThemeId,
 } from '../lib/immersive-themes'
+import { Button } from '@/components/ui/button'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { cn } from '@/lib/utils'
 
 type ImmersiveThemePickerProps = {
   theme: ImmersiveThemeId
@@ -20,11 +19,7 @@ type ImmersiveThemePickerProps = {
   onOpenChange?: (open: boolean) => void
 }
 
-export function ImmersiveThemePicker({
-  theme,
-  onChange,
-  onOpenChange,
-}: ImmersiveThemePickerProps) {
+export function ImmersiveThemePicker({ theme, onChange, onOpenChange }: ImmersiveThemePickerProps) {
   const [open, setOpen] = useState(false)
   const resolvedTheme = resolveImmersiveThemeId(theme)
   const current = getImmersiveTheme(resolvedTheme)
@@ -69,9 +64,7 @@ export function ImmersiveThemePicker({
                 }}
                 className={cn(
                   'flex w-full cursor-pointer items-center gap-2.5 rounded-xl px-2.5 py-2 text-left transition-colors',
-                  selected
-                    ? 'bg-primary/10 text-primary'
-                    : 'text-foreground hover:bg-accent/60',
+                  selected ? 'bg-primary/10 text-primary' : 'text-foreground hover:bg-accent/60',
                 )}
               >
                 {item.id === 'backdrop' ? (
