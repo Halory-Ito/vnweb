@@ -114,7 +114,7 @@ export function setAllImagesSelected(
 }
 
 export type SelectedSyncCategorySegment = {
-  key: 'database' | 'game-saves' | 'images' | 'video' | 'audio' | 'font'
+  key: 'database' | 'settings' | 'game-saves' | 'images' | 'video' | 'audio' | 'font'
   label: string
   size: number
   fileCount: number
@@ -162,6 +162,12 @@ export function computeSelectedSyncSummary(
       label: summary.database.label,
       size: summary.database.available ? summary.database.size : 0,
       fileCount: summary.database.available ? summary.database.fileCount : 0,
+    },
+    {
+      key: 'settings',
+      label: summary.settings.label,
+      size: summary.settings.size,
+      fileCount: summary.settings.fileCount,
     },
     {
       key: 'game-saves',

@@ -2,12 +2,10 @@
 
 import { FolderDownIcon, FolderUpIcon, Loader2Icon, RefreshCwIcon } from 'lucide-react'
 
-import { Badge } from '@/components/ui/badge'
+import { SyncProgressCard } from './sync-progress-card'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
-import { Progress } from '@/components/ui/progress'
 import { useSyncServer } from '@/features/backup/hooks/use-sync-server'
-import { formatBackupSize } from '@/features/backup/lib/format-backup-size'
 import { cn } from '@/lib/utils'
 
 type TransferState = Pick<
@@ -21,6 +19,7 @@ type TransferState = Pick<
   | 'checkRemoteBackup'
   | 'setDownloadPreviewOpen'
   | 'isDownloading'
+  | 'downloadProgress'
 >
 
 function formatRemoteDate(value?: string): string {
@@ -39,13 +38,8 @@ export function SyncTransferSection({
   checkRemoteBackup,
   setDownloadPreviewOpen,
   isDownloading,
+  downloadProgress,
 }: TransferState) {
-  const percent =
-    uploadProgress?.percent ??
-    (uploadProgress?.total
-      ? Math.min(100, Math.round((uploadProgress.uploaded / uploadProgress.total) * 100))
-      : 0)
-
   const remoteDateText = !activeConfig
     ? '未启用服务器'
     : isCheckingRemote
@@ -61,7 +55,7 @@ export function SyncTransferSection({
         <Button
           type="button"
           variant="outline"
-          disabled={isUploading || !activeConfig}
+          disabled={isUploading || isDownloading || !activeConfig}
           onClick={() => setUploadPreviewOpen(true)}
         >
           {isUploading ? (
@@ -74,32 +68,7 @@ export function SyncTransferSection({
       </div>
 
       {isUploading ? (
-        <div className="border-border/70 space-y-2.5 rounded-lg border p-3">
-          <div className="flex items-center justify-between gap-2 text-xs">
-            <span className="truncate font-medium">
-              {uploadProgress?.currentCategory
-                ? `正在上传：${uploadProgress.currentCategory}`
-                : '准备上传...'}
-            </span>
-            <span className="text-muted-foreground shrink-0 tabular-nums">{percent}%</span>
-          </div>
-          <Progress value={percent} />
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="flex flex-wrap items-center gap-1.5">
-              {(uploadProgress?.categories ?? []).map((category) => (
-                <Badge key={category} variant="outline" className="text-[11px] font-normal">
-                  {category}
-                </Badge>
-              ))}
-            </div>
-            {uploadProgress?.total ? (
-              <span className="text-muted-foreground shrink-0 text-xs tabular-nums">
-                {formatBackupSize(uploadProgress.uploaded)} /{' '}
-                {formatBackupSize(uploadProgress.total)}
-              </span>
-            ) : null}
-          </div>
-        </div>
+        <SyncProgressCard progress={uploadProgress} fallbackLabel="正在打包压缩..." />
       ) : null}
 
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
@@ -124,6 +93,7 @@ export function SyncTransferSection({
             disabled={
               !activeConfig ||
               isCheckingRemote ||
+              isUploading ||
               isDownloading ||
               (remoteStatus !== null && !remoteStatus.exists)
             }
@@ -138,6 +108,10 @@ export function SyncTransferSection({
           </Button>
         </div>
       </div>
+
+      {isDownloading ? (
+        <SyncProgressCard progress={downloadProgress} fallbackLabel="准备拉取远端备份..." />
+      ) : null}
     </div>
   )
 }

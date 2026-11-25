@@ -3,29 +3,50 @@ import { randomUUID } from 'node:crypto'
 import fs from 'node:fs'
 import path from 'node:path'
 
-import { normalizeBackupContentOptions } from '@/lib/backup-content'
-import { collectSelectedBackupAssets, type BackupAssetFile } from '@/lib/server/backup-content'
+import {
+  BACKUP_IMAGE_KEYS,
+  BACKUP_IMAGE_LABELS,
+  normalizeBackupContentOptions,
+} from '@/lib/backup-content'
+import {
+  collectBackupSettingsFiles,
+  collectSelectedBackupAssets,
+  scanAllBackupAssets,
+  type BackupAssetFile,
+} from '@/lib/server/backup-content'
 import {
   readBackupContentConfig,
   readGameSaveBackupConfig as getGameSaveConfig,
   writeBackupContentConfig,
 } from '@/lib/server/config-rw'
 import { getDbPath } from '@/lib/server/database-config.mjs'
+import { getTempDir } from '@/lib/server/runtime-paths.mjs'
+import {
+  createSyncBackupArchive,
+  SYNC_BACKUP_ARCHIVE_FILENAME,
+} from '@/lib/server/sync-backup-archive'
 import { SYNC_BACKUP_META_FILENAME } from '@/lib/server/sync-backup-meta'
 import { measurePathStats } from '@/lib/server/sync-backup-summary'
 import { getEnabledSyncClient, getEnabledSyncConfig } from '@/lib/sync-client'
 import { createTask, finishTask, getTask, updateTask } from '@/lib/webdav-progress'
 
 import type { SyncClient } from '@/lib/sync-client/types'
-import type { BackupContentOptions, RemoteBackupMeta } from '@/types'
-
-const ASSET_UPLOAD_CONCURRENCY = 4
+import type {
+  BackupContentOptions,
+  BackupImageSubCategoryStat,
+  RemoteBackupMeta,
+  RemoteDownloadCategorySummary,
+} from '@/types'
 
 function collectUploadCategories(
+  hasSettings: boolean,
   shouldUploadGameSaves: boolean,
   assetFiles: BackupAssetFile[],
 ): string[] {
   const categories = ['数据库']
+  if (hasSettings) {
+    categories.push('设置文件')
+  }
   if (shouldUploadGameSaves) {
     categories.push('游戏存档')
   }
@@ -44,7 +65,7 @@ function collectUploadCategories(
   return categories
 }
 
-// 启动上传任务
+// 启动压缩与上传任务
 export async function POST(req: NextRequest) {
   try {
     const client = await getEnabledSyncClient()
@@ -96,15 +117,77 @@ export async function POST(req: NextRequest) {
       options.gameSaves && gameSaveConfig.enabled && gameSaveDir && fs.existsSync(gameSaveDir),
     )
 
-    const assetFiles = await collectSelectedBackupAssets(options)
+    const [scannedAssets, settingsFiles] = await Promise.all([
+      scanAllBackupAssets(),
+      collectBackupSettingsFiles(),
+    ])
+    const assetFiles = await collectSelectedBackupAssets(options, scannedAssets)
+
     const dbSize = (await fs.promises.stat(dbPath)).size
     const gameSaveStats = shouldUploadGameSaves
       ? await measurePathStats(gameSaveDir)
       : { size: 0, fileCount: 0 }
     const assetsTotalSize = assetFiles.reduce((sum, file) => sum + file.size, 0)
-    const totalSize = dbSize + gameSaveStats.size + assetsTotalSize
-    const totalFiles = 1 + gameSaveStats.fileCount + assetFiles.length
-    const categories = collectUploadCategories(shouldUploadGameSaves, assetFiles)
+    const settingsTotalSize = settingsFiles.reduce((sum, file) => sum + file.size, 0)
+    const totalSize = dbSize + settingsTotalSize + gameSaveStats.size + assetsTotalSize
+    const totalFiles = 1 + settingsFiles.length + gameSaveStats.fileCount + assetFiles.length
+    const categories = collectUploadCategories(
+      settingsFiles.length > 0,
+      shouldUploadGameSaves,
+      assetFiles,
+    )
+
+    const imageItems: BackupImageSubCategoryStat[] = BACKUP_IMAGE_KEYS.filter(
+      (key) => options.images[key] && scannedAssets.images[key].files.length > 0,
+    ).map((key) => ({
+      key,
+      label: BACKUP_IMAGE_LABELS[key],
+      fileCount: scannedAssets.images[key].files.length,
+      size: scannedAssets.images[key].size,
+    }))
+
+    const selectedImageFiles = imageItems.reduce((sum, item) => sum + item.fileCount, 0)
+    const selectedImageSize = imageItems.reduce((sum, item) => sum + item.size, 0)
+
+    const categorySummaries: RemoteDownloadCategorySummary[] = [
+      { key: 'database' as const, label: '数据库', fileCount: 1, size: dbSize },
+      {
+        key: 'settings' as const,
+        label: '设置文件',
+        fileCount: settingsFiles.length,
+        size: settingsTotalSize,
+      },
+      {
+        key: 'game-saves' as const,
+        label: '游戏存档',
+        fileCount: gameSaveStats.fileCount,
+        size: gameSaveStats.size,
+      },
+      {
+        key: 'images' as const,
+        label: '图片',
+        fileCount: selectedImageFiles,
+        size: selectedImageSize,
+      },
+      {
+        key: 'video' as const,
+        label: '视频',
+        fileCount: options.video ? scannedAssets.video.files.length : 0,
+        size: options.video ? scannedAssets.video.size : 0,
+      },
+      {
+        key: 'audio' as const,
+        label: '音频',
+        fileCount: options.audio ? scannedAssets.audio.files.length : 0,
+        size: options.audio ? scannedAssets.audio.size : 0,
+      },
+      {
+        key: 'font' as const,
+        label: '字体',
+        fileCount: options.font ? scannedAssets.font.files.length : 0,
+        size: options.font ? scannedAssets.font.size : 0,
+      },
+    ].filter((category) => category.fileCount > 0)
 
     const taskId = randomUUID()
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19)
@@ -114,16 +197,19 @@ export async function POST(req: NextRequest) {
     const backupDir = `${remoteRoot}/${backupName}`
 
     const task = createTask(taskId, totalSize, categories)
-    task.message = '准备上传...'
+    task.type = 'upload'
+    task.stage = 'compressing'
+    task.uncompressedSize = totalSize
+    task.transferred = 0
+    task.currentCategory = '压缩打包'
+    task.message = '正在打包压缩...'
 
     void runUpload({
       client,
       gameSaveDir: shouldUploadGameSaves ? gameSaveDir : null,
-      gameSaveSize: gameSaveStats.size,
       assetFiles,
-      assetsTotalSize,
+      settingsFiles,
       dbPath,
-      dbSize,
       remoteRoot,
       backupName,
       backupDir,
@@ -131,6 +217,8 @@ export async function POST(req: NextRequest) {
       totalSize,
       totalFiles,
       categories,
+      categorySummaries,
+      imageItems,
       options,
     })
 
@@ -147,80 +235,12 @@ export async function POST(req: NextRequest) {
   }
 }
 
-async function uploadSelectedAssets(params: {
-  client: SyncClient
-  assetFiles: BackupAssetFile[]
-  backupDir: string
-  baseUploaded: number
-  onProgress: (uploaded: number, currentCategory: string) => void
-}) {
-  const { client, assetFiles, backupDir, baseUploaded, onProgress } = params
-  if (assetFiles.length === 0) return
-
-  const dirSet = new Set<string>()
-  for (const file of assetFiles) {
-    const dir = path.posix.dirname(file.archivePath)
-    if (!dir || dir === '.') continue
-    let current = ''
-    for (const segment of dir.split('/').filter(Boolean)) {
-      current = current ? `${current}/${segment}` : segment
-      dirSet.add(current)
-    }
-  }
-
-  const dirs = [...dirSet].sort((a, b) => {
-    const depthDiff = a.split('/').length - b.split('/').length
-    return depthDiff !== 0 ? depthDiff : a.localeCompare(b)
-  })
-  for (const dir of dirs) {
-    await client.createDirectory(`${backupDir}/${dir}`)
-  }
-
-  let nextIndex = 0
-  let completedBytes = 0
-  const inFlightLoaded = new Map<number, number>()
-  const errors: Error[] = []
-
-  const calcInFlight = () => {
-    let total = 0
-    for (const bytes of inFlightLoaded.values()) total += bytes
-    return total
-  }
-
-  const worker = async () => {
-    while (true) {
-      const index = nextIndex++
-      if (index >= assetFiles.length) break
-      const file = assetFiles[index]!
-      try {
-        await client.uploadFile(file.localPath, `${backupDir}/${file.archivePath}`, (loaded) => {
-          inFlightLoaded.set(index, loaded)
-          onProgress(baseUploaded + completedBytes + calcInFlight(), file.categoryLabel)
-        })
-        inFlightLoaded.delete(index)
-        completedBytes += file.size
-        onProgress(baseUploaded + completedBytes + calcInFlight(), file.categoryLabel)
-      } catch (error) {
-        inFlightLoaded.delete(index)
-        errors.push(error as Error)
-      }
-    }
-  }
-
-  await Promise.all(
-    Array.from({ length: Math.min(ASSET_UPLOAD_CONCURRENCY, assetFiles.length) }, () => worker()),
-  )
-  if (errors.length > 0) throw errors[0]
-}
-
 async function runUpload(params: {
   client: SyncClient
   gameSaveDir: string | null
-  gameSaveSize: number
   assetFiles: BackupAssetFile[]
-  assetsTotalSize: number
+  settingsFiles: BackupAssetFile[]
   dbPath: string
-  dbSize: number
   remoteRoot: string
   backupName: string
   backupDir: string
@@ -228,16 +248,16 @@ async function runUpload(params: {
   totalSize: number
   totalFiles: number
   categories: string[]
+  categorySummaries: RemoteDownloadCategorySummary[]
+  imageItems: BackupImageSubCategoryStat[]
   options: BackupContentOptions
 }) {
   const {
     client,
     gameSaveDir,
-    gameSaveSize,
     assetFiles,
-    assetsTotalSize,
+    settingsFiles,
     dbPath,
-    dbSize,
     remoteRoot,
     backupName,
     backupDir,
@@ -245,58 +265,93 @@ async function runUpload(params: {
     totalSize,
     totalFiles,
     categories,
+    categorySummaries,
+    imageItems,
     options,
   } = params
 
-  try {
-    const updateProgress = (uploaded: number, currentCategory: string) => {
-      const clamped = Math.min(uploaded, totalSize)
-      const percent = totalSize > 0 ? Math.min(100, Math.round((clamped / totalSize) * 100)) : 100
-      updateTask(taskId, {
-        uploaded: clamped,
-        percent,
-        currentCategory,
-        currentFile: currentCategory,
-        message: `正在上传：${currentCategory}（${percent}%）`,
-      })
-    }
+  const workDir = path.join(getTempDir(), `sync-upload-${taskId}`)
+  const archivePath = path.join(workDir, SYNC_BACKUP_ARCHIVE_FILENAME)
 
-    let uploaded = 0
+  try {
+    const { archiveSize } = await createSyncBackupArchive({
+      dbPath,
+      assetFiles,
+      settingsFiles,
+      gameSaveDir,
+      options,
+      outputPath: archivePath,
+      uncompressedTotalSize: totalSize,
+      onProgress: (processed, uncompressedTotal) => {
+        const ratio = uncompressedTotal > 0 ? Math.min(1, processed / uncompressedTotal) : 1
+        const percent = Math.min(35, Math.round(ratio * 35))
+        updateTask(taskId, {
+          stage: 'compressing',
+          uploaded: Math.min(processed, totalSize),
+          percent,
+          currentCategory: '压缩打包',
+          currentFile: '压缩打包',
+          message: `正在打包压缩（${percent}%）`,
+        })
+      },
+    })
+
+    updateTask(taskId, {
+      stage: 'uploading',
+      total: archiveSize,
+      uploaded: 0,
+      transferred: 0,
+      archiveSize,
+      percent: 35,
+      currentCategory: '压缩包',
+      currentFile: SYNC_BACKUP_ARCHIVE_FILENAME,
+      message: '正在上传压缩包（35%）',
+    })
 
     await client.createDirectory(backupDir)
+    await client.uploadFile(
+      archivePath,
+      `${backupDir}/${SYNC_BACKUP_ARCHIVE_FILENAME}`,
+      (loaded) => {
+        const clamped = Math.min(loaded, archiveSize)
+        const ratio = archiveSize > 0 ? Math.min(1, clamped / archiveSize) : 1
+        const percent = Math.min(95, 35 + Math.round(ratio * 60))
+        updateTask(taskId, {
+          stage: 'uploading',
+          total: archiveSize,
+          uploaded: clamped,
+          transferred: clamped,
+          percent,
+          currentCategory: '压缩包',
+          currentFile: SYNC_BACKUP_ARCHIVE_FILENAME,
+          message: `正在上传压缩包（${percent}%）`,
+        })
+      },
+    )
 
-    if (gameSaveDir) {
-      await client.uploadDirectory(gameSaveDir, `${backupDir}/game-saves`, (loaded) => {
-        updateProgress(uploaded + loaded, '游戏存档')
-      })
-      uploaded += gameSaveSize
-    }
-
-    if (assetFiles.length > 0) {
-      await uploadSelectedAssets({
-        client,
-        assetFiles,
-        backupDir,
-        baseUploaded: uploaded,
-        onProgress: updateProgress,
-      })
-      uploaded += assetsTotalSize
-    }
-
-    await client.uploadFile(dbPath, `${backupDir}/local.db`, (loaded) => {
-      updateProgress(uploaded + loaded, '数据库')
+    updateTask(taskId, {
+      stage: 'finalizing',
+      uploaded: archiveSize,
+      transferred: archiveSize,
+      percent: 96,
+      currentCategory: '备份信息',
+      currentFile: SYNC_BACKUP_META_FILENAME,
+      message: '正在写入备份元信息...',
     })
-    uploaded += dbSize
 
-    updateProgress(totalSize, '备份信息')
     const meta: RemoteBackupMeta = {
-      version: 2,
+      version: 3,
       backupName,
       backupDate: new Date().toISOString(),
       totalSize,
       totalFiles,
       categories,
       options,
+      archiveSize,
+      archiveFile: SYNC_BACKUP_ARCHIVE_FILENAME,
+      compressed: true,
+      categorySummaries,
+      imageItems,
     }
     const metaContent = JSON.stringify(meta, null, 2)
     await client.uploadBuffer(
@@ -314,6 +369,8 @@ async function runUpload(params: {
   } catch (error) {
     console.error('WebDAV upload failed:', error)
     finishTask(taskId, 'error', '上传失败', (error as Error).message)
+  } finally {
+    await fs.promises.rm(workDir, { recursive: true, force: true }).catch(() => {})
   }
 }
 

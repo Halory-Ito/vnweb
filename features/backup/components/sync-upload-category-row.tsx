@@ -6,6 +6,7 @@ import {
   Gamepad2Icon,
   type LucideIcon,
   MusicIcon,
+  SlidersHorizontalIcon,
   TypeIcon,
 } from 'lucide-react'
 
@@ -21,6 +22,7 @@ type NonImageCategoryKey = Exclude<SelectedSyncCategorySegment['key'], 'images'>
 
 export const SYNC_CATEGORY_COLORS: Record<SelectedSyncCategorySegment['key'], string> = {
   database: 'var(--chart-1)',
+  settings: 'color-mix(in oklab, var(--chart-1) 50%, var(--chart-2))',
   'game-saves': 'var(--chart-2)',
   images: 'var(--chart-3)',
   video: 'var(--chart-4)',
@@ -68,6 +70,17 @@ export function buildSyncUploadCategoryRows(
       error: !summary.database.available,
       size: summary.database.available ? summary.database.size : 0,
       ariaLabel: '数据库（必选）',
+    },
+    {
+      key: 'settings',
+      label: summary.settings.label,
+      subtitle: `${summary.settings.fileCount} 个文件`,
+      icon: SlidersHorizontalIcon,
+      checked: true,
+      disabled: true,
+      requiredBadge: true,
+      size: summary.settings.size,
+      ariaLabel: '设置文件（必选）',
     },
     {
       key: 'game-saves',

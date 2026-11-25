@@ -36,6 +36,7 @@ export function SyncServerPanel() {
     downloadPreviewOpen,
     setDownloadPreviewOpen,
     isDownloading,
+    downloadProgress,
     downloadBackup,
     activeConfig,
   } = useSyncServer()
@@ -138,6 +139,7 @@ export function SyncServerPanel() {
           checkRemoteBackup={checkRemoteBackup}
           setDownloadPreviewOpen={setDownloadPreviewOpen}
           isDownloading={isDownloading}
+          downloadProgress={downloadProgress}
         />
       </section>
 

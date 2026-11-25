@@ -8,7 +8,8 @@ import {
 } from '@aws-sdk/client-s3'
 import fs from 'node:fs'
 import path from 'node:path'
-import { Readable } from 'node:stream'
+import { Readable, Transform } from 'node:stream'
+import { pipeline } from 'node:stream/promises'
 
 import type {
   RemoteBackupInfo,
@@ -125,6 +126,7 @@ export class S3SyncClient implements SyncClient {
   ): Promise<void> {
     const body = await fs.promises.readFile(localPath)
     const total = body.length
+    onProgress?.(0, total, path.basename(localPath))
     await this.client.send(
       new PutObjectCommand({
         Bucket: this.bucket,
@@ -152,16 +154,25 @@ export class S3SyncClient implements SyncClient {
     await fs.promises.mkdir(localDir, { recursive: true })
 
     const total = response.ContentLength ?? 0
-    const chunks: Buffer[] = []
     const stream = response.Body as Readable
     let loaded = 0
-    for await (const chunk of stream) {
-      const buffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk)
-      chunks.push(buffer)
-      loaded += buffer.length
-      onProgress?.(loaded, total, path.basename(localPath))
+    onProgress?.(0, total, path.basename(localPath))
+
+    const progressStream = new Transform({
+      transform(chunk: Buffer, _encoding, callback) {
+        loaded += chunk.length
+        onProgress?.(loaded, total, path.basename(localPath))
+        callback(null, chunk)
+      },
+    })
+
+    const writeStream = fs.createWriteStream(localPath)
+    try {
+      await pipeline(stream, progressStream, writeStream)
+    } catch (error) {
+      await fs.promises.rm(localPath, { force: true }).catch(() => {})
+      throw error
     }
-    await fs.promises.writeFile(localPath, Buffer.concat(chunks))
   }
 
   async uploadBuffer(

@@ -7,6 +7,12 @@ import {
   LIBRARY_FOLDER_LOGO_DIRECTORY,
 } from '@/lib/library-folder-logo-path'
 import { EXTENSION_CATEGORY_MAP } from '@/lib/server/local-resources'
+import {
+  getAssetsDir,
+  getCustomCssPath,
+  getDataSettingsDir,
+  getLegacyPublicAssetsDir,
+} from '@/lib/server/runtime-paths.mjs'
 
 import type { BackupContentOptions, BackupImageCategoryKey } from '@/types'
 
@@ -52,10 +58,9 @@ type AssetScanRoot = {
 }
 
 function getAssetScanRoots(): AssetScanRoot[] {
-  const cwd = process.cwd()
   return [
-    { dir: path.join(cwd, 'assets'), archivePrefix: 'assets' },
-    { dir: path.join(cwd, 'public', 'assets'), archivePrefix: 'public-assets' },
+    { dir: getAssetsDir(), archivePrefix: 'assets' },
+    { dir: getLegacyPublicAssetsDir(), archivePrefix: 'public-assets' },
   ]
 }
 
@@ -214,4 +219,89 @@ export async function mergeBackupAssetDirectory(
 
   await fs.promises.mkdir(targetDir, { recursive: true })
   await fs.promises.cp(extractedDir, targetDir, { recursive: true, force: true })
+}
+
+export function isSafeBackupSettingsFileName(name: string): boolean {
+  if (!name || name === '.' || name === '..') return false
+  if (name.includes('/') || name.includes('\\')) return false
+  if (name.startsWith('.')) return false
+  const lower = name.toLowerCase()
+  return !lower.endsWith('.bak') && !lower.endsWith('.tmp')
+}
+
+export function resolveBackupSettingsTargetPath(name: string): string {
+  return name === 'custom.css' ? getCustomCssPath() : path.join(getDataSettingsDir(), name)
+}
+
+export async function collectBackupSettingsFiles(): Promise<BackupAssetFile[]> {
+  const files: BackupAssetFile[] = []
+  const seenArchivePaths = new Set<string>()
+  const settingsDir = getDataSettingsDir()
+
+  if (fs.existsSync(settingsDir)) {
+    const entries = await fs.promises.readdir(settingsDir, { withFileTypes: true })
+    for (const entry of entries) {
+      if (!entry.isFile() || !isSafeBackupSettingsFileName(entry.name)) continue
+      const localPath = path.join(settingsDir, entry.name)
+      try {
+        const stat = await fs.promises.stat(localPath)
+        const archivePath = `settings/${entry.name}`
+        seenArchivePaths.add(archivePath)
+        files.push({
+          localPath,
+          archivePath,
+          size: stat.size,
+          categoryLabel: '设置文件',
+        })
+      } catch {
+        // Skip unreadable settings files
+      }
+    }
+  }
+
+  const customCssPath = getCustomCssPath()
+  if (!seenArchivePaths.has('settings/custom.css') && fs.existsSync(customCssPath)) {
+    try {
+      const stat = await fs.promises.stat(customCssPath)
+      if (stat.isFile()) {
+        files.push({
+          localPath: customCssPath,
+          archivePath: 'settings/custom.css',
+          size: stat.size,
+          categoryLabel: '设置文件',
+        })
+      }
+    } catch {
+      // Skip unreadable custom.css
+    }
+  }
+
+  return files
+}
+
+export async function restoreBackupSettingsDirectory(extractedSettingsDir: string): Promise<void> {
+  if (!fs.existsSync(extractedSettingsDir)) return
+
+  const entries = await fs.promises.readdir(extractedSettingsDir, { withFileTypes: true })
+  const validFiles = entries.filter(
+    (entry) => entry.isFile() && isSafeBackupSettingsFileName(entry.name),
+  )
+  if (validFiles.length === 0) return
+
+  const backupDir = `${getDataSettingsDir()}.bak`
+  await fs.promises.rm(backupDir, { recursive: true, force: true })
+
+  for (const entry of validFiles) {
+    const sourcePath = path.join(extractedSettingsDir, entry.name)
+    const destPath = resolveBackupSettingsTargetPath(entry.name)
+
+    if (fs.existsSync(destPath)) {
+      const backupFilePath = path.join(backupDir, entry.name)
+      await fs.promises.mkdir(path.dirname(backupFilePath), { recursive: true })
+      await fs.promises.copyFile(destPath, backupFilePath)
+    }
+
+    await fs.promises.mkdir(path.dirname(destPath), { recursive: true })
+    await fs.promises.copyFile(sourcePath, destPath)
+  }
 }

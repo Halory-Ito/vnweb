@@ -2,7 +2,10 @@ import archiver from 'archiver'
 import { NextRequest, NextResponse } from 'next/server'
 import fs from 'node:fs'
 
-import { collectSelectedBackupAssets } from '@/lib/server/backup-content'
+import {
+  collectBackupSettingsFiles,
+  collectSelectedBackupAssets,
+} from '@/lib/server/backup-content'
 import {
   readBackupContentConfig,
   readGameSaveBackupConfig as getGameSaveConfig,
@@ -12,7 +15,10 @@ import { getDbPath } from '@/lib/server/database-config.mjs'
 export async function POST(_req: NextRequest) {
   try {
     const options = await readBackupContentConfig()
-    const assetFiles = await collectSelectedBackupAssets(options)
+    const [assetFiles, settingsFiles] = await Promise.all([
+      collectSelectedBackupAssets(options),
+      collectBackupSettingsFiles(),
+    ])
 
     // 创建归档
     const archive = archiver('zip', { zlib: { level: 9 } })
@@ -38,7 +44,12 @@ export async function POST(_req: NextRequest) {
       archive.file(file.localPath, { name: file.archivePath })
     }
 
-    // 3. 导出游戏存档目录
+    // 3. 导出所有设置文件
+    for (const file of settingsFiles) {
+      archive.file(file.localPath, { name: file.archivePath })
+    }
+
+    // 4. 导出游戏存档目录
     if (options.gameSaves) {
       const gameSaveConfig = await getGameSaveConfig()
       if (gameSaveConfig.enabled && gameSaveConfig.directory) {

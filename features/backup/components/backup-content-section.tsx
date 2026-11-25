@@ -8,6 +8,7 @@ import {
   ImageIcon,
   type LucideIcon,
   MusicIcon,
+  SlidersHorizontalIcon,
   TypeIcon,
 } from 'lucide-react'
 import { useState } from 'react'
@@ -66,6 +67,17 @@ export function BackupContentSection() {
               <Checkbox id="backup-content-db" checked disabled />
               <DatabaseIcon className="text-muted-foreground size-4 shrink-0" />
               <Label htmlFor="backup-content-db">数据库</Label>
+            </div>
+            <Badge variant="outline" className="text-xs font-normal">
+              必选
+            </Badge>
+          </div>
+
+          <div className="flex min-h-11 items-center justify-between gap-3 py-2.5">
+            <div className="flex items-center gap-3">
+              <Checkbox id="backup-content-settings" checked disabled />
+              <SlidersHorizontalIcon className="text-muted-foreground size-4 shrink-0" />
+              <Label htmlFor="backup-content-settings">设置文件</Label>
             </div>
             <Badge variant="outline" className="text-xs font-normal">
               必选

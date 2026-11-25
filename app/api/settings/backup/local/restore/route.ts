@@ -3,19 +3,23 @@ import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 
-import { mergeBackupAssetDirectory } from '@/lib/server/backup-content'
+import {
+  mergeBackupAssetDirectory,
+  restoreBackupSettingsDirectory,
+} from '@/lib/server/backup-content'
 import { readGameSaveBackupConfig as getGameSaveConfig } from '@/lib/server/config-rw'
 import { getDbPath } from '@/lib/server/database-config.mjs'
 import { migrateLegacyLibraryLogoDirectory } from '@/lib/server/library-folder-logo-files'
+import { getAssetsDir, getLegacyPublicAssetsDir } from '@/lib/server/runtime-paths.mjs'
 
 // 获取 assets 目录路径
 function getAssetsPath() {
-  return path.join(process.cwd(), 'assets')
+  return getAssetsDir()
 }
 
 // 获取 public/assets 目录路径
 function getPublicAssetsPath() {
-  return path.join(process.cwd(), 'public', 'assets')
+  return getLegacyPublicAssetsDir()
 }
 
 // 获取备份目录
@@ -83,6 +87,9 @@ export async function POST(req: NextRequest) {
         }
       }
     }
+
+    // 4. 恢复设置文件
+    await restoreBackupSettingsDirectory(path.join(backupPath, 'settings'))
 
     return NextResponse.json({
       data: {

@@ -7,6 +7,7 @@ import {
 } from '@/lib/library-folder-logo-path'
 import { classifyAssetSubPath } from '@/lib/server/backup-content'
 import { readGameSaveBackupConfig } from '@/lib/server/config-rw'
+import { SYNC_BACKUP_ARCHIVE_FILENAME } from '@/lib/server/sync-backup-archive'
 
 import type { SyncClient } from '@/lib/sync-client/types'
 import type {
@@ -50,6 +51,14 @@ export function parseRemoteBackupMeta(raw: Buffer | null): RemoteBackupMeta | nu
       ? record.categories.filter((item): item is string => typeof item === 'string')
       : []
 
+    const categorySummaries = Array.isArray(record.categorySummaries)
+      ? (record.categorySummaries as RemoteDownloadCategorySummary[])
+      : undefined
+    const imageItems = Array.isArray(record.imageItems)
+      ? (record.imageItems as BackupImageSubCategoryStat[])
+      : undefined
+    const archiveSize = Number(record.archiveSize)
+
     return {
       version: Number(record.version) || 1,
       backupName: typeof record.backupName === 'string' ? record.backupName.trim() : '',
@@ -61,6 +70,11 @@ export function parseRemoteBackupMeta(raw: Buffer | null): RemoteBackupMeta | nu
         record.options && typeof record.options === 'object' && !Array.isArray(record.options)
           ? (record.options as RemoteBackupMeta['options'])
           : undefined,
+      archiveSize: Number.isFinite(archiveSize) && archiveSize > 0 ? archiveSize : undefined,
+      archiveFile: typeof record.archiveFile === 'string' ? record.archiveFile.trim() : undefined,
+      compressed: typeof record.compressed === 'boolean' ? record.compressed : undefined,
+      categorySummaries,
+      imageItems,
     }
   } catch {
     return null
@@ -156,10 +170,46 @@ export async function collectRemoteDownloadPreview(
     }
   }
 
+  if (
+    resolved.meta?.compressed &&
+    Array.isArray(resolved.meta.categorySummaries) &&
+    resolved.meta.categorySummaries.length > 0
+  ) {
+    const categories = resolved.meta.categorySummaries.filter((category) => category.fileCount > 0)
+    const imageItems = (resolved.meta.imageItems ?? []).filter((item) => item.fileCount > 0)
+    const totalFiles = categories.reduce((sum, item) => sum + item.fileCount, 0)
+    const totalSize = categories.reduce((sum, item) => sum + item.size, 0)
+
+    return {
+      exists: true,
+      backupName: resolved.backupName,
+      backupDate: resolved.backupDate,
+      totalSize: totalSize || resolved.meta.totalSize,
+      totalFiles: totalFiles || resolved.meta.totalFiles,
+      archiveSize: resolved.meta.archiveSize,
+      compressed: true,
+      categories,
+      imageItems,
+      gameSaveEnabled,
+      hasGameSaves: categories.some(
+        (category) => category.key === 'game-saves' && category.fileCount > 0,
+      ),
+    }
+  }
+
   const files = await client.listFilesRecursive(resolved.remoteBasePath)
+  const archiveFile = files.find(
+    (file) => file.relativePath.replace(/^\/+/, '') === SYNC_BACKUP_ARCHIVE_FILENAME,
+  )
   const dbStat: RemoteDownloadCategorySummary = {
     key: 'database',
     label: '数据库',
+    fileCount: 0,
+    size: 0,
+  }
+  const settingsStat: RemoteDownloadCategorySummary = {
+    key: 'settings',
+    label: '设置文件',
     fileCount: 0,
     size: 0,
   }
@@ -200,6 +250,12 @@ export async function collectRemoteDownloadPreview(
     if (rel === 'local.db' || rel === 'database/local.db') {
       dbStat.fileCount += 1
       dbStat.size += file.size
+      continue
+    }
+
+    if (rel.startsWith('settings/')) {
+      settingsStat.fileCount += 1
+      settingsStat.size += file.size
       continue
     }
 
@@ -256,11 +312,40 @@ export async function collectRemoteDownloadPreview(
     size: imageItems.reduce((sum, item) => sum + item.size, 0),
   }
 
-  const categories = [dbStat, saveStat, imagesStat, videoStat, audioStat, fontStat].filter(
-    (category) => category.fileCount > 0,
-  )
+  const categories = [
+    dbStat,
+    settingsStat,
+    saveStat,
+    imagesStat,
+    videoStat,
+    audioStat,
+    fontStat,
+  ].filter((category) => category.fileCount > 0)
   const totalFiles = categories.reduce((sum, item) => sum + item.fileCount, 0)
   const totalSize = categories.reduce((sum, item) => sum + item.size, 0)
+
+  if (categories.length === 0 && archiveFile) {
+    return {
+      exists: true,
+      backupName: resolved.backupName,
+      backupDate: resolved.backupDate,
+      totalSize: archiveFile.size,
+      totalFiles: 1,
+      archiveSize: archiveFile.size,
+      compressed: true,
+      categories: [
+        {
+          key: 'database',
+          label: '备份压缩包',
+          fileCount: 1,
+          size: archiveFile.size,
+        },
+      ],
+      imageItems: [],
+      gameSaveEnabled,
+      hasGameSaves: true,
+    }
+  }
 
   return {
     exists: true,
@@ -268,6 +353,8 @@ export async function collectRemoteDownloadPreview(
     backupDate: resolved.backupDate,
     totalSize,
     totalFiles,
+    archiveSize: archiveFile?.size ?? resolved.meta?.archiveSize,
+    compressed: Boolean(archiveFile || resolved.meta?.compressed),
     categories,
     imageItems,
     gameSaveEnabled,

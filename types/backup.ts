@@ -78,6 +78,7 @@ export type SyncUploadPreviewSummary = {
     available: boolean
     unavailableReason?: string
   }
+  settings: BackupCategoryStat
   gameSaves: BackupCategoryStat & {
     status: 'available' | 'disabled' | 'missing'
     unavailableReason?: string
@@ -101,6 +102,11 @@ export type RemoteBackupMeta = {
   totalFiles: number
   categories: string[]
   options?: BackupContentOptions
+  archiveSize?: number
+  archiveFile?: string
+  compressed?: boolean
+  categorySummaries?: RemoteDownloadCategorySummary[]
+  imageItems?: BackupImageSubCategoryStat[]
 }
 
 export type RemoteBackupStatus = {
@@ -113,7 +119,7 @@ export type RemoteBackupStatus = {
 }
 
 export type RemoteDownloadCategorySummary = {
-  key: 'database' | 'game-saves' | 'images' | 'video' | 'audio' | 'font'
+  key: 'database' | 'settings' | 'game-saves' | 'images' | 'video' | 'audio' | 'font'
   label: string
   fileCount: number
   size: number
@@ -125,6 +131,8 @@ export type SyncDownloadPreviewSummary = {
   backupDate: string
   totalSize: number
   totalFiles: number
+  archiveSize?: number
+  compressed?: boolean
   categories: RemoteDownloadCategorySummary[]
   imageItems: BackupImageSubCategoryStat[]
   gameSaveEnabled: boolean

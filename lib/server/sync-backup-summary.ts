@@ -2,7 +2,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 
 import { BACKUP_IMAGE_KEYS, BACKUP_IMAGE_LABELS } from '@/lib/backup-content'
-import { scanAllBackupAssets } from '@/lib/server/backup-content'
+import { collectBackupSettingsFiles, scanAllBackupAssets } from '@/lib/server/backup-content'
 import { readBackupContentConfig, readGameSaveBackupConfig } from '@/lib/server/config-rw'
 import { getDbPath } from '@/lib/server/database-config.mjs'
 
@@ -115,14 +115,16 @@ async function resolveGameSaveStat(config: {
 }
 
 export async function collectSyncUploadSummary(): Promise<SyncUploadPreviewSummary> {
-  const [options, gameSaveConfig, scannedAssets, database] = await Promise.all([
+  const [options, gameSaveConfig, scannedAssets, database, settingsFiles] = await Promise.all([
     readBackupContentConfig(),
     readGameSaveBackupConfig(),
     scanAllBackupAssets(),
     resolveDatabaseStat(),
+    collectBackupSettingsFiles(),
   ])
 
   const gameSaves = await resolveGameSaveStat(gameSaveConfig)
+  const settingsSize = settingsFiles.reduce((sum, file) => sum + file.size, 0)
 
   const imageItems: BackupImageSubCategoryStat[] = BACKUP_IMAGE_KEYS.map((key) => {
     const bucket = scannedAssets.images[key]
@@ -140,6 +142,11 @@ export async function collectSyncUploadSummary(): Promise<SyncUploadPreviewSumma
   return {
     options,
     database,
+    settings: {
+      label: '设置文件',
+      fileCount: settingsFiles.length,
+      size: settingsSize,
+    },
     gameSaves,
     images: {
       label: '图片',

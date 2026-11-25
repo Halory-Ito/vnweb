@@ -1,7 +1,11 @@
 import axios, { AxiosInstance } from 'axios'
 import fs from 'node:fs'
 import path from 'node:path'
+import { Transform } from 'node:stream'
+import { pipeline } from 'node:stream/promises'
 import { createClient, FileStat, WebDAVClient as WebDAVClientInstance } from 'webdav'
+
+import { getLegacyWebdavConfigPath } from '@/lib/server/runtime-paths.mjs'
 
 export interface WebDAVConfig {
   server: string
@@ -154,46 +158,74 @@ export class WebDAVClient {
     }
   }
 
-  // 上传单个文件（支持进度回调）
+  // 上传单个文件（流式上传并实时回调进度）
   async uploadFile(
     localPath: string,
     remotePath: string,
     onProgress?: ProgressCallback,
   ): Promise<void> {
-    const fileContent = await fs.promises.readFile(localPath)
-    const total = fileContent.length
-    await this.axios.put(this.buildUrl(remotePath), fileContent, {
-      headers: {
-        'Content-Type': 'application/octet-stream',
-      },
-      onUploadProgress: (event) => {
-        if (onProgress) {
-          onProgress(event.loaded, event.total || total)
-        }
+    const stat = await fs.promises.stat(localPath)
+    const total = stat.size
+    let loaded = 0
+    onProgress?.(0, total, path.basename(localPath))
+
+    const progressStream = new Transform({
+      transform(chunk: Buffer, _encoding, callback) {
+        loaded += chunk.length
+        onProgress?.(Math.min(loaded, total), total, path.basename(localPath))
+        callback(null, chunk)
       },
     })
+
+    const fileStream = fs.createReadStream(localPath)
+    const bodyStream = fileStream.pipe(progressStream)
+
+    try {
+      await this.axios.put(this.buildUrl(remotePath), bodyStream, {
+        headers: {
+          'Content-Type': 'application/octet-stream',
+          'Content-Length': String(total),
+        },
+      })
+    } finally {
+      fileStream.destroy()
+      progressStream.destroy()
+    }
   }
 
-  // 下载单个文件（支持进度回调）
+  // 下载单个文件（流式落盘并实时回调进度）
   async downloadFile(
     remotePath: string,
     localPath: string,
     onProgress?: ProgressCallback,
   ): Promise<void> {
-    const response = await this.axios.get(this.buildUrl(remotePath), {
-      responseType: 'arraybuffer',
-      onDownloadProgress: (event) => {
-        if (onProgress) {
-          onProgress(event.loaded, event.total || 0)
-        }
-      },
-    })
-
-    // 确保本地目录存在
     const localDir = path.dirname(localPath)
     await fs.promises.mkdir(localDir, { recursive: true })
 
-    await fs.promises.writeFile(localPath, response.data)
+    const response = await this.axios.get(this.buildUrl(remotePath), {
+      responseType: 'stream',
+    })
+
+    const headerLength = Number(response.headers?.['content-length'])
+    const total = Number.isFinite(headerLength) && headerLength > 0 ? headerLength : 0
+    let loaded = 0
+    onProgress?.(0, total, path.basename(localPath))
+
+    const progressStream = new Transform({
+      transform(chunk: Buffer, _encoding, callback) {
+        loaded += chunk.length
+        onProgress?.(loaded, total, path.basename(localPath))
+        callback(null, chunk)
+      },
+    })
+
+    const writeStream = fs.createWriteStream(localPath)
+    try {
+      await pipeline(response.data as NodeJS.ReadableStream, progressStream, writeStream)
+    } catch (error) {
+      await fs.promises.rm(localPath, { force: true }).catch(() => {})
+      throw error
+    }
   }
 
   // 递归上传目录（支持进度回调，回调参数为累计字节数与总字节数）
@@ -406,7 +438,7 @@ export async function getWebDAVConfig(): Promise<WebDAVConfig | null> {
     let config = resolveEnabledWebDAVConfig(node)
 
     if (!config?.server) {
-      const legacyPath = path.join(process.cwd(), 'app', 'webdav-config.json')
+      const legacyPath = getLegacyWebdavConfigPath()
       if (fs.existsSync(legacyPath)) {
         const content = await fs.promises.readFile(legacyPath, 'utf-8')
         config = JSON.parse(content) as Partial<WebDAVConfig>

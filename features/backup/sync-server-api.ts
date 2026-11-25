@@ -26,9 +26,15 @@ export type RemoteBackupInfo = {
 
 export type SyncTaskProgress = {
   taskId: string
+  type?: 'upload' | 'download'
+  stage?: string
   status: 'running' | 'success' | 'error'
   total: number
   uploaded: number
+  transferred?: number
+  archiveSize?: number
+  uncompressedSize?: number
+  backupDir?: string
   percent: number
   currentCategory: string
   categories: string[]
@@ -133,11 +139,20 @@ export function listSyncBackupsApi() {
   return api.request({ method: 'GET', url: `${BASE_URL}/list` })
 }
 
-// 从同步服务器下载备份并覆盖本地
-export function downloadSyncBackupApi(backupName?: string) {
-  return api.request({
+// 启动从同步服务器下载备份任务（返回 taskId）
+export function startDownloadSyncBackupApi(backupName?: string) {
+  return api.request<{ data: { taskId: string; backupName: string } }>({
     method: 'POST',
     url: `${BASE_URL}/download`,
     data: backupName ? { backupName } : {},
+  })
+}
+
+// 查询下载任务进度
+export function getDownloadSyncProgressApi(taskId: string) {
+  return api.request<{ data: SyncTaskProgress }>({
+    method: 'GET',
+    url: `${BASE_URL}/download`,
+    params: { taskId },
   })
 }

@@ -7,10 +7,11 @@ import { toast } from 'sonner'
 import {
   createSyncConfigApi,
   deleteSyncConfigApi,
-  downloadSyncBackupApi,
+  getDownloadSyncProgressApi,
   getRemoteBackupStatusApi,
   getSyncConfigsApi,
   getUploadSyncProgressApi,
+  startDownloadSyncBackupApi,
   startUploadSyncBackupApi,
   testSyncConnectionApi,
   updateSyncConfigApi,
@@ -38,7 +39,7 @@ export const createEmptySyncConfig = (): SyncServerConfig => ({
   enabled: false,
 })
 
-const POLL_INTERVAL = 800
+const POLL_INTERVAL = 500
 
 export function useSyncServer() {
   const queryClient = useQueryClient()
@@ -51,6 +52,7 @@ export function useSyncServer() {
   const [uploadProgress, setUploadProgress] = useState<SyncTaskProgress | null>(null)
   const [uploadPreviewOpen, setUploadPreviewOpen] = useState(false)
   const [isDownloading, setIsDownloading] = useState(false)
+  const [downloadProgress, setDownloadProgress] = useState<SyncTaskProgress | null>(null)
   const [remoteStatus, setRemoteStatus] = useState<RemoteBackupStatus | null>(null)
   const [isCheckingRemote, setIsCheckingRemote] = useState(false)
   const [downloadPreviewOpen, setDownloadPreviewOpen] = useState(false)
@@ -208,11 +210,31 @@ export function useSyncServer() {
 
   const downloadBackup = useCallback(async (backupName?: string) => {
     setIsDownloading(true)
+    setDownloadProgress(null)
     try {
-      const response = await downloadSyncBackupApi(backupName)
-      const data = response.data as { data: { message: string } }
-      toast.success(data.data.message || '下载成功')
-      return true
+      const response = await startDownloadSyncBackupApi(backupName)
+      const { taskId } = response.data.data
+      let succeeded = false
+      let finished = false
+
+      while (!finished) {
+        await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL))
+        const progressResponse = await getDownloadSyncProgressApi(taskId)
+        const progress = progressResponse.data.data
+        setDownloadProgress(progress)
+
+        if (progress.status === 'success') {
+          toast.success(progress.message || '下载成功，本地文件已备份，页面将重新加载')
+          setTimeout(() => window.location.reload(), 1500)
+          succeeded = true
+          finished = true
+        } else if (progress.status === 'error') {
+          toast.error(progress.error || progress.message || '下载失败')
+          finished = true
+        }
+      }
+
+      return succeeded
     } catch (error) {
       toast.error((error as Error).message || '下载失败')
       return false
@@ -241,6 +263,7 @@ export function useSyncServer() {
     downloadPreviewOpen,
     setDownloadPreviewOpen,
     isDownloading,
+    downloadProgress,
     downloadBackup,
   }
 }

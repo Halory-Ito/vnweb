@@ -9,6 +9,7 @@ import {
   ImageIcon,
   type LucideIcon,
   MusicIcon,
+  SlidersHorizontalIcon,
   TypeIcon,
 } from 'lucide-react'
 import { useState } from 'react'
@@ -27,6 +28,7 @@ import type {
 
 const CATEGORY_ICONS: Record<RemoteDownloadCategorySummary['key'], LucideIcon> = {
   database: DatabaseIcon,
+  settings: SlidersHorizontalIcon,
   'game-saves': Gamepad2Icon,
   images: ImageIcon,
   video: FilmIcon,
@@ -55,13 +57,16 @@ export function SyncDownloadPreviewSummary({
   const backupDateText = summary.backupDate
     ? new Date(summary.backupDate).toLocaleString()
     : '未知日期'
+  const subtitle = summary.archiveSize
+    ? `备份日期：${backupDateText} · 压缩包 ${formatBackupSize(summary.archiveSize)}`
+    : `备份日期：${backupDateText}`
 
   return (
     <>
       <SyncPreviewOverviewCard
         totalSize={summary.totalSize}
         totalFiles={summary.totalFiles}
-        subtitle={`备份日期：${backupDateText}`}
+        subtitle={subtitle}
         targetServerName={targetServerName}
         isFetching={isFetching}
         onRefresh={onRefresh}

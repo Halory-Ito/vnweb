@@ -1,12 +1,29 @@
-// WebDAV 上传任务进度存储（内存态，按任务 ID 索引）
+// 同步服务器上传 / 下载任务进度存储（内存态，按任务 ID 索引）
 
 export type WebDAVTaskStatus = 'running' | 'success' | 'error'
 
+export type SyncTaskStage =
+  | 'preparing'
+  | 'compressing'
+  | 'uploading'
+  | 'downloading'
+  | 'backing-up'
+  | 'extracting'
+  | 'restoring'
+  | 'finalizing'
+  | 'done'
+
 export type WebDAVTaskProgress = {
   taskId: string
+  type?: 'upload' | 'download'
+  stage?: SyncTaskStage
   status: WebDAVTaskStatus
   total: number
   uploaded: number
+  transferred?: number
+  archiveSize?: number
+  uncompressedSize?: number
+  backupDir?: string
   percent: number
   currentCategory: string
   categories: string[]
@@ -80,7 +97,9 @@ export function finishTask(
     task.message = message
     if (status === 'success') {
       task.uploaded = task.total
+      task.transferred = task.total
       task.percent = 100
+      task.stage = 'done'
       task.currentCategory = ''
       task.currentFile = ''
     }

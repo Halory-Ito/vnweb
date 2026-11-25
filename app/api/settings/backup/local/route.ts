@@ -3,7 +3,11 @@ import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 
-import { collectSelectedBackupAssets, copyBackupAssetFiles } from '@/lib/server/backup-content'
+import {
+  collectBackupSettingsFiles,
+  collectSelectedBackupAssets,
+  copyBackupAssetFiles,
+} from '@/lib/server/backup-content'
 import {
   readBackupContentConfig,
   readGameSaveBackupConfig as getGameSaveConfig,
@@ -111,7 +115,10 @@ export async function POST(_req: NextRequest) {
     await fs.promises.mkdir(backupPath, { recursive: true })
 
     const options = await readBackupContentConfig()
-    const assetFiles = await collectSelectedBackupAssets(options)
+    const [assetFiles, settingsFiles] = await Promise.all([
+      collectSelectedBackupAssets(options),
+      collectBackupSettingsFiles(),
+    ])
 
     // 1. 复制数据库
     const dbPath = getDbPath()
@@ -124,6 +131,11 @@ export async function POST(_req: NextRequest) {
     // 2. 按所选分类复制静态资源
     if (assetFiles.length > 0) {
       await copyBackupAssetFiles(assetFiles, backupPath)
+    }
+
+    // 3. 复制所有设置文件
+    if (settingsFiles.length > 0) {
+      await copyBackupAssetFiles(settingsFiles, backupPath)
     }
 
     // 3. 复制游戏存档目录

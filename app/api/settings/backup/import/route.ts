@@ -2,19 +2,23 @@ import { NextRequest, NextResponse } from 'next/server'
 import fs from 'node:fs'
 import path from 'node:path'
 
-import { mergeBackupAssetDirectory } from '@/lib/server/backup-content'
+import {
+  mergeBackupAssetDirectory,
+  restoreBackupSettingsDirectory,
+} from '@/lib/server/backup-content'
 import { readGameSaveBackupConfig as getGameSaveConfig } from '@/lib/server/config-rw'
 import { getDbPath } from '@/lib/server/database-config.mjs'
 import { migrateLegacyLibraryLogoDirectory } from '@/lib/server/library-folder-logo-files'
+import { getAssetsDir, getLegacyPublicAssetsDir, getTempDir } from '@/lib/server/runtime-paths.mjs'
 
 // 获取 assets 目录路径
 function getAssetsPath() {
-  return path.join(process.cwd(), 'assets')
+  return getAssetsDir()
 }
 
 // 获取 public/assets 目录路径
 function getPublicAssetsPath() {
-  return path.join(process.cwd(), 'public', 'assets')
+  return getLegacyPublicAssetsDir()
 }
 
 // 解压 zip 文件
@@ -26,6 +30,7 @@ async function extractZip(
   assetsDir: string | null
   publicAssetsDir: string | null
   gameSavesDir: string | null
+  settingsDir: string | null
 }> {
   // 动态导入 adm-zip
   const AdmZip = (await import('adm-zip')).default
@@ -48,7 +53,8 @@ async function extractZip(
       !entryPath.startsWith('database/') &&
       !entryPath.startsWith('assets/') &&
       !entryPath.startsWith('public-assets/') &&
-      !entryPath.startsWith('game-saves/')
+      !entryPath.startsWith('game-saves/') &&
+      !entryPath.startsWith('settings/')
     ) {
       continue
     }
@@ -70,6 +76,7 @@ async function extractZip(
     assetsDir: path.join(targetDir, 'assets'),
     publicAssetsDir: path.join(targetDir, 'public-assets'),
     gameSavesDir: path.join(targetDir, 'game-saves'),
+    settingsDir: path.join(targetDir, 'settings'),
   }
 }
 
@@ -91,7 +98,7 @@ export async function POST(req: NextRequest) {
     const buffer = Buffer.from(arrayBuffer)
 
     // 创建临时目录
-    const tempDir = path.join(process.cwd(), 'temp-backup')
+    const tempDir = getTempDir()
     await fs.promises.mkdir(tempDir, { recursive: true })
 
     try {
@@ -101,6 +108,7 @@ export async function POST(req: NextRequest) {
         assetsDir: extractedAssetsPath,
         publicAssetsDir: extractedPublicAssetsPath,
         gameSavesDir: extractedGameSavesDir,
+        settingsDir: extractedSettingsDir,
       } = await extractZip(buffer, tempDir)
 
       // 替换数据库文件
@@ -144,6 +152,11 @@ export async function POST(req: NextRequest) {
             })
           }
         }
+      }
+
+      // 恢复设置文件
+      if (extractedSettingsDir) {
+        await restoreBackupSettingsDirectory(extractedSettingsDir)
       }
 
       return NextResponse.json({
