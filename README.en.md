@@ -28,7 +28,7 @@
     <a href="#ai-assistant-and-webmcp">AI Assistant</a> ·
     <a href="#cli">CLI</a> ·
     <a href="./ROADMAP.md">Roadmap</a> ·
-    <a href="docs/guide/intro/what-is-vnweb.md">Docs (zh-CN)</a> ·
+    <a href="docs/guide/intro/what-is-vnweb.md">Docs</a> ·
     <a href="https://github.com/Halory-Ito/vnweb/issues/new">Issues</a>
   </p>
 </div>
@@ -36,7 +36,7 @@
 ![Dashboard](images/主页.png)
 
 > [!NOTE]
-> On Windows x64, download `*_x64-setup.exe` from the [latest release](https://github.com/Halory-Ito/vnweb/releases/latest). GitHub Actions builds the desktop app after pushes to `main` and publishes the installer when the build succeeds. See Quick Start below to run from source.
+> On Windows x64, download `*_x64-setup.exe` from the [latest release](https://github.com/Halory-Ito/vnweb/releases/latest). GitHub Actions builds the desktop app when a push to `main` changes the Tauri version. See Quick Start below to run from source.
 
 ## Project Vision
 

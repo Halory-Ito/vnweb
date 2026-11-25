@@ -28,7 +28,7 @@
     <a href="#ai-助手与-webmcp">AI 助手</a> ·
     <a href="#命令行工具">命令行工具</a> ·
     <a href="./ROADMAP.md">路线图</a> ·
-    <a href="docs/guide/intro/what-is-vnweb.md">文档</a> ·
+    <a href="docs/zh/guide/intro/what-is-vnweb.md">文档</a> ·
     <a href="https://github.com/Halory-Ito/vnweb/issues/new">问题反馈</a>
   </p>
 </div>
@@ -36,7 +36,7 @@
 ![主页仪表盘](images/主页.png)
 
 > [!NOTE]
-> Windows x64 用户可在[最新 Release](https://github.com/Halory-Ito/vnweb/releases/latest)下载 `*_x64-setup.exe`。源码运行方式见下方「快速开始」。
+> Windows x64 用户可在[最新 Release](https://github.com/Halory-Ito/vnweb/releases/latest)下载 `*_x64-setup.exe`。推送到 `main` 时，只有 Tauri 版本号发生变化才会构建桌面安装包。源码运行方式见下方「快速开始」。
 
 ## 项目愿景
 
