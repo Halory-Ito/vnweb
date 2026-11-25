@@ -19,7 +19,8 @@ export const addGameToolInputSchema = {
     },
     imageSource: {
       type: 'string',
-      description: '图片来源，默认 steamgriddb（SteamGrid DB），用于获取封面、背景、图标和徽标',
+      description:
+        '图片来源，支持 vndb、steam、bangumi、yandere、konachan、safebooru、steamgriddb、igdb、rawg、thegamesdb、giantbomb、danbooru、gelbooru、wallhaven（默认 steamgriddb），用于获取封面、背景、图标和徽标',
     },
   },
   required: ['keyword'],

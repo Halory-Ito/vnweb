@@ -1,9 +1,15 @@
 import { searchGameImages } from '@/api'
+import {
+  GAME_IMAGE_SOURCES,
+  isGameImageSource,
+  supportsGameImageType,
+  type GameImageSource,
+} from '@/lib/game-image-sources'
 
 import type { GameInfo, GameSearchImageItem } from '@/types'
 
 // 默认图片来源：SteamGrid DB
-export const DEFAULT_GAME_IMAGE_SOURCE = 'steamgriddb'
+export const DEFAULT_GAME_IMAGE_SOURCE: GameImageSource = 'steamgriddb'
 
 export type GameImageAssetType = 'cover' | 'bg' | 'icon' | 'logo'
 
@@ -20,14 +26,14 @@ export type GameImages = Partial<Record<GameImageAssetType, string>>
 
 export type FetchGameImagesResult = {
   source: string
-  matchedGameId: number | null
+  matchedGameId: string | number | null
   matchedKeyword: string
   images: GameImages
   missing: GameImageAssetType[]
 }
 
 type ImageSearchResponse = {
-  game: { id: number; name: string } | null
+  game: { id: string | number; name: string } | null
   items: GameSearchImageItem[]
 }
 
@@ -45,7 +51,7 @@ const uniqueKeywords = (values: Array<string | undefined>) => {
 }
 
 const safeSearchImages = async (params: {
-  source: string
+  source: GameImageSource
   keyword: string
   imageType: GameImageAssetType
 }): Promise<ImageSearchResponse> => {
@@ -79,14 +85,33 @@ export const fetchGameImages = async (params: {
   gameInfo: GameInfo
   keyword?: string
   source?: string
+  allowedTypes?: readonly GameImageAssetType[]
 }): Promise<FetchGameImagesResult> => {
-  const source = (params.source ?? DEFAULT_GAME_IMAGE_SOURCE).trim() || DEFAULT_GAME_IMAGE_SOURCE
+  const source =
+    (params.source ?? DEFAULT_GAME_IMAGE_SOURCE).trim().toLowerCase() || DEFAULT_GAME_IMAGE_SOURCE
 
-  if (source !== DEFAULT_GAME_IMAGE_SOURCE) {
-    throw new Error(`不支持的图片来源「${source}」，当前仅支持 ${DEFAULT_GAME_IMAGE_SOURCE}`)
+  if (!isGameImageSource(source)) {
+    const supported = GAME_IMAGE_SOURCES.map((item) => item.id).join('、')
+    throw new Error(`不支持的图片来源「${source}」，当前支持：${supported}`)
   }
 
+  const supportedTypes = GAME_IMAGE_ASSET_TYPES.filter(
+    (type) =>
+      supportsGameImageType(source, type) &&
+      (!params.allowedTypes || params.allowedTypes.includes(type)),
+  )
+
   const images: GameImages = {}
+  if (supportedTypes.length === 0) {
+    return {
+      source,
+      matchedGameId: null,
+      matchedKeyword: '',
+      images,
+      missing: [...GAME_IMAGE_ASSET_TYPES],
+    }
+  }
+
   // 优先使用数据源返回的原名，其次中文名，再退回用户输入关键词与别名
   const keywords = uniqueKeywords([
     params.gameInfo.name,
@@ -95,37 +120,47 @@ export const fetchGameImages = async (params: {
     ...(params.gameInfo.ailases ?? []),
   ]).slice(0, 6)
 
-  let matchedGameId: number | null = null
+  const locateType: GameImageAssetType = supportedTypes.includes('cover')
+    ? 'cover'
+    : supportedTypes[0]
+  const restTypes = supportedTypes.filter((type) => type !== locateType)
+
+  let matchedGameId: string | number | null = null
   let matchedKeyword = ''
 
   for (const candidate of keywords) {
-    // 1. 用候选关键词在 SteamGrid DB 上定位游戏（顺带拿到封面）
-    const coverResult = await safeSearchImages({ source, keyword: candidate, imageType: 'cover' })
-    if (!coverResult.game) {
+    // 1. 用候选关键词定位游戏（同时取回对应首选类型资源）
+    const locateResult = await safeSearchImages({
+      source,
+      keyword: candidate,
+      imageType: locateType,
+    })
+    if (!locateResult.game) {
       continue
     }
 
-    // 2. 用游戏 id 精确拉取背景、图标、徽标
-    const gameKeyword = String(coverResult.game.id)
-    const [bg, icon, logo] = await Promise.all([
-      safeSearchImages({ source, keyword: gameKeyword, imageType: 'bg' }),
-      safeSearchImages({ source, keyword: gameKeyword, imageType: 'icon' }),
-      safeSearchImages({ source, keyword: gameKeyword, imageType: 'logo' }),
-    ])
+    // 2. 用游戏 id 精确拉取当前数据源支持的其余图片类型
+    const gameKeyword = String(locateResult.game.id)
+    const restResults = await Promise.all(
+      restTypes.map(
+        async (type) =>
+          [
+            type,
+            await safeSearchImages({ source, keyword: gameKeyword, imageType: type }),
+          ] as const,
+      ),
+    )
 
     const candidateImages: GameImages = {}
-    const coverUrl = coverResult.items[0]?.url ?? ''
-    if (coverUrl) {
-      candidateImages.cover = coverUrl
+    const locateUrl = locateResult.items[0]?.url ?? ''
+    if (locateUrl) {
+      candidateImages[locateType] = locateUrl
     }
-    if (bg.items[0]?.url) {
-      candidateImages.bg = bg.items[0].url
-    }
-    if (icon.items[0]?.url) {
-      candidateImages.icon = icon.items[0].url
-    }
-    if (logo.items[0]?.url) {
-      candidateImages.logo = logo.items[0].url
+    for (const [type, res] of restResults) {
+      const url = res.items[0]?.url ?? ''
+      if (url) {
+        candidateImages[type] = url
+      }
     }
 
     // 命中游戏但拿不到任何图片，通常是匹配错误，继续尝试下一个候选
@@ -134,7 +169,7 @@ export const fetchGameImages = async (params: {
     }
 
     Object.assign(images, candidateImages)
-    matchedGameId = coverResult.game.id
+    matchedGameId = locateResult.game.id
     matchedKeyword = candidate
     break
   }

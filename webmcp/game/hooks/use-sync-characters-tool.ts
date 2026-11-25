@@ -2,11 +2,14 @@
 
 import { useQueryClient } from '@tanstack/react-query'
 import { useRouter } from 'next/navigation'
+import { useRef } from 'react'
 import { toast } from 'sonner'
 import { useWebMCP } from 'usewebmcp'
 
 import { getGameById, syncVndbCharactersByGameId, updateGameInfoById } from '@/api'
+import { useEnabledPlatforms } from '@/hooks/use-enabled-platforms'
 import { getCharacterProviders } from '@/lib/providers'
+import { isPlatformVisibilityKey } from '@/lib/settings/platform-visibility'
 import {
   SYNC_CHARACTERS_TOOL_NAME,
   syncCharactersToolInputSchema,
@@ -30,6 +33,9 @@ const DEFAULT_CHARACTER_SOURCE = 'vndb'
 export const useSyncCharactersTool = () => {
   const queryClient = useQueryClient()
   const router = useRouter()
+  const { isPlatformEnabled } = useEnabledPlatforms()
+  const isPlatformEnabledRef = useRef(isPlatformEnabled)
+  isPlatformEnabledRef.current = isPlatformEnabled
 
   useWebMCP({
     name: SYNC_CHARACTERS_TOOL_NAME,
@@ -56,7 +62,11 @@ export const useSyncCharactersTool = () => {
       const target = matched.game
 
       // 2. 选定角色数据源
-      const providers = getCharacterProviders()
+      const providers = getCharacterProviders().filter((provider) =>
+        isPlatformVisibilityKey(provider.sourceId)
+          ? isPlatformEnabledRef.current(provider.sourceId, 'character-metadata')
+          : true,
+      )
       if (providers.length === 0) {
         const message = '当前没有可用的角色数据源'
         toast.error(message)
