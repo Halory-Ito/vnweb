@@ -65,6 +65,8 @@ export const BROWSER_FONT_OPTIONS: BrowserFontOption[] = BROWSER_FONT_FAMILIES.m
   shortLabel: BROWSER_FONT_LABELS[family].short,
 }))
 
+export const FONT_SIZE_RANGE = { min: 10, max: 40 }
+
 export const DEFAULT_FONT_SETTINGS: FontSettings = {
   fontPath: `${BROWSER_FONT_PREFIX}serif`,
   fontSize: 16,
@@ -113,7 +115,11 @@ export function normalizeFontSettings(input: Partial<FontSettings> | FontSetting
 
   return {
     fontPath: resolveFontPath(input),
-    fontSize: clamp(Number.isFinite(fontSize) ? Math.round(fontSize) : 16, 10, 40),
+    fontSize: clamp(
+      Number.isFinite(fontSize) ? Math.round(fontSize) : DEFAULT_FONT_SETTINGS.fontSize,
+      FONT_SIZE_RANGE.min,
+      FONT_SIZE_RANGE.max,
+    ),
     fontWeight: clamp(
       Number.isFinite(fontWeight) ? Math.round(fontWeight / 100) * 100 : 400,
       100,

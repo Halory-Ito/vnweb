@@ -125,10 +125,12 @@
   * {
     @apply border-border outline-ring/50;
   }
+  html {
+    font-size: var(--app-font-size);
+  }
   body {
     @apply bg-background text-foreground;
     font-family: var(--app-font-family);
-    font-size: var(--app-font-size);
     font-weight: var(--app-font-weight);
   }
   code,
