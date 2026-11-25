@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import html2canvas from 'html2canvas'
 import { DownloadIcon, RotateCcwIcon } from 'lucide-react'
 import { useRef, useState } from 'react'
+import { toast } from 'sonner'
 
 import { TEMPLATES, type TemplateProps } from '../templates'
 import { Button } from '@/components/ui/button'
@@ -20,6 +21,7 @@ import {
 } from '@/components/ui/select'
 import { Slider } from '@/components/ui/slider'
 import { api } from '@/lib/request-utils'
+import { saveExport } from '@/lib/save-export'
 
 // 模板元数据
 const TEMPLATE_META = [
@@ -283,13 +285,20 @@ export default function RecordExportPanel() {
         },
       })
 
-      // 转换为 PNG 并下载
-      const link = document.createElement('a')
-      link.download = `游戏报告海报_${selectedYear || '全部'}_${Date.now()}.png`
-      link.href = canvas.toDataURL('image/png')
-      link.click()
+      const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/png'))
+      if (!blob) throw new Error('无法生成 PNG 图像')
+
+      const saved = await saveExport(
+        blob,
+        `游戏报告海报_${selectedYear || '全部'}_${Date.now()}.png`,
+      )
+      if (saved?.path) toast.success('报告海报导出成功', { description: saved.path })
     } catch (error) {
       console.error('导出失败:', error)
+      toast.error('导出海报失败', {
+        description:
+          error instanceof Error ? error.message : typeof error === 'string' ? error : undefined,
+      })
     } finally {
       setIsExporting(false)
     }

@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { toast } from 'sonner'
 
 import { exportQuoteXlsxApi } from '@/api'
-import { downloadBlobFile } from '@/features/quote/lib/download-blob'
+import { saveExport } from '@/lib/save-export'
 
 export type ExportQuoteXlsxParams = {
   keyword?: string
@@ -20,7 +20,7 @@ export type ExportQuoteXlsxResult = {
 }
 
 /**
- * 导出摘录为独立 XLSX 文件的共享逻辑：请求字节流 → 触发浏览器下载 → 反馈结果。
+ * 导出摘录为独立 XLSX 文件，桌面端使用原生另存为，网页端交给浏览器下载。
  * 供页面手动导出按钮与 WebMCP 工具 `export_quotes_xlsx` 复用。
  */
 export const useExportQuoteXlsx = () => {
@@ -37,8 +37,10 @@ export const useExportQuoteXlsx = () => {
         return { exported: false, count: 0, fileName: '' }
       }
 
-      downloadBlobFile(blob, fileName)
-      toast.success(`已导出 ${count} 条摘录：${fileName}`)
+      const saved = await saveExport(blob, fileName)
+      if (!saved) return { exported: false, count: 0, fileName: '' }
+
+      toast.success('已导出 ' + count + ' 条摘录', { description: saved.path ?? fileName })
 
       return { exported: true, count, fileName }
     } finally {

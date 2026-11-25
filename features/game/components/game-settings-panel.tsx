@@ -56,6 +56,7 @@ import {
 import { Slider } from '@/components/ui/slider'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { selectDirectory } from '@/features/game/lib/scan-utils'
+import { isDesktopRuntime, pickDesktopGamePath } from '@/lib/desktop-window'
 import {
   DEFAULT_LAST_GAME_BACKGROUND_IMAGE,
   readBackgroundSettings,
@@ -521,7 +522,9 @@ export default function GameSettingsPanel({
 
   const handleSelectExeFile = async () => {
     try {
-      const filePath = await selectExeFile()
+      const filePath = await (isDesktopRuntime()
+        ? pickDesktopGamePath('executable')
+        : selectExeFile())
       if (filePath) {
         setExePath(filePath)
       }
@@ -536,7 +539,9 @@ export default function GameSettingsPanel({
 
   const handleSelectSaveDir = async () => {
     try {
-      const directory = await selectDirectory()
+      const directory = await (isDesktopRuntime()
+        ? pickDesktopGamePath('saveDirectory')
+        : selectDirectory())
       if (directory) {
         setSaveDir(directory)
       }

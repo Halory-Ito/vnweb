@@ -11,6 +11,7 @@ import {
 import { selectDirectory } from '@/features/game/lib/scan-utils'
 import { DEFAULT_BACKUP_CONTENT_OPTIONS } from '@/lib/backup-content'
 import { api } from '@/lib/request-utils'
+import { saveExport } from '@/lib/save-export'
 
 import type { BackupContentOptions } from '@/types'
 
@@ -83,39 +84,28 @@ export function useBackupSettings() {
     }
   }
 
-  const downloadBlobFile = (
-    blob: Blob,
-    headers: Record<string, string>,
-    fallbackFileName: string,
-  ) => {
+  const resolveExportFileName = (headers: Record<string, string>, fallbackFileName: string) => {
     const disposition = headers['content-disposition'] || headers['Content-Disposition']
     let fileName = fallbackFileName
     if (disposition) {
       const match = disposition.match(/filename\*?=(?:UTF-8''|"?)([^";]+)/i)
       if (match?.[1]) fileName = decodeURIComponent(match[1].replace(/"/g, ''))
     }
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = fileName
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    URL.revokeObjectURL(url)
+    return fileName
   }
 
   const handleExport = async () => {
     setIsExporting(true)
     try {
       const response = await api.post('/settings/backup/export', null, { responseType: 'blob' })
-      downloadBlobFile(
-        response.data,
+      const fileName = resolveExportFileName(
         response.headers as Record<string, string>,
         'vnweb-backup.zip',
       )
-      toast.success('备份导出成功')
+      const saved = await saveExport(response.data, fileName)
+      if (saved) toast.success('备份导出成功', { description: saved.path })
     } catch (error) {
-      toast.error((error as Error).message || '导出备份失败')
+      toast.error(typeof error === 'string' ? error : (error as Error).message || '导出备份失败')
     } finally {
       setIsExporting(false)
     }
@@ -127,14 +117,14 @@ export function useBackupSettings() {
       const response = await api.post('/settings/backup/export-xlsx', null, {
         responseType: 'blob',
       })
-      downloadBlobFile(
-        response.data,
+      const fileName = resolveExportFileName(
         response.headers as Record<string, string>,
         'vnweb-timer-records.xlsx',
       )
-      toast.success('计时记录导出成功')
+      const saved = await saveExport(response.data, fileName)
+      if (saved) toast.success('计时记录导出成功', { description: saved.path })
     } catch (error) {
-      toast.error((error as Error).message || '导出 xlsx 失败')
+      toast.error(typeof error === 'string' ? error : (error as Error).message || '导出 xlsx 失败')
     } finally {
       setIsExportingXlsx(false)
     }

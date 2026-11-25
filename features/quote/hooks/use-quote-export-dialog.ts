@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { toast } from 'sonner'
 
 import { useExportQuoteXlsx } from '@/features/quote/hooks/use-export-quote-xlsx'
 
@@ -47,10 +48,13 @@ export const useQuoteExportDialog = (gameOptions: GameOption[]) => {
       ? undefined
       : selectedGameIds.map((id) => Number(id)).filter((id) => Number.isInteger(id) && id > 0)
 
-    const result = await exportQuotes({ gameIds })
-
-    if (result.exported) {
-      setOpen(false)
+    try {
+      const result = await exportQuotes({ gameIds })
+      if (result.exported) setOpen(false)
+    } catch (error) {
+      const description =
+        error instanceof Error ? error.message : typeof error === 'string' ? error : undefined
+      toast.error('导出失败', { description })
     }
   }
 

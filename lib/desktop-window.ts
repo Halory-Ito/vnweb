@@ -12,6 +12,13 @@ export type TauriCurrentWindow = {
 declare global {
   interface Window {
     __TAURI__?: {
+      core?: {
+        invoke: <T>(
+          command: string,
+          data: ArrayBuffer | Record<string, unknown>,
+          options?: { headers: Record<string, string> },
+        ) => Promise<T>
+      }
       window?: {
         getCurrentWindow?: () => TauriCurrentWindow
       }
@@ -26,6 +33,12 @@ function getDesktopWindow(): TauriCurrentWindow | null {
 
 export function isDesktopRuntime(): boolean {
   return getDesktopWindow() !== null
+}
+
+export async function pickDesktopGamePath(kind: 'executable' | 'saveDirectory') {
+  const core = window.__TAURI__?.core
+  if (!core) throw new Error('桌面路径选择接口不可用')
+  return core.invoke<string | null>('pick_game_path', { kind })
 }
 
 let pendingNativeTitleBar: boolean | null = null

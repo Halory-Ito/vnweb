@@ -1,4 +1,5 @@
 mod paths;
+mod file_dialogs;
 mod server;
 mod splash;
 mod tray;
@@ -52,6 +53,8 @@ fn update_startup_status(window: &WebviewWindow, step: u8, text: &str) {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_dialog::init())
+        .invoke_handler(tauri::generate_handler![file_dialogs::save_export, file_dialogs::pick_game_path])
         .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
             show_main_window(app);
         }))

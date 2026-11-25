@@ -7,6 +7,8 @@
     "urls": ["http://localhost:*", "http://127.0.0.1:*"]
   },
   "permissions": [
+    "allow-save-export",
+    "allow-pick-game-path",
     "core:default",
     "core:window:allow-close",
     "core:window:allow-is-decorated",
