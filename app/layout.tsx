@@ -10,6 +10,7 @@ import 'dayjs/locale/zh-cn' // 导入本地化语言
 dayjs.locale('zh-cn') // 使用本地化语言
 
 import AppLayout from '@/components/layout/app-layout'
+import { StartupSplashOverlay } from '@/components/layout/startup-splash-overlay'
 import JotaiProvider from '@/components/providers/jotai-provider'
 import TanStackProvider from '@/components/providers/tanstack-provider'
 import { SidebarProvider } from '@/components/ui/sidebar'
@@ -48,6 +49,7 @@ export default function RootLayout({
               <SidebarProvider>
                 <TooltipProvider>
                   <AppLayout>{children}</AppLayout>
+                  <StartupSplashOverlay />
                   <GameWebMcpTools />
                   <GuideWebMcpTools />
                   <OstWebMcpTools />

@@ -7,6 +7,7 @@ import {
   GlassSection,
   GuideSection,
   LayoutSection,
+  StartupSection,
   StatusSection,
 } from '@/features/appearance'
 
@@ -26,6 +27,7 @@ export default function AppearancePage() {
         <FontSection />
         <StatusSection />
         <BackgroundSection />
+        <StartupSection />
         <GlassSection />
         <ChartSection />
         <GuideSection />
