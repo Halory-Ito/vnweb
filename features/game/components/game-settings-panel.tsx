@@ -4,7 +4,6 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useSetAtom } from 'jotai'
 import {
   ClipboardPasteIcon,
-  CircleCheckIcon,
   EyeIcon,
   FolderOpenIcon,
   FolderUpIcon,
@@ -23,7 +22,6 @@ import { toast } from 'sonner'
 import {
   enqueueGameImageLocalizationById,
   getGameById,
-  searchGameImages,
   selectExeFile,
   updateGameSettingsById,
 } from '@/api'
@@ -40,13 +38,6 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import {
   Sheet,
   SheetContent,
   SheetDescription,
@@ -55,15 +46,16 @@ import {
 } from '@/components/ui/sheet'
 import { Slider } from '@/components/ui/slider'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { GameImageSearchDialog } from '@/features/game/components/dialog/game-image-search-dialog'
+import { useGameImageSearch } from '@/features/game/hooks/use-game-image-search'
 import { selectDirectory } from '@/features/game/lib/scan-utils'
 import { isDesktopRuntime, pickDesktopGamePath } from '@/lib/desktop-window'
+import { buildGameImagePreviewUrl } from '@/lib/game-image-preview'
 import {
   DEFAULT_LAST_GAME_BACKGROUND_IMAGE,
   readBackgroundSettings,
   updateLastGameBackground,
 } from '@/lib/settings/background-settings'
-
-import type { GameSearchImageItem } from '@/types'
 
 type ImageField = 'cover' | 'bg' | 'icon' | 'logo'
 
@@ -159,13 +151,8 @@ export default function GameSettingsPanel({
   })
   const [isSaving, setIsSaving] = useState(false)
   const [searchDialogOpen, setSearchDialogOpen] = useState(false)
-  const [searchSource, setSearchSource] = useState('steamgriddb')
-  const [searchKeyword, setSearchKeyword] = useState('')
   const [searchTargetField, setSearchTargetField] = useState<ImageField>('cover')
-  const [isSearchingImage, setIsSearchingImage] = useState(false)
-  const [searchResultGameName, setSearchResultGameName] = useState('')
-  const [searchResultImages, setSearchResultImages] = useState<GameSearchImageItem[]>([])
-  const [selectedSearchImageUrl, setSelectedSearchImageUrl] = useState('')
+  const imageSearch = useGameImageSearch(searchTargetField)
   const [linkDialogOpen, setLinkDialogOpen] = useState(false)
   const [linkDialogField, setLinkDialogField] = useState<ImageField>('cover')
   const [linkInputValue, setLinkInputValue] = useState('')
@@ -388,58 +375,17 @@ export default function GameSettingsPanel({
 
   const openSearchImageDialog = (field: ImageField) => {
     setSearchTargetField(field)
-    setSearchSource('steamgriddb')
-    setSearchKeyword(gameTitle)
-    setSearchResultGameName('')
-    setSearchResultImages([])
-    setSelectedSearchImageUrl('')
+    imageSearch.prepareSearch(gameTitle, field)
     setSearchDialogOpen(true)
   }
 
-  const handleSearchImage = async () => {
-    const keyword = searchKeyword.trim()
-    if (!keyword) {
-      toast.error('请输入名称或 id')
-      return
-    }
-
-    setIsSearchingImage(true)
-    try {
-      const response = await searchGameImages({
-        source: searchSource,
-        keyword,
-        imageType: searchTargetField,
-      })
-
-      setSearchResultGameName(response.data.game?.name || '')
-      setSearchResultImages(response.data.items || [])
-      setSelectedSearchImageUrl('')
-
-      if ((response.data.items || []).length === 0) {
-        toast.error('未搜索到图片')
-      }
-    } catch (error) {
-      const err = error as {
-        response?: {
-          data?: {
-            error?: string
-          }
-        }
-        message?: string
-      }
-      toast.error(err.response?.data?.error || err.message || '搜索图片失败')
-    } finally {
-      setIsSearchingImage(false)
-    }
-  }
-
   const applySelectedSearchImage = () => {
-    if (!selectedSearchImageUrl) {
+    if (!imageSearch.selectedUrl) {
       toast.error('请先选择图片')
       return
     }
 
-    applyImageSelection(searchTargetField, selectedSearchImageUrl)
+    applyImageSelection(searchTargetField, imageSearch.selectedUrl)
     setSearchDialogOpen(false)
     toast.success(`已设置${imageFieldLabelMap[searchTargetField]}`)
   }
@@ -462,7 +408,7 @@ export default function GameSettingsPanel({
     }
 
     setCropDialogField(field)
-    setCropSource(target)
+    setCropSource(buildGameImagePreviewUrl(target))
     setCropPosition({ x: 0, y: 0 })
     setCropZoom(1)
     setCropFreeAspect(false)
@@ -712,7 +658,7 @@ export default function GameSettingsPanel({
               <div className="bg-muted/30 flex h-36 w-full items-center justify-center overflow-hidden rounded-md border">
                 {fieldValueMap[field] ? (
                   <img
-                    src={fieldValueMap[field]}
+                    src={buildGameImagePreviewUrl(fieldValueMap[field])}
                     alt={`${imageFieldLabelMap[field]}预览`}
                     className="h-full w-full object-contain"
                   />
@@ -792,96 +738,26 @@ export default function GameSettingsPanel({
           </div>
         </div>
 
-        <Dialog open={searchDialogOpen} onOpenChange={(nextOpen) => setSearchDialogOpen(nextOpen)}>
-          <DialogContent className="max-h-[85vh] overflow-hidden sm:max-w-3xl">
-            <DialogHeader>
-              <DialogTitle>搜索{imageFieldLabelMap[searchTargetField]}</DialogTitle>
-              <DialogDescription>默认数据源为 SteamGrid DB，可用名称或 id 搜索</DialogDescription>
-            </DialogHeader>
-
-            <div className="bg-muted/20 grid max-h-[50vh] grid-cols-2 gap-2 overflow-y-auto rounded-md border p-2">
-              {searchResultImages.length === 0 ? (
-                <div className="text-muted-foreground col-span-2 flex min-h-32 items-center justify-center text-sm">
-                  暂无图片，请先执行搜索
-                </div>
-              ) : (
-                searchResultImages.map((item) => {
-                  const isSelected = selectedSearchImageUrl === item.url
-                  return (
-                    <button
-                      key={item.id}
-                      type="button"
-                      className={[
-                        'relative rounded-md border text-left',
-                        'focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none',
-                        isSelected ? 'ring-primary ring-2' : '',
-                      ].join(' ')}
-                      onClick={() => setSelectedSearchImageUrl(item.url)}
-                    >
-                      <img
-                        src={item.thumb || item.url}
-                        alt={`图片 ${item.id}`}
-                        className="max-h-56 w-full object-contain"
-                      />
-                      <div className="bg-background/80 flex items-center justify-between px-2 py-1 text-xs">
-                        <span>
-                          {item.width}×{item.height}
-                        </span>
-                        {isSelected ? <CircleCheckIcon className="text-primary size-4" /> : null}
-                      </div>
-                    </button>
-                  )
-                })
-              )}
-            </div>
-
-            <div className="space-y-3 rounded-md border p-3">
-              <div className="grid gap-3 sm:grid-cols-[180px_1fr_auto_auto_auto]">
-                <Select value={searchSource} onValueChange={setSearchSource}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="选择数据源" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="steamgriddb">SteamGrid DB</SelectItem>
-                  </SelectContent>
-                </Select>
-
-                <Input
-                  value={searchKeyword}
-                  onChange={(event) => setSearchKeyword(event.target.value)}
-                  placeholder="通过名称或 id 搜索"
-                />
-
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => void handleSearchImage()}
-                  disabled={isSearchingImage}
-                >
-                  {isSearchingImage ? '搜索中...' : '搜索'}
-                </Button>
-
-                <Button
-                  type="button"
-                  onClick={applySelectedSearchImage}
-                  disabled={!selectedSearchImageUrl}
-                >
-                  确定
-                </Button>
-
-                <Button type="button" variant="outline" onClick={() => setSearchDialogOpen(false)}>
-                  取消
-                </Button>
-              </div>
-
-              <div className="text-muted-foreground text-xs">
-                {searchResultGameName ? `当前匹配游戏：${searchResultGameName}` : '尚未匹配到游戏'}
-              </div>
-            </div>
-
-            <DialogFooter />
-          </DialogContent>
-        </Dialog>
+        <GameImageSearchDialog
+          open={searchDialogOpen}
+          onOpenChange={setSearchDialogOpen}
+          targetLabel={imageFieldLabelMap[searchTargetField]}
+          imageType={searchTargetField}
+          sources={imageSearch.availableSources}
+          source={imageSearch.source}
+          onSourceChange={imageSearch.handleSourceChange}
+          keyword={imageSearch.keyword}
+          onKeywordChange={imageSearch.setKeyword}
+          includeNsfw={imageSearch.includeNsfw}
+          onIncludeNsfwChange={imageSearch.setIncludeNsfw}
+          isSearching={imageSearch.isSearching}
+          matchedGameName={imageSearch.matchedGameName}
+          images={imageSearch.images}
+          selectedUrl={imageSearch.selectedUrl}
+          onSelectUrl={imageSearch.setSelectedUrl}
+          onSearch={(type) => void imageSearch.handleSearch(type)}
+          onConfirm={applySelectedSearchImage}
+        />
 
         <Dialog open={linkDialogOpen} onOpenChange={(nextOpen) => setLinkDialogOpen(nextOpen)}>
           <DialogContent>
