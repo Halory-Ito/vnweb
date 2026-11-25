@@ -1,5 +1,7 @@
 import { defineConfig } from 'vitepress'
 
+import { guideModules } from './guide-modules'
+
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
   title: 'vnweb',
@@ -7,18 +9,15 @@ export default defineConfig({
   lang: 'zh-CN',
   lastUpdated: true,
   cleanUrls: true,
-
-  head: [['link', { rel: 'icon', href: '/favicon.ico' }]],
+  appearance: 'dark',
+  head: [['link', { rel: 'icon', type: 'image/png', href: '/vnweb-icon.png' }]],
 
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
-    logo: '/logo.svg',
-
+    logo: { src: '/vnweb-icon.png', alt: '' },
     nav: [
-      { text: '指南', link: 'guide/intro/what-is-vnweb' },
-      { text: '关于', link: 'about' },
-      // { text: 'API', link: '/api/overview' },
-      // { text: '开发', link: '/dev/database' },
+      { text: '使用指南', link: '/guide/intro/what-is-vnweb' },
+      { text: '关于', link: '/about' },
     ],
 
     sidebar: {
@@ -33,14 +32,7 @@ export default defineConfig({
             },
           ],
         },
-        {
-          text: '功能',
-          items: [
-            { text: '自定义主题', link: '/guide/feats/custom-theme' },
-            { text: '游戏存档备份', link: '/guide/feats/save-backup' },
-            { text: 'other', link: '/guide/feats/other' },
-          ],
-        },
+        ...guideModules,
       ],
     },
 

@@ -1,86 +1,40 @@
-# 环境准备
+# 安装与配置
 
 ## 运行环境
 
-建议环境：
+准备 Node.js 20.9 或更新版本和 npm。推荐在 Windows 上运行，使用本地目录扫描、可执行文件启动、进程计时和系统字体时，路径和文件都由运行 vnweb 的电脑访问。
 
-- Node.js 20+
-- npm 10+
-- Windows
+## Windows 一键初始化
 
-之所以推荐 Windows，是因为项目包含本地字体读取、游戏进程监控、本地图标提取、本地文件浏览等能力，当前实现明显偏向 Windows 桌面环境。
+1. 克隆仓库或下载源码。
+2. 双击项目根目录的 `init.bat`。脚本会安装依赖、补齐缺失设置、初始化数据库、构建应用并将项目目录加入用户 `PATH`。
+3. 在新终端运行 `vnweb`，然后在浏览器打开 `http://localhost:8999`。
 
-## 快速开始
+::: warning 已有数据库时
+`init.bat` 会把已有数据库和相关文件移至 `backups/db/`，随后创建空库。已有游戏库时，请先关闭 vnweb 和 Drizzle Studio，并在更新前另存一份备份。
+:::
 
-### 1. 安装依赖
+## 手动安装
 
-```bash
+```shell
+git clone https://github.com/Halory-Ito/vnweb.git
+cd vnweb
 npm install
+npm run db:push
 ```
 
-### 2. 编写配置文件
+构建后在本机启动，默认访问 `http://localhost:8999`。
 
-启动后打开「设置 → 平台」，填写所需的接口地址和凭证。设置保存在 `data/settings/platform.json`，首次读取时自动创建。
-
-### 3. 初始化数据库
-
-数据库默认为项目根目录的 `local.db`。可在 `data/settings/general.json` 中设置 `dbFileName`（例如 `file:./local.db`），修改后重启应用。
-
-```bash
-npx drizzle-kit generate # 生成 sql 文件
-npx drizzle-kit migrate # 创建 sqlite 数据库（如没有），并生成表字段
-```
-
-### 4. 构建
-
-```bash
+```shell
 npm run build
+npm run start
 ```
 
-### 5. 环境变量
+需要在开发模式下运行时，使用 `npm run dev`，默认地址为 `http://localhost:3000`。
 
-这里推荐将根目录下的`vnweb.bat`添加至环境变量中，然后你就可以在任意的位置执行系统的命令行工具：
+## 首次配置
 
-```sh
-# 1. 启动 web ui
-vnweb
-
-# 2. 查看帮助文档
-vnweb --help
-
-# 3. 查看游戏列表
-vnweb list game
-
-# 4. 根据名称搜索游戏
-vnweb search game_name
-
-# 5. 根据id启动游戏
-vnweb start game_id
-
-# 6. 快速启动上一次的游戏
-vnweb start
-```
-
-# 配置文件
-
-## 平台配置
-
-可在 Web UI 修改平台配置。SteamGridDB 的密钥和接口地址可在 `data/settings/platform.json` 的 `steamgriddb` 中填写。
-
-## 设置示例
-
-`data/example/` 包含平台、外观、备份和通用设置的 JSON 示例。运行 `init.bat` 会将缺失的文件复制到 `data/settings/`，保留已有设置。手动安装时也可以按需复制。
-
-# 项目启动
-
-默认使用了`8999`端口，如果端口与其他服务冲突，可以修改`package.json`文件中的脚本：
-
-```json
-{
-  "scripts": {
-    "start": "next start -p 8999"
-  }
-}
-```
-
-将其中的`8999`修改为你想要的端口号（需要介于0和65535之间）
+- **游戏目录**在「扫描」中登记，详见[扫描与游戏库](../feats/game-library)。
+- **平台凭证**按需在「设置 → 平台」配置，详见[平台接入与资料更新](../feats/platforms)。
+- **本地设置**保存在 `data/settings/`，相应的示例位于 `data/example/`。默认数据库地址是 `file:./local.db`。如果需要指定其他数据库，在初始化前修改 `data/settings/general.json` 中的 `dbFileName`，已运行的应用需要重启后读取新配置。
+- **生产端口**默认为 `8999`。如果端口已被占用，可以调整 `package.json` 的 `start` 脚本中的 `-p` 参数，并用相应端口访问。
