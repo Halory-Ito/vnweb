@@ -12,6 +12,7 @@ const links = [
   { segment: 'memory', label: '回忆' },
   { segment: 'backup', label: '备份' },
   { segment: 'sync', label: '平台' },
+  { segment: 'about', label: '关于' },
 ] as const
 
 export default function SettingsNavigation() {

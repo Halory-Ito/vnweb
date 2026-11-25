@@ -1,6 +1,7 @@
 import { api } from '@/lib/request-utils'
 import { readPlatformCache, writePlatformCache } from '@/lib/settings/platform-cache'
 
+import type { ProjectUpdate } from './lib/project-update'
 import type { PlatformVisibility, PlatformVisibilityKey } from '@/lib/settings/platform-visibility'
 import type { LocalResourcesResponse } from '@/types/local-resource'
 
@@ -16,6 +17,14 @@ export type DeleteLocalResourcesResult = {
   deleted: string[]
   failed: Array<{ path: string; reason: string }>
   freedBytes?: number
+}
+
+export async function checkProjectUpdateApi(): Promise<ProjectUpdate> {
+  const response = await api.request<ProjectUpdate>({
+    method: 'GET',
+    url: '/settings/about/update',
+  })
+  return response.data
 }
 
 export async function getLocalResourcesApi(): Promise<LocalResourcesResponse> {
