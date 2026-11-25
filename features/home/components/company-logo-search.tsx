@@ -35,7 +35,7 @@ export default function CompanyLogoSearch({
         }}
       >
         <Field>
-          <FieldLabel htmlFor={id}>从鲲 Galgame 搜索会社 LOGO</FieldLabel>
+          <FieldLabel htmlFor={id}>搜索会社LOGO</FieldLabel>
           <InputGroup>
             <InputGroupInput
               id={id}

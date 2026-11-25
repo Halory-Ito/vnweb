@@ -25,12 +25,12 @@ export default function SettingsNavigation() {
           <Link
             key={target}
             href={`/settings/${target}`}
-            prefetch={false}
             aria-current={segment === target ? 'page' : undefined}
             className={cn(
-              'text-foreground/60 focus-visible:ring-ring/50 dark:text-muted-foreground inline-flex h-full items-center justify-center rounded-md border border-transparent px-2 text-sm font-medium whitespace-nowrap transition-[color,background-color,border-color,box-shadow] outline-none focus-visible:ring-2',
-              'hover:bg-background hover:text-foreground hover:shadow-sm dark:hover:border-input dark:hover:bg-input/30 dark:hover:text-foreground',
-              'aria-[current=page]:bg-background aria-[current=page]:text-foreground aria-[current=page]:shadow-sm dark:aria-[current=page]:border-input dark:aria-[current=page]:bg-input/30 dark:aria-[current=page]:text-foreground',
+              'text-foreground/60 focus-visible:ring-ring/50 dark:text-muted-foreground inline-flex h-full items-center justify-center rounded-md border border-transparent px-2 text-sm font-medium whitespace-nowrap transition-[color,background-color] outline-none focus-visible:ring-2 motion-reduce:transition-none',
+              'hover:bg-background hover:text-foreground dark:hover:bg-input/30 dark:hover:text-foreground',
+              'aria-[current=page]:bg-background aria-[current=page]:text-foreground dark:aria-[current=page]:bg-input/30 dark:aria-[current=page]:text-foreground',
+              'in-[html:not([data-borderless])]:hover:shadow-sm in-[html:not([data-borderless])]:aria-[current=page]:shadow-sm dark:in-[html:not([data-borderless])]:hover:border-input dark:in-[html:not([data-borderless])]:aria-[current=page]:border-input',
             )}
           >
             {label}
