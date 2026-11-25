@@ -1,0 +1,7 @@
+[workspace]
+resolver = "2"
+members = ["crates/vnweb-cli", "crates/vnweb-desktop"]
+
+[workspace.package]
+version = "0.2.0"
+edition = "2021"

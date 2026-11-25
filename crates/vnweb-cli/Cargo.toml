@@ -1,0 +1,8 @@
+[package]
+name = "vnweb-cli"
+version.workspace = true
+edition.workspace = true
+
+[[bin]]
+name = "vnweb"
+path = "src/main.rs"

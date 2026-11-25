@@ -1,0 +1,405 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>vnweb</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: oklch(0.99 0.002 260);
+        --fg: oklch(0.16 0 0);
+        --muted: oklch(0.54 0 0);
+        --border: oklch(0.9 0 0);
+        --surface: oklch(1 0 0 / 0.72);
+        --danger: oklch(0.55 0.22 25);
+        --danger-bg: rgba(220, 38, 38, 0.08);
+        --font-ui: 'PingFang SC', 'Microsoft YaHei UI', system-ui, sans-serif;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: oklch(0.145 0 0);
+          --fg: oklch(0.975 0 0);
+          --muted: oklch(0.66 0 0);
+          --border: oklch(1 0 0 / 0.11);
+          --surface: oklch(0.2 0 0 / 0.68);
+          --danger: oklch(0.72 0.18 22);
+          --danger-bg: rgba(248, 113, 113, 0.12);
+        }
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background: var(--bg);
+        color: var(--fg);
+        font-family: var(--font-ui);
+        user-select: none;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      .stage {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 32px;
+        transition: opacity 260ms ease-out;
+      }
+
+      .stage.is-leaving {
+        opacity: 0;
+      }
+
+      .init-view[hidden],
+      .error-panel[hidden],
+      .splash-layer[hidden],
+      .splash-media[hidden] {
+        display: none !important;
+      }
+
+      .init-view {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .init-logo {
+        width: 88px;
+        height: 88px;
+        object-fit: contain;
+        pointer-events: none;
+        will-change: opacity, transform;
+        animation: logo-breathe 2.6s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+      }
+
+      .error-panel {
+        width: min(540px, 90vw);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        background: var(--surface);
+        backdrop-filter: blur(18px);
+        padding: 24px;
+        text-align: left;
+        user-select: text;
+      }
+
+      .error-badge {
+        display: inline-flex;
+        align-items: center;
+        height: 24px;
+        padding: 0 10px;
+        border-radius: 999px;
+        border: 1px solid color-mix(in oklab, var(--danger) 40%, transparent);
+        background: var(--danger-bg);
+        color: var(--danger);
+        font-size: 12px;
+        font-weight: 500;
+      }
+
+      .error-title {
+        margin: 12px 0 6px;
+        font-size: 18px;
+        font-weight: 600;
+      }
+
+      .error-sub {
+        margin: 0;
+        font-size: 13px;
+        color: var(--muted);
+        line-height: 1.6;
+      }
+
+      .error-box {
+        margin: 16px 0 0;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 12px 14px;
+        font-family: inherit;
+        font-size: 12px;
+        line-height: 1.55;
+        color: var(--danger);
+        white-space: pre-wrap;
+        word-break: break-word;
+        max-height: 240px;
+        overflow: auto;
+      }
+
+      .log-path {
+        margin: 10px 0 0;
+        font-size: 12px;
+        color: var(--muted);
+        word-break: break-all;
+      }
+
+      .splash-layer {
+        position: fixed;
+        inset: 0;
+        width: 100vw;
+        height: 100vh;
+        z-index: 30;
+        background: #000;
+        overflow: hidden;
+        transition: opacity 340ms ease-out;
+      }
+
+      .splash-layer.is-leaving {
+        opacity: 0;
+      }
+
+      .splash-media {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+        display: block;
+      }
+
+      .splash-img {
+        animation: splash-zoom 750ms ease-out both;
+      }
+
+      @keyframes logo-breathe {
+        0%,
+        100% {
+          opacity: 0.22;
+          transform: scale(0.96);
+        }
+        50% {
+          opacity: 0.95;
+          transform: scale(1.02);
+        }
+      }
+
+      @keyframes splash-zoom {
+        from {
+          opacity: 0;
+          transform: scale(1.03);
+        }
+        to {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .init-logo {
+          animation: none;
+          opacity: 0.85;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="splash-layer" class="splash-layer" hidden>
+      <img
+        id="splash-img"
+        class="splash-media splash-img"
+        alt="启动动画"
+        draggable="false"
+        hidden
+      />
+      <video id="splash-video" class="splash-media" playsinline hidden></video>
+    </div>
+
+    <main id="stage" class="stage" data-tauri-drag-region>
+      <div id="init-view" class="init-view">
+        <img src="./logo.png" alt="vnweb" class="init-logo" />
+      </div>
+
+      <section id="error-panel" class="error-panel" hidden>
+        <span class="error-badge">启动异常</span>
+        <h2 class="error-title">vnweb 启动失败</h2>
+        <p class="error-sub">本地服务未能正常就绪，请检查以下错误信息或重启应用。</p>
+        <pre id="error-box" class="error-box"></pre>
+        <p id="log-path" class="log-path" hidden></p>
+      </section>
+    </main>
+
+    <script>
+      ;(function () {
+        var stageEl = document.getElementById('stage')
+        var initViewEl = document.getElementById('init-view')
+        var errorPanelEl = document.getElementById('error-panel')
+        var errorBoxEl = document.getElementById('error-box')
+        var logPathEl = document.getElementById('log-path')
+
+        var splashLayerEl = document.getElementById('splash-layer')
+        var splashImgEl = document.getElementById('splash-img')
+        var splashVideoEl = document.getElementById('splash-video')
+
+        var startupCfg = window.__VNWEB_STARTUP_CONFIG__
+        var splashActive = Boolean(
+          startupCfg &&
+          startupCfg.enabled &&
+          startupCfg.mediaFile &&
+          (startupCfg.mediaType === 'image' || startupCfg.mediaType === 'video'),
+        )
+        var mediaFinished = !splashActive
+        var skipRequested = false
+        var readyUrl = null
+        var navigating = false
+        var hasError = false
+        var splashTimer = null
+
+        function teardownSplashToInit() {
+          if (splashTimer) {
+            clearTimeout(splashTimer)
+            splashTimer = null
+          }
+          splashActive = false
+          mediaFinished = true
+          if (splashVideoEl) {
+            try {
+              splashVideoEl.pause()
+            } catch (_e) {}
+            splashVideoEl.hidden = true
+          }
+          if (splashImgEl) splashImgEl.hidden = true
+          if (splashLayerEl) splashLayerEl.hidden = true
+          if (initViewEl && !hasError) initViewEl.hidden = false
+        }
+
+        function navigateWhenPossible() {
+          if (hasError || navigating || !readyUrl) return
+          if (splashActive && !mediaFinished && !skipRequested) return
+
+          navigating = true
+          if (splashTimer) {
+            clearTimeout(splashTimer)
+            splashTimer = null
+          }
+
+          if (splashActive && splashLayerEl) {
+            splashLayerEl.classList.add('is-leaving')
+            setTimeout(function () {
+              location.replace(readyUrl)
+            }, 340)
+            return
+          }
+
+          if (stageEl) stageEl.classList.add('is-leaving')
+          setTimeout(function () {
+            location.replace(readyUrl)
+          }, 260)
+        }
+
+        function markMediaDone() {
+          mediaFinished = true
+          if (readyUrl) {
+            navigateWhenPossible()
+          } else {
+            teardownSplashToInit()
+          }
+        }
+
+        function requestSkip() {
+          if (!splashActive || !startupCfg || !startupCfg.skippable) return
+          skipRequested = true
+          if (readyUrl) {
+            navigateWhenPossible()
+          } else {
+            teardownSplashToInit()
+          }
+        }
+
+        function startSplash() {
+          if (!splashActive || !startupCfg || !startupCfg.mediaFile) return
+          var convert =
+            window.__TAURI__ && window.__TAURI__.core && window.__TAURI__.core.convertFileSrc
+          var mediaUrl = convert
+            ? convert(startupCfg.mediaFile, 'vnweb-splash')
+            : 'http://vnweb-splash.localhost/' + encodeURIComponent(startupCfg.mediaFile)
+
+          if (initViewEl) initViewEl.hidden = true
+          if (splashLayerEl) splashLayerEl.hidden = false
+          if (startupCfg.skippable) {
+            if (splashLayerEl) {
+              splashLayerEl.addEventListener('dblclick', requestSkip)
+            }
+            window.addEventListener('keydown', function (event) {
+              if (event.key === 'Escape') requestSkip()
+            })
+          }
+
+          if (startupCfg.mediaType === 'image' && splashImgEl) {
+            splashImgEl.hidden = false
+            splashImgEl.onerror = function () {
+              teardownSplashToInit()
+              navigateWhenPossible()
+            }
+            splashImgEl.src = mediaUrl
+            splashTimer = setTimeout(markMediaDone, Number(startupCfg.durationMs) || 2000)
+          } else if (startupCfg.mediaType === 'video' && splashVideoEl) {
+            splashVideoEl.hidden = false
+            splashVideoEl.muted = Boolean(startupCfg.muted)
+            splashVideoEl.src = mediaUrl
+            splashVideoEl.onended = markMediaDone
+            splashVideoEl.onerror = function () {
+              teardownSplashToInit()
+              navigateWhenPossible()
+            }
+            var playPromise = splashVideoEl.play()
+            if (playPromise && typeof playPromise.catch === 'function') {
+              playPromise.catch(function () {
+                splashVideoEl.muted = true
+                splashVideoEl.play().catch(function () {
+                  teardownSplashToInit()
+                  navigateWhenPossible()
+                })
+              })
+            }
+          } else {
+            teardownSplashToInit()
+          }
+        }
+
+        window.__vnwebSetStatus = function () {}
+
+        window.__vnwebServerReady = function (url) {
+          if (!url || hasError) return
+          readyUrl = url
+          navigateWhenPossible()
+        }
+
+        window.__vnwebShowError = function (message, logPath) {
+          hasError = true
+          teardownSplashToInit()
+          if (initViewEl) initViewEl.hidden = true
+          if (errorPanelEl) errorPanelEl.hidden = false
+          if (errorBoxEl) errorBoxEl.textContent = String(message || '未知错误')
+          if (logPathEl && logPath) {
+            logPathEl.hidden = false
+            logPathEl.textContent = '日志文件：' + String(logPath)
+          }
+        }
+
+        if (splashActive) {
+          startSplash()
+        }
+
+        if (window.__vnwebPendingError) {
+          window.__vnwebShowError(
+            window.__vnwebPendingError.message,
+            window.__vnwebPendingError.logPath,
+          )
+        }
+        if (window.__vnwebPendingReadyUrl) {
+          window.__vnwebServerReady(window.__vnwebPendingReadyUrl)
+        }
+      })()
+    </script>
+  </body>
+</html>

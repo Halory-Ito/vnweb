@@ -1,0 +1,44 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "vnweb",
+  "mainBinaryName": "vnweb-desktop",
+  "version": "0.2.0",
+  "identifier": "io.github.haloryito.vnweb",
+  "build": {
+    "devUrl": "http://localhost:3000",
+    "frontendDist": "frontend",
+    "beforeDevCommand": "cd ../.. && npm run dev"
+  },
+  "app": {
+    "withGlobalTauri": true,
+    "windows": [],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["nsis"],
+    "icon": ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/icon.ico"],
+    "resources": {
+      "resources/standalone/server.js": "standalone/server.js",
+      "resources/standalone/package.json": "standalone/package.json",
+      "resources/standalone/.next": "standalone/.next",
+      "resources/standalone/node_modules": "standalone/node_modules",
+      "resources/standalone/public": "standalone/public",
+      "resources/standalone/data": "standalone/data",
+      "resources/standalone/drizzle": "standalone/drizzle",
+      "resources/standalone/cli": "standalone/cli",
+      "resources/runtime/node.exe": "runtime/node.exe",
+      "resources/bin/vnweb.exe": "vnweb.exe"
+    },
+    "windows": {
+      "nsis": {
+        "installMode": "currentUser",
+        "languages": ["SimpChinese", "English"],
+        "displayLanguageSelector": false,
+        "installerHooks": "nsis/installer-hooks.nsh"
+      }
+    }
+  }
+}

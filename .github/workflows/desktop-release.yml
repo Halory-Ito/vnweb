@@ -1,0 +1,102 @@
+name: Windows Desktop Release
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: desktop-release-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build Windows x64 installer
+    runs-on: windows-2025
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          architecture: x64
+          cache: npm
+
+      - name: Set up Rust for Windows x64
+        run: rustup default stable-x86_64-pc-windows-msvc
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build desktop app
+        env:
+          NEXT_PUBLIC_VNWEB_DESKTOP_BUILD: ${{ github.run_number }}
+        run: npm run tauri:build
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: vnweb-windows-x64
+          path: target/release/bundle/nsis/*_x64-setup.exe
+          if-no-files-found: error
+          overwrite: true
+          retention-days: 7
+
+  publish:
+    name: Publish GitHub Release
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: vnweb-windows-x64
+          path: installer
+
+      - name: Publish installer
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: desktop-build-${{ github.run_number }}
+          BEFORE_SHA: ${{ github.event.before }}
+        run: |
+          main_head="$(gh api "repos/$GH_REPO/git/ref/heads/main" --jq '.object.sha')"
+          if [[ "$main_head" != "$GITHUB_SHA" ]]; then
+            echo "A newer commit is on main. Skipping release of $GITHUB_SHA."
+            exit 0
+          fi
+
+          if is_draft="$(gh release view "$RELEASE_TAG" --json isDraft --jq '.isDraft' 2>/dev/null)"; then
+            if [[ "$is_draft" == false ]]; then
+              echo "$RELEASE_TAG is already published."
+              exit 0
+            fi
+          fi
+
+          commit_line='| "- [" + .sha[0:7] + "](" + .html_url + ") " + (.commit.message | split("\n")[0])'
+          commit_notes=''
+          if [[ "$BEFORE_SHA" != 0000000000000000000000000000000000000000 ]]; then
+            if ! commit_notes="$(gh api --paginate "repos/$GH_REPO/compare/$BEFORE_SHA...$GITHUB_SHA?per_page=100" \
+              --jq ".commits[] $commit_line")"; then
+              echo "Cannot compare push commits. Using the commit at $GITHUB_SHA."
+              commit_notes=''
+            fi
+          fi
+          if [[ -z "$commit_notes" ]]; then
+            commit_notes="$(gh api "repos/$GH_REPO/commits/$GITHUB_SHA" --jq ". $commit_line")"
+          fi
+          printf 'Windows x64 NSIS installer\n\n## Commits\n\n%s\n' "$commit_notes" > release-notes.md
+
+          if [[ "$is_draft" != true ]]; then
+            gh release create "$RELEASE_TAG" --draft --target "$GITHUB_SHA" \
+              --title "vnweb Desktop | Build $GITHUB_RUN_NUMBER" \
+              --notes-file release-notes.md
+          fi
+
+          gh release upload "$RELEASE_TAG" installer/*_x64-setup.exe --clobber
+          gh release edit "$RELEASE_TAG" --draft=false --latest=true --notes-file release-notes.md
