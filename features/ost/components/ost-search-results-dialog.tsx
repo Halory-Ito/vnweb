@@ -1,6 +1,7 @@
 import { ImageIcon } from 'lucide-react'
-import { useState } from 'react'
 
+import { useOstSearchResults } from '../hooks/use-ost-search-results'
+import { Pagination } from '@/components/custom-pagination'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import {
@@ -8,7 +9,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog'
 import {
@@ -33,20 +33,34 @@ export function OstSearchResultsDialog({
   onOpenChange: (open: boolean) => void
   onSelect: (albums: UnifiedSearchResult[]) => void
 }) {
-  const [selected, setSelected] = useState<UnifiedSearchResult[]>([])
+  const {
+    page,
+    pageSize,
+    totalPages,
+    showPagination,
+    pageResults,
+    selected,
+    scrollRef,
+    changePage,
+    changePageSize,
+    toggleAlbum,
+    reset,
+  } = useOstSearchResults(results)
   const close = () => {
-    setSelected([])
+    reset()
     onOpenChange(false)
   }
 
   return (
     <Dialog open={open} onOpenChange={(value) => (value ? onOpenChange(value) : close())}>
-      <DialogContent className="flex max-h-[85dvh] flex-col overflow-hidden p-4 sm:max-w-2xl sm:p-6">
+      <DialogContent
+        aria-describedby={undefined}
+        className="flex max-h-[85dvh] flex-col overflow-hidden p-4 sm:max-w-2xl sm:p-6"
+      >
         <DialogHeader>
           <DialogTitle>搜索结果</DialogTitle>
-          <DialogDescription>共找到 {results.length} 张专辑，请选择要添加的专辑</DialogDescription>
         </DialogHeader>
-        <div className="min-h-0 min-w-0 flex-1 overflow-y-auto">
+        <div ref={scrollRef} className="min-h-0 min-w-0 flex-1 overflow-y-auto">
           <Table className="table-fixed">
             <TableHeader>
               <TableRow>
@@ -58,19 +72,13 @@ export function OstSearchResultsDialog({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {results.map((album) => (
+              {pageResults.map((album) => (
                 <TableRow key={`${album.source}-${album.id}`}>
                   <TableCell>
                     <Checkbox
                       aria-label={`选择 ${album.name}`}
                       checked={selected.includes(album)}
-                      onCheckedChange={(checked) =>
-                        setSelected((previous) =>
-                          checked === true
-                            ? [...previous, album]
-                            : previous.filter((item) => item !== album),
-                        )
-                      }
+                      onCheckedChange={(checked) => toggleAlbum(album, checked === true)}
                     />
                   </TableCell>
                   <TableCell>
@@ -100,6 +108,18 @@ export function OstSearchResultsDialog({
             </TableBody>
           </Table>
         </div>
+        {showPagination ? (
+          <Pagination
+            page={page}
+            pageSize={pageSize}
+            total={results.length}
+            totalPages={totalPages}
+            itemUnit="张"
+            itemName="专辑"
+            onPageChange={changePage}
+            onPageSizeChange={changePageSize}
+          />
+        ) : null}
         <DialogFooter>
           <Button variant="outline" onClick={close}>
             取消
