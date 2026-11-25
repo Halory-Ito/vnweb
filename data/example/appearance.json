@@ -13,7 +13,7 @@
   },
   "background": {
     "custom": {
-      "active": false,
+      "active": true,
       "path": {
         "pc": "",
         "mobile": ""
@@ -22,9 +22,29 @@
     "transitionStyle": "center-fade",
     "transitionDurationMs": 420
   },
+  "startup": {
+    "enabled": false,
+    "activeType": "image",
+    "image": {
+      "mediaPath": "",
+      "mediaWidth": null,
+      "mediaHeight": null,
+      "matchMediaWindowSize": true,
+      "durationMs": 2000,
+      "skippable": true
+    },
+    "video": {
+      "mediaPath": "",
+      "mediaWidth": null,
+      "mediaHeight": null,
+      "matchMediaWindowSize": true,
+      "muted": false,
+      "skippable": true
+    }
+  },
   "glass": {
-    "blur": 24,
-    "opacity": 24
+    "blur": 4,
+    "opacity": 80
   },
   "status": {
     "color": {},
@@ -38,10 +58,11 @@
   "layout": {
     "sidebarHidden": false,
     "headerHidden": false,
-    "borderless": false,
-    "gameLibraryLayout": "mixed",
+    "borderless": true,
+    "nativeTitleBar": true,
+    "gameLibraryLayout": "hybrid",
     "gameLibraryGridDisplay": "folders",
-    "gameLibraryGroup": "status",
+    "gameLibraryGroup": "developer",
     "gameCardTitleHidden": false,
     "gameCardRadius": 10,
     "folderPalette": ["#5b85d6", "#4b9c8d", "#a17bd3", "#ce805d", "#bd6e94"],

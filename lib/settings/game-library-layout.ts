@@ -2,6 +2,7 @@ import { atomWithStorage } from 'jotai/utils'
 
 import {
   createLayoutSyncedStorage,
+  DEFAULT_LAYOUT_SETTINGS,
   type GameLibraryLayout,
   isGameLibraryLayout,
 } from '@/lib/settings/layout-settings'
@@ -11,6 +12,6 @@ export { isGameLibraryLayout }
 
 export const gameLibraryLayoutAtom = atomWithStorage<GameLibraryLayout>(
   'vnweb.layout.game-library',
-  'mixed',
+  DEFAULT_LAYOUT_SETTINGS.gameLibraryLayout,
   createLayoutSyncedStorage('gameLibraryLayout', isGameLibraryLayout),
 )

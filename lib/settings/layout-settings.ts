@@ -14,6 +14,7 @@ export type LayoutSettings = {
   sidebarHidden: boolean
   headerHidden: boolean
   borderless: boolean
+  nativeTitleBar: boolean
   gameLibraryLayout: GameLibraryLayout
   gameLibraryGridDisplay: GridDisplay
   gameLibraryGroup: LayoutLibraryGroup
@@ -32,10 +33,11 @@ export const MAX_GAME_CARD_RADIUS = 40
 export const DEFAULT_LAYOUT_SETTINGS: LayoutSettings = {
   sidebarHidden: false,
   headerHidden: false,
-  borderless: false,
-  gameLibraryLayout: 'mixed',
+  borderless: true,
+  nativeTitleBar: true,
+  gameLibraryLayout: 'hybrid',
   gameLibraryGridDisplay: 'folders',
-  gameLibraryGroup: 'status',
+  gameLibraryGroup: 'developer',
   gameCardTitleHidden: false,
   gameCardRadius: 10,
   folderPalette: DEFAULT_FOLDER_PALETTE,
@@ -105,6 +107,10 @@ export function normalizeLayoutSettings(
       typeof source.borderless === 'boolean'
         ? source.borderless
         : DEFAULT_LAYOUT_SETTINGS.borderless,
+    nativeTitleBar:
+      typeof source.nativeTitleBar === 'boolean'
+        ? source.nativeTitleBar
+        : DEFAULT_LAYOUT_SETTINGS.nativeTitleBar,
     gameLibraryLayout: isGameLibraryLayout(source.gameLibraryLayout)
       ? source.gameLibraryLayout
       : DEFAULT_LAYOUT_SETTINGS.gameLibraryLayout,
@@ -161,6 +167,12 @@ export async function updateLayoutConfigApi(
 let suppressLayoutSyncDepth = 0
 let pendingLayoutPatch: Partial<LayoutSettings> = {}
 let syncTimer: ReturnType<typeof setTimeout> | null = null
+let layoutSyncChain: Promise<void> = Promise.resolve()
+const userModifiedLayoutKeys = new Set<keyof LayoutSettings>()
+
+export function hasUserModifiedLayoutKey(key: keyof LayoutSettings): boolean {
+  return userModifiedLayoutKeys.has(key)
+}
 
 export function runWithoutLayoutSync(fn: () => void) {
   suppressLayoutSyncDepth += 1
@@ -171,24 +183,43 @@ export function runWithoutLayoutSync(fn: () => void) {
   }
 }
 
-function scheduleLayoutPatch(patch: Partial<LayoutSettings>) {
+function flushLayoutPatch() {
+  if (syncTimer) {
+    clearTimeout(syncTimer)
+    syncTimer = null
+  }
+  if (Object.keys(pendingLayoutPatch).length === 0) {
+    return
+  }
+
+  const nextPatch = pendingLayoutPatch
+  pendingLayoutPatch = {}
+  layoutSyncChain = layoutSyncChain
+    .then(() => updateLayoutConfigApi(nextPatch))
+    .then(
+      () => undefined,
+      (error) => {
+        console.error('Sync layout settings failed:', error)
+      },
+    )
+}
+
+function scheduleLayoutPatch(patch: Partial<LayoutSettings>, immediate = false) {
   pendingLayoutPatch = { ...pendingLayoutPatch, ...patch }
+  if (immediate) {
+    flushLayoutPatch()
+    return
+  }
   if (syncTimer) {
     clearTimeout(syncTimer)
   }
-  syncTimer = setTimeout(() => {
-    const nextPatch = pendingLayoutPatch
-    pendingLayoutPatch = {}
-    syncTimer = null
-    void updateLayoutConfigApi(nextPatch).catch((error) => {
-      console.error('Sync layout settings failed:', error)
-    })
-  }, 300)
+  syncTimer = setTimeout(flushLayoutPatch, 300)
 }
 
 export function createLayoutSyncedStorage<K extends keyof LayoutSettings>(
   configKey: K,
   validator: (value: unknown) => value is LayoutSettings[K],
+  options?: { immediate?: boolean },
 ) {
   const baseStorage = unstable_withStorageValidator(validator)(
     createJSONStorage<unknown>(() => window.localStorage),
@@ -199,7 +230,11 @@ export function createLayoutSyncedStorage<K extends keyof LayoutSettings>(
     setItem(key: string, newValue: LayoutSettings[K]) {
       baseStorage.setItem(key, newValue)
       if (suppressLayoutSyncDepth === 0) {
-        scheduleLayoutPatch({ [configKey]: newValue } as Partial<LayoutSettings>)
+        userModifiedLayoutKeys.add(configKey)
+        scheduleLayoutPatch(
+          { [configKey]: newValue } as Partial<LayoutSettings>,
+          options?.immediate,
+        )
       }
     },
   }

@@ -1,3 +1,5 @@
+import { api } from '@/lib/request-utils'
+
 export type GlassSettings = {
   blur: number
   opacity: number
@@ -7,8 +9,16 @@ export const GLASS_SETTINGS_STORAGE_KEY = 'vnweb:glass-settings'
 export const GLASS_SETTINGS_EVENT = 'vnweb:glass-settings-changed'
 
 export const DEFAULT_GLASS_SETTINGS: GlassSettings = {
-  blur: 24,
-  opacity: 24,
+  blur: 4,
+  opacity: 80,
+}
+
+export async function getGlassConfigApi(): Promise<{ data: GlassSettings }> {
+  const response = await api.request<{ data: GlassSettings }>({
+    method: 'GET',
+    url: '/settings/appearance/glass',
+  })
+  return response.data
 }
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value))

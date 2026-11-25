@@ -8,13 +8,18 @@ import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import GameLibraryLayoutSelect from '@/features/game/components/game-library-layout-select'
 import LibraryGroupSelect from '@/features/home/components/library-group-select'
-import { borderlessAtom, useLayoutVisibility } from '@/hooks/use-layout-visibility'
+import {
+  borderlessAtom,
+  nativeTitleBarAtom,
+  useLayoutVisibility,
+} from '@/hooks/use-layout-visibility'
 import { gameLibraryGridDisplayAtom } from '@/lib/settings/game-library-grid-display'
 import { gameLibraryLayoutAtom } from '@/lib/settings/game-library-layout'
 
 export function LayoutSection() {
   const { sidebarHidden, setSidebarHidden, headerHidden, setHeaderHidden } = useLayoutVisibility()
   const [borderless, setBorderless] = useAtom(borderlessAtom)
+  const [nativeTitleBar, setNativeTitleBar] = useAtom(nativeTitleBarAtom)
   const layout = useAtomValue(gameLibraryLayoutAtom)
   const gridDisplay = useAtomValue(gameLibraryGridDisplayAtom)
 
@@ -37,6 +42,14 @@ export function LayoutSection() {
       <div className="flex min-h-8 items-center justify-between gap-3">
         <Label htmlFor="borderless">无边框</Label>
         <Switch id="borderless" checked={borderless} onCheckedChange={setBorderless} />
+      </div>
+      <div className="flex min-h-8 items-center justify-between gap-3">
+        <Label htmlFor="native-title-bar">开启原生标题栏</Label>
+        <Switch
+          id="native-title-bar"
+          checked={nativeTitleBar}
+          onCheckedChange={setNativeTitleBar}
+        />
       </div>
       <div className="flex min-h-8 flex-wrap items-center justify-between gap-3">
         <Label htmlFor="game-library-layout">游戏库布局</Label>

@@ -4,8 +4,8 @@
 
 :root {
   --radius: 0.625rem;
-  --app-glass-blur: 24px;
-  --app-glass-opacity: 0.24;
+  --app-glass-blur: 4px;
+  --app-glass-opacity: 0.8;
   --app-font-family: serif;
   --app-font-size: 16px;
   --app-font-weight: 400;

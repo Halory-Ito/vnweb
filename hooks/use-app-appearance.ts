@@ -1,9 +1,23 @@
 'use client'
 
-import { useAtomValue, useStore } from 'jotai'
+import { atom, useAtomValue, useStore, type WritableAtom } from 'jotai'
 import { useEffect } from 'react'
 
-import { borderlessAtom, headerHiddenAtom, sidebarHiddenAtom } from './use-layout-visibility'
+import {
+  borderlessAtom,
+  hasStoredNativeTitleBar,
+  headerHiddenAtom,
+  nativeTitleBarAtom,
+  sidebarHiddenAtom,
+} from './use-layout-visibility'
+import { syncDesktopNativeTitleBar } from '@/lib/desktop-window'
+import {
+  getBackgroundConfigApi,
+  normalizeBackgroundSettings,
+  notifyBackgroundSettingsChanged,
+  readBackgroundSettings,
+  writeBackgroundSettings,
+} from '@/lib/settings/background-settings'
 import {
   getEmptyStateConfigApi,
   parseEmptyStateSettings,
@@ -22,33 +36,78 @@ import {
   writeFontSettings,
 } from '@/lib/settings/font-settings'
 import { gameCardRadiusAtom, gameCardTitleHiddenAtom } from '@/lib/settings/game-card-appearance'
-import { folderColorsAtom, folderPaletteAtom } from '@/lib/settings/game-library-folder-colors'
+import {
+  folderColorsAtom,
+  folderPaletteAtom,
+  folderPaletteModeAtom,
+} from '@/lib/settings/game-library-folder-colors'
 import { gameLibraryGridDisplayAtom } from '@/lib/settings/game-library-grid-display'
 import { gameLibraryGroupAtom } from '@/lib/settings/game-library-group'
 import { gameLibraryLayoutAtom } from '@/lib/settings/game-library-layout'
 import {
   applyGlassSettingsToDocument,
+  getGlassConfigApi,
   GLASS_SETTINGS_EVENT,
   GLASS_SETTINGS_STORAGE_KEY,
+  normalizeGlassSettings,
+  notifyGlassSettingsChanged,
   readGlassSettings,
+  writeGlassSettings,
 } from '@/lib/settings/glass-settings'
 import {
   getLayoutConfigApi,
+  hasUserModifiedLayoutKey,
+  type LayoutSettings,
   runWithoutLayoutSync,
   updateLayoutConfigApi,
 } from '@/lib/settings/layout-settings'
+import {
+  getStartupConfigApi,
+  normalizeStartupSettings,
+  notifyStartupSettingsChanged,
+  writeStartupSettings,
+} from '@/lib/settings/startup-settings'
 
-let appearanceBootstrapStarted = false
+const bootstrappedStores = new WeakSet<ReturnType<typeof useStore>>()
+const layoutBootstrapReadyAtom = atom(false)
+
+function syncLayoutAtomIfUnmodified<K extends keyof LayoutSettings>(
+  store: ReturnType<typeof useStore>,
+  key: K,
+  targetAtom: WritableAtom<LayoutSettings[K], [LayoutSettings[K]], void>,
+  value: LayoutSettings[K],
+) {
+  if (!hasUserModifiedLayoutKey(key)) {
+    store.set(targetAtom, value)
+  }
+}
 
 export function useAppAppearance() {
   const store = useStore()
   const borderless = useAtomValue(borderlessAtom)
+  const nativeTitleBar = useAtomValue(nativeTitleBarAtom)
+  const layoutBootstrapReady = useAtomValue(layoutBootstrapReadyAtom)
 
   useEffect(() => {
     const root = document.documentElement
     root.toggleAttribute('data-borderless', borderless)
     return () => root.removeAttribute('data-borderless')
   }, [borderless])
+
+  useEffect(() => {
+    const current = store.get(nativeTitleBarAtom)
+    if (current !== nativeTitleBar) {
+      return
+    }
+    if (
+      !layoutBootstrapReady &&
+      !hasStoredNativeTitleBar() &&
+      !hasUserModifiedLayoutKey('nativeTitleBar')
+    ) {
+      return
+    }
+    void syncDesktopNativeTitleBar(current)
+  }, [layoutBootstrapReady, nativeTitleBar, store])
 
   useEffect(() => {
     const syncGlassSettings = () => {
@@ -93,25 +152,82 @@ export function useAppAppearance() {
   }, [])
 
   useEffect(() => {
-    if (appearanceBootstrapStarted) {
+    if (bootstrappedStores.has(store)) {
       return
     }
-    appearanceBootstrapStarted = true
+    bootstrappedStores.add(store)
 
     void getLayoutConfigApi()
       .then((res) => {
         if (res.persisted) {
           runWithoutLayoutSync(() => {
-            store.set(sidebarHiddenAtom, res.data.sidebarHidden)
-            store.set(headerHiddenAtom, res.data.headerHidden)
-            store.set(borderlessAtom, res.data.borderless)
-            store.set(gameLibraryLayoutAtom, res.data.gameLibraryLayout)
-            store.set(gameLibraryGridDisplayAtom, res.data.gameLibraryGridDisplay)
-            store.set(gameLibraryGroupAtom, res.data.gameLibraryGroup)
-            store.set(gameCardTitleHiddenAtom, res.data.gameCardTitleHidden)
-            store.set(gameCardRadiusAtom, res.data.gameCardRadius)
-            store.set(folderPaletteAtom, res.data.folderPalette)
-            store.set(folderColorsAtom, res.data.folderColors)
+            syncLayoutAtomIfUnmodified(
+              store,
+              'sidebarHidden',
+              sidebarHiddenAtom,
+              res.data.sidebarHidden,
+            )
+            syncLayoutAtomIfUnmodified(
+              store,
+              'headerHidden',
+              headerHiddenAtom,
+              res.data.headerHidden,
+            )
+            syncLayoutAtomIfUnmodified(store, 'borderless', borderlessAtom, res.data.borderless)
+            syncLayoutAtomIfUnmodified(
+              store,
+              'nativeTitleBar',
+              nativeTitleBarAtom,
+              res.data.nativeTitleBar,
+            )
+            syncLayoutAtomIfUnmodified(
+              store,
+              'gameLibraryLayout',
+              gameLibraryLayoutAtom,
+              res.data.gameLibraryLayout,
+            )
+            syncLayoutAtomIfUnmodified(
+              store,
+              'gameLibraryGridDisplay',
+              gameLibraryGridDisplayAtom,
+              res.data.gameLibraryGridDisplay,
+            )
+            syncLayoutAtomIfUnmodified(
+              store,
+              'gameLibraryGroup',
+              gameLibraryGroupAtom,
+              res.data.gameLibraryGroup,
+            )
+            syncLayoutAtomIfUnmodified(
+              store,
+              'gameCardTitleHidden',
+              gameCardTitleHiddenAtom,
+              res.data.gameCardTitleHidden,
+            )
+            syncLayoutAtomIfUnmodified(
+              store,
+              'gameCardRadius',
+              gameCardRadiusAtom,
+              res.data.gameCardRadius,
+            )
+            syncLayoutAtomIfUnmodified(
+              store,
+              'folderPalette',
+              folderPaletteAtom,
+              res.data.folderPalette,
+            )
+            syncLayoutAtomIfUnmodified(
+              store,
+              'folderPaletteMode',
+              folderPaletteModeAtom,
+              res.data.folderPaletteMode,
+            )
+            syncLayoutAtomIfUnmodified(
+              store,
+              'folderColors',
+              folderColorsAtom,
+              res.data.folderColors,
+            )
           })
           return
         }
@@ -120,17 +236,63 @@ export function useAppAppearance() {
           sidebarHidden: store.get(sidebarHiddenAtom),
           headerHidden: store.get(headerHiddenAtom),
           borderless: store.get(borderlessAtom),
+          nativeTitleBar: store.get(nativeTitleBarAtom),
           gameLibraryLayout: store.get(gameLibraryLayoutAtom),
           gameLibraryGridDisplay: store.get(gameLibraryGridDisplayAtom),
           gameLibraryGroup: store.get(gameLibraryGroupAtom),
           gameCardTitleHidden: store.get(gameCardTitleHiddenAtom),
           gameCardRadius: store.get(gameCardRadiusAtom),
           folderPalette: store.get(folderPaletteAtom),
+          folderPaletteMode: store.get(folderPaletteModeAtom),
           folderColors: store.get(folderColorsAtom),
         })
       })
       .catch((error) => {
         console.error('Bootstrap layout settings failed:', error)
+      })
+      .finally(() => {
+        store.set(layoutBootstrapReadyAtom, true)
+      })
+
+    void getGlassConfigApi()
+      .then((res) => {
+        if (!res?.data) return
+        const normalized = normalizeGlassSettings(res.data)
+        writeGlassSettings(normalized)
+        applyGlassSettingsToDocument(normalized)
+        notifyGlassSettingsChanged()
+      })
+      .catch((error) => {
+        console.error('Bootstrap glass settings failed:', error)
+      })
+
+    void getBackgroundConfigApi()
+      .then((res) => {
+        if (!res?.data) return
+        const localSettings = readBackgroundSettings()
+        const merged = normalizeBackgroundSettings({
+          ...localSettings,
+          customBackgroundEnabled: res.data.custom.active,
+          customBackgroundImagePc: res.data.custom.path.pc,
+          customBackgroundImageMobile: res.data.custom.path.mobile,
+          transitionStyle: res.data.transitionStyle,
+          transitionDurationMs: res.data.transitionDurationMs,
+        })
+        writeBackgroundSettings(merged)
+        notifyBackgroundSettingsChanged()
+      })
+      .catch((error) => {
+        console.error('Bootstrap background settings failed:', error)
+      })
+
+    void getStartupConfigApi()
+      .then((res) => {
+        if (!res?.data) return
+        writeStartupSettings(normalizeStartupSettings(res.data))
+        notifyStartupSettingsChanged()
+      })
+      .catch((error) => {
+        console.error('Bootstrap startup settings failed:', error)
       })
 
     void getEmptyStateConfigApi()

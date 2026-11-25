@@ -8,8 +8,8 @@ type GlassSettings = {
 }
 
 const DEFAULT_GLASS_SETTINGS: GlassSettings = {
-  blur: 24,
-  opacity: 24,
+  blur: 4,
+  opacity: 80,
 }
 
 // 读取毛玻璃设置

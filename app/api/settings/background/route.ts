@@ -18,7 +18,7 @@ type BackgroundSettings = {
 
 const DEFAULT_BACKGROUND_SETTINGS: BackgroundSettings = {
   custom: {
-    active: false,
+    active: true,
     path: {
       pc: '',
       mobile: '',

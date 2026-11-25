@@ -7,6 +7,7 @@ const LAYOUT_KEYS: Array<keyof LayoutSettings> = [
   'sidebarHidden',
   'headerHidden',
   'borderless',
+  'nativeTitleBar',
   'gameLibraryLayout',
   'gameLibraryGridDisplay',
   'gameLibraryGroup',

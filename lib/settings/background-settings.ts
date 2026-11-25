@@ -1,3 +1,5 @@
+import { api } from '@/lib/request-utils'
+
 export type BackgroundTransitionStyle =
   | 'none'
   | 'center-fade'
@@ -40,13 +42,33 @@ const TRANSITION_STYLE_SET = new Set<BackgroundTransitionStyle>(
 )
 
 export const DEFAULT_BACKGROUND_SETTINGS: BackgroundSettings = {
-  customBackgroundEnabled: false,
+  customBackgroundEnabled: true,
   customBackgroundImage: '',
   customBackgroundImagePc: '',
   customBackgroundImageMobile: '',
   lastGameBackgroundImage: DEFAULT_LAST_GAME_BACKGROUND_IMAGE,
   transitionStyle: DEFAULT_BACKGROUND_TRANSITION_STYLE,
   transitionDurationMs: DEFAULT_BACKGROUND_TRANSITION_DURATION_MS,
+}
+
+export type BackgroundConfigApiData = {
+  custom: {
+    active: boolean
+    path: {
+      pc: string
+      mobile: string
+    }
+  }
+  transitionStyle: BackgroundTransitionStyle
+  transitionDurationMs: number
+}
+
+export async function getBackgroundConfigApi(): Promise<{ data: BackgroundConfigApiData }> {
+  const response = await api.request<{ data: BackgroundConfigApiData }>({
+    method: 'GET',
+    url: '/settings/background',
+  })
+  return response.data
 }
 
 // 获取当前设备类型
@@ -61,7 +83,10 @@ export function normalizeBackgroundSettings(
   const transitionDurationCandidate = Number(input.transitionDurationMs)
 
   return {
-    customBackgroundEnabled: Boolean(input.customBackgroundEnabled),
+    customBackgroundEnabled:
+      typeof input.customBackgroundEnabled === 'boolean'
+        ? input.customBackgroundEnabled
+        : DEFAULT_BACKGROUND_SETTINGS.customBackgroundEnabled,
     customBackgroundImage:
       typeof input.customBackgroundImage === 'string' ? input.customBackgroundImage.trim() : '',
     customBackgroundImagePc:

@@ -16,9 +16,11 @@ import type { ReactNode } from 'react'
 export function AppHeaderActions({
   mobileNav,
   onOpenAgent,
+  windowControls,
 }: {
   mobileNav: ReactNode
   onOpenAgent: () => void
+  windowControls?: ReactNode
 }) {
   const pathname = usePathname()
   const router = useRouter()
@@ -51,6 +53,7 @@ export function AppHeaderActions({
         </div>
         <AgentDrawerTrigger onClick={onOpenAgent} />
         <MobileHeaderMenu />
+        {windowControls}
       </div>
     </>
   )

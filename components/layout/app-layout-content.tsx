@@ -6,7 +6,9 @@ import { AppHeaderActions } from './app-header'
 import AppSideBar from './app-sidebar'
 import LayoutEdgeHandle from './layout-edge-handle'
 import MobileNav from './mobile-nav'
+import WindowControls from './window-controls'
 import { AgentDrawer } from '@/features/agent'
+import { useDesktopWindow } from '@/hooks/use-desktop-window'
 import { useHeaderDropdownMenu } from '@/hooks/use-header-dropdown-menu'
 import { useLayoutEdgeDrag } from '@/hooks/use-layout-edge-drag'
 import { useLayoutVisibility } from '@/hooks/use-layout-visibility'
@@ -14,6 +16,7 @@ import { cn } from '@/lib/utils'
 
 export default function AppLayoutContent({ children }: { children: ReactNode }) {
   const { sidebarHidden, setSidebarHidden, headerHidden, setHeaderHidden } = useLayoutVisibility()
+  const desktopWindow = useDesktopWindow()
   const sidebarRef = useRef<HTMLDivElement>(null)
   const headerRef = useRef<HTMLElement>(null)
   const { open: mobileNavOpen, setOpen: setMobileNavOpen } = useHeaderDropdownMenu('mobile')
@@ -42,9 +45,11 @@ export default function AppLayoutContent({ children }: { children: ReactNode }) 
           <header
             ref={headerRef}
             inert={headerHidden}
+            onMouseDown={desktopWindow.handleHeaderMouseDown}
             className={cn(
               'relative w-full shrink-0 flex-wrap items-center gap-x-3 gap-y-3 border-b p-3 md:flex-nowrap md:gap-4 md:p-4',
               headerHidden ? 'hidden' : 'flex',
+              desktopWindow.showCustomControls && 'select-none',
             )}
           >
             <AppHeaderActions
@@ -56,6 +61,16 @@ export default function AppLayoutContent({ children }: { children: ReactNode }) 
                 />
               }
               onOpenAgent={() => setAgentOpen(true)}
+              windowControls={
+                desktopWindow.showCustomControls ? (
+                  <WindowControls
+                    isMaximized={desktopWindow.isMaximized}
+                    onMinimize={desktopWindow.minimize}
+                    onToggleMaximize={() => void desktopWindow.toggleMaximize()}
+                    onClose={desktopWindow.close}
+                  />
+                ) : null
+              }
             />
             {headerHidden ? null : (
               <LayoutEdgeHandle side="top" hidden={false} handlers={headerDrag} />
