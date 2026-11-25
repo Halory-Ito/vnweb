@@ -15,10 +15,23 @@ jobs:
   build:
     name: Build Windows x64 installer
     runs-on: windows-2025
+    outputs:
+      version: ${{ steps.desktop-version.outputs.version }}
     steps:
       - uses: actions/checkout@v6
         with:
           persist-credentials: false
+
+      - name: Read Tauri version
+        id: desktop-version
+        shell: pwsh
+        run: |
+          $config = Get-Content -LiteralPath 'crates/vnweb-desktop/tauri.conf.json' -Raw -Encoding utf8 | ConvertFrom-Json
+          $version = $config.version
+          if ($version -cnotmatch '^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$') {
+            throw 'Expected a version number in the Tauri configuration.'
+          }
+          Add-Content -LiteralPath $env:GITHUB_OUTPUT -Value "version=$version" -Encoding utf8
 
       - uses: actions/setup-node@v6
         with:
@@ -63,6 +76,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
           RELEASE_TAG: desktop-build-${{ github.run_number }}
+          RELEASE_TITLE: v${{ needs.build.outputs.version }}
           BEFORE_SHA: ${{ github.event.before }}
         run: |
           main_head="$(gh api "repos/$GH_REPO/git/ref/heads/main" --jq '.object.sha')"
@@ -94,9 +108,9 @@ jobs:
 
           if [[ "$is_draft" != true ]]; then
             gh release create "$RELEASE_TAG" --draft --target "$GITHUB_SHA" \
-              --title "vnweb Desktop | Build $GITHUB_RUN_NUMBER" \
+              --title "$RELEASE_TITLE" \
               --notes-file release-notes.md
           fi
 
           gh release upload "$RELEASE_TAG" installer/*_x64-setup.exe --clobber
-          gh release edit "$RELEASE_TAG" --draft=false --latest=true --notes-file release-notes.md
+          gh release edit "$RELEASE_TAG" --title "$RELEASE_TITLE" --draft=false --latest=true --notes-file release-notes.md

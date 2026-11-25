@@ -35,7 +35,7 @@
 ![主页仪表盘](images/主页.png)
 
 > [!NOTE]
-> Windows x64 用户可在[最新 Release](https://github.com/Halory-Ito/vnweb/releases/latest)下载 `*_x64-setup.exe`。推送到 `main` 后，GitHub Actions 会构建桌面端并在成功后发布安装包。源码运行方式见下方「快速开始」。
+> Windows x64 用户可在[最新 Release](https://github.com/Halory-Ito/vnweb/releases/latest)下载 `*_x64-setup.exe`。源码运行方式见下方「快速开始」。
 
 ## 功能特性
 
