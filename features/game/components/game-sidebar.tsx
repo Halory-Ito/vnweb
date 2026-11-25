@@ -1,6 +1,7 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { usePathname } from 'next/navigation'
+import { memo, useEffect, useState } from 'react'
 
 import { useGameSidebar } from '../hooks/use-game-sidebar'
 import { GameSidebarItem } from './game-sidebar-item'
@@ -16,13 +17,26 @@ import LibraryFolderContextMenu from '@/features/home/components/library-folder-
 import LibraryFolderLogoDialog from '@/features/home/components/library-folder-logo-dialog'
 import { useLibraryFolderLogos } from '@/features/home/hooks/use-library-folder-logos'
 
-export function GameSidebarContent({
+type GameSidebarContentProps = ReturnType<typeof useGameSidebar> & {
+  onCreateCollection?: () => void
+}
+
+export function GameSidebarContent(props: GameSidebarContentProps) {
+  const pathname = usePathname()
+  const [, section, subsection, gameId] = pathname.split('/')
+  const activeGameId = section === 'game' && subsection === 'info' ? gameId : undefined
+
+  return <GameSidebarGroups {...props} activeGameId={activeGameId} />
+}
+
+const GameSidebarGroups = memo(function GameSidebarGroups({
+  activeGameId,
   data,
   isPending,
   isError,
   refetch,
   onCreateCollection,
-}: ReturnType<typeof useGameSidebar> & { onCreateCollection?: () => void }) {
+}: GameSidebarContentProps & { activeGameId?: string }) {
   const [ctrlPressed, setCtrlPressed] = useState(false)
   const [logoFolderHref, setLogoFolderHref] = useState<string>()
   const items = data?.items ?? []
@@ -95,7 +109,12 @@ export function GameSidebarContent({
             )}
             <AccordionContent className="min-w-0 space-y-2 p-2">
               {item.items.map((subItem) => (
-                <GameSidebarItem key={subItem.id} {...subItem} ctrlPressed={ctrlPressed} />
+                <GameSidebarItem
+                  key={subItem.id}
+                  {...subItem}
+                  isActive={subItem.id === activeGameId}
+                  ctrlPressed={ctrlPressed}
+                />
               ))}
             </AccordionContent>
           </AccordionItem>
@@ -113,7 +132,7 @@ export function GameSidebarContent({
       ) : null}
     </Accordion>
   )
-}
+})
 
 export default function GameSidebar() {
   const query = useGameSidebar()

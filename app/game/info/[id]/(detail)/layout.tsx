@@ -1,6 +1,6 @@
 import { eq } from 'drizzle-orm'
 
-import GameInfoPage from './game-info-page'
+import GameInfoPage from '../game-info-page'
 import { GameInfoTable } from '@/db/schema'
 import { db } from '@/lib/drizzle'
 
@@ -40,6 +40,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
-export default function Page() {
-  return <GameInfoPage />
+export default async function Layout({ children, params }: Props & { children: React.ReactNode }) {
+  const { id } = await params
+
+  return <GameInfoPage gameId={id}>{children}</GameInfoPage>
 }

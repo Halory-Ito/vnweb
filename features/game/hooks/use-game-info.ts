@@ -2,27 +2,22 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { isAxiosError } from 'axios'
-import { useSetAtom } from 'jotai'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
 import { useGamePlaySession } from './use-game-play-session'
 import { updateGamePlayStatusById } from '@/api'
-import { gameSearchAtom } from '@/atom/global'
 
 import type { GameDetail } from '@/types'
-
-const GAME_INFO_TABS = ['overview', 'characters', 'pv', 'ost', 'record', 'memory', 'quote', 'guide']
 
 function useDialogState() {
   const [open, onOpenChange] = useState(false)
   return { open, onOpenChange }
 }
 
-export function useGameInfo(game: GameDetail, initialTab?: string) {
+export function useGameInfo(game: GameDetail) {
   const title = game.nameCn || game.name
-  const currentTab = initialTab && GAME_INFO_TABS.includes(initialTab) ? initialTab : 'overview'
   const [playStatus, setPlayStatus] = useState(game.playStatus)
   const [rating, setRating] = useState(game.rating ?? 0)
   const basicInfo = useDialogState()
@@ -35,7 +30,6 @@ export function useGameInfo(game: GameDetail, initialTab?: string) {
   const session = useGamePlaySession(game)
   const queryClient = useQueryClient()
   const router = useRouter()
-  const setGameSearch = useSetAtom(gameSearchAtom)
 
   useEffect(() => {
     setPlayStatus(game.playStatus)
@@ -59,16 +53,6 @@ export function useGameInfo(game: GameDetail, initialTab?: string) {
     },
   })
 
-  const handleTabChange = (value: string) => {
-    if (!GAME_INFO_TABS.includes(value) || value === currentTab) return
-    router.push(`/game/info/${game.id}/${value}`)
-  }
-
-  const searchGame = (value: string) => {
-    setGameSearch(value)
-    router.push('/game/home')
-  }
-
   const updatePlayStatus = (nextStatus: number) => {
     statusMutation.mutate(nextStatus)
   }
@@ -78,9 +62,6 @@ export function useGameInfo(game: GameDetail, initialTab?: string) {
 
   return {
     title,
-    currentTab,
-    searchGame,
-    handleTabChange,
     onOpenBasicInfo: () => basicInfo.onOpenChange(true),
     onOpenUpdateData: () => updateData.onOpenChange(true),
     headerProps: {

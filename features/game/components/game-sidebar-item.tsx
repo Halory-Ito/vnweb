@@ -5,8 +5,8 @@ import { useAtom } from 'jotai'
 import { CheckIcon } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { usePathname, useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { memo, useState } from 'react'
 import { toast } from 'sonner'
 
 import GameSettingsPanel from './game-settings-panel'
@@ -54,11 +54,17 @@ import { cn } from '@/lib/utils'
 import { GameSidebarItemProps } from '@/types/game'
 
 type SidebarItemProps = GameSidebarItemProps & {
+  isActive: boolean
   ctrlPressed?: boolean
 }
 
-export const GameSidebarItem = ({ title, icon, id, ctrlPressed = false }: SidebarItemProps) => {
-  const pathname = usePathname()
+export const GameSidebarItem = memo(function GameSidebarItem({
+  title,
+  icon,
+  id,
+  isActive,
+  ctrlPressed = false,
+}: SidebarItemProps) {
   const router = useRouter()
   const queryClient = useQueryClient()
   const [selectedGameIds, setSelectedGameIds] = useAtom(selectedGameIdsAtom)
@@ -75,9 +81,6 @@ export const GameSidebarItem = ({ title, icon, id, ctrlPressed = false }: Sideba
     queryFn: getCollections,
   })
   const gameId = Number(id)
-  const normalizedPathname = pathname.replace(/\/+$/, '')
-  const isActive =
-    normalizedPathname === `/game/info/${id}` || normalizedPathname.startsWith(`/game/info/${id}/`)
   const isSelected = selectedGameIds.includes(id)
 
   const handleItemClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
@@ -168,7 +171,8 @@ export const GameSidebarItem = ({ title, icon, id, ctrlPressed = false }: Sideba
         queryKey: ['collections'],
       })
 
-      if (pathname.startsWith(`/game/info/${id}`)) {
+      const [, section, subsection, currentGameId] = window.location.pathname.split('/')
+      if (section === 'game' && subsection === 'info' && currentGameId === id) {
         router.push('/game/home')
       }
 
@@ -432,4 +436,4 @@ export const GameSidebarItem = ({ title, icon, id, ctrlPressed = false }: Sideba
       </Dialog>
     </ContextMenu>
   )
-}
+})

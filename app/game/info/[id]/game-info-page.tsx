@@ -4,65 +4,15 @@ import { useQuery } from '@tanstack/react-query'
 import { useSetAtom } from 'jotai'
 import { AlertCircle, SearchX } from 'lucide-react'
 import Link from 'next/link'
-import { useParams } from 'next/navigation'
 import { useEffect } from 'react'
 
 import { getGameById } from '@/api'
 import { bgAtom } from '@/atom/global'
 import { Button } from '@/components/ui/button'
-import { Skeleton } from '@/components/ui/skeleton'
+import GameInfoSkeleton from '@/features/game/components/info/game-info-skeleton'
 import GameInfo from '@/features/game/views/game-info'
 import { useRecordVisit } from '@/features/recent'
 import { updateLastGameBackground } from '@/lib/settings/background-settings'
-
-function GameInfoSkeleton() {
-  return (
-    <div className="w-full space-y-6 p-4 md:p-6">
-      <div className="w-full rounded-lg">
-        <div className="flex flex-col items-center justify-center rounded-md p-4 md:flex-row md:justify-between">
-          <div className="w-full max-w-xl space-y-3">
-            <Skeleton className="h-14 w-40 md:h-20 md:w-56" />
-            <Skeleton className="h-8 w-2/3" />
-            <Skeleton className="h-4 w-1/2" />
-            <div className="flex gap-2">
-              <Skeleton className="h-10 w-28" />
-              <Skeleton className="h-10 w-24" />
-            </div>
-          </div>
-
-          <Skeleton className="h-56 w-40 shrink-0 rounded-md border" />
-        </div>
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <Skeleton className="h-28 w-full" />
-        <Skeleton className="h-28 w-full" />
-        <Skeleton className="h-28 w-full" />
-        <Skeleton className="h-28 w-full" />
-      </div>
-
-      <div className="space-y-4">
-        <div className="flex flex-wrap gap-2">
-          <Skeleton className="h-10 w-20" />
-          <Skeleton className="h-10 w-24" />
-          <Skeleton className="h-10 w-16" />
-          <Skeleton className="h-10 w-16" />
-          <Skeleton className="h-10 w-20" />
-          <Skeleton className="h-10 w-16" />
-        </div>
-        <div className="rounded-md border p-4">
-          <div className="space-y-3">
-            <Skeleton className="h-6 w-40" />
-            <Skeleton className="h-4 w-full" />
-            <Skeleton className="h-4 w-full" />
-            <Skeleton className="h-4 w-5/6" />
-            <Skeleton className="h-28 w-full" />
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
 
 type GameInfoEmptyStateProps = {
   icon: typeof AlertCircle
@@ -92,11 +42,15 @@ function GameInfoEmptyState({ icon: Icon, title, description, children }: GameIn
   )
 }
 
-export default function GameInfoPage() {
-  const params = useParams<{ id: string }>()
+export default function GameInfoPage({
+  children,
+  gameId,
+}: {
+  children: React.ReactNode
+  gameId: string
+}) {
   const setBg = useSetAtom(bgAtom)
 
-  const gameId = params.id
   const { data, isLoading, error, refetch, isRefetching } = useQuery({
     queryKey: ['game', gameId],
     queryFn: () => getGameById(gameId),
@@ -110,7 +64,7 @@ export default function GameInfoPage() {
     }
   }, [data?.bg, setBg])
 
-  const recordGameId = Number(params.id)
+  const recordGameId = Number(gameId)
   useRecordVisit(recordGameId, 'detail', `/game/info/${recordGameId}`)
 
   if (isLoading) {
@@ -160,6 +114,7 @@ export default function GameInfoPage() {
   return (
     <div className="mx-auto max-h-[100cqh] w-full overflow-y-auto">
       <GameInfo game={data} />
+      {children}
     </div>
   )
 }
