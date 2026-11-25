@@ -9,6 +9,16 @@ export type PlatformKey =
   | 'vndb'
   | 'ymgal'
   | 'steamgriddb'
+  | 'igdb'
+  | 'rawg'
+  | 'thegamesdb'
+  | 'giantbomb'
+  | 'yandere'
+  | 'konachan'
+  | 'safebooru'
+  | 'danbooru'
+  | 'gelbooru'
+  | 'wallhaven'
   | 'meting'
   | 'enhanced'
 
@@ -43,6 +53,51 @@ export type PlatformSettingsDTO = {
     apiKey: string
     baseUrl: string
   }
+  igdb: {
+    clientId: string
+    clientSecret: string
+    baseUrl: string
+  }
+  rawg: {
+    apiKey: string
+    baseUrl: string
+  }
+  thegamesdb: {
+    apiKey: string
+    baseUrl: string
+  }
+  giantbomb: {
+    apiKey: string
+    baseUrl: string
+  }
+  yandere: {
+    baseUrl: string
+    allowNsfw: boolean
+  }
+  konachan: {
+    baseUrl: string
+    allowNsfw: boolean
+  }
+  safebooru: {
+    baseUrl: string
+  }
+  danbooru: {
+    username: string
+    apiKey: string
+    baseUrl: string
+    allowNsfw: boolean
+  }
+  gelbooru: {
+    userId: string
+    apiKey: string
+    baseUrl: string
+    allowNsfw: boolean
+  }
+  wallhaven: {
+    apiKey: string
+    baseUrl: string
+    allowNsfw: boolean
+  }
   meting: {
     bitrate: number
     coverSize: number
@@ -57,14 +112,50 @@ export type PlatformSettingsDTO = {
   }
 }
 
+const REQUIRED_PLATFORM_KEYS: readonly PlatformKey[] = [
+  'steam',
+  'bangumi',
+  'vndb',
+  'ymgal',
+  'steamgriddb',
+  'igdb',
+  'rawg',
+  'thegamesdb',
+  'giantbomb',
+  'yandere',
+  'konachan',
+  'safebooru',
+  'danbooru',
+  'gelbooru',
+  'wallhaven',
+  'meting',
+  'enhanced',
+]
+
+function hasAllPlatformKeys(value: unknown): value is PlatformSettingsDTO {
+  if (!value || typeof value !== 'object') return false
+  const record = value as Record<string, unknown>
+  return REQUIRED_PLATFORM_KEYS.every(
+    (key) => record[key] && typeof record[key] === 'object' && !Array.isArray(record[key]),
+  )
+}
+
 export async function getPlatformSettingsApi(): Promise<PlatformSettingsDTO> {
-  return readPlatformCache('config', async () => {
+  const cached = await readPlatformCache('config', async () => {
     const response = await api.request<{ data: PlatformSettingsDTO }>({
       method: 'GET',
       url: '/settings/platform',
     })
     return response.data.data
   })
+  if (hasAllPlatformKeys(cached)) return cached
+
+  const response = await api.request<{ data: PlatformSettingsDTO }>({
+    method: 'GET',
+    url: '/settings/platform',
+  })
+  writePlatformCache('config', response.data.data)
+  return response.data.data
 }
 
 export async function updatePlatformSettingsApi<K extends PlatformKey>(

@@ -3,6 +3,7 @@ import { useSearchParams } from 'next/navigation'
 import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 
+import { useHydrated } from '@/hooks/use-hydrated'
 import {
   bindThirdPartyAccount,
   getThirdPartyAccounts,
@@ -22,6 +23,7 @@ export const PLATFORM_LABELS = {
 } as const
 
 export function usePlatformAccounts() {
+  const hydrated = useHydrated()
   const searchParams = useSearchParams()
   const queryClient = useQueryClient()
   const [processingProvider, setProcessingProvider] = useState<PlatformProvider | null>(null)
@@ -35,7 +37,7 @@ export function usePlatformAccounts() {
     queryFn: getThirdPartyAccounts,
   })
 
-  const { data, refetch } = accountsQuery
+  const { data, isLoading, isLoadingError, isFetching, refetch } = accountsQuery
 
   useEffect(() => {
     const provider = (searchParams.get('provider') || '').toLowerCase()
@@ -61,6 +63,7 @@ export function usePlatformAccounts() {
 
   const accountMap = useMemo(() => {
     const map = new Map<PlatformProvider, ThirdPartyAccountItem>()
+    if (!hydrated) return map
 
     for (const item of data?.items ?? []) {
       const provider = item.provider.toLowerCase() as PlatformProvider
@@ -75,7 +78,7 @@ export function usePlatformAccounts() {
     }
 
     return map
-  }, [data?.items])
+  }, [data?.items, hydrated])
 
   const startOAuthLogin = (provider: 'steam') => {
     setProcessingProvider(provider)
@@ -201,7 +204,12 @@ export function usePlatformAccounts() {
   }
 
   return {
-    accountsQuery,
+    accountsQuery: {
+      isLoading: !hydrated || isLoading,
+      isLoadingError: hydrated && isLoadingError,
+      isFetching: hydrated && isFetching,
+      refetch,
+    },
     accountMap,
     processingProvider,
     steamUid,

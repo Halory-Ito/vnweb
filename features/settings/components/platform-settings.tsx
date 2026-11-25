@@ -4,19 +4,24 @@ import { useQuery } from '@tanstack/react-query'
 
 import { usePlatformAccounts } from '../hooks/use-platform-accounts'
 import { usePlatformVisibility } from '../hooks/use-platform-visibility'
-import { PLATFORM_CONFIG_FIELDS } from '../lib/platform-config-fields'
+import { IMAGE_PLATFORM_SECTIONS, PLATFORM_CONFIG_FIELDS } from '../lib/platform-config-fields'
 import { EnhancedPlatformSection } from './enhanced-platform-section'
+import { ImagePlatformSection } from './image-platform-section'
 import { MetingPlatformSection } from './meting-platform-section'
-import { providerConfig } from './platform-account-config'
+import { providerConfig, resolveBangumiProviderConfig } from './platform-account-config'
 import { PlatformAccountSection } from './platform-account-section'
 import { PlatformConfigFields } from './platform-config-fields'
+import { PlatformSettingsError } from './platform-settings-error'
 import { PlatformStatusMappings } from './platform-status-mappings'
 import { PlatformVisibilityGrid } from './platform-visibility-grid'
 import { Button } from '@/components/ui/button'
-import { resolveBangumiTokenUrl } from '@/lib/settings/bangumi-settings'
 import { getPlatformSettingsApi } from '@/lib/settings/platform-settings'
-
-import type { PlatformVisibilityKey } from '@/lib/settings/platform-visibility'
+import {
+  isPlatformConfigVisible,
+  isPlatformFeatureEnabled,
+  type PlatformFeatureCategory,
+  type PlatformVisibilityKey,
+} from '@/lib/settings/platform-visibility'
 
 export default function PlatformSettings() {
   const {
@@ -38,53 +43,39 @@ export default function PlatformSettings() {
   } = usePlatformAccounts()
   const { isLoading } = accountsQuery
   const { query: visibility, save } = usePlatformVisibility()
+  const hasBoundAccount = (provider: 'steam' | 'bangumi' | 'vndb' | 'ymgal') =>
+    accountMap.has(provider)
+  const isFeatureEnabled = (category: PlatformFeatureCategory, key: PlatformVisibilityKey) =>
+    isPlatformFeatureEnabled(category, key, visibility.data, hasBoundAccount)
   const isVisible = (key: PlatformVisibilityKey) =>
-    visibility.data?.[key] ?? (key === 'meting' || key === 'enhanced' || accountMap.has(key))
+    isPlatformConfigVisible(key, visibility.data, hasBoundAccount)
   const platformQuery = useQuery({
     queryKey: ['platform-settings'],
     queryFn: getPlatformSettingsApi,
   })
   const { data: platformSettings, isLoading: isLoadingPlatformSettings } = platformQuery
-  const bangumiConfig = providerConfig.bangumi.credentialLink
-    ? {
-        ...providerConfig.bangumi,
-        credentialLink: {
-          ...providerConfig.bangumi.credentialLink,
-          href: resolveBangumiTokenUrl(platformSettings?.bangumi),
-        },
-      }
-    : providerConfig.bangumi
+  const bangumiConfig = resolveBangumiProviderConfig(platformSettings?.bangumi)
 
   if (accountsQuery.isLoadingError || platformQuery.isLoadingError) {
     return (
-      <div className="flex flex-wrap items-center gap-3">
-        <p role="alert" className="text-destructive text-sm">
-          {accountsQuery.isLoadingError && platformQuery.isLoadingError
-            ? '平台配置和绑定账号加载失败'
-            : accountsQuery.isLoadingError
-              ? '绑定账号加载失败'
-              : '平台配置加载失败'}
-        </p>
-        <Button
-          type="button"
-          variant="outline"
-          disabled={accountsQuery.isFetching || platformQuery.isFetching}
-          onClick={() => {
-            if (accountsQuery.isLoadingError) void accountsQuery.refetch()
-            if (platformQuery.isLoadingError) void platformQuery.refetch()
-          }}
-        >
-          重试
-        </Button>
-      </div>
+      <PlatformSettingsError
+        accountsError={accountsQuery.isLoadingError}
+        platformError={platformQuery.isLoadingError}
+        isRetrying={accountsQuery.isFetching || platformQuery.isFetching}
+        onRetry={() => {
+          if (accountsQuery.isLoadingError) void accountsQuery.refetch()
+          if (platformQuery.isLoadingError) void platformQuery.refetch()
+        }}
+      />
     )
   }
 
   return (
     <div className="space-y-6">
       <PlatformVisibilityGrid
-        isVisible={isVisible}
-        onChange={(platform, visible) => save.mutate({ platform, visible })}
+        isFeatureEnabled={isFeatureEnabled}
+        isConfigVisible={isVisible}
+        onChange={(category, platform, visible) => save.mutate({ category, platform, visible })}
         disabled={!visibility.data || isLoading || save.isPending}
       />
       {visibility.isLoadingError && (
@@ -174,6 +165,19 @@ export default function PlatformSettings() {
           />
         </PlatformAccountSection>
       )}
+
+      {visibility.data &&
+        IMAGE_PLATFORM_SECTIONS.map(
+          (section) =>
+            isVisible(section.key) && (
+              <ImagePlatformSection
+                key={section.key}
+                section={section}
+                values={platformSettings?.[section.key]}
+                isLoading={isLoadingPlatformSettings}
+              />
+            ),
+        )}
 
       {visibility.data && isVisible('meting') && (
         <MetingPlatformSection

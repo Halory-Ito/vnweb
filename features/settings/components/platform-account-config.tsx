@@ -1,8 +1,9 @@
 import { PLATFORM_LABELS } from '../hooks/use-platform-accounts'
-import { BANGUMI_OFFICIAL_TOKEN_URL } from '@/lib/settings/bangumi-settings'
+import { BANGUMI_OFFICIAL_TOKEN_URL, resolveBangumiTokenUrl } from '@/lib/settings/bangumi-settings'
 
 import type { PlatformProvider } from './platform-account-section'
 import type { PlatformCredentialLinkProps } from './platform-credential-link'
+import type { PlatformSettingsDTO } from '@/lib/settings/platform-settings'
 
 export const providerConfig: Record<
   PlatformProvider,
@@ -56,4 +57,15 @@ export const providerConfig: Record<
     description: '通过用户 ID 绑定账号',
     inputPlaceholder: '请输入 YMGal 用户 ID',
   },
+}
+
+export function resolveBangumiProviderConfig(bangumiSettings?: PlatformSettingsDTO['bangumi']) {
+  if (!providerConfig.bangumi.credentialLink) return providerConfig.bangumi
+  return {
+    ...providerConfig.bangumi,
+    credentialLink: {
+      ...providerConfig.bangumi.credentialLink,
+      href: resolveBangumiTokenUrl(bangumiSettings),
+    },
+  }
 }

@@ -29,6 +29,51 @@
     "apiKey": "",
     "baseUrl": "https://www.steamgriddb.com/api/v2"
   },
+  "igdb": {
+    "clientId": "",
+    "clientSecret": "",
+    "baseUrl": "https://api.igdb.com/v4"
+  },
+  "rawg": {
+    "apiKey": "",
+    "baseUrl": "https://api.rawg.io/api"
+  },
+  "thegamesdb": {
+    "apiKey": "",
+    "baseUrl": "https://api.thegamesdb.net"
+  },
+  "giantbomb": {
+    "apiKey": "",
+    "baseUrl": "https://www.giantbomb.com/api"
+  },
+  "yandere": {
+    "baseUrl": "https://yande.re",
+    "allowNsfw": false
+  },
+  "konachan": {
+    "baseUrl": "https://konachan.net",
+    "allowNsfw": false
+  },
+  "safebooru": {
+    "baseUrl": "https://safebooru.org"
+  },
+  "danbooru": {
+    "username": "",
+    "apiKey": "",
+    "baseUrl": "https://danbooru.donmai.us",
+    "allowNsfw": false
+  },
+  "gelbooru": {
+    "userId": "",
+    "apiKey": "",
+    "baseUrl": "https://gelbooru.com",
+    "allowNsfw": false
+  },
+  "wallhaven": {
+    "apiKey": "",
+    "baseUrl": "https://wallhaven.cc/api/v1",
+    "allowNsfw": false
+  },
   "meting": {
     "bitrate": 320,
     "coverSize": 300,

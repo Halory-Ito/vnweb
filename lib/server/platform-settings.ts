@@ -26,6 +26,16 @@ export type PlatformKey =
   | 'vndb'
   | 'ymgal'
   | 'steamgriddb'
+  | 'igdb'
+  | 'rawg'
+  | 'thegamesdb'
+  | 'giantbomb'
+  | 'yandere'
+  | 'konachan'
+  | 'safebooru'
+  | 'danbooru'
+  | 'gelbooru'
+  | 'wallhaven'
   | 'meting'
   | 'enhanced'
 
@@ -64,6 +74,61 @@ export type SteamGridDBPlatformConfig = {
   baseUrl: string
 }
 
+export type IgdbPlatformConfig = {
+  clientId: string
+  clientSecret: string
+  baseUrl: string
+}
+
+export type RawgPlatformConfig = {
+  apiKey: string
+  baseUrl: string
+}
+
+export type TheGamesDbPlatformConfig = {
+  apiKey: string
+  baseUrl: string
+}
+
+export type GiantBombPlatformConfig = {
+  apiKey: string
+  baseUrl: string
+}
+
+export type YanderePlatformConfig = {
+  baseUrl: string
+  allowNsfw: boolean
+}
+
+export type KonachanPlatformConfig = {
+  baseUrl: string
+  allowNsfw: boolean
+}
+
+export type SafebooruPlatformConfig = {
+  baseUrl: string
+}
+
+export type DanbooruPlatformConfig = {
+  username: string
+  apiKey: string
+  baseUrl: string
+  allowNsfw: boolean
+}
+
+export type GelbooruPlatformConfig = {
+  userId: string
+  apiKey: string
+  baseUrl: string
+  allowNsfw: boolean
+}
+
+export type WallhavenPlatformConfig = {
+  apiKey: string
+  baseUrl: string
+  allowNsfw: boolean
+}
+
 export type MetingPlatformConfig = {
   bitrate: number
   coverSize: number
@@ -84,6 +149,16 @@ export type PlatformSettingsData = {
   vndb: VndbPlatformConfig
   ymgal: YmgalPlatformConfig
   steamgriddb: SteamGridDBPlatformConfig
+  igdb: IgdbPlatformConfig
+  rawg: RawgPlatformConfig
+  thegamesdb: TheGamesDbPlatformConfig
+  giantbomb: GiantBombPlatformConfig
+  yandere: YanderePlatformConfig
+  konachan: KonachanPlatformConfig
+  safebooru: SafebooruPlatformConfig
+  danbooru: DanbooruPlatformConfig
+  gelbooru: GelbooruPlatformConfig
+  wallhaven: WallhavenPlatformConfig
   meting: MetingPlatformConfig
   enhanced: EnhancedPlatformConfig
 }
@@ -94,6 +169,16 @@ const SECRET_FIELDS: Record<PlatformKey, readonly string[]> = {
   vndb: ['oauthToken', 'oauthClientSecret'],
   ymgal: ['clientSecret', 'oauthClientSecret'],
   steamgriddb: ['apiKey'],
+  igdb: ['clientSecret'],
+  rawg: ['apiKey'],
+  thegamesdb: ['apiKey'],
+  giantbomb: ['apiKey'],
+  yandere: [],
+  konachan: [],
+  safebooru: [],
+  danbooru: ['apiKey'],
+  gelbooru: ['apiKey'],
+  wallhaven: ['apiKey'],
   meting: ['neteaseCookie'],
   enhanced: ['musicU'],
 }
@@ -145,6 +230,51 @@ function getDefaultPlatformSettings(): PlatformSettingsData {
     steamgriddb: {
       apiKey: '',
       baseUrl: 'https://www.steamgriddb.com/api/v2',
+    },
+    igdb: {
+      clientId: '',
+      clientSecret: '',
+      baseUrl: 'https://api.igdb.com/v4',
+    },
+    rawg: {
+      apiKey: '',
+      baseUrl: 'https://api.rawg.io/api',
+    },
+    thegamesdb: {
+      apiKey: '',
+      baseUrl: 'https://api.thegamesdb.net',
+    },
+    giantbomb: {
+      apiKey: '',
+      baseUrl: 'https://www.giantbomb.com/api',
+    },
+    yandere: {
+      baseUrl: 'https://yande.re',
+      allowNsfw: false,
+    },
+    konachan: {
+      baseUrl: 'https://konachan.net',
+      allowNsfw: false,
+    },
+    safebooru: {
+      baseUrl: 'https://safebooru.org',
+    },
+    danbooru: {
+      username: '',
+      apiKey: '',
+      baseUrl: 'https://danbooru.donmai.us',
+      allowNsfw: false,
+    },
+    gelbooru: {
+      userId: '',
+      apiKey: '',
+      baseUrl: 'https://gelbooru.com',
+      allowNsfw: false,
+    },
+    wallhaven: {
+      apiKey: '',
+      baseUrl: 'https://wallhaven.cc/api/v1',
+      allowNsfw: false,
     },
     meting: {
       bitrate: DEFAULT_METING_BITRATE,
@@ -228,6 +358,38 @@ function mergeWithDefaults(raw: Partial<PlatformSettingsData>): PlatformSettings
     vndb: { ...defaults.vndb, ...raw.vndb },
     ymgal: { ...defaults.ymgal, ...raw.ymgal },
     steamgriddb: { ...defaults.steamgriddb, ...raw.steamgriddb },
+    igdb: { ...defaults.igdb, ...raw.igdb },
+    rawg: { ...defaults.rawg, ...raw.rawg },
+    thegamesdb: { ...defaults.thegamesdb, ...raw.thegamesdb },
+    giantbomb: { ...defaults.giantbomb, ...raw.giantbomb },
+    yandere: {
+      baseUrl: raw.yandere?.baseUrl ?? defaults.yandere.baseUrl,
+      allowNsfw: raw.yandere?.allowNsfw ?? defaults.yandere.allowNsfw,
+    },
+    konachan: {
+      baseUrl: raw.konachan?.baseUrl ?? defaults.konachan.baseUrl,
+      allowNsfw: raw.konachan?.allowNsfw ?? defaults.konachan.allowNsfw,
+    },
+    safebooru: {
+      baseUrl: raw.safebooru?.baseUrl ?? defaults.safebooru.baseUrl,
+    },
+    danbooru: {
+      username: raw.danbooru?.username ?? defaults.danbooru.username,
+      apiKey: raw.danbooru?.apiKey ?? defaults.danbooru.apiKey,
+      baseUrl: raw.danbooru?.baseUrl ?? defaults.danbooru.baseUrl,
+      allowNsfw: raw.danbooru?.allowNsfw ?? defaults.danbooru.allowNsfw,
+    },
+    gelbooru: {
+      userId: raw.gelbooru?.userId ?? defaults.gelbooru.userId,
+      apiKey: raw.gelbooru?.apiKey ?? defaults.gelbooru.apiKey,
+      baseUrl: raw.gelbooru?.baseUrl ?? defaults.gelbooru.baseUrl,
+      allowNsfw: raw.gelbooru?.allowNsfw ?? defaults.gelbooru.allowNsfw,
+    },
+    wallhaven: {
+      apiKey: raw.wallhaven?.apiKey ?? defaults.wallhaven.apiKey,
+      baseUrl: raw.wallhaven?.baseUrl ?? defaults.wallhaven.baseUrl,
+      allowNsfw: raw.wallhaven?.allowNsfw ?? defaults.wallhaven.allowNsfw,
+    },
     meting: {
       bitrate:
         raw.meting && isMetingBitrate(raw.meting.bitrate)

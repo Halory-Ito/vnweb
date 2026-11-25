@@ -56,8 +56,13 @@ async function getSGDBClient(): Promise<SGDB> {
   } = await readPlatformSettings()
   if (!apiKey) throw new Error('未配置 SteamGridDB API Key，请检查平台设置')
 
-  if (sgdb?.apiKey !== apiKey || sgdb.baseUrl !== baseUrl) {
-    sgdb = { apiKey, baseUrl, client: new SGDB({ key: apiKey, baseURL: baseUrl }) }
+  const resolvedBaseUrl = baseUrl || 'https://www.steamgriddb.com/api/v2'
+  if (sgdb?.apiKey !== apiKey || sgdb.baseUrl !== resolvedBaseUrl) {
+    sgdb = {
+      apiKey,
+      baseUrl: resolvedBaseUrl,
+      client: new SGDB({ key: apiKey, baseURL: resolvedBaseUrl }),
+    }
   }
   return sgdb.client
 }

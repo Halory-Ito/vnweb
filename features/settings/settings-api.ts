@@ -1,8 +1,6 @@
 import { api } from '@/lib/request-utils'
-import { readPlatformCache, writePlatformCache } from '@/lib/settings/platform-cache'
 
 import type { ProjectUpdate } from './lib/project-update'
-import type { PlatformVisibility, PlatformVisibilityKey } from '@/lib/settings/platform-visibility'
 import type { LocalResourcesResponse } from '@/types/local-resource'
 
 export type {
@@ -55,26 +53,7 @@ export async function cleanupUnusedResourcesApi(): Promise<DeleteLocalResourcesR
   return response.data.data
 }
 
-export const getPlatformVisibilityApi = async () =>
-  readPlatformCache(
-    'visibility',
-    async () =>
-      (
-        await api.request<PlatformVisibility>({
-          method: 'GET',
-          url: '/settings/platform/visibility',
-        })
-      ).data,
-  )
-export const savePlatformVisibilityApi = async (data: {
-  platform: PlatformVisibilityKey
-  visible: boolean
-}) => {
-  const response = await api.request<PlatformVisibility>({
-    method: 'PATCH',
-    url: '/settings/platform/visibility',
-    data,
-  })
-  writePlatformCache('visibility', response.data)
-  return response.data
-}
+export {
+  getPlatformVisibilityApi,
+  savePlatformVisibilityApi,
+} from '@/lib/settings/platform-visibility'

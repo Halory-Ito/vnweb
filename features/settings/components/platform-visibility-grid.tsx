@@ -1,60 +1,119 @@
+'use client'
+
+import { useState } from 'react'
+
 import { PLATFORM_LABELS } from '../hooks/use-platform-accounts'
 import { Switch } from '@/components/ui/switch'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import {
+  platformFeatureCategories,
+  platformVisibilityKeys,
+  type PlatformFeatureCategory,
+  type PlatformVisibilityKey,
+} from '@/lib/settings/platform-visibility'
 
-import type { PlatformVisibilityKey } from '@/lib/settings/platform-visibility'
+const labels: Record<PlatformVisibilityKey, string> = {
+  ...PLATFORM_LABELS,
+  steamgriddb: 'SteamGridDB',
+  igdb: 'IGDB',
+  rawg: 'RAWG',
+  thegamesdb: 'TheGamesDB',
+  giantbomb: 'Giant Bomb',
+  yandere: 'Yande.re',
+  konachan: 'Konachan',
+  safebooru: 'Safebooru',
+  danbooru: 'Danbooru',
+  gelbooru: 'Gelbooru',
+  wallhaven: 'Wallhaven',
+  meting: 'Meting SDK',
+  enhanced: '网易云 Enhanced API',
+}
 
-const labels = { ...PLATFORM_LABELS, meting: 'Meting SDK', enhanced: '网易云 Enhanced API' }
-
-const groups = [
-  { label: '游戏库', keys: ['steam'] },
-  { label: '游戏资料', keys: ['bangumi', 'vndb', 'ymgal'] },
-  { label: '音乐服务', keys: ['meting', 'enhanced'] },
-] satisfies { label: string; keys: PlatformVisibilityKey[] }[]
+const statusSyncAnchorKeys = ['bangumi', 'vndb'] as const
 
 export function PlatformVisibilityGrid({
-  isVisible,
+  isFeatureEnabled,
+  isConfigVisible,
   onChange,
   disabled,
 }: {
-  isVisible: (key: PlatformVisibilityKey) => boolean
-  onChange: (key: PlatformVisibilityKey, visible: boolean) => void
+  isFeatureEnabled: (category: PlatformFeatureCategory, key: PlatformVisibilityKey) => boolean
+  isConfigVisible: (key: PlatformVisibilityKey) => boolean
+  onChange: (
+    category: PlatformFeatureCategory,
+    key: PlatformVisibilityKey,
+    visible: boolean,
+  ) => void
   disabled: boolean
 }) {
+  const [activeCategory, setActiveCategory] = useState<PlatformFeatureCategory>(
+    platformFeatureCategories[0].id,
+  )
+
   return (
     <section
       aria-labelledby="platform-visibility-title"
-      className="dark:border-input dark:bg-input/20 space-y-4 rounded-xl border p-4 sm:p-6"
+      className="dark:border-input dark:bg-input/20 relative space-y-4 rounded-xl border p-4 sm:p-6"
     >
+      {platformVisibilityKeys.map(
+        (key) =>
+          !isConfigVisible(key) && (
+            <span
+              key={`anchor-${key}`}
+              id={`platform-section-${key}`}
+              aria-hidden="true"
+              className="pointer-events-none absolute top-0 scroll-mt-4"
+            />
+          ),
+      )}
+      {statusSyncAnchorKeys.map(
+        (key) =>
+          !isConfigVisible(key) && (
+            <span
+              key={`status-anchor-${key}`}
+              id={`status-mappings-${key}`}
+              aria-hidden="true"
+              className="pointer-events-none absolute top-0 scroll-mt-4"
+            />
+          ),
+      )}
       <h2 id="platform-visibility-title" className="text-base font-semibold">
-        显示平台配置
+        启用平台
       </h2>
-      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-        {groups.map(({ label, keys }) => (
-          <fieldset key={label} className="min-w-0 space-y-3">
-            <legend className="text-muted-foreground text-sm font-medium">{label}</legend>
-            {keys.map((key) => {
-              const visible = isVisible(key)
-              return (
+      <Tabs
+        value={activeCategory}
+        onValueChange={(value) => setActiveCategory(value as PlatformFeatureCategory)}
+        className="gap-4"
+      >
+        <div className="max-w-full scrollbar-none overflow-x-auto">
+          <TabsList className="w-max gap-1 dark:bg-transparent">
+            {platformFeatureCategories.map((category) => (
+              <TabsTrigger key={category.id} value={category.id} className="flex-none px-2.5">
+                {category.label}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </div>
+        {platformFeatureCategories.map((category) => (
+          <TabsContent key={category.id} value={category.id} className="border-t pt-4">
+            <div className="grid gap-x-6 gap-y-3 sm:grid-cols-2 lg:grid-cols-3">
+              {category.platforms.map((key) => (
                 <label
-                  key={key}
-                  id={visible ? undefined : `platform-section-${key}`}
-                  className="relative flex min-w-0 scroll-mt-4 items-center justify-between gap-3 text-sm"
+                  key={`${category.id}-${key}`}
+                  className="flex min-w-0 items-center justify-between gap-3 py-0.5 text-sm"
                 >
-                  {!visible && (key === 'bangumi' || key === 'vndb') && (
-                    <span id={`status-mappings-${key}`} className="absolute top-0 scroll-mt-4" />
-                  )}
-                  {labels[key]}
+                  <span className="truncate">{labels[key]}</span>
                   <Switch
-                    checked={visible}
+                    checked={isFeatureEnabled(category.id, key)}
                     disabled={disabled}
-                    onCheckedChange={(next) => onChange(key, next)}
+                    onCheckedChange={(next) => onChange(category.id, key, next)}
                   />
                 </label>
-              )
-            })}
-          </fieldset>
+              ))}
+            </div>
+          </TabsContent>
         ))}
-      </div>
+      </Tabs>
     </section>
   )
 }

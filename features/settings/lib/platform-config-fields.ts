@@ -97,6 +97,8 @@ export const PLATFORM_CONFIG_FIELDS: Record<
   ],
 }
 
+export * from './image-platform-config-fields'
+
 export const METING_CONFIG_FIELDS: readonly PlatformFieldSpec[] = [
   {
     key: 'bitrate',
