@@ -1,10 +1,12 @@
 'use client'
 
-import { CloudDownload, FilePlus2 } from 'lucide-react'
+import { CloudDownload, FilePlus2, FolderInput } from 'lucide-react'
 
+import { PLATFORM_IMPORT_SOURCES } from '../../data/platform-import-sources'
 import { useGameImportAvailability } from '../../hooks/use-game-import-availability'
 import { BangumiImportDialog } from './bangumi-import-dialog'
 import { ManualImportDialog } from './manual-import-dialog'
+import { PlatformImportDialog } from './platform-import-dialog'
 import { SteamImportDialog } from './steam-import-dialog'
 import { ThirdPartyImportDialog } from './third-party-import-dialog'
 import { VndbImportDialog } from './vndb-import-dialog'
@@ -91,6 +93,31 @@ export default function GameAddMenuItems({ compact = false }: { compact?: boolea
           </DropdownMenuSub>
         )
       ) : null}
+      {compact ? (
+        <PlatformImportDialog>
+          <DropdownMenuItem className={itemClassName} onSelect={(event) => event.preventDefault()}>
+            <FolderInput />
+            从其他平台导入
+          </DropdownMenuItem>
+        </PlatformImportDialog>
+      ) : (
+        <DropdownMenuSub>
+          <DropdownMenuSubTrigger>
+            <FolderInput />
+            从其他平台导入
+          </DropdownMenuSubTrigger>
+          <DropdownMenuSubContent>
+            {PLATFORM_IMPORT_SOURCES.map((source) => (
+              <PlatformImportDialog key={source.id} initialPlatform={source.id} lockPlatform>
+                <DropdownMenuItem onSelect={(event) => event.preventDefault()}>
+                  <ProviderLogo src={source.logo} alt={source.label} />
+                  {source.label}
+                </DropdownMenuItem>
+              </PlatformImportDialog>
+            ))}
+          </DropdownMenuSubContent>
+        </DropdownMenuSub>
+      )}
     </>
   )
 }

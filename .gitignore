@@ -67,6 +67,7 @@ next-env.d.ts
 /assets/**
 /local.db
 /backups
+/temp-backup
 
 
 # vitepress

@@ -5,6 +5,7 @@ import {
   GameSaveSection,
   ImportSection,
   LocalBackupSection,
+  PlatformImportSection,
   SyncServerPanel,
 } from '@/features/backup'
 
@@ -24,6 +25,7 @@ export default function BackupPage() {
         <LocalBackupSection />
         <ExportSection />
         <ImportSection />
+        <PlatformImportSection />
       </div>
     </BackupSettingsProvider>
   )

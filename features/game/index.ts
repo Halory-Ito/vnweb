@@ -11,6 +11,7 @@ export {
   BangumiImportDialog,
   GameAddButton,
   ManualImportDialog,
+  PlatformImportDialog,
   SteamImportDialog,
   VndbImportDialog,
   YmgalImportDialog,
