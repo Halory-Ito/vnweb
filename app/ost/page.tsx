@@ -15,7 +15,7 @@ export default function OSTPage() {
   const batch = useOstBatchDelete(manage.items)
 
   return (
-    <div className="max-h-[100cqh] w-full space-y-5 overflow-x-hidden overflow-y-scroll p-4 sm:p-5">
+    <div className="motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-bottom-2 max-h-[100cqh] w-full space-y-5 overflow-x-hidden overflow-y-scroll p-4 motion-safe:duration-200 motion-safe:ease-out sm:p-5">
       <OstSearchToolbar
         keywordInput={manage.keywordInput}
         onKeywordInputChange={manage.setKeywordInput}

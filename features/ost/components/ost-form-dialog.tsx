@@ -118,9 +118,10 @@ export function OstFormDialog(props: OstFormDialogProps) {
               )}
             </Button>
           </DialogFooter>
-          {state.showResults && (
+          {state.showResults && state.searchSession && (
             <OstSearchResultsDialog
-              results={state.searchResults}
+              key={state.searchSession.id}
+              session={state.searchSession}
               open={state.showResults}
               onOpenChange={state.setShowResults}
               onSelect={state.selectAlbums}

@@ -1,10 +1,26 @@
 import { requestMeting, metingDetails } from './meting'
-import { getNeteaseAlbum } from './netease-albums'
+import { getNeteaseAlbum, type AlbumSong } from './netease-albums'
 import { getNeteaseEnhancedService } from './netease-playback'
-import { NETEASE_PLAYBACK_PATH } from '@/features/ost/ost-api'
+import { NETEASE_LYRIC_PATH, NETEASE_PLAYBACK_PATH } from '@/features/ost/ost-api'
 
 import type { MetingSong } from './meting'
 import type { UnifiedAlbumDetails } from '@/features/ost/types'
+
+function formatAlbumSongMetadata(metadata: AlbumSong) {
+  const ms = metadata.dt || metadata.duration || 0
+  const seconds = Math.floor(ms / 1000)
+  return {
+    artist: (metadata.ar || metadata.artists)
+      ?.map((artist) => artist.name)
+      .filter(Boolean)
+      .join(' / '),
+    alias: (metadata.tns?.length ? metadata.tns : metadata.alias)?.join(' / '),
+    duration:
+      ms > 0
+        ? `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`
+        : undefined,
+  }
+}
 
 export async function getOstAlbum(id: string): Promise<UnifiedAlbumDetails> {
   if (await getNeteaseEnhancedService()) {
@@ -14,8 +30,11 @@ export async function getOstAlbum(id: string): Promise<UnifiedAlbumDetails> {
       name: album.name,
       cover: album.cover,
       songs: album.songs.map((song) => ({
+        ...formatAlbumSongMetadata(song),
         name: song.name,
-        url: NETEASE_PLAYBACK_PATH + '?id=' + song.id,
+        url: `${NETEASE_PLAYBACK_PATH}?id=${song.id}`,
+        lyricsPath: `${NETEASE_LYRIC_PATH}?id=${song.id}`,
+        neteaseId: song.id,
       })),
     }
   }
@@ -40,21 +59,12 @@ async function buildOstAlbum(
   const songs = album.songs.map((metadata) => {
     const song = byId.get(String(metadata.id))
     if (!song) throw new Error('Meting 未返回完整专辑曲目')
-    const ms = metadata.dt || metadata.duration || 0
-    const seconds = Math.floor(ms / 1000)
+    const meta = formatAlbumSongMetadata(metadata)
     return {
       ...song,
+      ...meta,
       name: metadata.name,
-      artist:
-        (metadata.ar || metadata.artists)
-          ?.map((artist) => artist.name)
-          .filter(Boolean)
-          .join(' / ') || song.artist,
-      alias: (metadata.tns?.length ? metadata.tns : metadata.alias)?.join(' / '),
-      duration:
-        ms > 0
-          ? `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`
-          : undefined,
+      artist: meta.artist || song.artist,
     }
   })
   return { ...details, name: album.name, cover: album.cover || details.cover, songs }

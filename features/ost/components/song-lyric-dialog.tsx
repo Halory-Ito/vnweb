@@ -75,7 +75,9 @@ export function SongLyricDialog({ item, onOpenChange }: SongLyricDialogProps) {
             </pre>
           ) : (
             <p className="text-muted-foreground py-4 text-center text-sm">
-              {lyric.path ? `当前仅关联了本地歌词文件路径：${lyric.path}` : '暂无歌词内容'}
+              {!lyric.isRemote && lyric.path
+                ? `当前仅关联了本地歌词文件路径：${lyric.path}`
+                : '暂无歌词内容'}
             </p>
           )}
         </ScrollArea>

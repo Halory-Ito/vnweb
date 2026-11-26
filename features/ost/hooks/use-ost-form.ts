@@ -6,7 +6,8 @@ import { toast } from 'sonner'
 
 import { getAlbumDetails, type OstService } from '../lib/ost-utils'
 import { METING_ID_PATTERN } from '../meting-types'
-import { searchOstAlbums } from '../ost-api'
+import { searchOstAlbumsPage } from '../ost-api'
+import { DEFAULT_OST_SEARCH_PAGE_SIZE, type OstSearchSession } from './use-ost-search-results'
 import { getGameCardList } from '@/api'
 import { useEnabledPlatforms } from '@/hooks/use-enabled-platforms'
 
@@ -61,10 +62,11 @@ export function useOstForm({ open, editingItem, onSubmit }: OstFormDialogProps) 
     : (availableServices[0]?.value ?? '')
   const [server, setServer] = useState<MetingServer>('netease')
   const [mode, setMode] = useState<'search' | 'album'>('search')
-  const [searchResults, setSearchResults] = useState<UnifiedSearchResult[]>([])
+  const [searchSession, setSearchSession] = useState<OstSearchSession | null>(null)
   const [showResults, setShowResults] = useState(false)
   const [albums, setAlbums] = useState<UnifiedAlbumDetails[]>([])
   const version = useRef(0)
+  const searchSessionId = useRef(0)
   const { data: gameCards = [] } = useQuery({
     queryKey: ['game-cards'],
     queryFn: () => getGameCardList(),
@@ -74,7 +76,7 @@ export function useOstForm({ open, editingItem, onSubmit }: OstFormDialogProps) 
   const resetResults = () => {
     version.current++
     setAlbums([])
-    setSearchResults([])
+    setSearchSession(null)
     setShowResults(false)
   }
 
@@ -94,7 +96,7 @@ export function useOstForm({ open, editingItem, onSubmit }: OstFormDialogProps) 
     setServer('netease')
     setMode('search')
     setAlbums([])
-    setSearchResults([])
+    setSearchSession(null)
     setShowResults(false)
   }, [open, editingItem])
 
@@ -139,14 +141,26 @@ export function useOstForm({ open, editingItem, onSubmit }: OstFormDialogProps) 
   const search = useMutation({
     mutationFn: async () => {
       const current = ++version.current
+      const targetKeyword = keyword
       setAlbums([])
-      setSearchResults([])
+      setSearchSession(null)
       try {
-        const results = await searchOstAlbums(keyword)
+        const result = await searchOstAlbumsPage(targetKeyword, {
+          page: 1,
+          pageSize: DEFAULT_OST_SEARCH_PAGE_SIZE,
+        })
         if (current !== version.current) return
-        setSearchResults(results)
-        setShowResults(results.length > 0)
-        if (!results.length) toast.info('未找到相关专辑')
+        if (result.items.length > 0) {
+          setSearchSession({
+            id: ++searchSessionId.current,
+            keyword: targetKeyword,
+            initialPage: result,
+            fetchedAt: Date.now(),
+          })
+          setShowResults(true)
+        } else {
+          toast.info('未找到相关专辑')
+        }
       } catch {
         if (current === version.current) toast.error('搜索失败，请稍后重试')
       }
@@ -212,7 +226,7 @@ export function useOstForm({ open, editingItem, onSubmit }: OstFormDialogProps) 
     setServer,
     mode,
     setMode,
-    searchResults,
+    searchSession,
     showResults,
     setShowResults,
     albums,

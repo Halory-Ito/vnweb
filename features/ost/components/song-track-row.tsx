@@ -11,6 +11,7 @@ import {
 } from 'lucide-react'
 import { memo } from 'react'
 
+import { resolveSongLyricsPath } from '../ost-api'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
@@ -41,7 +42,7 @@ export const SongTrackRow = memo(function SongTrackRow({
   onDelete,
   onPreviewLyric,
 }: SongTrackRowProps) {
-  const hasLyric = Boolean(item.lyricsText || item.lyricsPath)
+  const hasLyric = Boolean(item.lyricsText || resolveSongLyricsPath(item))
   const showLyricAction = hasLyric && Boolean(onPreviewLyric)
   const hasActions = showLyricAction || Boolean(item.url) || Boolean(onEdit) || Boolean(onDelete)
 

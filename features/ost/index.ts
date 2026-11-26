@@ -10,4 +10,11 @@ export { SongManageContent } from './components/song-manage-content'
 export { SongPageHeader } from './components/song-page-header'
 export { SongSearchToolbar } from './components/song-search-toolbar'
 
-export { getMetingDetails, searchMeting, searchOstAlbums, getOstAlbumDetails } from './ost-api'
+export {
+  getMetingDetails,
+  searchMeting,
+  searchOstAlbums,
+  searchOstAlbumsPage,
+  getOstAlbumDetails,
+  type OstAlbumSearchPage,
+} from './ost-api'

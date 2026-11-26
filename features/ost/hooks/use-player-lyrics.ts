@@ -6,7 +6,7 @@ import { atomWithStorage } from 'jotai/utils'
 import { useEffect, useMemo, useRef } from 'react'
 
 import { findActiveCueIndex, parseLrc, type LyricTrackKey } from '../lib/parse-lrc'
-import { fetchLyricTextApi } from '../ost-api'
+import { fetchLyricTextApi, resolveSongLyricsPath } from '../ost-api'
 
 import type { OstSongItem } from '@/types'
 
@@ -21,7 +21,7 @@ const lyricTracksAtom = atomWithStorage<LyricTrackVisibility>('ost-player-lyric-
 export function usePlayerLyrics(song: OstSongItem, time: number) {
   const [tracks, setTracks] = useAtom(lyricTracksAtom)
   const inline = song.lyricsText?.trim()
-  const path = song.lyricsPath?.trim()
+  const path = resolveSongLyricsPath(song)
   const file = useQuery({
     queryKey: ['ost-player-lyrics', path],
     enabled: !inline && Boolean(path),

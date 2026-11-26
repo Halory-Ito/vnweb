@@ -2,7 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query'
 
-import { fetchLyricTextApi } from '../ost-api'
+import { fetchLyricTextApi, isInternalLyricApiPath, resolveSongLyricsPath } from '../ost-api'
 
 import type { OstSongItem } from '@/types'
 
@@ -10,8 +10,8 @@ const REMOTE_URL_RE = /^https?:\/\//i
 
 export function useSongLyricPreview(item: OstSongItem | null) {
   const inlineText = item?.lyricsText?.trim() ?? ''
-  const path = item?.lyricsPath?.trim() ?? ''
-  const isRemote = !inlineText && (REMOTE_URL_RE.test(path) || path.startsWith('/api/ost/meting?'))
+  const path = resolveSongLyricsPath(item)
+  const isRemote = !inlineText && (REMOTE_URL_RE.test(path) || isInternalLyricApiPath(path))
 
   const query = useQuery({
     queryKey: ['ost-lyric-preview', path],

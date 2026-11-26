@@ -1,6 +1,6 @@
-import { ImageIcon } from 'lucide-react'
+import { ImageIcon, Loader2Icon } from 'lucide-react'
 
-import { useOstSearchResults } from '../hooks/use-ost-search-results'
+import { type OstSearchSession, useOstSearchResults } from '../hooks/use-ost-search-results'
 import { Pagination } from '@/components/custom-pagination'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -19,16 +19,17 @@ import {
   TableRow,
   TableCell,
 } from '@/components/ui/table'
+import { cn } from '@/lib/utils'
 
 import type { UnifiedSearchResult } from '../types'
 
 export function OstSearchResultsDialog({
-  results,
+  session,
   open,
   onOpenChange,
   onSelect,
 }: {
-  results: UnifiedSearchResult[]
+  session: OstSearchSession
   open: boolean
   onOpenChange: (open: boolean) => void
   onSelect: (albums: UnifiedSearchResult[]) => void
@@ -36,16 +37,21 @@ export function OstSearchResultsDialog({
   const {
     page,
     pageSize,
+    total,
     totalPages,
     showPagination,
     pageResults,
+    isFetching,
+    isError,
+    retry,
     selected,
+    isSelected,
     scrollRef,
     changePage,
     changePageSize,
     toggleAlbum,
     reset,
-  } = useOstSearchResults(results)
+  } = useOstSearchResults(session, open)
   const close = () => {
     reset()
     onOpenChange(false)
@@ -58,7 +64,15 @@ export function OstSearchResultsDialog({
         className="flex max-h-[85dvh] flex-col overflow-hidden p-4 sm:max-w-2xl sm:p-6"
       >
         <DialogHeader>
-          <DialogTitle>搜索结果</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            <span>搜索结果</span>
+            {isFetching ? (
+              <Loader2Icon
+                className="text-muted-foreground size-4 animate-spin"
+                aria-label="加载中"
+              />
+            ) : null}
+          </DialogTitle>
         </DialogHeader>
         <div ref={scrollRef} className="min-h-0 min-w-0 flex-1 overflow-y-auto">
           <Table className="table-fixed">
@@ -71,40 +85,59 @@ export function OstSearchResultsDialog({
                 <TableHead className="w-16 text-right">曲目数</TableHead>
               </TableRow>
             </TableHeader>
-            <TableBody>
-              {pageResults.map((album) => (
-                <TableRow key={`${album.source}-${album.id}`}>
-                  <TableCell>
-                    <Checkbox
-                      aria-label={`选择 ${album.name}`}
-                      checked={selected.includes(album)}
-                      onCheckedChange={(checked) => toggleAlbum(album, checked === true)}
-                    />
-                  </TableCell>
-                  <TableCell>
-                    {album.cover ? (
-                      <img
-                        src={album.cover}
-                        alt={album.name}
-                        className="size-10 rounded-md border object-cover sm:size-12"
-                      />
-                    ) : (
-                      <ImageIcon className="text-muted-foreground size-5" />
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <div className="truncate" title={album.name}>
-                      {album.name}
+            <TableBody className={cn(isFetching && 'opacity-60 transition-opacity')}>
+              {isError ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="py-8 text-center">
+                    <div className="flex flex-col items-center gap-3">
+                      <span className="text-muted-foreground text-sm">加载搜索结果失败</span>
+                      <Button type="button" variant="outline" size="sm" onClick={retry}>
+                        重试
+                      </Button>
                     </div>
                   </TableCell>
-                  <TableCell>
-                    <div className="truncate" title={album.artist}>
-                      {album.artist || '-'}
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-right">{album.songCount ?? '-'}</TableCell>
                 </TableRow>
-              ))}
+              ) : pageResults.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-muted-foreground py-8 text-center text-sm">
+                    当前页暂无更多专辑
+                  </TableCell>
+                </TableRow>
+              ) : (
+                pageResults.map((album) => (
+                  <TableRow key={`${album.source}-${album.id}`}>
+                    <TableCell>
+                      <Checkbox
+                        aria-label={`选择 ${album.name}`}
+                        checked={isSelected(album)}
+                        onCheckedChange={(checked) => toggleAlbum(album, checked === true)}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      {album.cover ? (
+                        <img
+                          src={album.cover}
+                          alt={album.name}
+                          className="size-10 rounded-md border object-cover sm:size-12"
+                        />
+                      ) : (
+                        <ImageIcon className="text-muted-foreground size-5" />
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <div className="truncate" title={album.name}>
+                        {album.name}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="truncate" title={album.artist}>
+                        {album.artist || '-'}
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-right">{album.songCount ?? '-'}</TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </div>
@@ -112,7 +145,7 @@ export function OstSearchResultsDialog({
           <Pagination
             page={page}
             pageSize={pageSize}
-            total={results.length}
+            total={total}
             totalPages={totalPages}
             itemUnit="张"
             itemName="专辑"
@@ -127,8 +160,9 @@ export function OstSearchResultsDialog({
           <Button
             disabled={!selected.length}
             onClick={() => {
+              const picked = selected
               close()
-              onSelect(results.filter((album) => selected.includes(album)))
+              onSelect(picked)
             }}
           >
             确认选择（{selected.length}）
