@@ -22,10 +22,10 @@ One play session roughly corresponds to one session row in the database:
 | Running state `isRunning`  | Whether timing is still active          |
 | Executable path            | The program actually launched this time |
 
-**Start Game** launches the program, writes the start time, and marks the session as running; when the session ends, the duration is calculated and saved. It therefore measures **the span from launch to exit**, not the in-game save time.
+**Start Game** launches the program, writes the start time, and starts background process tracking. When the tracker detects that the game has exited (or when you click **End Game** manually), it calculates and saves the duration, updates the last-played date from the latest timer's end time, and backs up saves if a save directory is configured. Timing therefore measures **the span from launch to exit**, not the in-game save time.
 
 ::: warning When launching through a launcher
-If the duration doesn't match expectations, first check that **Executable Path** points to the process you actually play. A path pointing to a launcher, a shell wrapper, or another `.exe` can make the wrong process the timing target. See [Scanning & Game Library → Organize the Game Library](/guide/feats/game-library#organize-the-game-library) for how to fix it.
+If a game starts via a launcher, a locale emulator (such as Locale Emulator), or a wrapper script, the actual playing process may differ from **Executable Path**. Open **Settings → Execution** for that game and switch **Tracking Mode** to **Directory** or set a custom **Tracking Target**.
 :::
 
 ### Launching and Timing from the Command Line
@@ -37,7 +37,36 @@ vnweb start 12       :: launch the game with ID 12
 vnweb start          :: quick-launch the most recently played game
 ```
 
-The CLI shows `Session time: HH:MM:SS` in real time. Press `q` to end and save the session, or `Ctrl+C` to exit without saving.
+The CLI starts the same per-game tracker automatically and shows `Session time: HH:MM:SS` in real time. Exiting the game saves the session automatically; press `q` to end and save manually, or `Ctrl+C` to exit immediately.
+
+## Auto-Tracking & Tracking Modes
+
+Whenever you start a game from the web UI or via `vnweb start`, vnweb monitors running processes automatically (native Windows process snapshots):
+
+1. **Startup grace window**: During the first 20 seconds after launch, if the target process is still spinning up behind a launcher, wrapper, or Steam, the tracker waits until it first observes the target online.
+2. **Exit debounce & finalization**: Once an active target disappears across consecutive checks, vnweb finalizes the session using the last time the process was seen, writes the record, updates total playtime and last-run date, and runs save backup if configured.
+
+### Per-Game Configuration
+
+Each game can configure its own tracking rule under **Detail Page → Settings → Execution**:
+
+- **Tracking Mode**: Defaults to **Track by File**, and can be switched individually to **Track by Directory** or **Track by Process**.
+- **Tracking Target**: Leave empty to derive automatically from **Executable Path** (full `.exe` path, parent directory, or executable filename). Fill it in only when the real game process differs from the launch entry.
+
+### Comparison of the Three Tracking Modes
+
+| Tracking Mode | How It Matches | Default Derived Target | Pros | Trade-offs & Caveats |
+| --- | --- | --- | --- | --- |
+| **By File (Default)** | Exact full executable path match | **Executable Path** itself | Highest precision; engine executables with identical names in different folders never collide; uninstallers or tools in the same folder are ignored | If a launcher starts a separate main `.exe` and exits, timing stops early unless **Tracking Target** points to the real `.exe` (or you switch to Directory mode); moving folders requires updating paths |
+| **By Directory** | Checks whether any active executable runs inside the target directory tree | Parent folder of **Executable Path** | Handles launchers, Locale Emulator, Steam wrappers, and multi-exe chapters without guessing which `.exe` stays alive; filters out common crash handlers, uninstallers, and redistributables | Avoid mixing multiple games in one flat root folder, and note that standalone emulators running outside the game directory won't match; sensitive to folder renames |
+| **By Process** | Matches running process names (supports comma, Chinese comma, semicolon, or enumeration comma for multiple names; case-insensitive; `.exe` suffix optional) | Filename of **Executable Path** | Independent of disk drive or folder path after moving files; works when launcher and main process live in separate folders | Generic engine names (`game.exe`, `SiglusEngine.exe`, `BGI.exe`, `krkr.exe`, `nw.exe`) can collide with other games or tools; lingering crash/CEF subprocesses can extend timing |
+
+::: tip Choosing the Right Mode
+- **Standard standalone `.exe` games**: Keep the default **By File** mode for zero false positives.
+- **Games started through launchers, Locale Emulator, or store wrappers**: Switch that game to **By Directory** using its game root directory.
+- **Cross-directory runtimes or custom multi-process chains**: Choose **By Process** with a distinct executable name.
+- **Permission note (UAC)**: If a game runs elevated as Administrator while vnweb runs unprivileged, Windows may block querying full image paths across privilege boundaries. vnweb still falls back to the spawned process PID while that initial process lives; for launcher chains under elevation, run both at matching privilege levels or avoid unnecessary elevation.
+:::
 
 ## Reading Session Records
 

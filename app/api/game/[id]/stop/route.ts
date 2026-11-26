@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { GamePlayTable } from '@/db/schema'
 import { finalizeGameSession } from '@/features/game/lib/game-session-utils'
 import { db } from '@/lib/drizzle'
+import { stopTrackingGame } from '@/lib/server/game-tracker'
 
 const stopGame = async (_req: NextRequest, context: { params: Promise<{ id: string }> }) => {
   try {
@@ -27,7 +28,8 @@ const stopGame = async (_req: NextRequest, context: { params: Promise<{ id: stri
       return NextResponse.json({ error: '游戏未在运行' }, { status: 400 })
     }
 
-    // 结束游戏会话并记录游玩时间
+    // 停止进程追踪并结束游戏会话
+    stopTrackingGame(gameId)
     await finalizeGameSession(gameId)
 
     return NextResponse.json({ data: { stopped: true } })

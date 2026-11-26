@@ -1,47 +1,15 @@
-import { NextResponse } from 'next/server'
-import { spawn } from 'node:child_process'
+import { NextRequest, NextResponse } from 'next/server'
 
-const selectDirectory = async () => {
-  return new Promise<string | null>((resolve) => {
-    const script = `
-      $OutputEncoding = [System.Text.Encoding]::UTF8
-      [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
-      Add-Type -AssemblyName System.Windows.Forms
-      $dialog = New-Object System.Windows.Forms.FolderBrowserDialog
-      $dialog.Description = "选择扫描目录"
-      $dialog.ShowNewFolderButton = $true
-      if ($dialog.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) {
-        Write-Output $dialog.SelectedPath
-      }
-    `
+import { pickWindowsDirectory } from '@/lib/server/windows-file-dialog'
 
-    const child = spawn('powershell.exe', ['-NoProfile', '-Command', script], {
-      windowsHide: true,
-      stdio: ['pipe', 'pipe', 'pipe'],
-    })
-
-    let stdout = ''
-    child.stdout.on('data', (data: Buffer) => {
-      stdout += data.toString()
-    })
-
-    child.on('close', (code) => {
-      if (code === 0 && stdout.trim()) {
-        resolve(stdout.trim())
-      } else {
-        resolve(null)
-      }
-    })
-
-    child.on('error', () => {
-      resolve(null)
-    })
-  })
+type SelectDirectoryPayload = {
+  title?: string
 }
 
-export async function POST() {
+export async function POST(req: NextRequest) {
   try {
-    const directory = await selectDirectory()
+    const payload = (await req.json().catch(() => ({}))) as SelectDirectoryPayload
+    const directory = await pickWindowsDirectory(payload.title)
 
     if (!directory) {
       return NextResponse.json({ error: '未选择目录' }, { status: 400 })

@@ -129,6 +129,8 @@ export const GamePlayTable = sqliteTable('game_play', {
   status: int().default(0), // 游戏状态 ID，-1 表示未知
   completedAt: text().default(''), // 完成时间（状态转为已完成/多周目时记录）
   pid: int().default(0), // 游戏进程ID
+  trackingMode: text().default('file'), // 追踪模式：file / directory / process
+  trackingTarget: text().default(''), // 自定义追踪目标（文件/目录/进程名）
 })
 
 // 游戏记录表

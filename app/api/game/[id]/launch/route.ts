@@ -7,6 +7,9 @@ import path from 'node:path'
 
 import { GameInfoTable, GamePlayTable } from '@/db/schema'
 import { db } from '@/lib/drizzle'
+import { normalizeGameTrackingMode, resolveEffectiveTrackingTarget } from '@/lib/game-tracking'
+import { startTrackingGame } from '@/lib/server/game-tracker'
+import { ensureGameTrackingSchema } from '@/lib/server/game-tracking-schema'
 import { getAssetsDir } from '@/lib/server/runtime-paths.mjs'
 import extractIconFromExe from '@/win/extract-icon'
 
@@ -60,11 +63,15 @@ const launchGame = async (req: NextRequest, context: { params: Promise<{ id: str
       return NextResponse.json({ error: '游戏不存在' }, { status: 404 })
     }
 
+    await ensureGameTrackingSchema()
+
     const playRows = await db
       .select({
         id: GamePlayTable.id,
         exePath: GamePlayTable.exePath,
         isRunning: GamePlayTable.isRunning,
+        trackingMode: GamePlayTable.trackingMode,
+        trackingTarget: GamePlayTable.trackingTarget,
       })
       .from(GamePlayTable)
       .where(eq(GamePlayTable.gameId, gameId))
@@ -129,7 +136,7 @@ const launchGame = async (req: NextRequest, context: { params: Promise<{ id: str
       .where(eq(GameInfoTable.id, gameId))
 
     // 启动游戏
-    const child = spawn(finalExePath, [], {
+    const child = spawn(/*turbopackIgnore: true*/ finalExePath, [], {
       cwd: path.dirname(finalExePath),
       detached: true,
       stdio: 'ignore',
@@ -138,6 +145,7 @@ const launchGame = async (req: NextRequest, context: { params: Promise<{ id: str
     child.unref()
 
     const launchedAt = new Date().toISOString()
+    const spawnedPid = child.pid ?? 0
 
     if (currentPlay) {
       await db
@@ -146,6 +154,7 @@ const launchGame = async (req: NextRequest, context: { params: Promise<{ id: str
           exePath: finalExePath,
           isRunning: 1,
           lastLaunchedAt: launchedAt,
+          pid: spawnedPid,
         })
         .where(eq(GamePlayTable.id, currentPlay.id))
     } else {
@@ -154,6 +163,22 @@ const launchGame = async (req: NextRequest, context: { params: Promise<{ id: str
         exePath: finalExePath,
         isRunning: 1,
         lastLaunchedAt: launchedAt,
+        pid: spawnedPid,
+      })
+    }
+
+    const trackingMode = normalizeGameTrackingMode(currentPlay?.trackingMode)
+    const trackingTarget = resolveEffectiveTrackingTarget(
+      trackingMode,
+      finalExePath,
+      currentPlay?.trackingTarget ?? '',
+    )
+    if (trackingTarget) {
+      startTrackingGame({
+        gameId,
+        mode: trackingMode,
+        target: trackingTarget,
+        launchedPid: spawnedPid,
       })
     }
 

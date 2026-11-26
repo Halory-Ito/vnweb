@@ -11,6 +11,7 @@ import type {
   GameSearchImageItem,
   GameSidebarProps,
   GameTimerRecordItem,
+  GameTrackingMode,
 } from '@/types/game'
 
 export const getGameFilterOptions = async () => {
@@ -152,14 +153,16 @@ export const browseLocalFileByGameId = async (id: number, mode: 'game' | 'save' 
 
 export const updateGameSettingsById = async (
   id: number,
-  payload: {
+  payload: Partial<{
     exePath: string
-    saveDir?: string
+    saveDir: string
+    trackingMode: GameTrackingMode
+    trackingTarget: string
     cover: string
     bg: string
     icon: string
     logo: string
-  },
+  }>,
 ) => {
   const response = await api.patch(`/game/${id}`, payload)
   return response.data as {

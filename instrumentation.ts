@@ -4,4 +4,9 @@ export async function register() {
 
   const { ensureRuntimeInitialized } = await import('@/lib/server/bootstrap')
   await ensureRuntimeInitialized()
+
+  const { resumeRunningGameTrackers } = await import('@/lib/server/game-tracker')
+  void resumeRunningGameTrackers().catch((error) => {
+    console.error('[Instrumentation] Resume game trackers failed:', error)
+  })
 }

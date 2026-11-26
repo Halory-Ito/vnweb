@@ -1,8 +1,9 @@
 import { desc, eq } from 'drizzle-orm'
 import { NextRequest, NextResponse } from 'next/server'
 
-import { GameInfoTable, GamePlayTable } from '@/db/schema'
+import { GameInfoTable, GamePlayTable, GameRecordTable } from '@/db/schema'
 import { db } from '@/lib/drizzle'
+import { buildLatestTimerEndAtMap } from '@/lib/server/game-last-run'
 import { gameMetadataSearchColumns, getGameSearchMetadata } from '@/lib/server/game-metadata-search'
 
 const getGameCardList = async (req: NextRequest) => {
@@ -32,10 +33,19 @@ const getGameCardList = async (req: NextRequest) => {
         gameId: GamePlayTable.gameId,
         totalPlayTime: GamePlayTable.totalPlayTime,
         rating: GamePlayTable.rating,
-        lastLaunchedAt: GamePlayTable.lastLaunchedAt,
         status: GamePlayTable.status,
       })
       .from(GamePlayTable)
+
+    const recordRows = await db
+      .select({
+        gameId: GameRecordTable.gameId,
+        playDate: GameRecordTable.playDate,
+        playTime: GameRecordTable.playTime,
+      })
+      .from(GameRecordTable)
+
+    const latestTimerEndAtMap = buildLatestTimerEndAtMap(recordRows)
 
     const playMap = new Map(
       plays.map((play) => [
@@ -43,7 +53,6 @@ const getGameCardList = async (req: NextRequest) => {
         {
           totalPlayTime: play.totalPlayTime ?? 0,
           rating: play.rating ?? 0,
-          lastLaunchedAt: play.lastLaunchedAt ?? '',
           status: play.status ?? 0,
         },
       ]),
@@ -64,7 +73,7 @@ const getGameCardList = async (req: NextRequest) => {
         developer: game.developer,
         publisher: game.publisher,
         publishAt: game.date || '',
-        lastRunAt: play?.lastLaunchedAt || '',
+        lastRunAt: latestTimerEndAtMap.get(game.id) || '',
         addedAt: game.createdAt || '',
         playTime: play?.totalPlayTime || 0,
         rating: play?.rating || 0,

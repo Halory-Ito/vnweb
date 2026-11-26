@@ -2,8 +2,15 @@ import dayjs from 'dayjs'
 import { desc, eq } from 'drizzle-orm'
 import { NextRequest, NextResponse } from 'next/server'
 
-import { CollectionGameTable, CollectionTable, GameInfoTable, GamePlayTable } from '@/db/schema'
+import {
+  CollectionGameTable,
+  CollectionTable,
+  GameInfoTable,
+  GamePlayTable,
+  GameRecordTable,
+} from '@/db/schema'
 import { db } from '@/lib/drizzle'
+import { buildLatestTimerEndAtMap } from '@/lib/server/game-last-run'
 
 import type { CollectionGameItem } from '@/types'
 
@@ -42,7 +49,6 @@ const getCollections = async () => {
         gameNsfw: GameInfoTable.nsfw,
         gameDate: GameInfoTable.date,
         gameAddedAt: GameInfoTable.createdAt,
-        gameLastRunAt: GamePlayTable.lastLaunchedAt,
         gamePlayTime: GamePlayTable.totalPlayTime,
         gameRating: GamePlayTable.rating,
         gameStatus: GamePlayTable.status,
@@ -51,6 +57,19 @@ const getCollections = async () => {
       .innerJoin(GameInfoTable, eq(CollectionGameTable.gameId, GameInfoTable.id))
       .leftJoin(GamePlayTable, eq(CollectionGameTable.gameId, GamePlayTable.gameId))
       .orderBy(desc(CollectionGameTable.id))
+
+    const latestTimerEndAtMap =
+      links.length > 0
+        ? buildLatestTimerEndAtMap(
+            await db
+              .select({
+                gameId: GameRecordTable.gameId,
+                playDate: GameRecordTable.playDate,
+                playTime: GameRecordTable.playTime,
+              })
+              .from(GameRecordTable),
+          )
+        : new Map<number, string>()
 
     const grouped = new Map<number, CollectionGameItem[]>()
 
@@ -67,7 +86,7 @@ const getCollections = async () => {
         nsfw: link.gameNsfw,
         date: link.gameDate || '',
         addedAt: link.gameAddedAt || '',
-        lastRunAt: link.gameLastRunAt || '',
+        lastRunAt: latestTimerEndAtMap.get(link.gameId) || '',
         playTime: link.gamePlayTime || 0,
         rating: link.gameRating || 0,
         status: link.gameStatus ?? 0,

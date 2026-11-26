@@ -6,6 +6,11 @@ import path from 'node:path'
 import readline from 'node:readline'
 
 import { CollectionGameTable, CollectionTable, GameInfoTable, GamePlayTable } from '../db/schema'
+import {
+  GAME_TRACKING_MODE_OPTIONS,
+  normalizeGameTrackingMode,
+  resolveEffectiveTrackingTarget,
+} from '../lib/game-tracking'
 
 async function loadDbRuntime() {
   const [{ ensureRuntimeInitialized }, { db }] = await Promise.all([
@@ -243,7 +248,10 @@ const startGame = async (gameIdText?: string) => {
       exePath: GamePlayTable.exePath,
       playId: GamePlayTable.id,
       isRunning: GamePlayTable.isRunning,
+      pid: GamePlayTable.pid,
       lastLaunchedAt: GamePlayTable.lastLaunchedAt,
+      trackingMode: GamePlayTable.trackingMode,
+      trackingTarget: GamePlayTable.trackingTarget,
     })
     .from(GameInfoTable)
     .leftJoin(GamePlayTable, eq(GameInfoTable.id, GamePlayTable.gameId))
@@ -283,6 +291,9 @@ const launchGameRow = async (game: {
   exePath: string | null
   playId: number | null
   isRunning: number | null
+  pid: number | null
+  trackingMode: string | null
+  trackingTarget: string | null
 }) => {
   const db = await loadDbRuntime()
   const gameTitle = game.nameCn || game.name
@@ -299,6 +310,7 @@ const launchGameRow = async (game: {
 
   await fs.promises.access(finalExePath, fs.constants.F_OK)
 
+  let activePid = Number(game.pid ?? 0)
   if ((game.isRunning ?? 0) === 1) {
     console.log(`游戏 ${gameTitle} 已在运行，已附加计时。`)
   } else {
@@ -310,6 +322,7 @@ const launchGameRow = async (game: {
       windowsHide: false,
     })
     child.unref()
+    activePid = child.pid ?? 0
 
     const launchedAt = new Date().toISOString()
     if (game.playId) {
@@ -319,6 +332,7 @@ const launchGameRow = async (game: {
           exePath: finalExePath,
           isRunning: 1,
           lastLaunchedAt: launchedAt,
+          pid: activePid,
         })
         .where(eq(GamePlayTable.id, game.playId))
     } else {
@@ -327,12 +341,22 @@ const launchGameRow = async (game: {
         exePath: finalExePath,
         isRunning: 1,
         lastLaunchedAt: launchedAt,
+        pid: activePid,
       })
     }
   }
 
+  const mode = normalizeGameTrackingMode(game.trackingMode)
+  const target = resolveEffectiveTrackingTarget(mode, finalExePath, game.trackingTarget ?? '')
+  const modeLabel = GAME_TRACKING_MODE_OPTIONS.find((item) => item.value === mode)?.label ?? mode
+
   console.log('游戏状态: 运行中')
-  console.log('按 q 可结束游戏并停止计时')
+  if (target) {
+    console.log(`追踪模式: ${modeLabel} (${target})`)
+    console.log('关闭游戏程序将自动结束计时并保存记录，或按 q 手动结束')
+  } else {
+    console.log('按 q 可结束游戏并停止计时')
+  }
 
   let finished = false
   let elapsed = 0
@@ -376,12 +400,15 @@ const launchGameRow = async (game: {
     }
   }
 
+  const tracker = target ? await import('../lib/server/game-tracker') : null
+
   const onKeyPress = async (_str: string, key: readline.Key) => {
     if (finished) {
       return
     }
 
     if (key.ctrl && key.name === 'c') {
+      tracker?.stopAllTracking()
       cleanup()
       process.exit(0)
       return
@@ -394,6 +421,7 @@ const launchGameRow = async (game: {
     finished = true
 
     pauseTimer()
+    tracker?.stopAllTracking()
 
     if (process.stdin.isTTY) {
       process.stdin.setRawMode(false)
@@ -412,6 +440,28 @@ const launchGameRow = async (game: {
   }
 
   process.stdin.on('keypress', onKeyPress)
+
+  if (tracker && target) {
+    tracker.startTrackingGame({
+      gameId: game.id,
+      mode,
+      target,
+      launchedPid: activePid,
+      onAutoStop: (result) => {
+        if (finished) {
+          return
+        }
+        finished = true
+        pauseTimer()
+        tracker.stopAllTracking()
+        cleanup()
+        console.log(
+          `检测到游戏已关闭，已自动保存本次游玩记录（时长 ${formatDuration(result.elapsedSeconds)}）。`,
+        )
+        process.exit(0)
+      },
+    })
+  }
 }
 
 const main = async () => {

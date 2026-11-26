@@ -2,7 +2,27 @@ import { eq, sql } from 'drizzle-orm'
 
 import { GameInfoTable, GamePlayTable, GameRecordTable } from '@/db/schema'
 import { db } from '@/lib/drizzle'
+import { getLatestTimerEndAt } from '@/lib/server/game-last-run'
 import { backupGameSave } from '@/lib/server/game-save-backup'
+
+export type FinalizeGameSessionResult = {
+  finalized: boolean
+  elapsedSeconds: number
+}
+
+const globalForFinalize = globalThis as typeof globalThis & {
+  __vnwebInFlightGameFinalizations?: Map<number, Promise<FinalizeGameSessionResult>>
+}
+
+function getInFlightMap(): Map<number, Promise<FinalizeGameSessionResult>> {
+  if (!globalForFinalize.__vnwebInFlightGameFinalizations) {
+    globalForFinalize.__vnwebInFlightGameFinalizations = new Map<
+      number,
+      Promise<FinalizeGameSessionResult>
+    >()
+  }
+  return globalForFinalize.__vnwebInFlightGameFinalizations
+}
 
 const safeDiffSeconds = (start: string, end: Date) => {
   const startDate = new Date(start)
@@ -14,7 +34,13 @@ const safeDiffSeconds = (start: string, end: Date) => {
   return Math.max(0, seconds)
 }
 
-export const finalizeGameSession = async (gameId: number) => {
+async function runFinalizeGameSession(
+  gameId: number,
+  options?: { endedAt?: Date },
+): Promise<FinalizeGameSessionResult> {
+  const { stopTrackingGame } = await import('@/lib/server/game-tracker')
+  stopTrackingGame(gameId)
+
   const rows = await db
     .select({
       id: GamePlayTable.id,
@@ -30,25 +56,39 @@ export const finalizeGameSession = async (gameId: number) => {
     return { finalized: false, elapsedSeconds: 0 }
   }
 
-  const endedAt = new Date()
+  const rawEnd = options?.endedAt ?? new Date()
+  const launchMs = play.lastLaunchedAt ? Date.parse(play.lastLaunchedAt) : Number.NaN
+  const endedAt =
+    Number.isFinite(launchMs) && rawEnd.getTime() < launchMs ? new Date(launchMs) : rawEnd
   const endedAtIso = endedAt.toISOString()
   const elapsedSeconds = safeDiffSeconds(play.lastLaunchedAt || '', endedAt)
-
-  await db
-    .update(GamePlayTable)
-    .set({
-      totalPlayTime: sql`${GamePlayTable.totalPlayTime} + ${elapsedSeconds}`,
-      playCount: sql`${GamePlayTable.playCount} + 1`,
-      lastLaunchedAt: endedAtIso,
-      isRunning: 0,
-    })
-    .where(eq(GamePlayTable.id, play.id))
 
   await db.insert(GameRecordTable).values({
     gameId,
     playTime: elapsedSeconds,
     playDate: play.lastLaunchedAt || endedAtIso,
   })
+
+  const allRecords = await db
+    .select({
+      playDate: GameRecordTable.playDate,
+      playTime: GameRecordTable.playTime,
+    })
+    .from(GameRecordTable)
+    .where(eq(GameRecordTable.gameId, gameId))
+
+  const latestTimerEndAt = getLatestTimerEndAt(allRecords) || endedAtIso
+
+  await db
+    .update(GamePlayTable)
+    .set({
+      totalPlayTime: sql`${GamePlayTable.totalPlayTime} + ${elapsedSeconds}`,
+      playCount: sql`${GamePlayTable.playCount} + 1`,
+      lastLaunchedAt: latestTimerEndAt,
+      isRunning: 0,
+      pid: 0,
+    })
+    .where(eq(GamePlayTable.id, play.id))
 
   // 游戏结束时备份存档
   try {
@@ -72,4 +112,24 @@ export const finalizeGameSession = async (gameId: number) => {
     finalized: true,
     elapsedSeconds,
   }
+}
+
+export const finalizeGameSession = (
+  gameId: number,
+  options?: { endedAt?: Date },
+): Promise<FinalizeGameSessionResult> => {
+  const inFlight = getInFlightMap()
+  const existing = inFlight.get(gameId)
+  if (existing) {
+    return existing
+  }
+
+  const task = runFinalizeGameSession(gameId, options).finally(() => {
+    if (inFlight.get(gameId) === task) {
+      inFlight.delete(gameId)
+    }
+  })
+
+  inFlight.set(gameId, task)
+  return task
 }

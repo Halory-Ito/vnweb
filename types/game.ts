@@ -1,5 +1,7 @@
 import type { GameMetadataField } from '@/lib/game-metadata-fields'
 
+export type GameTrackingMode = 'file' | 'directory' | 'process'
+
 export type GameDetail = {
   id: number
   date: string
@@ -35,6 +37,8 @@ export type GameDetail = {
   playStatus: number
   isRunning: boolean
   currentSessionSeconds: number
+  trackingMode: GameTrackingMode
+  trackingTarget: string
   externalSourceIds: string
   websites: Array<{
     id: number

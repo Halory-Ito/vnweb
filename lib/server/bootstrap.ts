@@ -4,6 +4,7 @@ import path from 'node:path'
 
 import { readConfig } from '@/lib/server/config-rw'
 import { ensureDatabaseMigrated } from '@/lib/server/database-migrate'
+import { ensureGameTrackingSchema } from '@/lib/server/game-tracking-schema'
 import { getAssetsDir, getDataExampleDir, getDataSettingsDir } from '@/lib/server/runtime-paths.mjs'
 
 const globalForBootstrap = globalThis as typeof globalThis & {
@@ -55,6 +56,7 @@ export function ensureRuntimeInitialized(): Promise<void> {
     globalForBootstrap.__vnwebRuntimeInitPromise = (async () => {
       await ensureDataSettingsSeeded()
       await ensureDatabaseMigrated()
+      await ensureGameTrackingSchema()
     })().catch((error) => {
       globalForBootstrap.__vnwebRuntimeInitPromise = undefined
       throw error

@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 
 import { GameInfoTable, GamePlayTable, GameRecordTable } from '@/db/schema'
 import { db } from '@/lib/drizzle'
+import { getLatestTimerEndAt } from '@/lib/server/game-last-run'
 
 type RecordPayloadItem = {
   startAt?: string
@@ -53,7 +54,13 @@ const getRecords = async (_req: NextRequest, context: { params: Promise<{ id: st
       .from(GameRecordTable)
       .where(eq(GameRecordTable.gameId, gameId))
 
-    const records = recordRows.map(toRecordView)
+    const records = recordRows.map(toRecordView).sort((a, b) => {
+      const endDiff = new Date(b.endAt).getTime() - new Date(a.endAt).getTime()
+      if (endDiff !== 0) return endDiff
+      const startDiff = new Date(b.startAt).getTime() - new Date(a.startAt).getTime()
+      if (startDiff !== 0) return startDiff
+      return b.id - a.id
+    })
     const totalPlayTime = records.reduce((sum, item) => sum + item.durationSeconds, 0)
 
     return NextResponse.json({
@@ -112,6 +119,7 @@ const updateRecords = async (req: NextRequest, context: { params: Promise<{ id: 
     })
 
     const totalPlayTime = normalized.reduce((sum, item) => sum + item.playTime, 0)
+    const latestTimerEndAt = getLatestTimerEndAt(normalized)
 
     await db.delete(GameRecordTable).where(eq(GameRecordTable.gameId, gameId))
 
@@ -126,7 +134,7 @@ const updateRecords = async (req: NextRequest, context: { params: Promise<{ id: 
     }
 
     const playRows = await db
-      .select({ id: GamePlayTable.id })
+      .select({ id: GamePlayTable.id, isRunning: GamePlayTable.isRunning })
       .from(GamePlayTable)
       .where(eq(GamePlayTable.gameId, gameId))
       .limit(1)
@@ -137,12 +145,14 @@ const updateRecords = async (req: NextRequest, context: { params: Promise<{ id: 
         .update(GamePlayTable)
         .set({
           totalPlayTime,
+          ...((play.isRunning ?? 0) !== 1 ? { lastLaunchedAt: latestTimerEndAt } : {}),
         })
         .where(eq(GamePlayTable.id, play.id))
     } else {
       await db.insert(GamePlayTable).values({
         gameId,
         totalPlayTime,
+        lastLaunchedAt: latestTimerEndAt,
       })
     }
 
@@ -150,6 +160,7 @@ const updateRecords = async (req: NextRequest, context: { params: Promise<{ id: 
       data: {
         updated: true,
         totalPlayTime,
+        lastLaunchedAt: latestTimerEndAt,
       },
     })
   } catch (error) {

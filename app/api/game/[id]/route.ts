@@ -16,9 +16,17 @@ import {
   relateWebsiteTable,
 } from '@/db/schema'
 import { db } from '@/lib/drizzle'
+import { parseExternalSourceIds } from '@/lib/external-source-ids'
+import {
+  isValidGameTrackingMode,
+  normalizeGameTrackingMode,
+  normalizeTrackingTargetForMode,
+} from '@/lib/game-tracking'
 import { ensureGameCompletionSchema, resolveCompletedAt } from '@/lib/server/game-completion'
 import { localizeGameImageFieldsInBackground } from '@/lib/server/game-image-storage'
+import { getLatestTimerEndAt } from '@/lib/server/game-last-run'
 import { ensureGameStatusSchema, runGameStatusTransaction } from '@/lib/server/game-status-settings'
+import { ensureGameTrackingSchema } from '@/lib/server/game-tracking-schema'
 import { syncVndbCharactersByGameId } from '@/lib/server/vndb-character-sync'
 
 const parseCsv = (value: string) =>
@@ -47,50 +55,6 @@ const normalizeStringList = (value: unknown): string[] => {
   }
 
   return []
-}
-
-const parseExternalSourceIds = (
-  value: unknown,
-): Array<{ provider: string; externalId: string }> | null => {
-  if (typeof value !== 'string') {
-    return null
-  }
-
-  const raw = value.trim()
-  if (!raw) {
-    return []
-  }
-
-  const dedup = new Set<string>()
-  const result: Array<{ provider: string; externalId: string }> = []
-
-  for (const segment of raw.split(';')) {
-    const item = segment.trim()
-    if (!item) {
-      continue
-    }
-
-    const divider = item.indexOf(':')
-    if (divider <= 0 || divider >= item.length - 1) {
-      return null
-    }
-
-    const provider = item.slice(0, divider).trim()
-    const externalId = item.slice(divider + 1).trim()
-    if (!provider || !externalId) {
-      return null
-    }
-
-    const key = `${provider}:${externalId}`
-    if (dedup.has(key)) {
-      continue
-    }
-
-    dedup.add(key)
-    result.push({ provider, externalId })
-  }
-
-  return result
 }
 
 const normalizeWindowsPathInput = (value: string) => {
@@ -132,6 +96,8 @@ const getGameById = async (_req: NextRequest, context: { params: Promise<{ id: s
       .from(relateWebsiteTable)
       .where(eq(relateWebsiteTable.gameId, gameId))
 
+    await ensureGameTrackingSchema()
+
     const playRows = await db
       .select({
         id: GamePlayTable.id,
@@ -142,6 +108,8 @@ const getGameById = async (_req: NextRequest, context: { params: Promise<{ id: s
         status: GamePlayTable.status,
         isRunning: GamePlayTable.isRunning,
         exePath: GamePlayTable.exePath,
+        trackingMode: GamePlayTable.trackingMode,
+        trackingTarget: GamePlayTable.trackingTarget,
       })
       .from(GamePlayTable)
       .where(eq(GamePlayTable.gameId, gameId))
@@ -156,7 +124,21 @@ const getGameById = async (_req: NextRequest, context: { params: Promise<{ id: s
       .where(eq(GameIdMapTable.gameId, gameId))
       .orderBy(GameIdMapTable.provider, GameIdMapTable.externalId)
 
+    const recordRows = await db
+      .select({
+        playDate: GameRecordTable.playDate,
+        playTime: GameRecordTable.playTime,
+      })
+      .from(GameRecordTable)
+      .where(eq(GameRecordTable.gameId, gameId))
+
     const playData = playRows[0]
+    const lastLaunchedAt = getLatestTimerEndAt(recordRows)
+    const isRunning = (playData?.isRunning ?? 0) === 1
+    const currentSessionSeconds =
+      isRunning && playData?.lastLaunchedAt
+        ? Math.max(0, Math.floor((Date.now() - new Date(playData.lastLaunchedAt).getTime()) / 1000))
+        : 0
 
     return NextResponse.json({
       data: {
@@ -191,10 +173,12 @@ const getGameById = async (_req: NextRequest, context: { params: Promise<{ id: s
         totalPlayTime: playData?.totalPlayTime ?? 0,
         playCount: playData?.playCount ?? 0,
         rating: playData?.rating ?? 0,
-        lastLaunchedAt: playData?.lastLaunchedAt ?? '',
+        lastLaunchedAt,
         playStatus: playData?.status ?? 0,
-        isRunning: (playData?.isRunning ?? 0) === 1,
-        currentSessionSeconds: 0,
+        isRunning,
+        currentSessionSeconds,
+        trackingMode: normalizeGameTrackingMode(playData?.trackingMode),
+        trackingTarget: playData?.trackingTarget ?? '',
         externalSourceIds: idMapRows.map((item) => `${item.provider}:${item.externalId}`).join(';'),
       },
     })
@@ -218,6 +202,8 @@ const updateGame = async (req: NextRequest, context: { params: Promise<{ id: str
       rating?: number
       exePath?: string
       saveDir?: string
+      trackingMode?: string
+      trackingTarget?: string
       cover?: string
       bg?: string
       icon?: string
@@ -265,10 +251,16 @@ const updateGame = async (req: NextRequest, context: { params: Promise<{ id: str
     const hasSettingsPayload =
       payload.exePath !== undefined ||
       payload.saveDir !== undefined ||
+      payload.trackingMode !== undefined ||
+      payload.trackingTarget !== undefined ||
       payload.cover !== undefined ||
       payload.bg !== undefined ||
       payload.icon !== undefined ||
       payload.logo !== undefined
+
+    if (payload.trackingMode !== undefined && !isValidGameTrackingMode(payload.trackingMode)) {
+      return NextResponse.json({ error: '无效的追踪模式' }, { status: 400 })
+    }
 
     const hasBasicInfoPayload =
       payload.date !== undefined ||
@@ -295,13 +287,14 @@ const updateGame = async (req: NextRequest, context: { params: Promise<{ id: str
 
     const parsedExternalSourceIds =
       payload.externalSourceIds !== undefined
-        ? parseExternalSourceIds(payload.externalSourceIds)
+        ? parseExternalSourceIds(payload.externalSourceIds, { strict: true })
         : undefined
 
     if (payload.externalSourceIds !== undefined && parsedExternalSourceIds === null) {
       return NextResponse.json(
         {
-          error: '外部数据源id格式错误，应为 provider1:id1;provider2:id2',
+          error:
+            '外部数据源id格式错误，应为 provider1:id1;provider2:id2（支持分号、逗号、顿号分隔）',
         },
         { status: 400 },
       )
@@ -476,24 +469,54 @@ const updateGame = async (req: NextRequest, context: { params: Promise<{ id: str
         }
       }
 
-      if (payload.exePath !== undefined) {
-        const nextExePath = normalizeWindowsPathInput(payload.exePath)
+      if (
+        payload.exePath !== undefined ||
+        payload.trackingMode !== undefined ||
+        payload.trackingTarget !== undefined
+      ) {
+        await ensureGameTrackingSchema()
         const playRows = await db
-          .select({ id: GamePlayTable.id })
+          .select({
+            id: GamePlayTable.id,
+            trackingMode: GamePlayTable.trackingMode,
+          })
           .from(GamePlayTable)
           .where(eq(GamePlayTable.gameId, gameId))
           .limit(1)
 
         const play = playRows[0]
+        const effectiveTrackingMode =
+          payload.trackingMode !== undefined
+            ? normalizeGameTrackingMode(payload.trackingMode)
+            : normalizeGameTrackingMode(play?.trackingMode)
+
+        const playPatch: Partial<{
+          exePath: string
+          trackingMode: string
+          trackingTarget: string
+        }> = {}
+
+        if (payload.exePath !== undefined) {
+          playPatch.exePath = normalizeWindowsPathInput(payload.exePath)
+        }
+        if (payload.trackingMode !== undefined) {
+          playPatch.trackingMode = effectiveTrackingMode
+        }
+        if (payload.trackingTarget !== undefined) {
+          playPatch.trackingTarget = normalizeTrackingTargetForMode(
+            effectiveTrackingMode,
+            payload.trackingTarget,
+          )
+        }
+
         if (play) {
-          await db
-            .update(GamePlayTable)
-            .set({ exePath: nextExePath })
-            .where(eq(GamePlayTable.id, play.id))
+          await db.update(GamePlayTable).set(playPatch).where(eq(GamePlayTable.id, play.id))
         } else {
           await db.insert(GamePlayTable).values({
             gameId,
-            exePath: nextExePath,
+            exePath: playPatch.exePath ?? '',
+            trackingMode: playPatch.trackingMode ?? 'file',
+            trackingTarget: playPatch.trackingTarget ?? '',
           })
         }
       }

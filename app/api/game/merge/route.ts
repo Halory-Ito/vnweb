@@ -15,6 +15,7 @@ import {
   relateWebsiteTable,
 } from '@/db/schema'
 import { db } from '@/lib/drizzle'
+import { getLatestTimerEndAt } from '@/lib/server/game-last-run'
 
 // 合并 CSV 字段（去重）
 function mergeCsvFields(...values: (string | null | undefined)[]): string {
@@ -199,6 +200,31 @@ export async function POST(req: NextRequest) {
 
       // 删除源游戏
       await db.delete(GameInfoTable).where(eq(GameInfoTable.id, sourceId))
+    }
+
+    const mergedRecords = await db
+      .select({
+        playDate: GameRecordTable.playDate,
+        playTime: GameRecordTable.playTime,
+      })
+      .from(GameRecordTable)
+      .where(eq(GameRecordTable.gameId, numericTargetId))
+
+    const latestTimerEndAt = getLatestTimerEndAt(mergedRecords)
+    const targetPlayRows = await db
+      .select({
+        id: GamePlayTable.id,
+        isRunning: GamePlayTable.isRunning,
+      })
+      .from(GamePlayTable)
+      .where(eq(GamePlayTable.gameId, numericTargetId))
+      .limit(1)
+
+    if (targetPlayRows[0] && (targetPlayRows[0].isRunning ?? 0) !== 1) {
+      await db
+        .update(GamePlayTable)
+        .set({ lastLaunchedAt: latestTimerEndAt })
+        .where(eq(GamePlayTable.id, targetPlayRows[0].id))
     }
 
     return NextResponse.json({
