@@ -91,10 +91,8 @@ export default function GameCard(props: GameCardProps) {
                 className="h-full w-full cursor-pointer object-cover"
                 src={props.cover}
                 alt={props.title}
-                loading="eager"
                 fill
                 sizes="176px"
-                fetchPriority="high"
                 onError={() => {
                   setImageError(true)
                   toast.error(`"${props.title}" 封面加载失败`, {

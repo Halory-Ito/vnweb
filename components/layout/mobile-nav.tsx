@@ -16,23 +16,21 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet'
+import { useAppSettings } from '@/hooks/use-app-settings'
+import { mobileNavOpenAtom, useSharedHeaderDropdownMenu } from '@/hooks/use-header-dropdown-menu'
+import { resolveAppIconSrc } from '@/lib/settings/app-settings'
 import { cn } from '@/lib/utils'
 
 const navItems = [...primaryNavigation, settingsNavigation]
 
-export default function MobileNav({
-  open,
-  onOpenChange,
-  showTrigger,
-}: {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  showTrigger: boolean
-}) {
+export default function MobileNav({ showTrigger }: { showTrigger: boolean }) {
   const section = useSelectedLayoutSegment()
+  const { open, setOpen } = useSharedHeaderDropdownMenu(mobileNavOpenAtom, 'mobile')
+  const appSettings = useAppSettings()
+  const iconSrc = resolveAppIconSrc(appSettings.iconPath)
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
+    <Sheet open={open} onOpenChange={setOpen}>
       {showTrigger ? (
         <SheetTrigger asChild>
           <Button variant="outline" size="icon-lg" className="shrink-0">
@@ -45,14 +43,15 @@ export default function MobileNav({
         <SheetHeader className="border-b p-4">
           <SheetTitle className="flex items-center gap-3">
             <Image
-              src="/LOGO.png"
+              src={iconSrc}
               alt=""
               loading="eager"
               width={32}
               height={32}
-              className="object-contain"
+              unoptimized
+              className="size-8 shrink-0 rounded-md object-contain"
             />
-            <span>VNWeb</span>
+            <span className="truncate">{appSettings.name}</span>
           </SheetTitle>
           <SheetDescription className="sr-only">
             站点主导航，包含主页、游戏库、记录、扫描、攻略、PV、OST、摘录与设置等入口

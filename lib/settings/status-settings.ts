@@ -40,25 +40,78 @@ export function getStatusColor(settings: StatusColorSettings, status?: number | 
 }
 
 let cache: StatusColorSettings | null = null
+let loaded = false
 let inflight: Promise<StatusColorSettings> | null = null
+const listeners = new Set<() => void>()
+let windowSubscribed = false
+
+function areStatusColorSettingsEqual(a: StatusColorSettings, b: StatusColorSettings): boolean {
+  const keysA = Object.keys(a)
+  const keysB = Object.keys(b)
+  if (keysA.length !== keysB.length) {
+    return false
+  }
+  return keysA.every((key) => Object.is(a[key], b[key]))
+}
+
+function emitStatusColorSettingsChange() {
+  for (const listener of listeners) {
+    listener()
+  }
+}
+
+function updateStatusColorCache(normalized: StatusColorSettings): StatusColorSettings {
+  const prev = cache ?? DEFAULT_STATUS_COLOR_SETTINGS
+  loaded = true
+  if (areStatusColorSettingsEqual(prev, normalized)) {
+    cache = prev
+    return prev
+  }
+
+  cache = normalized
+  emitStatusColorSettingsChange()
+  return normalized
+}
+
+export function getDefaultStatusColorSettings(): StatusColorSettings {
+  return DEFAULT_STATUS_COLOR_SETTINGS
+}
+
+export function getCachedStatusColorSettings(): StatusColorSettings {
+  return cache ?? DEFAULT_STATUS_COLOR_SETTINGS
+}
+
+export function subscribeStatusColorSettings(listener: () => void): () => void {
+  if (listeners.size === 0 && typeof window !== 'undefined' && !windowSubscribed) {
+    window.addEventListener(STATUS_SETTINGS_EVENT, emitStatusColorSettingsChange)
+    windowSubscribed = true
+  }
+  listeners.add(listener)
+
+  if (!loaded && typeof window !== 'undefined') {
+    void readStatusColorSettings()
+  }
+
+  return () => {
+    listeners.delete(listener)
+    if (listeners.size === 0 && typeof window !== 'undefined' && windowSubscribed) {
+      window.removeEventListener(STATUS_SETTINGS_EVENT, emitStatusColorSettingsChange)
+      windowSubscribed = false
+    }
+  }
+}
 
 // 读取游戏状态颜色设置（带模块级缓存，避免每个卡片都请求一次）
 export async function readStatusColorSettings(): Promise<StatusColorSettings> {
-  if (cache) {
+  if (loaded && cache) {
     return cache
   }
 
   if (!inflight) {
     inflight = api
       .get<{ data: StatusColorSettings }>('/settings/appearance/status')
-      .then((response) => {
-        cache = normalizeStatusColorSettings(response.data.data)
-        return cache
-      })
-      .catch(() => {
-        cache = { ...DEFAULT_STATUS_COLOR_SETTINGS }
-        return cache
-      })
+      .then((response) => updateStatusColorCache(normalizeStatusColorSettings(response.data.data)))
+      .catch(() => updateStatusColorCache({ ...DEFAULT_STATUS_COLOR_SETTINGS }))
       .finally(() => {
         inflight = null
       })
@@ -72,11 +125,12 @@ export async function writeStatusColorSettings(settings: StatusColorSettings): P
     '/settings/appearance/status',
     settings,
   )
-  cache = normalizeStatusColorSettings(response.data.data)
+  updateStatusColorCache(normalizeStatusColorSettings(response.data.data))
 }
 
 export function notifyStatusColorSettingsChanged() {
   if (typeof window === 'undefined') {
+    emitStatusColorSettingsChange()
     return
   }
 

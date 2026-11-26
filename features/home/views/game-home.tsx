@@ -3,12 +3,13 @@
 import { useAtomValue } from 'jotai'
 import { AlertCircle, ArrowLeftIcon } from 'lucide-react'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 
 import GameHomeEmptyState from '../components/empty-home'
 import { GameHomeActions } from '../components/game-home-actions'
 import LibraryFolders from '../components/library-folders'
 import { useGameHome } from '../hooks/use-game-home'
-import { getLibraryFolderTitle } from '../lib/library-grouping'
+import { getLibraryFolderTitle, resolveLibraryRouteParams } from '../lib/library-grouping'
 import GameListHome from './game-list-home'
 import { getGameCardList } from '@/api'
 import { gameSearchAtom } from '@/atom/global'
@@ -21,8 +22,6 @@ import { gameLibraryGridDisplayAtom } from '@/lib/settings/game-library-grid-dis
 import { gameLibraryGroupAtom } from '@/lib/settings/game-library-group'
 import { gameLibraryLayoutAtom } from '@/lib/settings/game-library-layout'
 
-import type { LibraryGroup } from '../lib/library-grouping'
-
 export type SelectableGameProps = {
   selectedGameIds: string[]
   selectionMode: boolean
@@ -31,25 +30,14 @@ export type SelectableGameProps = {
 
 export type GameCardsData = Awaited<ReturnType<typeof getGameCardList>>
 
-type GameHomeProps = {
-  groupBy: LibraryGroup
-  folderKey?: string
-}
-
-export default function GameHome(props: GameHomeProps) {
+export default function GameHome() {
   const layout = useAtomValue(gameLibraryLayoutAtom)
-  return layout === 'mixed' ? (
-    <GameListHome />
-  ) : (
-    <GameGridHome {...props} hybrid={layout === 'hybrid'} />
-  )
+  return layout === 'mixed' ? <GameListHome /> : <GameGridHome hybrid={layout === 'hybrid'} />
 }
 
-function GameGridHome({
-  groupBy: linkedGroup,
-  folderKey,
-  hybrid,
-}: GameHomeProps & { hybrid: boolean }) {
+function GameGridHome({ hybrid }: { hybrid: boolean }) {
+  const searchParams = useSearchParams()
+  const { groupBy: linkedGroup, folderKey } = resolveLibraryRouteParams(searchParams)
   const gridDisplay = useAtomValue(gameLibraryGridDisplayAtom)
   const preferredGroup = useAtomValue(gameLibraryGroupAtom)
   const keyword = useAtomValue(gameSearchAtom).trim().toLowerCase()

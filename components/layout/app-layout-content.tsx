@@ -1,6 +1,7 @@
 'use client'
 
-import { useRef, useState, type ReactNode } from 'react'
+import { useSetAtom } from 'jotai'
+import { useCallback, useRef, useState, type ReactNode } from 'react'
 
 import { AppHeaderActions } from './app-header'
 import AppSideBar from './app-sidebar'
@@ -9,7 +10,7 @@ import MobileNav from './mobile-nav'
 import WindowControls from './window-controls'
 import { AgentDrawer } from '@/features/agent'
 import { useDesktopWindow } from '@/hooks/use-desktop-window'
-import { useHeaderDropdownMenu } from '@/hooks/use-header-dropdown-menu'
+import { mobileNavOpenAtom } from '@/hooks/use-header-dropdown-menu'
 import { useLayoutEdgeDrag } from '@/hooks/use-layout-edge-drag'
 import { useLayoutVisibility } from '@/hooks/use-layout-visibility'
 import { cn } from '@/lib/utils'
@@ -19,8 +20,9 @@ export default function AppLayoutContent({ children }: { children: ReactNode }) 
   const desktopWindow = useDesktopWindow()
   const sidebarRef = useRef<HTMLDivElement>(null)
   const headerRef = useRef<HTMLElement>(null)
-  const { open: mobileNavOpen, setOpen: setMobileNavOpen } = useHeaderDropdownMenu('mobile')
+  const setMobileNavOpen = useSetAtom(mobileNavOpenAtom)
   const [agentOpen, setAgentOpen] = useState(false)
+  const handleOpenAgent = useCallback(() => setAgentOpen(true), [])
   const sidebarDrag = useLayoutEdgeDrag('left', sidebarHidden, sidebarRef, setSidebarHidden)
   const headerDrag = useLayoutEdgeDrag('top', headerHidden, headerRef, setHeaderHidden)
   const mobileNavDrag = useLayoutEdgeDrag('left', true, null, () => {
@@ -53,14 +55,8 @@ export default function AppLayoutContent({ children }: { children: ReactNode }) 
             )}
           >
             <AppHeaderActions
-              mobileNav={
-                <MobileNav
-                  open={mobileNavOpen}
-                  onOpenChange={setMobileNavOpen}
-                  showTrigger={!sidebarHidden}
-                />
-              }
-              onOpenAgent={() => setAgentOpen(true)}
+              mobileNav={<MobileNav showTrigger={!sidebarHidden} />}
+              onOpenAgent={handleOpenAgent}
               windowControls={
                 desktopWindow.showCustomControls ? (
                   <WindowControls

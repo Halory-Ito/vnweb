@@ -3,6 +3,7 @@ import {
   ADDITIONAL_GAME_METADATA_FIELDS,
   BASIC_GAME_METADATA_FIELDS,
 } from '@/lib/game-metadata-fields'
+import { resolveLayoutLibraryGroup } from '@/lib/settings/layout-settings'
 
 import type { GameStatusNames } from '@/features/game/lib/game-status'
 import type { LayoutLibraryGroup } from '@/lib/settings/layout-settings'
@@ -15,6 +16,32 @@ export const LIBRARY_GROUP_LABELS = {
 } satisfies Record<LayoutLibraryGroup, string>
 
 export type LibraryGroup = keyof typeof LIBRARY_GROUP_LABELS
+
+function getSingleSearchParam(searchParams: Pick<URLSearchParams, 'getAll'>, key: string) {
+  const values = searchParams.getAll(key)
+  return values.length === 1 ? values[0] : undefined
+}
+
+export function resolveLibraryRouteParams(searchParams: Pick<URLSearchParams, 'getAll'>): {
+  groupBy: LibraryGroup
+  folderKey?: string
+} {
+  const group = getSingleSearchParam(searchParams, 'group')
+  const status = getSingleSearchParam(searchParams, 'status')
+  const folder = getSingleSearchParam(searchParams, 'folder')
+  const field = getSingleSearchParam(searchParams, 'field')
+  const groupBy = resolveLayoutLibraryGroup(group, field)
+  const folderKey =
+    groupBy === 'status'
+      ? status !== undefined &&
+        /^(?:-1|0|[1-9]\d*)$/.test(status) &&
+        Number.isSafeInteger(Number(status))
+        ? status
+        : undefined
+      : folder
+
+  return { groupBy, folderKey }
+}
 
 export function matchesLibraryGameSearch(game: GameCardListItem, keyword: string) {
   return (

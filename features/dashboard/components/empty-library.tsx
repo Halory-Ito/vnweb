@@ -18,7 +18,7 @@ export default function EmptyLibrary() {
           <Link href="/scan">扫描游戏</Link>
         </Button>
         <Button asChild variant="outline">
-          <Link href="/game">前往游戏库</Link>
+          <Link href="/game/home">前往游戏库</Link>
         </Button>
       </div>
     </div>

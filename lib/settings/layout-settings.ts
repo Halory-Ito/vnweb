@@ -217,6 +217,37 @@ function scheduleLayoutPatch(patch: Partial<LayoutSettings>, immediate = false) 
   syncTimer = setTimeout(flushLayoutPatch, 300)
 }
 
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) return false
+  const proto = Object.getPrototypeOf(value)
+  return proto === Object.prototype || proto === null
+}
+
+function areLayoutSettingValuesEqual(a: unknown, b: unknown): boolean {
+  if (Object.is(a, b)) return true
+  if (Array.isArray(a) && Array.isArray(b)) {
+    return a.length === b.length && a.every((item, index) => Object.is(item, b[index]))
+  }
+  if (isPlainObject(a) && isPlainObject(b)) {
+    const keysA = Object.keys(a)
+    const keysB = Object.keys(b)
+    if (keysA.length !== keysB.length) return false
+    return keysA.every(
+      (key) => Object.prototype.hasOwnProperty.call(b, key) && Object.is(a[key], b[key]),
+    )
+  }
+  return false
+}
+
+function readLocalStorageRaw(key: string): string | null {
+  if (typeof window === 'undefined') return null
+  try {
+    return window.localStorage.getItem(key)
+  } catch {
+    return null
+  }
+}
+
 export function createLayoutSyncedStorage<K extends keyof LayoutSettings>(
   configKey: K,
   validator: (value: unknown) => value is LayoutSettings[K],
@@ -225,11 +256,37 @@ export function createLayoutSyncedStorage<K extends keyof LayoutSettings>(
   const baseStorage = unstable_withStorageValidator(validator)(
     createJSONStorage<unknown>(() => window.localStorage),
   )
+  let hasCached = false
+  let lastRaw: string | null = null
+  let lastValue: LayoutSettings[K]
 
-  return {
-    ...baseStorage,
-    setItem(key: string, newValue: LayoutSettings[K]) {
+  const storage: typeof baseStorage = {
+    getItem(key, initialValue) {
+      if (typeof window === 'undefined') {
+        return initialValue
+      }
+
+      const raw = readLocalStorageRaw(key)
+      if (hasCached && raw === lastRaw) {
+        return lastValue
+      }
+
+      const next = baseStorage.getItem(key, initialValue)
+      if (hasCached && areLayoutSettingValuesEqual(lastValue, next)) {
+        lastRaw = raw
+        return lastValue
+      }
+
+      hasCached = true
+      lastRaw = raw
+      lastValue = next
+      return next
+    },
+    setItem(key, newValue) {
       baseStorage.setItem(key, newValue)
+      hasCached = true
+      lastValue = newValue
+      lastRaw = readLocalStorageRaw(key)
       if (suppressLayoutSyncDepth === 0) {
         userModifiedLayoutKeys.add(configKey)
         scheduleLayoutPatch(
@@ -238,5 +295,25 @@ export function createLayoutSyncedStorage<K extends keyof LayoutSettings>(
         )
       }
     },
+    removeItem(key) {
+      hasCached = false
+      lastRaw = null
+      baseStorage.removeItem(key)
+    },
+    ...(baseStorage.subscribe
+      ? {
+          subscribe(key, callback, initialValue) {
+            return baseStorage.subscribe!(
+              key,
+              () => {
+                callback(storage.getItem(key, initialValue))
+              },
+              initialValue,
+            )
+          },
+        }
+      : {}),
   }
+
+  return storage
 }

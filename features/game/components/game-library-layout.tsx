@@ -8,6 +8,7 @@ import HybridGameLibraryLayout from './hybrid-game-library-layout'
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { gameLibraryLayoutAtom } from '@/lib/settings/game-library-layout'
+import { cn } from '@/lib/utils'
 
 export default function GameLibraryLayout({ children }: { children: React.ReactNode }) {
   const layout = useAtomValue(gameLibraryLayoutAtom)
@@ -15,25 +16,37 @@ export default function GameLibraryLayout({ children }: { children: React.ReactN
   const isMobile = useIsMobile()
 
   if (layout === 'hybrid') {
-    return <HybridGameLibraryLayout>{children}</HybridGameLibraryLayout>
+    return <HybridGameLibraryLayout isMobile={isMobile}>{children}</HybridGameLibraryLayout>
   }
 
-  if (layout === 'grid' || section === 'home' || isMobile) {
-    return <div className="h-full w-full min-w-0">{children}</div>
-  }
+  const showSidebar = layout === 'mixed' && section !== 'home' && !isMobile
 
   return (
-    <div className="h-full">
-      <ResizablePanelGroup orientation="horizontal" className="w-full min-w-0 overflow-hidden">
+    <div className="h-full w-full min-w-0">
+      <ResizablePanelGroup
+        orientation="horizontal"
+        disabled={!showSidebar}
+        className={cn('w-full min-w-0 overflow-hidden', !showSidebar && 'touch-auto!')}
+      >
+        {showSidebar ? (
+          <>
+            <ResizablePanel
+              key="game-sidebar"
+              id="game-sidebar"
+              className="h-full min-w-0 overflow-x-hidden"
+              defaultSize="16%"
+              maxSize="32%"
+            >
+              <GameSidebar />
+            </ResizablePanel>
+            <ResizableHandle key="game-sidebar-handle" className="h-full" />
+          </>
+        ) : null}
         <ResizablePanel
-          className="h-full min-w-0 overflow-x-hidden"
-          defaultSize="16%"
-          maxSize="32%"
+          key="game-content"
+          id="game-content"
+          className={cn('h-full min-w-0 overflow-x-hidden', !showSidebar && 'touch-auto!')}
         >
-          <GameSidebar />
-        </ResizablePanel>
-        <ResizableHandle className="h-full" />
-        <ResizablePanel className="min-w-0 overflow-x-hidden" defaultSize="75%">
           {children}
         </ResizablePanel>
       </ResizablePanelGroup>
