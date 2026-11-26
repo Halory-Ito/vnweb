@@ -7,5 +7,11 @@
   "goals": {
     "dailyPlayMinutes": 60,
     "yearlyCompletedGames": 12
+  },
+  "app": {
+    "name": "vnweb",
+    "iconPath": "",
+    "desktopIconPath": "",
+    "port": 8999
   }
 }

@@ -1,4 +1,5 @@
 export { AboutSettings } from './components/about-settings'
+export { GeneralSettings } from './components/general-settings'
 export { default as PlatformSettings } from './components/platform-settings'
 export { PlatformAccountSection } from './components/platform-account-section'
 export type { PlatformProvider } from './components/platform-account-section'

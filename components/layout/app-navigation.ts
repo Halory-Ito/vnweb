@@ -23,7 +23,7 @@ export const primaryNavigation = [
 
 export const settingsNavigation = {
   title: '设置',
-  href: '/settings/appearance',
+  href: '/settings/general',
   icon: SettingsIcon,
 }
 

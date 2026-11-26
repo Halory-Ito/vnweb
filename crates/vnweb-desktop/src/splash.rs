@@ -63,6 +63,8 @@ pub fn mime_type_for_extension(name: &str) -> &'static str {
         Some("gif") => "image/gif",
         Some("avif") => "image/avif",
         Some("svg") => "image/svg+xml",
+        Some("ico") => "image/x-icon",
+        Some("bmp") => "image/bmp",
         Some("mp4") => "video/mp4",
         Some("webm") => "video/webm",
         Some("ogg") => "video/ogg",
@@ -135,14 +137,27 @@ fn plain_response(status: StatusCode, body: &[u8]) -> Response<Vec<u8>> {
 
 pub fn handle_splash_protocol(data_dir: &Path, request: Request<Vec<u8>>) -> Response<Vec<u8>> {
     let raw_path = request.uri().path().trim_start_matches('/');
-    let Some(decoded_name) = percent_decode_utf8(raw_path) else {
+    let (asset_subdir, encoded_name) = if let Some(rest) = raw_path
+        .strip_prefix("app-icon/")
+        .or_else(|| raw_path.strip_prefix("app-icon%2F"))
+        .or_else(|| raw_path.strip_prefix("app-icon%2f"))
+    {
+        ("app", rest)
+    } else {
+        ("startup", raw_path)
+    };
+
+    let Some(decoded_name) = percent_decode_utf8(encoded_name) else {
         return plain_response(StatusCode::BAD_REQUEST, b"Invalid startup media path");
     };
     if !is_safe_single_filename(&decoded_name) {
         return plain_response(StatusCode::BAD_REQUEST, b"Invalid startup media path");
     }
 
-    let file_path = data_dir.join("assets").join("startup").join(&decoded_name);
+    let file_path = data_dir
+        .join("assets")
+        .join(asset_subdir)
+        .join(&decoded_name);
     let Ok(mut file) = File::open(&file_path) else {
         return plain_response(StatusCode::NOT_FOUND, b"Startup media not found");
     };
@@ -333,6 +348,41 @@ mod tests {
             .expect("req");
         assert_eq!(
             handle_splash_protocol(&data_dir, invalid_hex_req).status(),
+            StatusCode::BAD_REQUEST
+        );
+
+        let _ = fs::remove_dir_all(&data_dir);
+    }
+
+    #[test]
+    fn serves_app_icon_and_rejects_traversal() {
+        let data_dir = make_temp_dir("app-icon");
+        let app_dir = data_dir.join("assets").join("app");
+        fs::create_dir_all(&app_dir).expect("app dir");
+        fs::write(app_dir.join("brand.svg"), b"<svg/>").expect("write svg");
+
+        let direct_req = Request::builder()
+            .uri("http://vnweb-splash.localhost/app-icon/brand.svg")
+            .body(Vec::new())
+            .expect("req");
+        let direct_res = handle_splash_protocol(&data_dir, direct_req);
+        assert_eq!(direct_res.status(), StatusCode::OK);
+        assert_eq!(direct_res.body(), b"<svg/>");
+
+        let encoded_req = Request::builder()
+            .uri("http://vnweb-splash.localhost/app-icon%2Fbrand.svg")
+            .body(Vec::new())
+            .expect("req");
+        let encoded_res = handle_splash_protocol(&data_dir, encoded_req);
+        assert_eq!(encoded_res.status(), StatusCode::OK);
+        assert_eq!(encoded_res.body(), b"<svg/>");
+
+        let traversal_req = Request::builder()
+            .uri("http://vnweb-splash.localhost/app-icon%2F..%2Fsecret.png")
+            .body(Vec::new())
+            .expect("req");
+        assert_eq!(
+            handle_splash_protocol(&data_dir, traversal_req).status(),
             StatusCode::BAD_REQUEST
         );
 

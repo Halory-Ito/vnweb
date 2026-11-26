@@ -1,10 +1,46 @@
 use std::env;
 use std::ffi::OsString;
+use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::{Command, ExitCode, Stdio};
 
+const DEFAULT_APP_PORT: u16 = 8999;
+const MIN_APP_PORT: u64 = 1024;
+const MAX_APP_PORT: u64 = 65535;
+
 fn non_empty_env(name: &str) -> Option<OsString> {
     env::var_os(name).filter(|val| !val.to_string_lossy().trim().is_empty())
+}
+
+fn parse_env_port(name: &str) -> Option<u16> {
+    non_empty_env(name)
+        .and_then(|v| v.to_string_lossy().trim().parse::<u16>().ok())
+        .filter(|&port| port > 0)
+}
+
+fn read_configured_port(data_dir: &Path) -> u16 {
+    let settings_path = data_dir.join("data").join("settings").join("general.json");
+    let Ok(content) = fs::read_to_string(settings_path) else {
+        return DEFAULT_APP_PORT;
+    };
+    let clean = content.trim_start_matches('\u{FEFF}');
+    let Ok(parsed) = serde_json::from_str::<serde_json::Value>(clean) else {
+        return DEFAULT_APP_PORT;
+    };
+    parsed
+        .get("app")
+        .and_then(|app| app.get("port"))
+        .and_then(|value| value.as_u64())
+        .filter(|port| (MIN_APP_PORT..=MAX_APP_PORT).contains(port))
+        .and_then(|port| u16::try_from(port).ok())
+        .unwrap_or(DEFAULT_APP_PORT)
+}
+
+fn resolve_server_port(data_dir: &Path) -> OsString {
+    let port = parse_env_port("VNWEB_PORT")
+        .or_else(|| parse_env_port("PORT"))
+        .unwrap_or_else(|| read_configured_port(data_dir));
+    OsString::from(port.to_string())
 }
 
 fn resolve_app_dir(install_dir: &Path, explicit_app_dir: Option<&Path>, cwd: Option<&Path>) -> Result<PathBuf, String> {
@@ -110,7 +146,7 @@ fn run() -> Result<i32, String> {
         .env("VNWEB_DATA_DIR", &data_dir);
 
     if args.is_empty() {
-        let port = non_empty_env("PORT").unwrap_or_else(|| OsString::from("8999"));
+        let port = resolve_server_port(&data_dir);
         let hostname = non_empty_env("HOSTNAME").unwrap_or_else(|| OsString::from("0.0.0.0"));
         cmd.arg(app_dir.join("server.js"))
             .env("PORT", port)
@@ -197,5 +233,26 @@ mod tests {
         }
 
         let _ = fs::remove_dir_all(&install);
+    }
+
+    #[test]
+    fn reads_configured_port_with_safe_fallback() {
+        let data_dir = make_temp_dir("port");
+        assert_eq!(read_configured_port(&data_dir), DEFAULT_APP_PORT);
+
+        let settings_dir = data_dir.join("data").join("settings");
+        fs::create_dir_all(&settings_dir).expect("settings dir");
+        let general_path = settings_dir.join("general.json");
+
+        fs::write(&general_path, br#"{"app":{"port":9123}}"#).expect("write valid port");
+        assert_eq!(read_configured_port(&data_dir), 9123);
+
+        fs::write(&general_path, br#"{"app":{"port":80}}"#).expect("write low port");
+        assert_eq!(read_configured_port(&data_dir), DEFAULT_APP_PORT);
+
+        fs::write(&general_path, b"{invalid json").expect("write invalid");
+        assert_eq!(read_configured_port(&data_dir), DEFAULT_APP_PORT);
+
+        let _ = fs::remove_dir_all(&data_dir);
     }
 }

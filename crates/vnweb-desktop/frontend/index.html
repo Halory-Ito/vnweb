@@ -216,12 +216,12 @@
 
     <main id="stage" class="stage" data-tauri-drag-region>
       <div id="init-view" class="init-view">
-        <img src="./logo.png" alt="vnweb" class="init-logo" />
+        <img id="init-logo" src="./logo.png" alt="vnweb" class="init-logo" />
       </div>
 
       <section id="error-panel" class="error-panel" hidden>
         <span class="error-badge">启动异常</span>
-        <h2 class="error-title">vnweb 启动失败</h2>
+        <h2 id="error-title" class="error-title">vnweb 启动失败</h2>
         <p class="error-sub">本地服务未能正常就绪，请检查以下错误信息或重启应用。</p>
         <pre id="error-box" class="error-box"></pre>
         <p id="log-path" class="log-path" hidden></p>
@@ -232,13 +232,39 @@
       ;(function () {
         var stageEl = document.getElementById('stage')
         var initViewEl = document.getElementById('init-view')
+        var initLogoEl = document.getElementById('init-logo')
         var errorPanelEl = document.getElementById('error-panel')
+        var errorTitleEl = document.getElementById('error-title')
         var errorBoxEl = document.getElementById('error-box')
         var logPathEl = document.getElementById('log-path')
 
         var splashLayerEl = document.getElementById('splash-layer')
         var splashImgEl = document.getElementById('splash-img')
         var splashVideoEl = document.getElementById('splash-video')
+
+        var appBranding = window.__VNWEB_APP_BRANDING__
+        var appName =
+          (appBranding && typeof appBranding.name === 'string' && appBranding.name.trim()) ||
+          'vnweb'
+        document.title = appName
+        if (errorTitleEl) {
+          errorTitleEl.textContent = appName + ' 启动失败'
+        }
+        if (initLogoEl) {
+          initLogoEl.alt = appName
+          if (appBranding && appBranding.iconFile) {
+            var convertBranding =
+              window.__TAURI__ && window.__TAURI__.core && window.__TAURI__.core.convertFileSrc
+            var customLogoUrl = convertBranding
+              ? convertBranding('app-icon/' + appBranding.iconFile, 'vnweb-splash')
+              : 'http://vnweb-splash.localhost/app-icon/' + encodeURIComponent(appBranding.iconFile)
+            initLogoEl.onerror = function () {
+              initLogoEl.onerror = null
+              initLogoEl.src = './logo.png'
+            }
+            initLogoEl.src = customLogoUrl
+          }
+        }
 
         var startupCfg = window.__VNWEB_STARTUP_CONFIG__
         var splashActive = Boolean(

@@ -214,6 +214,164 @@ pub fn open_dir_in_explorer(dir: &Path) -> Result<(), String> {
     }
 }
 
+pub const DEFAULT_APP_NAME: &str = "vnweb";
+pub const DEFAULT_APP_PORT: u16 = 8999;
+pub const MIN_APP_PORT: u64 = 1024;
+pub const MAX_APP_PORT: u64 = 65535;
+const MAX_APP_NAME_CHARS: usize = 60;
+
+#[derive(Clone, Debug, PartialEq, Eq, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AppSettings {
+    pub name: String,
+    pub icon_path: String,
+    pub desktop_icon_path: String,
+    pub icon_file: Option<String>,
+    pub port: u16,
+}
+
+impl Default for AppSettings {
+    fn default() -> Self {
+        Self {
+            name: DEFAULT_APP_NAME.to_string(),
+            icon_path: String::new(),
+            desktop_icon_path: String::new(),
+            icon_file: None,
+            port: DEFAULT_APP_PORT,
+        }
+    }
+}
+
+fn is_allowed_app_icon_extension(file_name: &str, png_only: bool) -> bool {
+    let Some(ext) = Path::new(file_name)
+        .extension()
+        .and_then(|e| e.to_str())
+        .map(str::to_ascii_lowercase)
+    else {
+        return false;
+    };
+
+    if png_only {
+        return ext == "png";
+    }
+
+    matches!(
+        ext.as_str(),
+        "png" | "jpg" | "jpeg" | "webp" | "gif" | "svg" | "ico" | "avif" | "bmp"
+    )
+}
+
+fn resolve_safe_app_asset_file(
+    data_dir: &Path,
+    raw_path: &str,
+    png_only: bool,
+) -> Option<(String, String)> {
+    let trimmed = raw_path.trim();
+    let clean = trimmed.split(['?', '#']).next().unwrap_or("").trim();
+    let file_name = clean.strip_prefix("/assets/app/")?;
+    if !crate::splash::is_safe_single_filename(file_name) {
+        return None;
+    }
+    if !is_allowed_app_icon_extension(file_name, png_only) {
+        return None;
+    }
+
+    let asset_path = data_dir.join("assets").join("app").join(file_name);
+    if !asset_path.is_file() {
+        return None;
+    }
+
+    Some((clean.to_string(), file_name.to_string()))
+}
+
+fn normalize_app_name(raw: Option<&serde_json::Value>) -> String {
+    let Some(text) = raw.and_then(|v| v.as_str()) else {
+        return DEFAULT_APP_NAME.to_string();
+    };
+    if text.chars().any(char::is_control) {
+        return DEFAULT_APP_NAME.to_string();
+    }
+    let trimmed = text.trim();
+    if trimmed.is_empty() {
+        return DEFAULT_APP_NAME.to_string();
+    }
+    trimmed.chars().take(MAX_APP_NAME_CHARS).collect()
+}
+
+pub fn read_app_settings(data_dir: &Path) -> AppSettings {
+    let general_path = data_dir.join("data").join("settings").join("general.json");
+    let Ok(content) = std::fs::read_to_string(general_path) else {
+        return AppSettings::default();
+    };
+    let clean_content = content.trim_start_matches('\u{FEFF}');
+    let Ok(parsed) = serde_json::from_str::<serde_json::Value>(clean_content) else {
+        return AppSettings::default();
+    };
+    let Some(app) = parsed.get("app").filter(|v| v.is_object()) else {
+        return AppSettings::default();
+    };
+
+    let name = normalize_app_name(app.get("name"));
+    let port = app
+        .get("port")
+        .and_then(|v| v.as_u64())
+        .filter(|p| (MIN_APP_PORT..=MAX_APP_PORT).contains(p))
+        .and_then(|p| u16::try_from(p).ok())
+        .unwrap_or(DEFAULT_APP_PORT);
+
+    let icon_resolved = app
+        .get("iconPath")
+        .and_then(|v| v.as_str())
+        .and_then(|raw| resolve_safe_app_asset_file(data_dir, raw, false));
+
+    let (icon_path, icon_file) = match icon_resolved {
+        Some((path, file)) => (path, Some(file)),
+        None => (String::new(), None),
+    };
+
+    let desktop_icon_path = if icon_file.is_some() {
+        app.get("desktopIconPath")
+            .and_then(|v| v.as_str())
+            .and_then(|raw| resolve_safe_app_asset_file(data_dir, raw, true))
+            .map(|(path, _)| path)
+            .unwrap_or_default()
+    } else {
+        String::new()
+    };
+
+    AppSettings {
+        name,
+        icon_path,
+        desktop_icon_path,
+        icon_file,
+        port,
+    }
+}
+
+pub fn load_custom_app_icon(
+    data_dir: &Path,
+    settings: &AppSettings,
+) -> Option<tauri::image::Image<'static>> {
+    let candidate_path = if !settings.desktop_icon_path.is_empty() {
+        settings.desktop_icon_path.as_str()
+    } else if !settings.icon_path.is_empty()
+        && is_allowed_app_icon_extension(
+            settings.icon_path.strip_prefix("/assets/app/").unwrap_or(""),
+            true,
+        )
+    {
+        settings.icon_path.as_str()
+    } else {
+        return None;
+    };
+
+    let (_, file_name) = resolve_safe_app_asset_file(data_dir, candidate_path, true)?;
+    let full_path = data_dir.join("assets").join("app").join(file_name);
+    let bytes = std::fs::read(full_path).ok()?;
+    let image = tauri::image::Image::from_bytes(&bytes).ok()?;
+    Some(image.to_owned())
+}
+
 pub fn read_native_title_bar_setting(data_dir: &Path) -> bool {
     let appearance_path = data_dir
         .join("data")
@@ -759,6 +917,51 @@ mod tests {
         )
         .expect("write empty active slot");
         assert!(!read_startup_splash_config(&data_dir).enabled);
+
+        let _ = fs::remove_dir_all(&data_dir);
+    }
+
+    #[test]
+    fn reads_app_settings_with_validation_and_fallbacks() {
+        let data_dir = make_temp_dir("app-settings");
+        assert_eq!(read_app_settings(&data_dir), AppSettings::default());
+
+        let settings_dir = data_dir.join("data").join("settings");
+        let app_assets_dir = data_dir.join("assets").join("app");
+        fs::create_dir_all(&settings_dir).expect("settings dir");
+        fs::create_dir_all(&app_assets_dir).expect("app assets dir");
+        fs::write(app_assets_dir.join("custom.svg"), b"<svg/>").expect("svg");
+        fs::write(app_assets_dir.join("desktop.png"), b"png").expect("png");
+
+        let general_path = settings_dir.join("general.json");
+        fs::write(
+            &general_path,
+            br#"{"app":{"name":"  My Studio  ","iconPath":"/assets/app/custom.svg?v=1","desktopIconPath":"/assets/app/desktop.png?v=1","port":9200}}"#,
+        )
+        .expect("write valid app settings");
+
+        let valid = read_app_settings(&data_dir);
+        assert_eq!(valid.name, "My Studio");
+        assert_eq!(valid.icon_path, "/assets/app/custom.svg");
+        assert_eq!(valid.desktop_icon_path, "/assets/app/desktop.png");
+        assert_eq!(valid.icon_file.as_deref(), Some("custom.svg"));
+        assert_eq!(valid.port, 9200);
+
+        fs::write(
+            &general_path,
+            br#"{"app":{"name":"bad\nname","iconPath":"/assets/app/../secret.png","desktopIconPath":"/assets/app/custom.svg","port":80}}"#,
+        )
+        .expect("write invalid app settings");
+
+        let sanitized = read_app_settings(&data_dir);
+        assert_eq!(sanitized, AppSettings::default());
+
+        fs::write(
+            &general_path,
+            br#"{"app":{"name":"","iconPath":"/assets/app/missing.png","port":70000}}"#,
+        )
+        .expect("write missing icon");
+        assert_eq!(read_app_settings(&data_dir), AppSettings::default());
 
         let _ = fs::remove_dir_all(&data_dir);
     }

@@ -8,7 +8,7 @@ use std::sync::atomic::{AtomicU16, Ordering};
 use std::sync::Mutex;
 use std::time::{Duration, Instant};
 
-use crate::paths::RuntimePaths;
+use crate::paths::{read_app_settings, RuntimePaths, DEFAULT_APP_PORT};
 
 #[cfg(windows)]
 use std::os::windows::io::AsRawHandle;
@@ -103,7 +103,11 @@ impl Default for ServerManager {
 }
 
 pub fn pick_available_port(preferred: u16) -> Result<u16, String> {
-    let start = if preferred == 0 { 8999 } else { preferred };
+    let start = if preferred == 0 {
+        DEFAULT_APP_PORT
+    } else {
+        preferred
+    };
     let end = start.saturating_add(100);
 
     for port in start..=end {
@@ -163,13 +167,14 @@ impl ServerManager {
         self.port.load(Ordering::SeqCst)
     }
 
-    pub fn current_url(&self) -> String {
+    pub fn current_url(&self, data_dir: &Path) -> String {
         if cfg!(debug_assertions) && env::var_os("VNWEB_FORCE_SIDECAR").is_none() {
             return "http://localhost:3000".to_string();
         }
         let port = self.current_port();
         if port == 0 {
-            "http://127.0.0.1:8999".to_string()
+            let configured = read_app_settings(data_dir).port;
+            format!("http://127.0.0.1:{configured}")
         } else {
             format!("http://127.0.0.1:{port}")
         }
@@ -198,7 +203,8 @@ impl ServerManager {
         let preferred_port = env::var("VNWEB_PORT")
             .ok()
             .and_then(|v| v.trim().parse::<u16>().ok())
-            .unwrap_or(8999);
+            .filter(|&p| p > 0)
+            .unwrap_or_else(|| read_app_settings(&paths.data_dir).port);
         let port = pick_available_port(preferred_port)?;
         let hostname = env::var("VNWEB_HOST")
             .ok()

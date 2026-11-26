@@ -1,9 +1,10 @@
 export type TauriCurrentWindow = {
   isDecorated: () => Promise<boolean>
   setDecorations: (decorations: boolean) => Promise<void>
+  setTitle?: (title: string) => Promise<void>
   isMaximized: () => Promise<boolean>
   minimize: () => Promise<void>
-  toggleMaximize: () => Promise<void>
+  toggleMaximize: () => Promise<boolean>
   close: () => Promise<void>
   startDragging: () => Promise<void>
   onResized?: (handler: () => void) => Promise<() => void>
@@ -158,4 +159,53 @@ export async function subscribeDesktopWindowResize(listener: () => void): Promis
   } catch {
     return () => {}
   }
+}
+
+export async function setDesktopWindowTitle(title: string): Promise<void> {
+  const win = getDesktopWindow()
+  if (!win?.setTitle || !title.trim()) return
+
+  try {
+    await win.setTitle(title)
+  } catch (error) {
+    console.error('Set desktop window title failed:', error)
+  }
+}
+
+export async function syncDesktopAppBranding(windowTitle?: string): Promise<void> {
+  const core = window.__TAURI__?.core
+  if (!core) return
+
+  try {
+    await core.invoke('sync_app_branding', {
+      windowTitle: windowTitle ?? null,
+    })
+  } catch (error) {
+    console.error('Sync desktop app branding failed:', error)
+  }
+}
+
+export type DesktopRuntimeInfo = {
+  isSidecar: boolean
+  currentPort: number
+}
+
+export async function getDesktopRuntimeInfo(): Promise<DesktopRuntimeInfo | null> {
+  const core = window.__TAURI__?.core
+  if (!core) return null
+
+  try {
+    return await core.invoke<DesktopRuntimeInfo>('get_desktop_runtime_info', {})
+  } catch (error) {
+    console.error('Get desktop runtime info failed:', error)
+    return null
+  }
+}
+
+export async function restartDesktopServer(returnPath?: string): Promise<number> {
+  const core = window.__TAURI__?.core
+  if (!core) throw new Error('桌面服务重启接口不可用')
+  return core.invoke<number>('restart_desktop_server', {
+    returnPath: returnPath ?? null,
+  })
 }

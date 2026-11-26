@@ -22,7 +22,7 @@
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
     "lint:output": "oxlint --format=unix >> oxlint-report.txt",
-    "start": "next start -p 8999 --hostname 0.0.0.0",
+    "start": "node scripts/start-server.mjs",
     "tauri": "node scripts/run-tauri.mjs",
     "tauri:build": "node scripts/prepare-tauri-resources.mjs && node scripts/run-tauri.mjs build",
     "tauri:dev": "node scripts/run-tauri.mjs dev",

@@ -15,11 +15,19 @@ setlocal EnableExtensions
 set "VNWEB_APP_DIR=%~dp0"
 if "%VNWEB_APP_DIR:~-1%"=="\\" set "VNWEB_APP_DIR=%VNWEB_APP_DIR:~0,-1%"
 if not defined VNWEB_DATA_DIR set "VNWEB_DATA_DIR=%VNWEB_APP_DIR%\\user-data"
-if not defined PORT set "PORT=8999"
 if not defined HOSTNAME set "HOSTNAME=0.0.0.0"
 
 set "NODE_BIN=node"
 if exist "%VNWEB_APP_DIR%\\runtime\\node.exe" set "NODE_BIN=%VNWEB_APP_DIR%\\runtime\\node.exe"
+
+if not defined PORT (
+  if defined VNWEB_PORT (
+    set "PORT=%VNWEB_PORT%"
+  ) else (
+    for /f "usebackq delims=" %%P in (\`"%NODE_BIN%" -e "const fs=require('fs'),p=require('path');let port=8999;try{const d=JSON.parse(fs.readFileSync(p.join(process.env.VNWEB_DATA_DIR,'data','settings','general.json'),'utf8').replace(/^\\uFEFF/,''));const v=Number(d&&d.app&&d.app.port);if(Number.isInteger(v)){if(Math.min(65535,Math.max(1024,v))===v){port=v}}}catch{}console.log(port);"\`) do set "PORT=%%P"
+  )
+)
+if not defined PORT set "PORT=8999"
 
 if "%~1"=="" (
   "%NODE_BIN%" "%VNWEB_APP_DIR%\\server.js"

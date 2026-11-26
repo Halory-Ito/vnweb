@@ -1,23 +1,28 @@
 use std::sync::atomic::Ordering;
 
+use tauri::image::Image;
 use tauri::menu::{Menu, MenuItem, PredefinedMenuItem};
 use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent};
 use tauri::{AppHandle, Manager};
 
-use crate::paths::{open_dir_in_explorer, open_url_in_browser};
+use crate::paths::{open_dir_in_explorer, open_url_in_browser, AppSettings};
 use crate::{show_main_window, AppState};
 
-pub fn setup_tray(app: &AppHandle) -> tauri::Result<()> {
-    let show_item = MenuItem::with_id(app, "show", "打开 vnweb", true, None::<&str>)?;
+pub const TRAY_ID: &str = "vnweb-tray";
+
+pub fn build_tray_menu(app: &AppHandle, app_name: &str) -> tauri::Result<Menu<tauri::Wry>> {
+    let show_label = format!("打开 {app_name}");
+    let quit_label = format!("退出 {app_name}");
+    let show_item = MenuItem::with_id(app, "show", show_label, true, None::<&str>)?;
     let browser_item =
         MenuItem::with_id(app, "open-browser", "在浏览器中打开", true, None::<&str>)?;
     let data_dir_item = MenuItem::with_id(app, "open-data", "打开数据目录", true, None::<&str>)?;
     let restart_item =
         MenuItem::with_id(app, "restart-server", "重启本地服务", true, None::<&str>)?;
     let separator = PredefinedMenuItem::separator(app)?;
-    let quit_item = MenuItem::with_id(app, "quit", "退出 vnweb", true, None::<&str>)?;
+    let quit_item = MenuItem::with_id(app, "quit", quit_label, true, None::<&str>)?;
 
-    let menu = Menu::with_items(
+    Menu::with_items(
         app,
         &[
             &show_item,
@@ -27,16 +32,27 @@ pub fn setup_tray(app: &AppHandle) -> tauri::Result<()> {
             &separator,
             &quit_item,
         ],
-    )?;
+    )
+}
 
-    let mut builder = TrayIconBuilder::with_id("vnweb-tray")
+pub fn setup_tray(
+    app: &AppHandle,
+    app_settings: &AppSettings,
+    custom_icon: Option<Image<'static>>,
+) -> tauri::Result<()> {
+    let menu = build_tray_menu(app, &app_settings.name)?;
+
+    let mut builder = TrayIconBuilder::with_id(TRAY_ID)
         .menu(&menu)
-        .tooltip("vnweb")
+        .tooltip(&app_settings.name)
         .show_menu_on_left_click(false)
         .on_menu_event(|app, event| match event.id().as_ref() {
             "show" => show_main_window(app),
             "open-browser" => {
-                let url = app.state::<AppState>().server.current_url();
+                let url = {
+                    let state = app.state::<AppState>();
+                    state.server.current_url(&state.paths.data_dir)
+                };
                 let _ = open_url_in_browser(&url);
             }
             "open-data" => {
@@ -75,10 +91,29 @@ pub fn setup_tray(app: &AppHandle) -> tauri::Result<()> {
             }
         });
 
-    if let Some(icon) = app.default_window_icon().cloned() {
+    if let Some(icon) = custom_icon.or_else(|| app.default_window_icon().cloned()) {
         builder = builder.icon(icon);
     }
 
     builder.build(app)?;
+    Ok(())
+}
+
+pub fn apply_tray_branding(
+    app: &AppHandle,
+    app_settings: &AppSettings,
+    custom_icon: Option<Image<'static>>,
+) -> tauri::Result<()> {
+    let Some(tray) = app.tray_by_id(TRAY_ID) else {
+        return Ok(());
+    };
+
+    tray.set_tooltip(Some(&app_settings.name))?;
+    let menu = build_tray_menu(app, &app_settings.name)?;
+    tray.set_menu(Some(menu))?;
+    if let Some(icon) = custom_icon.or_else(|| app.default_window_icon().cloned()) {
+        tray.set_icon(Some(icon))?;
+    }
+
     Ok(())
 }

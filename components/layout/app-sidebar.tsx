@@ -15,6 +15,8 @@ import {
   SidebarMenuItem,
 } from '@/components/ui/sidebar'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { useAppSettings } from '@/hooks/use-app-settings'
+import { resolveAppIconSrc } from '@/lib/settings/app-settings'
 import { cn } from '@/lib/utils'
 
 const SIDEBAR_BUTTON_SIZE = 'h-10 w-10'
@@ -63,6 +65,8 @@ function SidebarIconButton({
 
 export default function AppSideBar() {
   const section = useSelectedLayoutSegment()
+  const appSettings = useAppSettings()
+  const iconSrc = resolveAppIconSrc(appSettings.iconPath)
 
   return (
     <Sidebar
@@ -73,15 +77,16 @@ export default function AppSideBar() {
         <Link
           href="/"
           className="flex h-10 w-10 items-center justify-center rounded-md font-semibold"
-          aria-label="VNWeb Logo"
+          aria-label={`${appSettings.name} Logo`}
         >
           <Image
-            src="/LOGO.png"
-            alt="VNWeb Logo"
+            src={iconSrc}
+            alt={`${appSettings.name} Logo`}
             width={36}
             loading="eager"
             height={36}
-            className="object-contain"
+            unoptimized
+            className="size-9 rounded-md object-contain"
           />
         </Link>
       </SidebarHeader>

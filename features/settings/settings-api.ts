@@ -57,3 +57,13 @@ export {
   getPlatformVisibilityApi,
   savePlatformVisibilityApi,
 } from '@/lib/settings/platform-visibility'
+
+export {
+  getAppSettingsApi,
+  resetAppIconApi,
+  updateAppSettingsApi,
+  uploadAppIconApi,
+  type AppSettings,
+  type AppSettingsPatch,
+  type AppSettingsResponse,
+} from '@/lib/settings/app-settings'

@@ -9,6 +9,9 @@
   "permissions": [
     "allow-save-export",
     "allow-pick-game-path",
+    "allow-sync-app-branding",
+    "allow-get-desktop-runtime-info",
+    "allow-restart-desktop-server",
     "core:default",
     "core:window:allow-close",
     "core:window:allow-is-decorated",
@@ -16,6 +19,7 @@
     "core:window:allow-maximize",
     "core:window:allow-minimize",
     "core:window:allow-set-decorations",
+    "core:window:allow-set-title",
     "core:window:allow-start-dragging",
     "core:window:allow-toggle-maximize",
     "core:window:allow-unmaximize"

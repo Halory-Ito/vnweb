@@ -10,7 +10,16 @@ import {
   nativeTitleBarAtom,
   sidebarHiddenAtom,
 } from './use-layout-visibility'
-import { syncDesktopNativeTitleBar } from '@/lib/desktop-window'
+import { syncDesktopAppBranding, syncDesktopNativeTitleBar } from '@/lib/desktop-window'
+import { applyAppBrandingToDocument, startAppTitleObserver } from '@/lib/settings/app-branding'
+import {
+  getAppSettingsApi,
+  normalizeAppSettings,
+  notifyAppSettingsChanged,
+  readAppSettings,
+  subscribeAppSettings,
+  writeAppSettings,
+} from '@/lib/settings/app-settings'
 import {
   getBackgroundConfigApi,
   normalizeBackgroundSettings,
@@ -151,6 +160,21 @@ export function useAppAppearance() {
     return () => {
       window.removeEventListener(FONT_SETTINGS_EVENT, syncFontSettings)
       window.removeEventListener('storage', handleStorage)
+    }
+  }, [])
+
+  useEffect(() => {
+    const syncBranding = () => {
+      applyAppBrandingToDocument(readAppSettings())
+    }
+
+    const stopObserver = startAppTitleObserver()
+    syncBranding()
+    const unsubscribe = subscribeAppSettings(syncBranding)
+
+    return () => {
+      unsubscribe()
+      stopObserver()
     }
   }, [])
 
@@ -322,6 +346,19 @@ export function useAppAppearance() {
       })
       .catch((error) => {
         console.error('Bootstrap font settings failed:', error)
+      })
+
+    void getAppSettingsApi()
+      .then((res) => {
+        if (!res?.data) return
+        const normalized = normalizeAppSettings(res.data)
+        writeAppSettings(normalized)
+        notifyAppSettingsChanged()
+        applyAppBrandingToDocument(normalized)
+        void syncDesktopAppBranding(document.title)
+      })
+      .catch((error) => {
+        console.error('Bootstrap app settings failed:', error)
       })
   }, [store])
 }
