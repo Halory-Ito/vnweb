@@ -20,7 +20,7 @@ const OutlineTag = ({ value, onClick }: { value: string; onClick?: () => void })
     type="button"
     onClick={onClick}
     disabled={!onClick}
-    className="bg-background text-foreground dark:bg-input/30 dark:border-input hover:bg-accent hover:text-accent-foreground inline-flex rounded-md border px-2 py-0.5 text-xs shadow-xs transition-colors disabled:pointer-events-none"
+    className="bg-background text-foreground dark:bg-input/30 dark:border-input focus-visible:ring-ring after:bg-primary/5 relative inline-flex overflow-hidden rounded-md border px-2 py-0.5 text-xs shadow-xs after:pointer-events-none after:absolute after:inset-0 after:opacity-0 focus-visible:ring-2 focus-visible:outline-none enabled:hover:after:opacity-100 disabled:pointer-events-none motion-safe:after:transition-opacity motion-safe:after:duration-300"
   >
     {value}
   </button>

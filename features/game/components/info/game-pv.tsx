@@ -17,6 +17,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import { PvPlayback } from '@/features/pv/components/pv-preview-player'
+import { parseExternalSourceIds } from '@/lib/external-source-ids'
 
 import type { GameMediaLinkItem } from '@/types'
 
@@ -54,25 +55,10 @@ export default function GamePV({ gameId }: GamePVProps) {
   }, [data])
 
   const hasSteamBinding = useMemo(() => {
-    const sourceIds = gameDetail?.externalSourceIds || ''
-    if (!sourceIds) {
-      return false
-    }
-
-    return sourceIds
-      .split(';')
-      .map((segment) => segment.trim())
-      .filter(Boolean)
-      .some((item) => {
-        const divider = item.indexOf(':')
-        if (divider <= 0 || divider >= item.length - 1) {
-          return false
-        }
-
-        const provider = item.slice(0, divider).trim().toLowerCase()
-        const externalId = item.slice(divider + 1).trim()
-        return provider === 'steam' && /^\d+$/.test(externalId)
-      })
+    const entries = parseExternalSourceIds(gameDetail?.externalSourceIds || '') ?? []
+    return entries.some(
+      (item) => item.provider.toLowerCase() === 'steam' && /^\d+$/.test(item.externalId),
+    )
   }, [gameDetail?.externalSourceIds])
 
   useEffect(() => {

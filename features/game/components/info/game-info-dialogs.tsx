@@ -1,9 +1,7 @@
-import GameBasicInfoDialog from '../dialog/game-basic-info-dialog'
 import GameOSTDialog from '../dialog/game-ost-dialog'
 import GamePlayStatusDialog from '../dialog/game-play-status-dialog'
 import GamePlayTimeDialog from '../dialog/game-play-time-dialog'
 import GameRatingDialog from '../dialog/game-rating-dialog'
-import GameUpdateDataDialog from '../dialog/game-update-data-dialog'
 import GameSettingsPanel from '../game-settings-panel'
 import { Button } from '@/components/ui/button'
 import {
@@ -21,8 +19,6 @@ import type { useGameInfo } from '../../hooks/use-game-info'
 type GameInfoDialogsProps = ReturnType<typeof useGameInfo>['dialogs']
 
 export default function GameInfoDialogs({
-  basicInfo,
-  updateData,
   settings,
   playTime,
   rating,
@@ -33,8 +29,6 @@ export default function GameInfoDialogs({
   return (
     <>
       <GameSettingsPanel {...settings} />
-      <GameBasicInfoDialog {...basicInfo} />
-      <GameUpdateDataDialog {...updateData} />
       <GamePlayTimeDialog {...playTime} />
       <GameRatingDialog {...rating} />
       <GameOSTDialog {...ost} />

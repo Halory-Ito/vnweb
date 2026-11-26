@@ -43,6 +43,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { useEnabledPlatforms } from '@/hooks/use-enabled-platforms'
+import { parseExternalSourceIds } from '@/lib/external-source-ids'
 import { getCharacterProviders } from '@/lib/providers'
 import { isPlatformVisibilityKey } from '@/lib/settings/platform-visibility'
 
@@ -132,22 +133,7 @@ export default function GameCharacters({ gameId }: GameCharactersProps) {
   const externalSourceIds = gameDetail?.externalSourceIds || ''
 
   const parsedSourceIds = useMemo(
-    () =>
-      externalSourceIds
-        .split(';')
-        .map((item) => item.trim())
-        .filter(Boolean)
-        .map((item) => {
-          const divider = item.indexOf(':')
-          if (divider <= 0 || divider >= item.length - 1) {
-            return null
-          }
-          return {
-            provider: item.slice(0, divider).trim(),
-            externalId: item.slice(divider + 1).trim(),
-          }
-        })
-        .filter((item): item is { provider: string; externalId: string } => item !== null),
+    () => parseExternalSourceIds(externalSourceIds, { strict: false }) ?? [],
     [externalSourceIds],
   )
 

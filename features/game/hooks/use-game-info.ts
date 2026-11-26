@@ -20,8 +20,6 @@ export function useGameInfo(game: GameDetail) {
   const title = game.nameCn || game.name
   const [playStatus, setPlayStatus] = useState(game.playStatus)
   const [rating, setRating] = useState(game.rating ?? 0)
-  const basicInfo = useDialogState()
-  const updateData = useDialogState()
   const settings = useDialogState()
   const playTime = useDialogState()
   const ratingDialog = useDialogState()
@@ -62,8 +60,6 @@ export function useGameInfo(game: GameDetail) {
 
   return {
     title,
-    onOpenBasicInfo: () => basicInfo.onOpenChange(true),
-    onOpenUpdateData: () => updateData.onOpenChange(true),
     headerProps: {
       game,
       title,
@@ -83,8 +79,6 @@ export function useGameInfo(game: GameDetail) {
       onOpenPlayStatus: () => playStatusDialog.onOpenChange(true),
     },
     dialogs: {
-      basicInfo: { ...basicInfo, game },
-      updateData: { ...updateData, gameId: game.id, initialKeyword: title },
       settings: { ...settings, gameId: game.id, gameTitle: title },
       playTime: { ...playTime, gameId: game.id },
       rating: { ...ratingDialog, gameId: game.id, rating },

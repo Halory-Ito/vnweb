@@ -1,13 +1,8 @@
 'use client'
 
-import { useQueryClient } from '@tanstack/react-query'
-import { useRouter } from 'next/navigation'
-import { useEffect, useMemo, useState } from 'react'
-import { toast } from 'sonner'
-
-import { updateGameInfoById } from '@/api'
+import { useGameUpdateData } from '../../hooks/use-game-update-data'
+import { GameUpdateDataFields } from './game-update-data-fields'
 import { Button } from '@/components/ui/button'
-import { Checkbox } from '@/components/ui/checkbox'
 import {
   Dialog,
   DialogContent,
@@ -15,6 +10,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import {
@@ -24,209 +20,53 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { getGameInfoByIdApi, searchGameByNameApi } from '@/features/game/import-api'
-import { useEnabledPlatforms } from '@/hooks/use-enabled-platforms'
-
-import type { GameInfo } from '@/types/game'
-
-const UPDATE_DATA_PROVIDERS = [
-  { value: 'bangumi', label: 'Bangumi' },
-  { value: 'steamgriddb', label: 'SteamGrid DB' },
-] as const
-
 type GameUpdateDataDialogProps = {
   gameId: number
   initialKeyword?: string
+  triggerDisabled: boolean
   open: boolean
   onOpenChange: (open: boolean) => void
 }
 
-type GameSearchItem = {
-  id: string
-  name: string
-  developer: string
-  date: string
-}
-
-type GameInfoFieldKey = Extract<keyof GameInfo, string>
-
-const fieldConfigs: Array<{ key: GameInfoFieldKey; label: string }> = [
-  { key: 'date', label: '发布日期' },
-  { key: 'cover', label: '封面' },
-  { key: 'summary', label: '简介' },
-  { key: 'name', label: '游戏名称' },
-  { key: 'nameCn', label: '中文名称' },
-  { key: 'tags', label: '标签' },
-  { key: 'ailases', label: '别名' },
-  { key: 'platforms', label: '平台' },
-  { key: 'gameType', label: '游戏类型' },
-  { key: 'gameEngine', label: '游戏引擎' },
-  { key: 'music', label: '音乐' },
-  { key: 'script', label: '剧本' },
-  { key: 'graphic', label: '美术' },
-  { key: 'originalPainter', label: '原画' },
-  { key: 'animationProduction', label: '动画制作' },
-  { key: 'developer', label: '开发商' },
-  { key: 'publisher', label: '发行商' },
-  { key: 'programmer', label: '程序' },
-]
-
 export default function GameUpdateDataDialog({
   gameId,
   initialKeyword,
+  triggerDisabled,
   open,
   onOpenChange,
 }: GameUpdateDataDialogProps) {
-  const pageSize = 5
-  const router = useRouter()
-  const queryClient = useQueryClient()
-  const { isPlatformEnabled } = useEnabledPlatforms()
-  const enabledProviders = useMemo(
-    () => UPDATE_DATA_PROVIDERS.filter((item) => isPlatformEnabled(item.value, 'game-metadata')),
-    [isPlatformEnabled],
-  )
-  const [provider, setProvider] = useState('bangumi')
-  const activeProvider = enabledProviders.some((item) => item.value === provider)
-    ? provider
-    : (enabledProviders[0]?.value ?? '')
-  const [keyword, setKeyword] = useState('')
-  const [results, setResults] = useState<GameSearchItem[]>([])
-  const [searchPage, setSearchPage] = useState(1)
-  const [searchTotal, setSearchTotal] = useState(0)
-  const [selectedId, setSelectedId] = useState('')
-  const [fetchedInfo, setFetchedInfo] = useState<GameInfo | null>(null)
-  const [isSearching, setIsSearching] = useState(false)
-  const [isFetchingInfo, setIsFetchingInfo] = useState(false)
-  const [isUpdating, setIsUpdating] = useState(false)
-  const [selectedFields, setSelectedFields] = useState<Record<string, boolean>>({})
-
-  useEffect(() => {
-    if (!open) {
-      return
-    }
-
-    const nextKeyword = (initialKeyword || '').trim()
-    if (nextKeyword) {
-      setKeyword(nextKeyword)
-    }
-  }, [open, initialKeyword])
-
-  const selectedCount = useMemo(
-    () => Object.values(selectedFields).filter(Boolean).length,
-    [selectedFields],
-  )
-
-  const loadSearchResults = async (page: number) => {
-    if (!activeProvider) {
-      toast.error('请先在「设置 → 平台」开启至少一个数据源')
-      return
-    }
-    const trimmed = keyword.trim()
-    if (!trimmed) {
-      toast.error('请输入关键词')
-      return
-    }
-
-    setIsSearching(true)
-    try {
-      const nextOffset = (page - 1) * pageSize
-      const response = await searchGameByNameApi(trimmed, activeProvider, nextOffset, pageSize)
-      setResults(response.items)
-      setSearchTotal(response.total)
-      setSearchPage(page)
-      if (response.items.length === 0) {
-        toast.error('未搜索到结果')
-      }
-    } finally {
-      setIsSearching(false)
-    }
-  }
-
-  const handleSearch = async () => {
-    await loadSearchResults(1)
-  }
-
-  const handleFetchInfoById = async (id: string) => {
-    if (!activeProvider) {
-      toast.error('请先在「设置 → 平台」开启至少一个数据源')
-      return
-    }
-    if (!id) {
-      toast.error('请先选择或输入 ID')
-      return
-    }
-
-    setIsFetchingInfo(true)
-    try {
-      const info = await getGameInfoByIdApi(id, activeProvider)
-      if (!info) {
-        toast.error('未获取到资料')
-        return
-      }
-
-      setSelectedId(id)
-      setFetchedInfo(info)
-      const next: Record<string, boolean> = {}
-      fieldConfigs.forEach((field) => {
-        next[field.key] = true
-      })
-      setSelectedFields(next)
-    } finally {
-      setIsFetchingInfo(false)
-    }
-  }
-
-  const toggleField = (key: GameInfoFieldKey, checked: boolean) => {
-    setSelectedFields((prev) => ({
-      ...prev,
-      [key]: checked,
-    }))
-  }
-
-  const handleApply = async () => {
-    if (!fetchedInfo) {
-      toast.error('请先获取资料')
-      return
-    }
-
-    const payload: Record<string, unknown> = {}
-    for (const field of fieldConfigs) {
-      if (!selectedFields[field.key]) {
-        continue
-      }
-      payload[field.key] = fetchedInfo[field.key]
-    }
-
-    if (Object.keys(payload).length === 0) {
-      toast.error('请至少选择一个属性')
-      return
-    }
-
-    setIsUpdating(true)
-    try {
-      await updateGameInfoById(gameId, payload as never)
-      await queryClient.invalidateQueries({
-        queryKey: ['game', String(gameId)],
-      })
-      await queryClient.invalidateQueries({ queryKey: ['game'] })
-      router.refresh()
-      toast.success('资料已更新')
-      onOpenChange(false)
-    } catch (error) {
-      const err = error as {
-        response?: { data?: { error?: string } }
-        message?: string
-      }
-      toast.error(err.response?.data?.error || err.message || '更新失败')
-    } finally {
-      setIsUpdating(false)
-    }
-  }
-
-  const totalPages = Math.max(1, Math.ceil(searchTotal / pageSize))
+  const {
+    enabledProviders,
+    activeProvider,
+    setProvider,
+    keyword,
+    setKeyword,
+    results,
+    searchPage,
+    selectedId,
+    isSearching,
+    isFetchingInfo,
+    isUpdating,
+    fetchedInfo,
+    selectedFields,
+    selectedCount,
+    totalPages,
+    loadSearchResults,
+    handleSearch,
+    handleFetchInfoById,
+    toggleField,
+    selectAllFields,
+    invertFields,
+    handleApply,
+  } = useGameUpdateData({ gameId, initialKeyword, open, onOpenChange })
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogTrigger asChild>
+        <Button type="button" variant="outline" disabled={triggerDisabled}>
+          批量更新
+        </Button>
+      </DialogTrigger>
       <DialogContent className="sm:max-w-3xl">
         <DialogHeader>
           <DialogTitle>更新资料数据</DialogTitle>
@@ -319,21 +159,14 @@ export default function GameUpdateDataDialog({
             </DialogFooter>
           </div>
 
-          <div className="space-y-2 rounded-md border p-3">
-            <div className="text-sm font-medium">选择要更新的属性（已选 {selectedCount} 项）</div>
-            <div className="grid grid-cols-2 gap-2 md:grid-cols-3">
-              {fieldConfigs.map((field) => (
-                <label key={field.key} className="flex items-center gap-2 text-sm">
-                  <Checkbox
-                    checked={Boolean(selectedFields[field.key])}
-                    onCheckedChange={(checked) => toggleField(field.key, Boolean(checked))}
-                    disabled={!fetchedInfo}
-                  />
-                  <span>{field.label}</span>
-                </label>
-              ))}
-            </div>
-          </div>
+          <GameUpdateDataFields
+            disabled={!fetchedInfo || isFetchingInfo || isUpdating}
+            selectedFields={selectedFields}
+            selectedCount={selectedCount}
+            toggleField={toggleField}
+            selectAllFields={selectAllFields}
+            invertFields={invertFields}
+          />
 
           {selectedId ? (
             <div className="text-muted-foreground text-xs">当前资料来源 ID: {selectedId}</div>
@@ -347,7 +180,7 @@ export default function GameUpdateDataDialog({
           <Button
             type="button"
             onClick={() => void handleApply()}
-            disabled={isUpdating || !fetchedInfo}
+            disabled={isUpdating || isFetchingInfo || !fetchedInfo || selectedCount === 0}
           >
             {isUpdating ? '更新中...' : '确认更新'}
           </Button>
