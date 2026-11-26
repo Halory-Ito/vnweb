@@ -53,7 +53,7 @@ export function PlatformVisibilityGrid({
   return (
     <section
       aria-labelledby="platform-visibility-title"
-      className="dark:border-input dark:bg-input/20 relative space-y-4 rounded-xl border p-4 sm:p-6"
+      className="dark:border-input dark:bg-input/20 relative min-w-0 space-y-4 rounded-xl border p-4 sm:p-6"
     >
       {platformVisibilityKeys.map(
         (key) =>
@@ -83,17 +83,19 @@ export function PlatformVisibilityGrid({
       <Tabs
         value={activeCategory}
         onValueChange={(value) => setActiveCategory(value as PlatformFeatureCategory)}
-        className="gap-4"
+        className="min-w-0 gap-4"
       >
-        <div className="max-w-full scrollbar-none overflow-x-auto">
-          <TabsList className="w-max gap-1 dark:bg-transparent">
-            {platformFeatureCategories.map((category) => (
-              <TabsTrigger key={category.id} value={category.id} className="flex-none px-2.5">
-                {category.label}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </div>
+        <TabsList className="w-fit max-w-full flex-wrap justify-start gap-1 group-data-[orientation=horizontal]/tabs:h-auto dark:bg-transparent">
+          {platformFeatureCategories.map((category) => (
+            <TabsTrigger
+              key={category.id}
+              value={category.id}
+              className="h-auto min-h-8 flex-none px-2.5 py-1"
+            >
+              {category.label}
+            </TabsTrigger>
+          ))}
+        </TabsList>
         {platformFeatureCategories.map((category) => (
           <TabsContent key={category.id} value={category.id} className="border-t pt-4">
             <div className="grid gap-x-6 gap-y-3 sm:grid-cols-2 lg:grid-cols-3">

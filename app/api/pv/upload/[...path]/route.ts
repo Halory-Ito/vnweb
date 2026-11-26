@@ -57,7 +57,7 @@ const serveVideo = async (
     const ext = path.extname(resolved).toLowerCase()
     const contentType = VIDEO_MIME_TYPES[ext] || 'application/octet-stream'
 
-    const fileBuffer = await fs.readFile(resolved)
+    const fileBuffer = await fs.readFile(/*turbopackIgnore: true*/ resolved)
 
     return new NextResponse(fileBuffer, {
       headers: {

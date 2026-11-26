@@ -87,7 +87,9 @@ async function ensureLegacyConfigMigrated(): Promise<void> {
   const { appearanceFile, backupFile, generalFile, legacyConfigFile } = getSettingsFiles()
   if (!fs.existsSync(legacyConfigFile)) return
   const hasNewFiles =
-    fs.existsSync(appearanceFile) || fs.existsSync(backupFile) || fs.existsSync(generalFile)
+    fs.existsSync(/*turbopackIgnore: true*/ appearanceFile) ||
+    fs.existsSync(/*turbopackIgnore: true*/ backupFile) ||
+    fs.existsSync(/*turbopackIgnore: true*/ generalFile)
   if (hasNewFiles) return
 
   const legacy = await readJsonObject(legacyConfigFile)

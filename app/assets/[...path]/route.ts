@@ -110,10 +110,7 @@ function parseByteRange(
   return { start, end }
 }
 
-export async function GET(
-  req: NextRequest,
-  { params }: { params: Promise<{ path: string[] }> | { path: string[] } },
-) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ path: string[] }> }) {
   try {
     const resolvedParams = await params
     const pathArray = Array.isArray(resolvedParams?.path) ? resolvedParams.path : []

@@ -69,7 +69,7 @@ const resolveCoverFilePath = (cover: string) => {
     path.join(getLegacyPublicAssetsDir(), 'cover', basename),
   ]
   for (const fallback of fallbacks) {
-    if (fs.existsSync(fallback)) {
+    if (fs.existsSync(/*turbopackIgnore: true*/ fallback)) {
       return fallback
     }
   }

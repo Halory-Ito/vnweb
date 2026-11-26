@@ -34,7 +34,7 @@ const listLocalFonts = async () => {
 
     for (const { dir, source } of getFontDirectories()) {
       try {
-        const entries = await fs.readdir(dir, { withFileTypes: true })
+        const entries = await fs.readdir(/*turbopackIgnore: true*/ dir, { withFileTypes: true })
 
         for (const entry of entries) {
           if (!entry.isFile()) {

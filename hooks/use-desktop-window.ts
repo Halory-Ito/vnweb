@@ -15,7 +15,7 @@ import {
 } from '@/lib/desktop-window'
 
 const HEADER_NO_DRAG_SELECTOR =
-  'button, a, input, select, textarea, label, [role="button"], [role="combobox"], [role="textbox"], [role="menuitem"], [role="switch"], [contenteditable="true"], [data-no-drag]'
+  'button, a, input, select, textarea, label, [role="button"], [role="combobox"], [role="textbox"], [role="menuitem"], [role="menuitemcheckbox"], [role="menuitemradio"], [role="option"], [role="listbox"], [role="switch"], [role="checkbox"], [role="radio"], [role="tab"], [role="slider"], [contenteditable="true"], [data-no-drag]'
 
 export function useDesktopWindow() {
   const nativeTitleBar = useAtomValue(nativeTitleBarAtom)
@@ -75,7 +75,8 @@ export function useDesktopWindow() {
       if (!showCustomControls || event.button !== 0) return
 
       const target = event.target instanceof Element ? event.target : null
-      if (target?.closest(HEADER_NO_DRAG_SELECTOR)) return
+      if (!target || !event.currentTarget.contains(target)) return
+      if (target.closest(HEADER_NO_DRAG_SELECTOR)) return
 
       if (event.detail === 2) {
         event.preventDefault()

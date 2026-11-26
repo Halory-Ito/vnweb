@@ -4,7 +4,7 @@ import { readConfig, updateConfigSection } from '@/lib/server/config-rw'
 
 import type { GoalSettings } from '@/types'
 
-export const DEFAULT_GOALS: GoalSettings = {
+const DEFAULT_GOALS: GoalSettings = {
   dailyPlayMinutes: 60,
   yearlyCompletedGames: 12,
 }

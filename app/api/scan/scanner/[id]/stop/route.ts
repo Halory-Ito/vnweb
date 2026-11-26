@@ -7,18 +7,6 @@ import { db } from '@/lib/drizzle'
 // 存储正在运行的扫描控制器
 const runningScans = new Map<number, AbortController>()
 
-export function getRunningScanController(scannerId: number) {
-  return runningScans.get(scannerId)
-}
-
-export function setRunningScanController(scannerId: number, controller: AbortController) {
-  runningScans.set(scannerId, controller)
-}
-
-export function removeRunningScanController(scannerId: number) {
-  runningScans.delete(scannerId)
-}
-
 export async function POST(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params

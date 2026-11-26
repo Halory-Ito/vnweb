@@ -113,7 +113,7 @@ export async function POST(req: NextRequest) {
 
       // 替换数据库文件
       const currentDbPath = getDbPath()
-      if (extractedDbPath && fs.existsSync(extractedDbPath)) {
+      if (extractedDbPath && fs.existsSync(/*turbopackIgnore: true*/ extractedDbPath)) {
         // 备份当前数据库
         const backupPath = currentDbPath + '.bak'
         if (fs.existsSync(currentDbPath)) {
@@ -134,7 +134,7 @@ export async function POST(req: NextRequest) {
       await migrateLegacyLibraryLogoDirectory()
 
       // 恢复游戏存档目录
-      if (extractedGameSavesDir && fs.existsSync(extractedGameSavesDir)) {
+      if (extractedGameSavesDir && fs.existsSync(/*turbopackIgnore: true*/ extractedGameSavesDir)) {
         const gameSaveConfig = await getGameSaveConfig()
         if (gameSaveConfig.enabled && gameSaveConfig.directory) {
           const currentSaveDir = gameSaveConfig.directory.trim()

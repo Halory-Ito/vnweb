@@ -1,4 +1,6 @@
-import { license, name, version } from '@/package.json'
+import packageInfo from '@/package.json'
+
+const { license, name, version } = packageInfo
 
 export const REPOSITORY = 'Halory-Ito/vnweb'
 const repositoryUrl = `https://github.com/${REPOSITORY}`

@@ -86,7 +86,7 @@ export function getLibraryLogoExtension(image: Buffer) {
 async function writeLogoFile(image: Buffer, extension: string) {
   const directory = getLibraryFolderLogoDirectory()
   const filename = `${createHash('sha256').update(image).digest('hex')}.${extension}`
-  const destination = path.join(directory, filename)
+  const destination = path.join(/*turbopackIgnore: true*/ directory, filename)
   const temporary = path.join(directory, `.${randomUUID()}.tmp`)
 
   await fs.mkdir(directory, { recursive: true })
